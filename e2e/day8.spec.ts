@@ -2,6 +2,7 @@
  * Handbook §17 Day 8 dry run, end to end through the UI with MockProvider.
  * Tests run serially and share state (one pilot loop), like the real dry run.
  */
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { SEED, adminLogin, digits, english, fieldLogin, lastSms, sim } from "./helpers";
 
@@ -502,3 +503,68 @@ test("simulator is not reachable without the guard", async ({ request }) => {
   const page = await request.get("/dev/simulator", { maxRedirects: 0 });
   expect([302, 307, 404]).toContain(page.status());
 });
+
+test("ecosystem view: one screen, filters, feed, visibility-aware refresh, accessible", async ({ browser, request }) => {
+  const admin = await adminLogin(browser, SEED.adminA);
+  await english(admin.page);
+  const { page } = admin;
+  await page.goto("/admin/ecosystem?interval=1");
+  await expect(page.getByRole("heading", { name: "Ecosystem" })).toBeVisible();
+  await expect(page.getByTestId("hubs-table")).toContainText("Test Hub (TEST)");
+  await expect(page.getByText("development", { exact: true }).first()).toBeVisible();
+  await expect(page.getByTestId("attention-strip")).toBeVisible();
+  await expect(page.getByTestId("seed-profile")).toHaveText("minimal");
+  await expect(page.getByTestId("flow-table")).toContainText("Supplier Test Co. (TEST)");
+  await expect(page.getByTestId("demo-banner")).toHaveCount(0);
+
+  // Keyboard path: the attention chips are focusable links with a count and a label.
+  await page.getByTestId("attention-paymentReviews").focus();
+  await expect(page.getByTestId("attention-paymentReviews")).toBeFocused();
+
+  // The refresh happens only while the tab is visible.
+  let refreshes = 0;
+  page.on("request", (r) => {
+    if (r.url().includes("/admin/ecosystem") && r.headers()["rsc"] === "1") refreshes++;
+  });
+  await page.waitForTimeout(2_600);
+  expect(refreshes).toBeGreaterThanOrEqual(1);
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { get: () => "hidden", configurable: true });
+    Object.defineProperty(document, "hidden", { get: () => true, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(page.getByTestId("live-refresh")).toHaveAttribute("data-state", "hidden");
+  const before = refreshes;
+  await page.waitForTimeout(2_600);
+  expect(refreshes).toBe(before);
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { get: () => "visible", configurable: true });
+    Object.defineProperty(document, "hidden", { get: () => false, configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(page.getByTestId("live-refresh")).toHaveAttribute("data-state", "live");
+  await page.getByTestId("pause-refresh").click();
+  await expect(page.getByTestId("live-refresh")).toHaveAttribute("data-state", "paused");
+
+  // Window and filters live in the URL; the money panel follows the window.
+  await page.getByTestId("window-7d").click();
+  await expect(page).toHaveURL(/window=7d/);
+  await expect(page.getByTestId("money-CHAMPION_TO_CUSTOMER")).toBeVisible();
+
+  // Something the machine did shows up at the top of the feed after the next refresh.
+  await sim(request, { op: "reconcile" });
+  await page.reload();
+  await expect(page.getByTestId("feed").getByTestId("feed-item").first()).toContainText("Daily reconciliation");
+
+  // Clicking a hub opens its existing page.
+  await page.getByTestId("hubs-table").getByRole("link", { name: "Test Hub (TEST)" }).click();
+  await expect(page).toHaveURL(/\/admin\/inventory/);
+
+  // Accessibility: no serious or critical violations.
+  await page.goto("/admin/ecosystem");
+  const axe = await new AxeBuilder({ page }).analyze();
+  const serious = axe.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(serious, JSON.stringify(serious.map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 3).map((n) => n.target) })), null, 1)).toEqual([]);
+  await admin.ctx.close();
+});
+

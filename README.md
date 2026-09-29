@@ -178,6 +178,18 @@ A supplier is an organisation, not a login (Prompt B §8, ADR-029). `/admin/supp
 - Several `SUPPLIER` users may belong to one organisation and all see the same organisation view: this week's pickups, confirmed money this week and this month, quality feedback on their batches. Any of them may confirm a batch ready or release it. Margins of hubs and champions are never shown to suppliers.
 - The only person-linked field is an optional business contact, encrypted like every phone number; nothing about health.
 
+## Ecosystem view (`/admin/ecosystem`)
+
+One read-only screen for the founders (Prompt B §3): *where is the stock, where is the money, who is stuck, is the machine healthy?* Everything on it comes from one snapshot service (`lib/services/ecosystem.ts`, Zod-typed, aggregated in SQL; admin-only through `admin.ecosystem.view`).
+
+- **Attention strip** — one chip per stop-and-fix category (payments in review, pending too long, locked batches, approvals waiting, open problems, reconciliation flags, dead verification jobs, silent stakeholders, hubs below minimum, paid-but-not-handed-over, waiting on a supplier, supplier quality). A chip filters the tables below.
+- **Flow graph** — suppliers → riders → hubs → champions → customers as inline SVG, edges only for orders in flight (thickness = units; grey pending, green confirmed, amber in review, red on hold), locks in red. A table with the same data sits under it for keyboards and screen readers and replaces the graph on a phone. Customers appear as counts per hub, never as names.
+- **Live feed** — the last 50 events across the ledger, the security log and the admin log, rendered from typed label tables (`lib/domain/events.ts` + `messages/*.json`), never raw database text.
+- **Money** — confirmed by the provider, per order kind, for the chosen window (24 h / 7 d / 30 d); pending and in-review counts; plans active / completed / stalled (no payment for 10 days).
+- **System** — job heartbeats with age (marked *manual — preview* when a simulator tick ran them), anchoring status, SMS outbox depth, providers, AI on/off with this month's usage, environment, version, dataset.
+- **Refresh model** — a small client component calls `router.refresh()` every 30 s **only while the tab is visible**, backs off to 60 s after ten minutes, and pauses after an hour without interaction ("click to resume"). Nothing polls while the tab is hidden, so an open tab does not keep the Neon database awake; Neon's free plan meters compute hours and auto-suspends idle databases (verify current limits at neon.com/docs). The tab title gets a dot when attention items grew while the page was not looked at.
+- **Access** — one `ecosystem.view` admin-log entry per admin session per day; no exports, no AI, no customer names or phone numbers (an integration test scans the serialised snapshot).
+
 ## Environment variables
 
 See `.env.example` for the full list with comments. Rules:

@@ -357,6 +357,7 @@ export const batches = pgTable(
     foreignKey({ columns: [t.parentBatchId], foreignColumns: [t.id] }),
     check("batch_quantity_nonnegative", sql`${t.quantity} >= 0`),
     index("batches_custodian_idx").on(t.custodianUserId, t.custodyState),
+    index("batches_hub_state_idx").on(t.hubId, t.custodyState),
   ],
 );
 
@@ -426,6 +427,9 @@ export const orders = pgTable(
     index("orders_seller_idx").on(t.sellerUserId, t.state),
     index("orders_buyer_idx").on(t.buyerUserId, t.state),
     index("orders_customer_idx").on(t.customerId),
+    // Ecosystem snapshot: orders in flight by kind/state and by hub (Prompt B §3.2).
+    index("orders_kind_state_idx").on(t.kind, t.state),
+    index("orders_hub_state_idx").on(t.hubId, t.state),
   ],
 );
 
@@ -466,6 +470,7 @@ export const paymentIntents = pgTable(
     updatedAt: updatedAt(),
   },
   (t) => [
+    index("payment_intents_status_confirmed_idx").on(t.status, t.confirmedAt),
     check("intent_amount_positive", sql`${t.amountTzs} > 0 AND (${t.confirmedAmountTzs} IS NULL OR ${t.confirmedAmountTzs} > 0)`),
     check(
       "confirmed_needs_provider_ref",
@@ -665,7 +670,7 @@ export const ledgerEvents = pgTable(
     eventDate: date("event_date", { mode: "string" }).notNull(),
     createdAt: createdAt(),
   },
-  (t) => [index("ledger_events_order_idx").on(t.orderId), index("ledger_events_batch_idx").on(t.batchId)],
+  (t) => [index("ledger_events_order_idx").on(t.orderId), index("ledger_events_batch_idx").on(t.batchId), index("ledger_events_created_idx").on(t.createdAt)],
 );
 
 export const contractDeployments = pgTable("contract_deployments", {
@@ -756,16 +761,20 @@ export const providerStatementRows = pgTable("provider_statement_rows", {
 });
 
 // ---------- logs ----------
-export const adminActionLog = pgTable("admin_action_log", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
-  adminId: uuid("admin_id"),
-  action: text("action").notNull(),
-  targetType: text("target_type"),
-  targetId: text("target_id"),
-  details: jsonb("details").notNull().default({}),
-  highlighted: boolean("highlighted").notNull().default(false),
-  createdAt: createdAt(),
-});
+export const adminActionLog = pgTable(
+  "admin_action_log",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    adminId: uuid("admin_id"),
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    details: jsonb("details").notNull().default({}),
+    highlighted: boolean("highlighted").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [index("admin_action_log_created_idx").on(t.createdAt), index("admin_action_log_admin_action_idx").on(t.adminId, t.action, t.createdAt)],
+);
 
 export const securityEventLog = pgTable(
   "security_event_log",
@@ -779,7 +788,7 @@ export const securityEventLog = pgTable(
     details: jsonb("details").notNull().default({}),
     createdAt: createdAt(),
   },
-  (t) => [index("security_events_type_idx").on(t.type, t.createdAt)],
+  (t) => [index("security_events_type_idx").on(t.type, t.createdAt), index("security_events_created_idx").on(t.createdAt)],
 );
 
 export const aiInteractionLog = pgTable("ai_interaction_log", {

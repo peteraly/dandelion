@@ -71,6 +71,7 @@ export const ACTIONS = [
   "admin.passkey.register",
   "admin.supplier.view",
   "admin.supplier.manage",
+  "admin.ecosystem.view",
   // shared field
   "order.view",
   "order.claim_paid",
@@ -171,6 +172,7 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "admin.passkey.register": adminOnly,
   "admin.supplier.view": adminOnly,
   "admin.supplier.manage": adminOnly,
+  "admin.ecosystem.view": adminOnly,
 
   "order.view": (a, r) => isAdmin(a) || (r.type === "order" && isOrderParty(a, r.order)),
   // Only the buyer pays; "I have paid" never confirms anything, it only asks the verifier to look.

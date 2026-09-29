@@ -14,6 +14,7 @@ import { resetDatabase } from "@/scripts/seed";
 import { runDemoSeed, type DemoRunResult } from "@/scripts/demo/run";
 import type { DemoManifest } from "@/lib/demo/manifest";
 import { simulateTick } from "@/lib/demo/tick";
+import { containsPhone, ecosystemSnapshot, SnapshotSchema } from "@/lib/services/ecosystem";
 import { resetToDemoDataset } from "@/lib/demo/reset";
 
 process.env.VERCEL_ENV = "";
@@ -126,6 +127,46 @@ describe("demo profile", () => {
     expect(profile?.value).toBe("demo");
     expect(manifest.fictionalPlaces.length).toBeGreaterThan(0);
     expect(manifest.needsNativeReview.length).toBeGreaterThan(0);
+  });
+});
+
+// Prompt B §3.6 on the generated dataset: counts, no PII, and the p95 budget.
+describe("ecosystem snapshot on the demo dataset", () => {
+  const adminActor = async () => {
+    const a = (await db().query.users.findFirst({ where: eq(s.users.role, "SUPER_ADMIN") }))!;
+    return { userId: a.id, role: a.role, hubId: null, supplierId: null, mfa: true } as const;
+  };
+
+  it("matches direct SQL and shows the demo banner flag", async () => {
+    const snap = await ecosystemSnapshot(await adminActor(), { window: "7d" });
+    expect(SnapshotSchema.safeParse(snap).success).toBe(true);
+    const count = async (q: string) => Number((await db().execute<{ n: string }>(sql.raw(`select count(*)::text as n from ${q}`))).rows[0]!.n);
+    expect(snap.nodes.filter((n) => n.kind === "SUPPLIER").length).toBe(await count("suppliers"));
+    expect(snap.nodes.filter((n) => n.kind === "HUB").length).toBe(await count("hubs"));
+    expect(snap.openOrders.length).toBe(await count("orders where state not in ('COMPLETED','CANCELLED','CLOSED')"));
+    expect(snap.edges.length).toBeGreaterThan(3);
+    expect(snap.attention.lockedBatches).toBe(await count("batches where custody_state in ('INSPECTION_ISSUE','DAMAGED_OR_QUARANTINED') and quantity > 0"));
+    expect(snap.attention.waitingOnSupplier).toBeGreaterThanOrEqual(1);
+    expect(snap.system.demo).toBe(true);
+    expect(snap.feed.length).toBe(50);
+    const text = JSON.stringify(snap);
+    expect(containsPhone(text)).toBe(false);
+    for (const c of await db().select({ n: s.customers.displayName }).from(s.customers)) expect(text).not.toContain(c.n);
+  });
+
+  it("answers within budget (p95 < 800 ms locally; a warning in CI)", async () => {
+    const actor = await adminActor();
+    const times: number[] = [];
+    for (let i = 0; i < 6; i++) {
+      const t0 = performance.now();
+      await ecosystemSnapshot(actor, { window: "30d" });
+      times.push(performance.now() - t0);
+    }
+    times.sort((a, b) => a - b);
+    const p95 = times[Math.min(times.length - 1, Math.ceil(times.length * 0.95) - 1)]!;
+    console.log(`[ecosystem] snapshot p95 ${Math.round(p95)} ms (${times.map((t) => Math.round(t)).join(", ")})`);
+    if (process.env.CI && p95 > 800) console.warn(`[ecosystem] p95 ${Math.round(p95)} ms exceeds the 800 ms budget on this runner`);
+    else expect(p95).toBeLessThan(800);
   });
 });
 

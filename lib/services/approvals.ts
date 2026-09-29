@@ -146,7 +146,7 @@ export async function decideApproval(actor: Actor, requestId: string, decision: 
     }
     await tx.insert(s.approvalDecisions).values({ requestId, adminId: actor.userId, decision, comment: comment?.slice(0, 500) ?? null });
     const ev = evaluateApproval({ requesterId: req.requestedBy, threshold: req.threshold, decisions: [...existing, { adminId: actor.userId, decision }] });
-    await logAdminAction(tx, actor.userId, `approval.${decision.toLowerCase()}`, { type: "approval", id: requestId }, { type: req.type }, req.highlighted);
+    await logAdminAction(tx, actor.userId, decision === "APPROVE" ? "approval.approve" : "approval.reject", { type: "approval", id: requestId }, { type: req.type }, req.highlighted);
     if (ev.status === "REJECTED") {
       await tx.update(s.approvalRequests).set({ status: "REJECTED", decidedAt: now() }).where(eq(s.approvalRequests.id, requestId));
       await onRejected(tx, req);

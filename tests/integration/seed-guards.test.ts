@@ -18,9 +18,9 @@ describe("clock-driven defaults and guards", () => {
   it("rows inserted under a simulated clock carry the simulated created_at", async () => {
     const at = new Date("2026-02-14T07:30:00Z");
     await withClock(at, async () => {
-      await logSecurityEvent(getDb(), "TEST_CLOCK_EVENT", "INFO", { details: { probe: true } });
+      await logSecurityEvent(getDb(), "ANCHOR_WALLET_LOW_BALANCE", "INFO", { details: { probe: true } });
     });
-    const row = await getDb().query.securityEventLog.findFirst({ where: eq(s.securityEventLog.type, "TEST_CLOCK_EVENT") });
+    const row = await getDb().query.securityEventLog.findFirst({ where: eq(s.securityEventLog.type, "ANCHOR_WALLET_LOW_BALANCE") });
     expect(row?.createdAt.toISOString()).toBe(at.toISOString());
   });
 

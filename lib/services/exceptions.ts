@@ -63,7 +63,7 @@ export async function reportProblem(actor: Actor, raw: ReportProblemInput): Prom
     });
     await recordLedgerEvent(tx, { type: "EXCEPTION_RAISED", subjectRef: batch?.code ?? order?.ref ?? ref, batchId: batch?.id ?? null, orderId: order?.id ?? null, role: actor.role });
     if (input.type === "SUSPECTED_THEFT") {
-      await logSecurityEvent(tx, `PROBLEM_${input.type}`, "ALERT", { userId: actor.userId, details: { ref } });
+      await logSecurityEvent(tx, `PROBLEM_${input.type}` as const, "ALERT", { userId: actor.userId, details: { ref } });
     }
     return { exceptionRef: ref, lockedBatch };
   });

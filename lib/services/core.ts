@@ -4,6 +4,7 @@
  * LedgerEvent are written in the SAME transaction (§5).
  */
 import { now } from "@/lib/clock";
+import type { AdminAction, SecurityEventType } from "@/lib/domain/events";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, type DbOrTx, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -81,7 +82,7 @@ export async function recordLedgerEvent(tx: DbOrTx, e: LedgerInput): Promise<voi
 export async function logAdminAction(
   tx: DbOrTx,
   adminId: string | null,
-  action: string,
+  action: AdminAction,
   target: { type?: string; id?: string } = {},
   details: Record<string, unknown> = {},
   highlighted = false,
@@ -100,7 +101,7 @@ export type SecuritySeverity = "INFO" | "WARN" | "ALERT";
 
 export async function logSecurityEvent(
   tx: DbOrTx,
-  type: string,
+  type: SecurityEventType,
   severity: SecuritySeverity,
   opts: { userId?: string | null; subjectIndex?: string | null; ip?: string | null; details?: Record<string, unknown> } = {},
 ): Promise<void> {

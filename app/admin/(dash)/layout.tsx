@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 
 const NAV: [string, string][] = [
   ["home", "/admin"],
+  ["ecosystem", "/admin/ecosystem"],
   ["approvals", "/admin/approvals"],
   ["stakeholders", "/admin/stakeholders"],
   ["suppliers", "/admin/suppliers"],
@@ -40,7 +41,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <div>
             <p className="text-xl font-bold text-brand-700">Dandelion</p>
             <p className="text-sm text-stone-600">{session.user.displayName}</p>
-            <p className="text-xs uppercase text-stone-400">{appEnv()}</p>
+            <p className="text-xs uppercase text-stone-600">{appEnv()}</p>
           </div>
           <div className="flex gap-2 md:mt-2">
             <LocaleToggle back="/admin" />
