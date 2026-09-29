@@ -8,7 +8,11 @@ export const dynamic = "force-dynamic";
 
 export default async function LandingPage() {
   const t = await getTranslations("public");
-  const stats = await publicWeeklyStats();
+  // The public page must not fail when the database is unreachable or not yet configured (e.g. a fresh preview).
+  const stats = await publicWeeklyStats().catch((e: unknown) => {
+    console.error("[public] stats unavailable:", e instanceof Error ? e.message : e);
+    return null;
+  });
   return (
     <PublicShell path="/">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -27,13 +31,19 @@ export default async function LandingPage() {
       </Card>
       <Card>
         <h2 className="mb-2 text-lg font-semibold">{t("stats")}</h2>
-        <dl className="grid grid-cols-2 gap-2">
-          <dt className="text-stone-600">{t("handovers")}</dt>
-          <dd className="text-right font-semibold">{stats.handovers === null ? t("fewerThan10") : stats.handovers}</dd>
-          <dt className="text-stone-600">{t("activeChampions")}</dt>
-          <dd className="text-right font-semibold">{stats.activeChampions === null ? t("fewerThan10") : stats.activeChampions}</dd>
-        </dl>
-        <p className="mt-2 text-sm text-stone-500">{t("statsNote")}</p>
+        {stats ? (
+          <>
+            <dl className="grid grid-cols-2 gap-2">
+              <dt className="text-stone-600">{t("handovers")}</dt>
+              <dd className="text-right font-semibold">{stats.handovers === null ? t("fewerThan10") : stats.handovers}</dd>
+              <dt className="text-stone-600">{t("activeChampions")}</dt>
+              <dd className="text-right font-semibold">{stats.activeChampions === null ? t("fewerThan10") : stats.activeChampions}</dd>
+            </dl>
+            <p className="mt-2 text-sm text-stone-500">{t("statsNote")}</p>
+          </>
+        ) : (
+          <p className="text-stone-500">{t("statsUnavailable")}</p>
+        )}
       </Card>
       <nav className="flex flex-col gap-2">
         <Link href="/safety" className="btn btn-secondary">

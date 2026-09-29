@@ -674,6 +674,7 @@
     "stats": "This week",
     "fewerThan10": "fewer than 10",
     "statsNote": "Weekly aggregate counts only. Small counts are shown as \"fewer than 10\" to protect privacy.",
+    "statsUnavailable": "Counts are temporarily unavailable.",
     "handovers": "Products handed over",
     "activeChampions": "Active champions",
     "privacy": "Privacy notice",
