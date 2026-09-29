@@ -59,12 +59,35 @@ export interface Hub {
   minStockUnits: number;
 }
 
+/** A supplier organisation in the demo: the reliable primary, or the occasional one whose batches carry most issues (Prompt B §8.5). */
+export interface SupplierOrg {
+  id: string;
+  name: string;
+  users: Person[];
+  leadTimeDays: number;
+  quality: "good" | "poor";
+}
+
 export interface Area {
   id: string;
   name: string;
+  /** The primary supplier (kept for the scenarios that only need one). */
   supplierId: string;
   supplier: Person;
+  suppliers: SupplierOrg[];
   hubs: Hub[];
+}
+
+/** A pickup whose supplier confirms the batch late; the chain continues on `dueDay` (seed only). */
+export interface DeferredPickup {
+  pickupId: string;
+  org: SupplierOrg;
+  supplierUser: Person;
+  hub: Hub;
+  rider: Person;
+  product: Product;
+  outcome: "complete" | "in_transit" | "inspection_issue" | "damaged" | "awaiting_rider_payment";
+  dueDay: number;
 }
 
 export interface Customer {
@@ -89,6 +112,10 @@ export class World {
   readonly customers: Customer[] = [];
   readonly products: Product[] = [];
   readonly manifest: Manifest;
+  /** Late supplier confirmations waiting for their day (only the backdated seed uses this; ticks never defer). */
+  readonly deferred: DeferredPickup[] = [];
+  /** May a supplier confirm a batch days late? The seed says yes; a real-clock tick cannot wait, so no. */
+  allowLateBatches = false;
 
   constructor(
     readonly rng: Rng,
@@ -117,6 +144,18 @@ export class World {
   }
   get champions(): Person[] {
     return this.hubs.flatMap((h) => h.champions);
+  }
+  get supplierOrgs(): SupplierOrg[] {
+    return this.areas.flatMap((a) => a.suppliers);
+  }
+
+  /** Three pickups in four go to the reliable supplier; the rest to the occasional one. */
+  pickSupplier(area: Area): SupplierOrg {
+    const good = area.suppliers.filter((o) => o.quality === "good");
+    const poor = area.suppliers.filter((o) => o.quality === "poor");
+    if (!poor.length) return this.rng.pick(good.length ? good : area.suppliers);
+    if (!good.length) return this.rng.pick(poor);
+    return this.rng.chance(0.75) ? this.rng.pick(good) : this.rng.pick(poor);
   }
 
   /** Advance simulated time by a random number of minutes in [min, max]. */

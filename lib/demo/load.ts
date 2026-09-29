@@ -12,7 +12,7 @@ import { paidTotals } from "@/lib/services/payments";
 import type { MinimalSeedResult } from "@/lib/seed-identities";
 import type { DemoClock } from "./clock";
 import type { Rng } from "./rng";
-import { SCALES, World, type Area, type Hub, type Person, type Scale } from "./world";
+import { SCALES, World, type Area, type Hub, type Person, type Scale, type SupplierOrg } from "./world";
 import type { Plan } from "./supply";
 
 type UserRow = typeof s.users.$inferSelect;
@@ -38,14 +38,22 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
   const areas: Area[] = [];
   const phones: string[] = [];
   for (const a of areaRows) {
-    const suppliers = await db.query.suppliers.findMany({ where: and(eq(s.suppliers.serviceAreaId, a.id), eq(s.suppliers.active, true)), orderBy: s.suppliers.createdAt });
-    const supplierRow = suppliers[0];
-    if (!supplierRow) continue;
-    const supplierUser = await db.query.users.findFirst({ where: and(eq(s.users.role, "SUPPLIER"), eq(s.users.supplierId, supplierRow.id), active) });
-    if (!supplierUser) continue;
-    const supplier = await person(supplierUser);
-    phones.push(supplier.phone);
-    const area: Area = { id: a.id, name: a.name, supplierId: supplierRow.id, supplier, hubs: [] };
+    const supplierRows = await db.query.suppliers.findMany({ where: and(eq(s.suppliers.serviceAreaId, a.id), eq(s.suppliers.active, true)), orderBy: s.suppliers.createdAt });
+    const orgs: SupplierOrg[] = [];
+    for (const row of supplierRows) {
+      const users: Person[] = [];
+      for (const u of await db.query.users.findMany({ where: and(eq(s.users.role, "SUPPLIER"), eq(s.users.supplierId, row.id), active), orderBy: s.users.createdAt })) {
+        const p = await person(u);
+        phones.push(p.phone);
+        users.push(p);
+      }
+      if (!users.length) continue;
+      // The first supplier of an area is the reliable one; the demo's occasional supplier has the longer lead time.
+      orgs.push({ id: row.id, name: row.businessName, users, leadTimeDays: row.leadTimeDays, quality: orgs.length === 0 ? "good" : "poor" });
+    }
+    const primary = orgs[0];
+    if (!primary) continue;
+    const area: Area = { id: a.id, name: a.name, supplierId: primary.id, supplier: primary.users[0]!, suppliers: orgs, hubs: [] };
     for (const h of await db.query.hubs.findMany({ where: and(eq(s.hubs.serviceAreaId, a.id), eq(s.hubs.active, true)), orderBy: s.hubs.createdAt })) {
       const managerRow = await db.query.users.findFirst({ where: and(eq(s.users.role, "HUB_MANAGER"), eq(s.users.hubId, h.id), active) });
       if (!managerRow) continue;

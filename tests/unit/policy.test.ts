@@ -41,6 +41,19 @@ describe("policy: supplier", () => {
     expect(can(supplier, "order.view", o(delivery))).toBe(false);
     expect(can(supplier, "order.claim_paid", o(pickup))).toBe(false);
   });
+  it("scopes by organisation, not by the user named on the order (ADR-029)", () => {
+    const colleague: Actor = { ...supplier, userId: "sup2" }; // same organisation S1, not the seller on the order
+    expect(can(colleague, "order.view", o(pickup))).toBe(true);
+    expect(can(colleague, "order.confirm_batch_ready", o(pickup))).toBe(true);
+    expect(can(colleague, "order.confirm_release", o(pickup))).toBe(true);
+    const otherOrg: Actor = { ...supplier, userId: "sup3", supplierId: "S2" };
+    expect(can(otherOrg, "order.view", o(pickup))).toBe(false);
+    expect(can(otherOrg, "order.confirm_batch_ready", o(pickup))).toBe(false);
+    expect(can(supplier, "supplier.home.view")).toBe(true);
+    expect(can({ ...supplier, supplierId: null }, "supplier.home.view")).toBe(false);
+    expect(can(rider, "supplier.home.view")).toBe(false);
+    expect(can(admin, "supplier.home.view")).toBe(false);
+  });
 });
 
 describe("policy: rider", () => {

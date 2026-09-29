@@ -67,6 +67,22 @@
     "HUB_TO_CHAMPION": "Bidhaa kwa bingwa",
     "CHAMPION_TO_CUSTOMER": "Ununuzi wa mteja"
   },
+  "orderStates": {
+    "PICKUP_ASSIGNED": "Uchukuaji umepangwa",
+    "BATCH_READY": "Kundi liko tayari",
+    "AWAITING_PAYMENT": "Inasubiri malipo",
+    "PAID": "Imelipwa",
+    "EN_ROUTE": "Njiani",
+    "INSPECTING": "Inakaguliwa",
+    "ON_HOLD": "Imesitishwa",
+    "REQUESTED": "Imeombwa",
+    "PLAN_ACTIVE": "Mpango unaendelea",
+    "FULLY_PAID": "Imelipwa kikamilifu",
+    "HANDOVER_PENDING": "Makabidhiano yanasubiri",
+    "COMPLETED": "Imekamilika",
+    "CANCELLED": "Imeghairiwa",
+    "CLOSED": "Imefungwa"
+  },
   "payment": {
     "PAYMENT_PENDING": "Malipo yanasubiri — yanahakikiwa na mtoa huduma",
     "PAYMENT_CONFIRMED": "Malipo yamethibitishwa",
@@ -411,6 +427,17 @@
       "title": "Bidhaa za kituo",
       "empty": "Hakuna bidhaa kituoni hapa.",
       "locked": "Imefungwa"
+    },
+    "supplier": {
+      "pickupsWeek": "Uchukuaji wiki hii",
+      "today": "{n} leo",
+      "noPickups": "Hakuna uchukuaji wiki hii.",
+      "payments": "Malipo yaliyothibitishwa na mtoa huduma",
+      "thisWeek": "Wiki hii",
+      "thisMonth": "Mwezi huu",
+      "confirmedOnly": "Kile tu ambacho mtoa huduma alithibitisha. Malipo yanayosubiri hayahesabiwi.",
+      "quality": "Maoni ya ubora kuhusu makundi yako",
+      "noQuality": "Hakuna tatizo la ubora lililoripotiwa kwenye makundi yako katika siku 30 zilizopita."
     }
   },
   "problems": {
@@ -506,7 +533,8 @@
       "exports": "Hamisha data",
       "data": "Maombi ya data",
       "brief": "Muhtasari wa asubuhi",
-      "messages": "Jumbe"
+      "messages": "Jumbe",
+      "suppliers": "Wasambazaji"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -568,7 +596,9 @@
       "title": "Panga uchukuzi kiwandani",
       "rider": "Dereva",
       "date": "Tarehe ya uchukuzi",
-      "created": "Uchukuzi umepangwa na dereva amearifiwa."
+      "created": "Uchukuzi umepangwa na dereva amearifiwa.",
+      "pair": "Msambazaji · bidhaa",
+      "noPairs": "Hakuna msambazaji anayefanya kazi anayetoa bidhaa bado. Ongeza bidhaa chini ya Wasambazaji kwanza."
     },
     "exceptions": {
       "title": "Matatizo",
@@ -657,6 +687,70 @@
       "aiOff": "AI imezimwa. Haya ni mambo ya leo kwa mpangilio wa kawaida.",
       "draft": "Rasimu — kagua kila jambo kabla ya kuchukua hatua.",
       "triggers": "Vichocheo vya simama-na-rekebisha"
+    },
+    "suppliers": {
+      "title": "Wasambazaji",
+      "intro": "Mashirika yanayotengeneza au kuuza bidhaa. Taarifa za msingi zinahaririwa hapa; kuwasha na kuzima kunahitaji wasimamizi wawili.",
+      "create": "Ongeza msambazaji",
+      "createNote": "Msambazaji mpya huanza akiwa hafanyi kazi. Ongeza bidhaa na watumiaji wake, kisha omba kuwashwa.",
+      "edit": "Hariri taarifa za msingi",
+      "name": "Jina la biashara",
+      "area": "Eneo la huduma",
+      "active": "Anafanya kazi",
+      "inactive": "Hafanyi kazi",
+      "pending": "Inasubiri idhini",
+      "leadTime": "Muda wa kuandaa",
+      "days": "siku {n}",
+      "products": "Bidhaa",
+      "users": "Watumiaji",
+      "lastPickup": "Uchukuaji wa mwisho",
+      "openPickups": "Uchukuaji ulio wazi",
+      "waiting": "{n} zimepita muda wa kuandaa",
+      "quality": "Ubora (sehemu ya makundi yenye tatizo)",
+      "none": "Hakuna wasambazaji bado.",
+      "contactName": "Mtu wa mawasiliano wa biashara (hiari)",
+      "contactPhone": "Simu ya mawasiliano (hiari)",
+      "contactPhoneHint": "Inahifadhiwa ikiwa imesimbwa. Acha wazi ili kubaki na namba ya sasa.",
+      "paymentTerms": "Masharti ya malipo (kuonyesha tu)",
+      "notes": "Maelezo",
+      "save": "Hifadhi",
+      "created": "Msambazaji ameongezwa. Anabaki hafanyi kazi hadi wasimamizi wawili waidhinishe kuwashwa.",
+      "updated": "Msambazaji amesasishwa.",
+      "productSaved": "Bidhaa zimesasishwa.",
+      "activationRequested": "Ombi limetumwa. Msimamizi mwingine lazima aidhinishe.",
+      "requestActivation": "Omba kuwashwa",
+      "requestDeactivation": "Omba kuzimwa",
+      "activationNote": "Pesa huenda kwa wasambazaji, kwa hivyo wasimamizi wawili huamua ni nani. Muombaji hawezi kuidhinisha ombi lake mwenyewe.",
+      "pendingNote": "Ombi linasubiri msimamizi wa pili kwenye kikasha cha idhini.",
+      "profile": "Shirika",
+      "productsTitle": "Bidhaa zinazotolewa",
+      "productsNote": "Uchukuaji unaweza kupangwa tu kwa bidhaa ambayo msambazaji anaitoa. Bei zinatoka kwenye orodha ya bei ya eneo.",
+      "offered": "Inatolewa",
+      "sku": "SKU ya msambazaji",
+      "usersTitle": "Watumiaji",
+      "addUser": "Ongeza mtumiaji",
+      "priceLists": "Orodha za bei",
+      "version": "toleo",
+      "pickups": "Uchukuaji",
+      "rider": "Dereva",
+      "pickupDate": "Tarehe ya uchukuaji",
+      "noPickups": "Hakuna uchukuaji bado.",
+      "paymentsTitle": "Malipo yaliyothibitishwa na mtoa huduma",
+      "thisWeek": "Wiki hii",
+      "thisMonth": "Mwezi huu",
+      "confirmedOnly": "Kiasi tu ambacho mtoa huduma wa pesa za simu alithibitisha kwenye akaunti za shirika hili. Hakuna kinachotarajiwa au kuahidiwa kinachohesabiwa.",
+      "confirmedAt": "Imethibitishwa",
+      "providerRef": "Rejea ya mtoa huduma",
+      "statement": "Taarifa",
+      "statementMatched": "Ipo kwenye taarifa",
+      "statementUnmatched": "Haipo kwenye taarifa bado",
+      "noPayments": "Hakuna malipo yaliyothibitishwa katika siku 90 zilizopita.",
+      "qualityTitle": "Matatizo ya ubora kwenye makundi ya msambazaji huyu",
+      "noQuality": "Hakuna tatizo la ubora lililoripotiwa kwenye makundi ya msambazaji huyu katika siku 90 zilizopita.",
+      "history": "Historia ya kuwashwa",
+      "requestedBy": "imeombwa na",
+      "activate": "Washa",
+      "deactivate": "Zima"
     }
   },
   "public": {
@@ -831,7 +925,11 @@
     "reset_confirm_required": "Andika demo kuthibitisha kuweka upya.",
     "rate_limited": "Maombi mengi mno. Subiri dakika chache.",
     "large_export_needs_approval": "Uhamishaji huu unahitaji ombi lililoidhinishwa na wawili kwanza.",
-    "cannot_delete_admin": "Akaunti za wasimamizi haziwezi kufutwa kwa njia hii."
+    "cannot_delete_admin": "Akaunti za wasimamizi haziwezi kufutwa kwa njia hii.",
+    "supplier_product_not_offered": "Msambazaji huyu hatoi bidhaa hiyo. Iongeze chini ya Wasambazaji kwanza.",
+    "supplier_not_found": "Msambazaji hajapatikana.",
+    "supplier_already_in_state": "Msambazaji tayari yuko katika hali hiyo.",
+    "supplier_activation_pending": "Ombi la kuwasha msambazaji huyu tayari linasubiri uamuzi."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi."

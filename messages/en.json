@@ -66,6 +66,22 @@
     "HUB_TO_CHAMPION": "Champion stock",
     "CHAMPION_TO_CUSTOMER": "Customer purchase"
   },
+  "orderStates": {
+    "PICKUP_ASSIGNED": "Pickup assigned",
+    "BATCH_READY": "Batch ready",
+    "AWAITING_PAYMENT": "Awaiting payment",
+    "PAID": "Paid",
+    "EN_ROUTE": "En route",
+    "INSPECTING": "Inspecting",
+    "ON_HOLD": "On hold",
+    "REQUESTED": "Requested",
+    "PLAN_ACTIVE": "Plan active",
+    "FULLY_PAID": "Fully paid",
+    "HANDOVER_PENDING": "Handover pending",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "CLOSED": "Closed"
+  },
   "payment": {
     "PAYMENT_PENDING": "Payment pending — verifying with provider",
     "PAYMENT_CONFIRMED": "Payment confirmed",
@@ -410,6 +426,17 @@
       "title": "Hub inventory",
       "empty": "No stock at this hub.",
       "locked": "Locked"
+    },
+    "supplier": {
+      "pickupsWeek": "Pickups this week",
+      "today": "{n} today",
+      "noPickups": "No pickups this week.",
+      "payments": "Payments confirmed by the provider",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "confirmedOnly": "Only what the provider confirmed. Pending payments are not counted.",
+      "quality": "Quality feedback on your batches",
+      "noQuality": "No quality issue reported on your batches in the last 30 days."
     }
   },
   "problems": {
@@ -505,7 +532,8 @@
       "exports": "Exports",
       "data": "Data requests",
       "brief": "Morning brief",
-      "messages": "Messages"
+      "messages": "Messages",
+      "suppliers": "Suppliers"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -567,7 +595,9 @@
       "title": "Assign a factory pickup",
       "rider": "Rider",
       "date": "Pickup date",
-      "created": "Pickup assigned and the rider was notified."
+      "created": "Pickup assigned and the rider was notified.",
+      "pair": "Supplier · product",
+      "noPairs": "No active supplier offers a product yet. Add products under Suppliers first."
     },
     "exceptions": {
       "title": "Exceptions",
@@ -656,6 +686,70 @@
       "aiOff": "AI is off. Here are today's items in deterministic order.",
       "draft": "Draft — check each item before acting.",
       "triggers": "Stop-and-fix triggers"
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "intro": "The organisations that manufacture or sell the products. Reference data is edited here; activation and deactivation need two admins.",
+      "create": "Add supplier",
+      "createNote": "A new supplier starts inactive. Add its products and users, then request activation.",
+      "edit": "Edit reference data",
+      "name": "Business name",
+      "area": "Service area",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Approval pending",
+      "leadTime": "Lead time",
+      "days": "{n} days",
+      "products": "Products",
+      "users": "Users",
+      "lastPickup": "Last pickup",
+      "openPickups": "Open pickups",
+      "waiting": "{n} past lead time",
+      "quality": "Quality (share of batches with an issue)",
+      "none": "No suppliers yet.",
+      "contactName": "Business contact (optional)",
+      "contactPhone": "Contact phone (optional)",
+      "contactPhoneHint": "Stored encrypted. Leave blank to keep the current number.",
+      "paymentTerms": "Payment terms (display only)",
+      "notes": "Notes",
+      "save": "Save",
+      "created": "Supplier added. It stays inactive until two admins approve activation.",
+      "updated": "Supplier updated.",
+      "productSaved": "Products updated.",
+      "activationRequested": "Request sent. Another admin must approve it.",
+      "requestActivation": "Request activation",
+      "requestDeactivation": "Request deactivation",
+      "activationNote": "Money flows to suppliers, so two admins decide who is one. The requester cannot approve their own request.",
+      "pendingNote": "A request is waiting for a second admin in the approvals inbox.",
+      "profile": "Organisation",
+      "productsTitle": "Products supplied",
+      "productsNote": "A pickup can only be assigned for a product the supplier supplies. Prices come from the area's price list.",
+      "offered": "Offered",
+      "sku": "Supplier SKU",
+      "usersTitle": "Users",
+      "addUser": "Add a user",
+      "priceLists": "Price lists",
+      "version": "version",
+      "pickups": "Pickups",
+      "rider": "Rider",
+      "pickupDate": "Pickup date",
+      "noPickups": "No pickups yet.",
+      "paymentsTitle": "Payments confirmed by the provider",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "confirmedOnly": "Only amounts the mobile-money provider confirmed to this organisation's accounts. Nothing expected or promised is counted.",
+      "confirmedAt": "Confirmed",
+      "providerRef": "Provider reference",
+      "statement": "Statement",
+      "statementMatched": "In a statement",
+      "statementUnmatched": "Not in a statement yet",
+      "noPayments": "No confirmed payments in the last 90 days.",
+      "qualityTitle": "Quality issues on this supplier's batches",
+      "noQuality": "No quality issue reported on this supplier's batches in the last 90 days.",
+      "history": "Activation history",
+      "requestedBy": "requested by",
+      "activate": "Activate",
+      "deactivate": "Deactivate"
     }
   },
   "public": {
@@ -830,7 +924,11 @@
     "reset_confirm_required": "Type demo to confirm the reset.",
     "rate_limited": "Too many requests. Wait a few minutes.",
     "large_export_needs_approval": "This export needs a dual-approved request first.",
-    "cannot_delete_admin": "Administrator accounts cannot be deleted this way."
+    "cannot_delete_admin": "Administrator accounts cannot be deleted this way.",
+    "supplier_product_not_offered": "This supplier does not supply that product. Add it under Suppliers first.",
+    "supplier_not_found": "Supplier not found.",
+    "supplier_already_in_state": "The supplier is already in that state.",
+    "supplier_activation_pending": "An activation request for this supplier is already waiting for a decision."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running."

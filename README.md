@@ -156,7 +156,7 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo npm run 
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo SIMULATOR_ENABLED=true SEED_PROFILE=demo DEMO_SCALE=small npm run db:seed
 ```
 
-- `DEMO_SCALE=small` (default; ~10 s locally): 1 area, 2 hubs, 2 riders, 6 champions, ~40 customers, 3 weeks of history. `full`: 2 areas, 3 hubs, 3 riders, 12 champions, 150 customers, 6 weeks.
+- `DEMO_SCALE=small` (default; ~10 s locally): 1 area, 2 suppliers, 2 hubs, 2 riders, 6 champions, ~40 customers, 3 weeks of history. `full`: 2 areas, 4 suppliers, 3 hubs, 3 riders, 12 champions, 150 customers, 6 weeks. Every area has a reliable primary supplier and an occasional one (longer lead time, activated by dual approval during the run) whose batches carry most inspection issues, one batch confirmed two days late, and one pickup left waiting past its lead time — all in the manifest.
 - `DEMO_SEED` (default `dandelion-2026`) makes the run reproducible; the sequence of service calls is identical for the same seed.
 - Time is simulated with `lib/clock-override.ts` (scripts and tests only — see ADR-024): history is laid down day by day in East Africa Time, quiet at night and on Sundays, with a nightly reconciliation run.
 - Everything deliberate that a reviewer would flag — payments in review, reversals, locked lots, statement differences, pending enrollments, a locked user — is listed with ids in `settings.demoManifest`, and `tests/demo/demo-profile.test.ts` proves that every open reconciliation flag is explained there, that every reachable order, custody and payment state appears, and that no scenario was skipped.
@@ -168,6 +168,15 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo SIMULATO
 - **Honest labels.** While `settings.seedProfile` is `demo`, every admin and field page, `/verify` and every CSV export carry "SIMULATED DATA — generated for testing; no district is running." (keyed on the setting, never on names).
 
 The generator lives in `lib/demo/` (scenario modules `supply.ts`, `admin.ts`; `day.ts` is shared by the seed and the simulate buttons); `scripts/demo/run.ts` is the seed-only orchestrator that lays down the backdated history. Three things it found in the app are recorded in `docs/REVIEW.md` (a reversal bug, fixed; two exception types no service raises).
+
+## Suppliers (the organisations that make or sell the products)
+
+A supplier is an organisation, not a login (Prompt B §8, ADR-029). `/admin/suppliers` is the directory — area, lead time, products supplied, users, last and open pickups, and a quality signal (share of its batches with a `STOCK_SHORT`, `SEAL_BROKEN` or `DAMAGED_OR_WET` exception in 30 days); each supplier's page adds price lists, pickups, **payments the provider confirmed** to the organisation's accounts (with statement matches), the quality issues traced to its batches and the activation history. Rules:
+
+- A new supplier starts **inactive**; activation and deactivation are `STAKEHOLDER_ACTIVATE` dual approvals (the requester cannot approve; one open request per supplier). Activation writes a `STAKEHOLDER_ACTIVATED` ledger event.
+- A pickup can be assigned only for a `(supplier, product)` pair in `supplier_products` (the pickup form offers only those pairs); prices still come from the area's active price list for that supplier.
+- Several `SUPPLIER` users may belong to one organisation and all see the same organisation view: this week's pickups, confirmed money this week and this month, quality feedback on their batches. Any of them may confirm a batch ready or release it. Margins of hubs and champions are never shown to suppliers.
+- The only person-linked field is an optional business contact, encrypted like every phone number; nothing about health.
 
 ## Environment variables
 

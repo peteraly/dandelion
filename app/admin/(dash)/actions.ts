@@ -14,6 +14,7 @@ import { runDailyReconciliation } from "@/lib/services/reconciliation";
 import { importStatement } from "@/lib/services/statements";
 import { runAnchor, confirmSubmittedAnchors } from "@/lib/ledger/anchor";
 import { approveEducationPack } from "@/lib/services/ai-gateway";
+import { createSupplier, requestSupplierActivation, setSupplierProduct, updateSupplier, type SupplierInputT } from "@/lib/services/suppliers";
 import { idempotent, DomainError } from "@/lib/services/core";
 
 async function admin(): Promise<Actor> {
@@ -71,15 +72,61 @@ export async function suspendUserAction(fd: FormData): Promise<void> {
 
 export async function createPickupAction(fd: FormData): Promise<void> {
   const actor = await admin();
+  // The form offers (supplier, product) pairs the supplier actually supplies (Prompt B §8.3); older forms send the two ids apart.
+  const pair = str(fd, "pair");
+  const [supplierId = "", productId = ""] = pair.includes("|") ? pair.split("|") : [str(fd, "supplierId"), str(fd, "productId")];
   await act(
     "/admin/orders/new",
     () =>
       once(actor, fd, "createPickup", () =>
-        adminCreatePickup(actor, { supplierId: str(fd, "supplierId"), productId: str(fd, "productId"), hubId: str(fd, "hubId"), riderId: str(fd, "riderId"), quantity: Number(str(fd, "quantity")), pickupDate: str(fd, "pickupDate") }),
+        adminCreatePickup(actor, { supplierId, productId, hubId: str(fd, "hubId"), riderId: str(fd, "riderId"), quantity: Number(str(fd, "quantity")), pickupDate: str(fd, "pickupDate") }),
       ),
     "/admin/orders",
     "created",
   );
+}
+
+// ---------- suppliers (Prompt B §8) ----------
+
+function readSupplier(fd: FormData): SupplierInputT {
+  const lead = str(fd, "leadTimeDays");
+  return {
+    businessName: str(fd, "businessName"),
+    serviceAreaId: str(fd, "serviceAreaId"),
+    contactName: str(fd, "contactName") || undefined,
+    contactPhone: str(fd, "contactPhone") || undefined,
+    leadTimeDays: lead ? Number(lead) : undefined,
+    paymentTermsNote: str(fd, "paymentTermsNote") || undefined,
+    notes: str(fd, "notes") || undefined,
+  };
+}
+
+export async function createSupplierAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  await act("/admin/suppliers", () => once(actor, fd, "createSupplier", () => createSupplier(actor, readSupplier(fd))), (r) => `/admin/suppliers/${r.supplierId}`, "created");
+}
+
+export async function updateSupplierAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const id = str(fd, "supplierId");
+  await act(`/admin/suppliers/${id}`, () => once(actor, fd, "updateSupplier", async () => (await updateSupplier(actor, id, readSupplier(fd)), null)), `/admin/suppliers/${id}`, "updated");
+}
+
+export async function setSupplierProductAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const id = str(fd, "supplierId");
+  await act(
+    `/admin/suppliers/${id}`,
+    () => once(actor, fd, "setSupplierProduct", async () => (await setSupplierProduct(actor, id, str(fd, "productId"), bool(fd, "offered"), str(fd, "supplierSku") || undefined), null)),
+    `/admin/suppliers/${id}`,
+    "productSaved",
+  );
+}
+
+export async function requestSupplierActivationAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const id = str(fd, "supplierId");
+  await act(`/admin/suppliers/${id}`, () => once(actor, fd, "requestSupplierActivation", () => requestSupplierActivation(actor, id, bool(fd, "active"))), `/admin/suppliers/${id}`, "activationRequested");
 }
 
 export async function draftPriceListAction(fd: FormData): Promise<void> {

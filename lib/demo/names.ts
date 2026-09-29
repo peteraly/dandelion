@@ -16,6 +16,8 @@ const LAST = [
   "Mwakasege", "Kimaro", "Mushi", "Massawe", "Mrema", "Kihwele", "Ngowi", "Shayo", "Mbwambo", "Lyimo", "Mtei", "Nyoni", "Mwenda", "Kapinga", "Mahundi",
   "Mgaya", "Chuwa", "Sanga", "Komba", "Haule", "Mlowe", "Kessy", "Temba", "Urassa", "Mwaipopo", "Sumari", "Mbise", "Nnko", "Mollel", "Laizer",
 ];
+/** Fictional supplier companies — never a real manufacturer's name (Prompt B §8.5). */
+const COMPANIES = ["Jua Kali Hygiene Supplies Ltd", "Maua Sanitary Products Co.", "Nyota Pads Works", "Tumaini Health Goods Ltd", "Bahari Textiles & Care Co."];
 const VILLAGES = ["Mwembe Chai", "Kilima Moto", "Bonde la Amani", "Mtoni Juu", "Kijiji Kipya", "Mlima Mrefu", "Ziwa Ndogo", "Msitu Mweupe", "Tumaini Mashariki", "Upendo Kaskazini"];
 
 export class Names {
@@ -62,6 +64,10 @@ export class Names {
 
   village(i: number): string {
     return `${VILLAGES[i % VILLAGES.length]} (TEST)`;
+  }
+
+  company(i: number): string {
+    return `${COMPANIES[i % COMPANIES.length]} (TEST)`;
   }
 
   till(prefix: string, i: number): string {

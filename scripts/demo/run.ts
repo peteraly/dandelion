@@ -55,6 +55,7 @@ export async function runDemoSeed(): Promise<DemoRunResult> {
     const base = await seed();
     if (!base) throw new Error("minimal seed did not run (database not empty?)");
     const w = new World(rng, clock, scale, params, base, seedName);
+    w.allowLateBatches = true; // the backdated seed can wait two days; a real-clock tick cannot
     await buildWorld(w);
 
     const plans: Plan[] = [];

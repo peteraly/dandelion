@@ -5,6 +5,7 @@ import { Card, LinkButton } from "@/components/ui";
 import { OrderSummary } from "@/components/order-bits";
 import { requireField } from "@/lib/auth/current";
 import { homeFor } from "@/lib/services/home";
+import { supplierHome, type SupplierHome } from "@/lib/services/suppliers";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import type { ActionKey } from "@/lib/domain/workflows";
@@ -41,6 +42,7 @@ export default async function HomePage() {
   const product = view.order ? await getDb().query.products.findFirst({ where: eq(s.products.id, (await getDb().query.orders.findFirst({ where: eq(s.orders.id, view.order.id) }))!.productId) }) : null;
   const others = view.snapshots.filter((o) => o.id !== view.order?.id && !["COMPLETED", "CANCELLED", "CLOSED"].includes(o.state));
   const margin = view.order && view.order.state === "COMPLETED" && view.order.side === "seller" ? await marginFor(view.order.id) : null;
+  const supplier = actor.role === "SUPPLIER" ? await supplierHome(actor) : null;
 
   return (
     <>
@@ -64,6 +66,7 @@ export default async function HomePage() {
         <p className="mb-1 text-xs uppercase tracking-wide text-stone-500">{t("common.nextAction")}</p>
         <LinkButton href={actionHref(view.action, view.order?.id ?? null)}>{t(`home.action.${view.action}`)}</LinkButton>
       </div>
+      {supplier ? <SupplierCards data={supplier} locale={locale} /> : null}
       {others.length > 0 ? (
         <Card>
           <p className="mb-2 text-sm font-semibold text-stone-600">
@@ -116,3 +119,70 @@ async function marginFor(orderId: string): Promise<number> {
   const o = await getDb().query.orders.findFirst({ where: eq(s.orders.id, orderId) });
   return o ? (o.unitPriceTzs - o.unitCostTzs) * o.quantity : 0;
 }
+
+/**
+ * Supplier organisation view (Prompt B §8.2), display only: this week's
+ * pickups, money the provider confirmed to the organisation, and quality
+ * issues raised downstream on its batches. Any user of the organisation sees
+ * the same view; margins of other stakeholders are never shown here.
+ */
+async function SupplierCards({ data, locale }: { data: SupplierHome; locale: "sw" | "en" }) {
+  const t = await getTranslations("field.supplier");
+  const ts = await getTranslations("orderStates");
+  const tp = await getTranslations("problems");
+  return (
+    <>
+      <Card data-testid="supplier-pickups">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="font-semibold">{t("pickupsWeek")}</h2>
+          <span className="text-sm text-stone-500">{t("today", { n: data.todayCount })}</span>
+        </div>
+        <ul className="divide-y divide-stone-100 text-sm">
+          {data.pickups.map((p) => (
+            <li key={p.id}>
+              <Link href={`/orders/${p.id}`} className="flex items-center justify-between py-2">
+                <span>
+                  <span className="font-mono">{p.ref}</span> · {p.productName} × {p.quantity}
+                  <span className="block text-stone-600">
+                    {p.riderName} · {ts.has(p.state) ? ts(p.state) : p.state}
+                  </span>
+                </span>
+                <span className="text-stone-500">→</span>
+              </Link>
+            </li>
+          ))}
+          {data.pickups.length === 0 ? <li className="py-2 text-stone-500">{t("noPickups")}</li> : null}
+        </ul>
+      </Card>
+      <Card data-testid="supplier-payments">
+        <h2 className="mb-2 font-semibold">{t("payments")}</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-green-50 p-3">
+            <p className="text-xs uppercase text-green-800">{t("thisWeek")}</p>
+            <p className="text-xl font-bold text-green-900">{formatTzs(data.confirmedWeekTzs, locale)}</p>
+          </div>
+          <div className="rounded-xl bg-green-50 p-3">
+            <p className="text-xs uppercase text-green-800">{t("thisMonth")}</p>
+            <p className="text-xl font-bold text-green-900">{formatTzs(data.confirmedMonthTzs, locale)}</p>
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-stone-500">{t("confirmedOnly")}</p>
+      </Card>
+      <Card data-testid="supplier-quality">
+        <h2 className="mb-2 font-semibold">{t("quality")}</h2>
+        <ul className="divide-y divide-stone-100 text-sm">
+          {data.quality.map((q) => (
+            <li key={q.ref} className="flex items-center justify-between py-2">
+              <span>
+                <span className="font-mono">{q.ref}</span> · {tp.has(`${q.type}.label`) ? tp(`${q.type}.label`) : q.type}
+              </span>
+              <span className="text-stone-500">{q.status}</span>
+            </li>
+          ))}
+          {data.quality.length === 0 ? <li className="py-2 text-stone-500">{t("noQuality")}</li> : null}
+        </ul>
+      </Card>
+    </>
+  );
+}
+

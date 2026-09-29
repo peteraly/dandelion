@@ -193,3 +193,10 @@ behind an interface with a mock and must be checked before go-live.
 - **Consequences.** Ticks make the dataset drift from its seed ("as of" the seed plus N ticks; the count is in `settings.demoTicks`); a reset restores it exactly. Without a Deploy Hook the page says the rebuild must be started by hand. The clock-boundary rule is unchanged: nothing in the app moves time.
 - **Status.** accepted.
 
+## ADR-029 — The supplier is an organisation; STAKEHOLDER_ACTIVATE activates it
+
+- **Context.** The handbook's "Supplier / Factory" (§8A) was a thin record with one login. A pilot needs to know what each supplier supplies, how long it takes, who works there, what it was paid and what came back — and the founders asked for the supplier to be as visible as hubs and champions (Prompt B §8). `STAKEHOLDER_ACTIVATE` existed as an approval type with no service behind it.
+- **Decision.** `suppliers` carries the organisation's reference data (lead time, an optional encrypted business contact, display-only payment terms, notes) and `supplier_products` says what it supplies; a pickup can only be assigned for an offered product. Policy scopes supplier users by **organisation**: any active user of the organisation sees and acts on its pickups (`isOrderParty` no longer requires the user named on the order), so a colleague can prepare or release a batch. `STAKEHOLDER_ACTIVATE` means "activate or deactivate a supplier organisation": payload `{ supplierId, active }`, two distinct admins, one open request per supplier, a `STAKEHOLDER_ACTIVATED` ledger event on activation, and an admin-log and security-log entry either way. Money flows to suppliers, so who is one is a two-admin decision. Money shown to or about a supplier is only what the provider confirmed.
+- **Consequences.** Existing databases get `supplier_products` backfilled from their price lists by the migration. Deactivation does not cancel open pickups; admins do that case by case. Organisations that *buy* (NGOs, schools) are a different record and a later step (prompt §8.8 / step 3c).
+- **Status.** accepted.
+

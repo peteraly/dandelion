@@ -81,13 +81,42 @@ export const serviceAreas = pgTable("service_areas", {
   createdAt: createdAt(),
 });
 
+/**
+ * A supplier organisation (handbook §8A "Supplier / Factory"): the company
+ * that manufactures or sells the products. Several SUPPLIER users may belong
+ * to it; activation is dual-approved (STAKEHOLDER_ACTIVATE, ADR-029). The
+ * only person-linked field is an optional business contact, encrypted like
+ * every phone number.
+ */
 export const suppliers = pgTable("suppliers", {
   id: uuid("id").primaryKey().defaultRandom(),
   businessName: text("business_name").notNull(),
   serviceAreaId: uuid("service_area_id").references(() => serviceAreas.id),
   active: boolean("active").notNull().default(false),
+  contactName: text("contact_name"),
+  contactPhoneEnc: text("contact_phone_enc"),
+  contactPhoneIndex: text("contact_phone_index"),
+  /** Days from "pickup assigned" to "batch ready" the supplier commits to; older open pickups need attention. */
+  leadTimeDays: integer("lead_time_days").notNull().default(2),
+  /** Display only — e.g. "paid on pickup, mobile money"; never a contract. */
+  paymentTermsNote: text("payment_terms_note"),
+  notes: text("notes"),
   createdAt: createdAt(),
+  updatedAt: updatedAt(),
 });
+
+/** Which products a supplier supplies; a pickup can only be assigned for one of them. */
+export const supplierProducts = pgTable(
+  "supplier_products",
+  {
+    supplierId: uuid("supplier_id").notNull().references(() => suppliers.id),
+    productId: uuid("product_id").notNull().references(() => products.id),
+    supplierSku: text("supplier_sku"),
+    active: boolean("active").notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.supplierId, t.productId] })],
+);
 
 export const hubs = pgTable("hubs", {
   id: uuid("id").primaryKey().defaultRandom(),

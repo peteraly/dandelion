@@ -31,7 +31,7 @@ import { latestIntent, enqueuePoll } from "@/lib/services/payments";
 import { simulate, seedProviderTx, setProviderTxStatus, type Scenario } from "@/lib/payments/simulator";
 import { runDueVerificationJobs } from "@/lib/payments/verification";
 import { closePlan, declineStockRequest } from "@/lib/services/orders";
-import type { Customer, Hub, Person, Product, World } from "./world";
+import type { Customer, DeferredPickup, Hub, Person, Product, SupplierOrg, World } from "./world";
 
 const CHECKS = { quantityOk: true, sealOk: true };
 const INSPECTION_OK = { correctRider: true, correctProduct: true, correctCount: true, correctBatch: true, sealIntact: true, goodCondition: true, noWaterDamage: true };
@@ -46,12 +46,53 @@ export type PickupOutcome = "complete" | "in_transit" | "awaiting_rider_payment"
  * Supplier → rider → hub. Returns the delivery order id when the chain reached
  * the hub, so callers can continue a chain that was left mid-way.
  */
-export async function pickupChain(w: World, hub: Hub, rider: Person, product: Product, quantity: number, outcome: PickupOutcome): Promise<{ pickupId: string; deliveryId: string | null }> {
+/**
+ * Supplier → rider → hub. Without `org` the supplier is picked and the quality
+ * story applies (the occasional supplier's batches carry most inspection
+ * issues, and it is sometimes late); with `org` the chain is deliberate — the
+ * outcome asked for is the outcome produced.
+ */
+export async function pickupChain(w: World, hub: Hub, rider: Person, product: Product, quantity: number, outcome: PickupOutcome, day = 0, org?: SupplierOrg): Promise<{ pickupId: string; deliveryId: string | null }> {
   const area = w.areas.find((a) => a.id === hub.areaId)!;
-  const { orderId: pickupId } = await adminCreatePickup(w.adminA, { supplierId: area.supplierId, productId: product.id, hubId: hub.id, riderId: rider.actor.userId, quantity, pickupDate: tzDay() });
+  const story = !org;
+  const chosen = org ?? w.pickSupplier(area);
+  const supplierUser = w.rng.pick(chosen.users);
+  let effective: PickupOutcome = outcome;
+  if (story && effective === "complete" && chosen.quality === "poor" && w.rng.chance(0.12)) effective = w.rng.chance(0.5) ? "inspection_issue" : "damaged";
+  if (story && (effective === "inspection_issue" || effective === "damaged") && chosen.quality === "good" && w.rng.chance(0.7)) effective = "complete";
+  const { orderId: pickupId } = await adminCreatePickup(w.adminA, { supplierId: chosen.id, productId: product.id, hubId: hub.id, riderId: rider.actor.userId, quantity, pickupDate: tzDay() });
   w.manifest.count("orders.SUPPLIER_TO_RIDER");
+  w.manifest.count(`suppliers.${chosen.quality}.pickups`);
+  if (story && effective !== "awaiting_rider_payment" && w.allowLateBatches && chosen.quality === "poor" && w.rng.chance(0.25)) {
+    // Confirmed ready two days late: the chain resumes on that day (resumeLatePickups).
+    w.deferred.push({ pickupId, org: chosen, supplierUser, hub, rider, product, outcome: effective, dueDay: day + 2 });
+    w.manifest.anomaly("BATCH_READY_LATE", `${chosen.name} confirmed the batch ready two days after the pickup was assigned (lead time ${chosen.leadTimeDays} days)`, { orderRef: await w.orderRef(pickupId) });
+    return { pickupId, deliveryId: null };
+  }
   w.tick(45, 120);
-  await confirmBatchReady(area.supplier.actor, pickupId, `SEAL-${w.rng.int(10000, 99999)}`);
+  return continueChain(w, { pickupId, org: chosen, supplierUser, hub, rider, product, outcome: effective, dueDay: day }, quantity);
+}
+
+/** Pickups whose supplier was late: confirm and run the rest of the chain on the due day. */
+export async function resumeLatePickups(w: World, day: number): Promise<void> {
+  const due = w.deferred.filter((d) => d.dueDay <= day);
+  for (const d of due) {
+    w.deferred.splice(w.deferred.indexOf(d), 1);
+    try {
+      const o = await w.order(d.pickupId);
+      await continueChain(w, d, o.quantity);
+      w.manifest.count("suppliers.late_batches_completed");
+    } catch (e) {
+      w.manifest.skip("resumeLatePickups", e);
+    }
+    w.tick(10, 40);
+  }
+}
+
+async function continueChain(w: World, d: DeferredPickup, quantity: number): Promise<{ pickupId: string; deliveryId: string | null }> {
+  const { pickupId, supplierUser, hub, rider, outcome } = d;
+  void quantity;
+  await confirmBatchReady(supplierUser.actor, pickupId, `SEAL-${w.rng.int(10000, 99999)}`);
   w.tick(20, 60);
   await acceptPickup(rider.actor, pickupId);
   w.tick(5, 30);
@@ -64,7 +105,7 @@ export async function pickupChain(w: World, hub: Hub, rider: Person, product: Pr
   // In the field the money arrives first (callback → verifier → PAID); the "I have paid" button is for when it does not.
   await pay(w, pickupId, "success");
   w.tick(5, 25);
-  await confirmRelease(area.supplier.actor, pickupId);
+  await confirmRelease(supplierUser.actor, pickupId);
   w.tick(3, 15);
   await confirmReceipt(rider.actor, pickupId, CHECKS);
   const delivery = await w.deliveryOrderFor(pickupId);
@@ -80,8 +121,9 @@ export async function pickupChain(w: World, hub: Hub, rider: Person, product: Pr
     const type = outcome === "damaged" ? "DAMAGED_OR_WET" : w.rng.pick(["SEAL_BROKEN", "STOCK_SHORT"] as const);
     const note = w.manifest.swahili(type === "DAMAGED_OR_WET" ? "Maboksi mawili yamelowa" : type === "SEAL_BROKEN" ? "Muhuri umevunjika" : "Vipande vinapungua");
     const { exceptionRef } = await reportProblem(hub.manager.actor, { type, orderId: delivery.id, note });
-    w.manifest.anomaly(type, `hub reported ${type} at inspection; batch locked`, { orderRef: delivery.ref, ids: { exceptionRef } });
+    w.manifest.anomaly(type, `hub reported ${type} at inspection of a batch from ${d.org.name}; batch locked`, { orderRef: delivery.ref, ids: { exceptionRef } });
     w.manifest.count(`exceptions.${type}`);
+    w.manifest.count(`suppliers.${d.org.quality}.quality_issues`);
     return { pickupId, deliveryId: delivery.id };
   }
   // The checklist is the hub's receipt confirmation; once paid, the rider's release completes the transfer.
@@ -329,14 +371,15 @@ export async function leaveInFlight(w: World, plans: Plan[]): Promise<void> {
     await acceptPickup(rider.actor, id);
     await pay(w, id, "success");
   });
-  await attempt("EN_ROUTE", async () => void (await pickupChain(w, hub2, rider, product, w.rng.int(30, 60), "in_transit")));
+  const primary = area.suppliers[0]!;
+  await attempt("EN_ROUTE", async () => void (await pickupChain(w, hub2, rider, product, w.rng.int(30, 60), "in_transit", 0, primary)));
   await attempt("INSPECTING", async () => {
-    const r = await pickupChain(w, hub, rider, product, w.rng.int(30, 60), "in_transit");
+    const r = await pickupChain(w, hub, rider, product, w.rng.int(30, 60), "in_transit", 0, primary);
     w.tick(60, 120);
     const code = await revealDeliveryCode(rider.actor, r.deliveryId!);
     await startInspection(hub.manager.actor, r.deliveryId!, code);
   });
-  await attempt("ON_HOLD.inspection_issue", async () => void (await pickupChain(w, hub2, rider, product, w.rng.int(30, 60), "inspection_issue")));
+  await attempt("ON_HOLD.inspection_issue", async () => void (await pickupChain(w, hub2, rider, product, w.rng.int(30, 60), "inspection_issue", 0, primary)));
   const champion = hub.champions[0]!;
   await attempt("REQUESTED", async () => void (await requestStock(champion.actor, { productId: product.id, quantity: 5 })));
   await attempt("CANCELLED.declined_request", async () => {

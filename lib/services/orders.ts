@@ -115,6 +115,9 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
     const hub = await tx.query.hubs.findFirst({ where: eq(s.hubs.id, input.hubId) });
     if (!supplier?.active || !supplier.serviceAreaId) throw new DomainError("supplier_not_active");
     if (!hub?.active) throw new DomainError("hub_not_active");
+    // Only what the supplier actually supplies (Prompt B §8.1).
+    const offered = await tx.query.supplierProducts.findFirst({ where: and(eq(s.supplierProducts.supplierId, supplier.id), eq(s.supplierProducts.productId, input.productId), eq(s.supplierProducts.active, true)) });
+    if (!offered) throw new DomainError("supplier_product_not_offered");
     const supplierUser = await firstActiveUser(tx, and(eq(s.users.role, "SUPPLIER"), eq(s.users.supplierId, supplier.id)));
     const rider = await tx.query.users.findFirst({ where: eq(s.users.id, input.riderId) });
     if (!rider || rider.role !== "BOSS_RIDER" || rider.status !== "ACTIVE") throw new DomainError("rider_not_active");
@@ -754,11 +757,16 @@ export async function applyDonorFunding(tx: Tx, orderId: string, proof: DualAppr
 
 // ================= reads =================
 
-export async function recentOrdersFor(userId: string, days = 7) {
+/** Orders the actor is a party to. A supplier user sees the whole organisation's pickups (ADR-029). */
+export async function recentOrdersFor(actor: Pick<Actor, "userId" | "role" | "supplierId">, days = 7) {
   const since = new Date(nowMs() - days * 86_400_000);
   const db = getDb();
+  const party =
+    actor.role === "SUPPLIER" && actor.supplierId
+      ? sql`(${s.orders.kind} = 'SUPPLIER_TO_RIDER' and ${s.orders.supplierId} = ${actor.supplierId})`
+      : sql`(${s.orders.sellerUserId} = ${actor.userId} or ${s.orders.buyerUserId} = ${actor.userId})`;
   return db.query.orders.findMany({
-    where: and(sql`(${s.orders.sellerUserId} = ${userId} or ${s.orders.buyerUserId} = ${userId})`, sql`(${s.orders.completedAt} is null or ${s.orders.completedAt} > ${since})`),
+    where: and(party, sql`(${s.orders.completedAt} is null or ${s.orders.completedAt} > ${since})`),
     orderBy: desc(s.orders.updatedAt),
     limit: 200,
   });

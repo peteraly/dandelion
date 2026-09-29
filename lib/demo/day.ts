@@ -9,8 +9,8 @@ import { now } from "@/lib/clock";
 import { runDailyReconciliation } from "@/lib/services/reconciliation";
 import { atEat } from "./time";
 import type { Hub, Person, Product, World } from "./world";
-import { claimWithoutPaying, deadJob, delayedPayment, enrolCustomer, handover, overpaymentWithRefund, payInstallment, pickupChain, restock, reviewPayment, reversedPayment, startCustomerPlan, type Plan } from "./supply";
-import { adminDay, ensureExceptionCoverage, peopleLifecycle, reportFieldProblems, resolveOpenExceptions, syncNotes } from "./admin";
+import { claimWithoutPaying, deadJob, delayedPayment, enrolCustomer, handover, overpaymentWithRefund, payInstallment, pickupChain, restock, resumeLatePickups, reviewPayment, reversedPayment, startCustomerPlan, type Plan } from "./supply";
+import { adminDay, ensureExceptionCoverage, peopleLifecycle, reportFieldProblems, resolveOpenExceptions, supplierSetPieces, syncNotes } from "./admin";
 
 export interface DayOptions {
   /** Index of the day within the run (drives the set-piece admin scenarios). */
@@ -31,7 +31,7 @@ export interface DayOptions {
 }
 
 /** Pickups per product so every hub can serve every product; a few chains are left mid-way when asked. */
-export async function keepHubsStocked(w: World, opts: Pick<DayOptions, "leaveInFlightChains">): Promise<void> {
+export async function keepHubsStocked(w: World, opts: Pick<DayOptions, "leaveInFlightChains"> & { day?: number }): Promise<void> {
   const rng = w.rng;
   for (const hub of w.hubs) {
     for (const product of w.products) {
@@ -42,7 +42,7 @@ export async function keepHubsStocked(w: World, opts: Pick<DayOptions, "leaveInF
       const qty = rng.int(40, 120);
       const outcome = opts.leaveInFlightChains && rng.chance(0.3) ? "in_transit" : rng.chance(w.params.inspectionIssueRate) ? (rng.chance(0.5) ? "inspection_issue" : "damaged") : "complete";
       try {
-        await pickupChain(w, hub, rider, product, qty, outcome);
+        await pickupChain(w, hub, rider, product, qty, outcome, opts.day ?? 0);
       } catch (e) {
         w.manifest.skip(`pickupChain(${outcome})`, e);
       }
@@ -137,7 +137,9 @@ export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise
   w.clock.advanceTo(atEat(dayStart, 7, rng.int(0, 30)));
   if (!sunday) {
     if (opts.adminSetPieces) await adminDay(w, plans, day);
-    await keepHubsStocked(w, opts);
+    if (opts.adminSetPieces) await supplierSetPieces(w, day, opts.totalDays);
+    await resumeLatePickups(w, day);
+    await keepHubsStocked(w, { ...opts, day });
   }
   w.clock.advanceTo(atEat(dayStart, sunday ? 14 : 10, rng.int(0, 40)));
   for (const hub of w.hubs) {

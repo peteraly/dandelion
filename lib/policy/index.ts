@@ -7,7 +7,8 @@
  *  - riders see only their assigned pickups and deliveries;
  *  - hub managers see only their hub's stock and champion transfers;
  *  - champions see only their own customers;
- *  - suppliers see only their own business's pickups;
+ *  - suppliers see only their own organisation's pickups — any user of the
+ *    organisation, not only the one named on the order (ADR-029);
  *  - admins see what they need to operate — only with a second factor.
  */
 import type { OrderKind, Role } from "@/lib/domain/types";
@@ -68,6 +69,8 @@ export const ACTIONS = [
   "admin.logs.view",
   "admin.data_request.handle",
   "admin.passkey.register",
+  "admin.supplier.view",
+  "admin.supplier.manage",
   // shared field
   "order.view",
   "order.claim_paid",
@@ -78,6 +81,7 @@ export const ACTIONS = [
   "account.lock_self",
   // supplier
   "order.confirm_batch_ready",
+  "supplier.home.view",
   // rider
   "order.accept_pickup",
   "order.view_delivery_code",
@@ -118,7 +122,8 @@ const isRole = (a: Actor, r: Role) => a.role === r;
 export function isOrderParty(a: Actor, o: OrderResource): boolean {
   switch (a.role) {
     case "SUPPLIER":
-      return o.kind === "SUPPLIER_TO_RIDER" && a.supplierId !== null && o.supplierId === a.supplierId && o.sellerUserId === a.userId;
+      // Organisation-wide: a colleague may prepare or release a batch a colleague was assigned.
+      return o.kind === "SUPPLIER_TO_RIDER" && a.supplierId !== null && o.supplierId === a.supplierId;
     case "BOSS_RIDER":
       return (o.kind === "SUPPLIER_TO_RIDER" && o.buyerUserId === a.userId) || (o.kind === "RIDER_TO_HUB" && o.sellerUserId === a.userId);
     case "HUB_MANAGER":
@@ -164,13 +169,15 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "admin.data_request.handle": adminOnly,
   // Passkey registration happens right after a TOTP-verified admin login.
   "admin.passkey.register": adminOnly,
+  "admin.supplier.view": adminOnly,
+  "admin.supplier.manage": adminOnly,
 
   "order.view": (a, r) => isAdmin(a) || (r.type === "order" && isOrderParty(a, r.order)),
   // Only the buyer pays; "I have paid" never confirms anything, it only asks the verifier to look.
   "order.claim_paid": orderRule((a, o) =>
     o.kind === "CHAMPION_TO_CUSTOMER" ? false : o.buyerUserId === a.userId,
   ),
-  "order.confirm_release": orderRule((a, o) => o.sellerUserId === a.userId && o.kind !== "CHAMPION_TO_CUSTOMER"),
+  "order.confirm_release": orderRule((a, o) => (o.sellerUserId === a.userId || (isRole(a, "SUPPLIER") && o.kind === "SUPPLIER_TO_RIDER")) && o.kind !== "CHAMPION_TO_CUSTOMER"),
   "order.confirm_receipt": orderRule((a, o) => o.buyerUserId === a.userId && o.kind !== "CHAMPION_TO_CUSTOMER"),
   "exception.report": (a, r) => {
     if (a.role === "SUPER_ADMIN") return isAdmin(a);
@@ -183,6 +190,7 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "account.lock_self": () => true,
 
   "order.confirm_batch_ready": orderRule((a, o) => isRole(a, "SUPPLIER") && o.kind === "SUPPLIER_TO_RIDER"),
+  "supplier.home.view": (a) => isRole(a, "SUPPLIER") && a.supplierId !== null,
   "order.accept_pickup": orderRule((a, o) => isRole(a, "BOSS_RIDER") && o.kind === "SUPPLIER_TO_RIDER"),
   "order.view_delivery_code": orderRule((a, o) => isRole(a, "BOSS_RIDER") && o.kind === "RIDER_TO_HUB"),
 

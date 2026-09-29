@@ -58,7 +58,10 @@ export async function seed(): Promise<MinimalSeedResult | null> {
   requireSeedCredentials();
   return db.transaction(async (tx) => {
     const [area] = await tx.insert(s.serviceAreas).values({ code: "TEST-AREA", name: "Test Village (TEST)", region: "Test Region" }).returning();
-    const [supplier] = await tx.insert(s.suppliers).values({ businessName: SEED.supplier.name, serviceAreaId: area!.id, active: true }).returning();
+    const [supplier] = await tx
+      .insert(s.suppliers)
+      .values({ businessName: SEED.supplier.name, serviceAreaId: area!.id, active: true, contactName: "Supplier contact (TEST)", leadTimeDays: 2, paymentTermsNote: "Paid per pickup by mobile money before release (test data)" })
+      .returning();
     const [hub] = await tx.insert(s.hubs).values({ name: "Test Hub (TEST)", serviceAreaId: area!.id, minStockUnits: 10, active: true }).returning();
     const [kit] = await tx
       .insert(s.products)
@@ -144,6 +147,10 @@ export async function seed(): Promise<MinimalSeedResult | null> {
       .insert(s.priceLists)
       .values({ version: 1, serviceAreaId: area!.id, supplierId: supplier!.id, effectiveFrom: tzDay(), status: "DRAFT", createdBy: adminId, approvalRequestId: req!.id })
       .returning();
+    await tx.insert(s.supplierProducts).values([
+      { supplierId: supplier!.id, productId: kit!.id, supplierSku: "KIT-STD" },
+      { supplierId: supplier!.id, productId: disposable!.id, supplierSku: "DISP-10" },
+    ]);
     await tx.insert(s.priceListItems).values([
       { priceListId: pl!.id, productId: kit!.id, supplierPriceTzs: SEED.prices.supplier, hubPriceTzs: SEED.prices.hub, championPriceTzs: SEED.prices.champion, customerPriceTzs: SEED.prices.customer },
       { priceListId: pl!.id, productId: disposable!.id, supplierPriceTzs: 3000, hubPriceTzs: 3300, championPriceTzs: 3800, customerPriceTzs: 4500 },

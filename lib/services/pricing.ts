@@ -15,8 +15,12 @@ import { DomainError, logAdminAction, recordLedgerEvent, withTx } from "./core";
 export type PriceItem = typeof s.priceListItems.$inferSelect & { supplierId: string; priceListId: string };
 
 /**
- * Active price for a product in an area. If `supplierId` is omitted, the
- * area must have exactly one active list carrying the product.
+ * Active price for a product in an area. With `supplierId` (the upstream
+ * legs) it is that supplier's list. Without it (hub → champion, champion →
+ * customer) several suppliers' lists may be active in the area; that is fine
+ * as long as they agree on the champion and customer prices — the handbook
+ * has one customer price per area, whoever supplied the lot. Lists that
+ * disagree downstream are an admin problem, reported as `ambiguous_price`.
  */
 export async function activePriceItem(db: DbOrTx, q: { serviceAreaId: string; productId: string; supplierId?: string }): Promise<PriceItem> {
   const rows = await db
@@ -31,9 +35,14 @@ export async function activePriceItem(db: DbOrTx, q: { serviceAreaId: string; pr
         sql`${s.priceLists.effectiveFrom} <= ${tzDay()}::date`,
         q.supplierId ? eq(s.priceLists.supplierId, q.supplierId) : sql`true`,
       ),
-    );
+    )
+    .orderBy(desc(s.priceLists.effectiveFrom), desc(s.priceLists.version));
   if (rows.length === 0) throw new DomainError("no_active_price");
-  if (rows.length > 1) throw new DomainError("ambiguous_price");
+  if (rows.length > 1) {
+    const first = rows[0]!.item;
+    const agree = rows.every((r) => r.item.championPriceTzs === first.championPriceTzs && r.item.customerPriceTzs === first.customerPriceTzs);
+    if (q.supplierId || !agree) throw new DomainError("ambiguous_price");
+  }
   return { ...rows[0]!.item, supplierId: rows[0]!.supplierId };
 }
 

@@ -3,6 +3,7 @@ import { Card, Field, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
 import { requireAdmin } from "@/lib/auth/current";
 import { referenceData } from "@/lib/services/admin";
+import { pickupPairs } from "@/lib/services/suppliers";
 import { tzDay } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
 import { createPickupAction } from "../../actions";
@@ -13,6 +14,7 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
   const tc = await getTranslations("common");
   const { error } = await flags(searchParams);
   const ref = await referenceData(actor);
+  const pairs = await pickupPairs(actor);
   return (
     <>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -20,20 +22,11 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
       <Card>
         <form action={createPickupAction} className="grid gap-3 md:grid-cols-2">
           <IdemKey />
-          <Field label={(await getTranslations("admin.users"))("supplier")} htmlFor="supplierId">
-            <select id="supplierId" name="supplierId" className="field" required defaultValue={ref.suppliers[0]?.id}>
-              {ref.suppliers.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.businessName}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={tc("product")} htmlFor="productId">
-            <select id="productId" name="productId" className="field" required defaultValue={ref.products[0]?.id}>
-              {ref.products.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.name}
+          <Field label={t("pair")} htmlFor="pair" hint={pairs.length === 0 ? t("noPairs") : undefined}>
+            <select id="pair" name="pair" className="field md:col-span-2" required defaultValue={pairs[0] ? `${pairs[0].supplierId}|${pairs[0].productId}` : ""}>
+              {pairs.map((x) => (
+                <option key={`${x.supplierId}|${x.productId}`} value={`${x.supplierId}|${x.productId}`}>
+                  {x.supplierName} · {x.productName}
                 </option>
               ))}
             </select>

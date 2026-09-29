@@ -107,6 +107,8 @@ test("factory pickup: assigned → batch ready → accept → pending → confir
   const admin = await adminLogin(browser, SEED.adminA);
   await english(admin.page);
   await admin.page.goto("/admin/orders/new");
+  // The form offers only (supplier, product) pairs the supplier supplies (Prompt B §8.3).
+  await admin.page.getByLabel("Supplier · product").selectOption({ label: `${SEED.supplier.name} · Standard kit (reusable)` });
   await admin.page.getByLabel("Quantity").fill("10");
   await admin.page.getByRole("button", { name: "Assign a factory pickup" }).click();
   await expect(admin.page).toHaveURL(/\/admin\/orders\?ok=created/);
@@ -154,6 +156,18 @@ test("factory pickup: assigned → batch ready → accept → pending → confir
   await expect(rider.page.getByRole("heading", { name: "Payment confirmed" })).toBeVisible();
   await supplier.page.goto("/home");
   await expect(supplier.page.getByRole("heading", { name: "Payment confirmed" })).toBeVisible();
+  // The organisation view (Prompt B §8.2): this week's pickups and the money the provider confirmed.
+  await expect(supplier.page.getByTestId("supplier-pickups")).toContainText(state.pickupRef);
+  await expect(supplier.page.getByTestId("supplier-payments")).toContainText("75,000 TZS");
+  // The admin directory shows the same confirmed payment on the supplier's page (§8.3).
+  const admin2 = await adminLogin(browser, SEED.adminB);
+  await english(admin2.page);
+  await admin2.page.goto("/admin/suppliers");
+  await expect(admin2.page.getByTestId("supplier-row")).toHaveCount(1);
+  await admin2.page.getByRole("link", { name: SEED.supplier.name }).click();
+  await expect(admin2.page.getByTestId("confirmed-week")).toContainText("75,000 TZS");
+  await expect(admin2.page.getByTestId("supplier-pickups")).toContainText(state.pickupRef);
+  await admin2.ctx.close();
   await supplier.page.getByRole("link", { name: "Confirm release" }).click();
   await supplier.page.getByLabel(/counted the units/).check();
   await supplier.page.getByRole("button", { name: "Confirm release" }).click();

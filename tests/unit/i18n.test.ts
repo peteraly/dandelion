@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import en from "@/messages/en.json";
 import sw from "@/messages/sw.json";
 import { WORKFLOWS } from "@/lib/domain/workflows";
-import { REPORTABLE_PROBLEMS, LEDGER_EVENT_TYPES, LOGIN_ROLES, ORDER_KINDS, PAYMENT_STATUSES } from "@/lib/domain/types";
+import { REPORTABLE_PROBLEMS, LEDGER_EVENT_TYPES, LOGIN_ROLES, ORDER_KINDS, ORDER_STATES, PAYMENT_STATUSES } from "@/lib/domain/types";
 
 function flatten(o: unknown, prefix = ""): Record<string, string> {
   const out: Record<string, string> = {};
@@ -53,6 +53,7 @@ describe("i18n catalogues", () => {
     for (const p of REPORTABLE_PROBLEMS) expect(fen[`problems.${p}.label`], p).toBeTruthy();
     for (const r of LOGIN_ROLES) expect(fen[`roles.${r}`]).toBeTruthy();
     for (const k of ORDER_KINDS) expect(fen[`orderKinds.${k}`]).toBeTruthy();
+    for (const st of ORDER_STATES) expect(fen[`orderStates.${st}`], st).toBeTruthy();
     for (const p of PAYMENT_STATUSES) expect(fen[`payment.${p}`]).toBeTruthy();
     for (const e of LEDGER_EVENT_TYPES) expect(fen[`verify.eventTypes.${e}`]).toBeTruthy();
   });

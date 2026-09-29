@@ -13,12 +13,14 @@ import { draftPriceList } from "@/lib/services/pricing";
 import { adminLockUser, adminReenrollUser, adminSuspendUser, completeFieldEnrollment, createUser, lockWithPhoneAndPin, loginWithPin, startFieldEnrollment } from "@/lib/services/users";
 import { proposeResolution, reportProblem } from "@/lib/services/exceptions";
 import { createDataRequest, handleDataRequest, openDataRequests } from "@/lib/services/admin";
+import { createSupplier, requestSupplierActivation, setSupplierProduct } from "@/lib/services/suppliers";
+import { adminCreatePickup } from "@/lib/services/orders";
 import { syncOfflineNotes } from "@/lib/services/notes";
 import { importStatement } from "@/lib/services/statements";
 import { isLocked } from "@/lib/domain/custody";
 import { SEED } from "@/lib/seed-identities";
 import { reversedPayment, reviewPayment, strayProviderTransaction, type Plan } from "./supply";
-import type { Area, Hub, Person, World } from "./world";
+import type { Area, Hub, Person, SupplierOrg, World } from "./world";
 
 // ---------- world ----------
 
@@ -28,15 +30,18 @@ export async function buildWorld(w: World): Promise<void> {
   // Products: the two from the minimal seed plus a larger disposable pack.
   const [large] = await db.insert(s.products).values({ name: "Disposable pack (large)", category: "DISPOSABLE", unitDescription: "1 large pack of disposable pads" }).returning();
   await db.insert(s.productAreaAvailability).values({ productId: large!.id, serviceAreaId: base.areaId, available: true, washConditionsConfirmed: false });
+  await db.insert(s.supplierProducts).values({ supplierId: base.supplierId, productId: large!.id, supplierSku: "DISP-LG" });
   for (const p of await db.query.products.findMany()) w.products.push({ id: p.id, name: p.name, category: p.category });
 
   // Area 1: the minimal seed's people, looked up.
   const supplierUser = await db.query.users.findFirst({ where: and(eq(s.users.role, "SUPPLIER"), eq(s.users.supplierId, base.supplierId)) });
+  const primary1 = await w.personFromUser(supplierUser!.id, SEED.supplier.phone, SEED.supplier.payee);
   const area1: Area = {
     id: base.areaId,
     name: "Test Village (TEST)",
     supplierId: base.supplierId,
-    supplier: await w.personFromUser(supplierUser!.id, SEED.supplier.phone, SEED.supplier.payee),
+    supplier: primary1,
+    suppliers: [{ id: base.supplierId, name: SEED.supplier.name, users: [primary1], leadTimeDays: 2, quality: "good" }],
     hubs: [],
   };
   const hubAManager = await db.query.users.findFirst({ where: and(eq(s.users.role, "HUB_MANAGER"), eq(s.users.hubId, base.hubId)) });
@@ -56,10 +61,14 @@ export async function buildWorld(w: World): Promise<void> {
   // Area 2 (full scale only): peri-urban, no WASH confirmation, so reusables are not offered there.
   for (let a = 1; a < w.params.areas; a++) {
     const [row] = await db.insert(s.serviceAreas).values({ code: `DEMO-AREA-${a + 1}`, name: w.names.village(a + 3), region: "Demo Region (fictional)" }).returning();
-    const [sup] = await db.insert(s.suppliers).values({ businessName: `Supplier ${a + 1} Ltd (TEST)`, serviceAreaId: row!.id, active: true }).returning();
+    const [sup] = await db
+      .insert(s.suppliers)
+      .values({ businessName: w.names.company(a + 2), serviceAreaId: row!.id, active: true, contactName: "Business contact (TEST)", leadTimeDays: 2, paymentTermsNote: "Paid per pickup before release (test data)" })
+      .returning();
+    await db.insert(s.supplierProducts).values(w.products.map((p) => ({ supplierId: sup!.id, productId: p.id })));
     const supplier = await w.createFieldPerson("SUPPLIER", { areaId: row!.id, supplierId: sup!.id, payee: w.names.till("SUP", a + 1) });
     await db.insert(s.productAreaAvailability).values(w.products.map((p) => ({ productId: p.id, serviceAreaId: row!.id, available: p.category === "DISPOSABLE", washConditionsConfirmed: false })));
-    const area: Area = { id: row!.id, name: row!.name, supplierId: sup!.id, supplier, hubs: [] };
+    const area: Area = { id: row!.id, name: row!.name, supplierId: sup!.id, supplier, suppliers: [{ id: sup!.id, name: sup!.businessName, users: [supplier], leadTimeDays: 2, quality: "good" }], hubs: [] };
     for (let h = 0; h < (w.params.hubsPerArea[a] ?? 1); h++) area.hubs.push(await createHub(w, area, h + 10, 12));
     w.areas.push(area);
     await activatePrices(w, area, [1.0, 1.05]);
@@ -67,6 +76,9 @@ export async function buildWorld(w: World): Promise<void> {
 
   // A price list v2 for area 1 that covers all three products (drafted by A, approved by B).
   await activatePrices(w, area1, [1.0, 1.0]);
+
+  // Every area has a second, occasional supplier (Prompt B §8.5): longer lead time, activated by dual approval, own price list.
+  for (const [i, area] of w.areas.entries()) await addOccasionalSupplier(w, area, i);
 
   // The minimal seed's customers, so their plans count too.
   for (const c of await db.query.customers.findMany()) {
@@ -86,14 +98,78 @@ async function createHub(w: World, area: Area, index: number, minStockUnits: num
 }
 
 /** Draft + dual-approve a price list for an area (ladder respected). `factor` per product category tweaks prices. */
-async function activatePrices(w: World, area: Area, factor: [number, number]): Promise<void> {
+/** The occasional supplier: created inactive through the admin service, activated by two admins (STAKEHOLDER_ACTIVATE), priced a little higher. */
+async function addOccasionalSupplier(w: World, area: Area, index: number): Promise<SupplierOrg> {
+  const name = w.names.company(index);
+  const { supplierId } = await createSupplier(w.adminA, {
+    businessName: name,
+    serviceAreaId: area.id,
+    contactName: "Business contact (TEST)",
+    contactPhone: w.names.fieldPhone(),
+    leadTimeDays: 4,
+    paymentTermsNote: "Paid per pickup before release (test data)",
+    notes: "Occasional supplier in the demo dataset; longer lead time.",
+  });
+  for (const p of w.products) await setSupplierProduct(w.adminA, supplierId, p.id, true, `S${index + 1}-${p.category.slice(0, 3)}`);
+  const user = await w.createFieldPerson("SUPPLIER", { areaId: area.id, supplierId, payee: w.names.till("SUP", 20 + index) });
+  w.tick(30, 120);
+  const { requestId } = await requestSupplierActivation(w.adminA, supplierId, true);
+  w.tick(30, 240);
+  await decideApproval(w.adminB, requestId, "APPROVE", "Supplier verified (test data)");
+  w.manifest.count("approvals.STAKEHOLDER_ACTIVATE");
+  await activatePrices(w, area, [1.02, 1.05], supplierId);
+  const org: SupplierOrg = { id: supplierId, name, users: [user], leadTimeDays: 4, quality: "poor" };
+  area.suppliers.push(org);
+  w.manifest.count("suppliers");
+  return org;
+}
+
+/** Supplier set pieces on fixed days (seed only): a colleague enrolled by SMS link; a pickup the occasional supplier never confirms. */
+export async function supplierSetPieces(w: World, day: number, totalDays: number): Promise<void> {
+  const area = w.areas[0]!;
+  const primary = area.suppliers.find((o) => o.quality === "good");
+  const occasional = area.suppliers.find((o) => o.quality === "poor");
+  if (day === 4 && primary) {
+    try {
+      const name = w.names.person();
+      const phone = w.names.fieldPhone();
+      const { userId } = await createUser(w.adminA, { role: "SUPPLIER", displayName: name, phone, supplierId: primary.id, serviceAreaId: area.id, payoutProvider: "MPESA", payeeAccount: w.names.till("SUP", 50) });
+      w.tick(30, 600);
+      const token = await w.enrollTokenFromSms(phone);
+      const device = `demo-device-${userId.slice(0, 8)}`;
+      const { challengeId } = await startFieldEnrollment(token, phone, device, "127.0.0.1");
+      w.tick(1, 3);
+      const code = await w.lastSmsCode(phone, "OTP");
+      await completeFieldEnrollment(token, challengeId, code, SEED.fieldPin, device);
+      primary.users.push({ actor: { userId, role: "SUPPLIER", hubId: null, supplierId: primary.id, mfa: false }, name, phone, pin: SEED.fieldPin, payee: w.names.till("SUP", 50) });
+      w.manifest.count("people.enrolled_via_link");
+      w.manifest.count("suppliers.second_user_enrolled");
+    } catch (e) {
+      w.manifest.skip("enrol second supplier user via SMS link", e);
+    }
+  }
+  if (day === totalDays - 6 && occasional) {
+    try {
+      const hub = w.hubs[0]!;
+      const product = w.product("DISPOSABLE");
+      const { orderId } = await adminCreatePickup(w.adminA, { supplierId: occasional.id, productId: product.id, hubId: hub.id, riderId: w.riders[0]!.actor.userId, quantity: w.rng.int(30, 60), pickupDate: tzDay() });
+      w.manifest.count("orders.SUPPLIER_TO_RIDER");
+      w.manifest.anomaly("PICKUP_WAITING_ON_SUPPLIER", `${occasional.name} never confirmed this batch; older than its ${occasional.leadTimeDays}-day lead time by the end`, { orderRef: await w.orderRef(orderId) });
+    } catch (e) {
+      w.manifest.skip("pickup left waiting on the supplier", e);
+    }
+  }
+}
+
+async function activatePrices(w: World, area: Area, factor: [number, number], supplierId: string = area.supplierId): Promise<void> {
   const items = w.products.map((p) => {
     const f = p.category === "REUSABLE" ? factor[0] : factor[1];
     const baseRow = p.category === "REUSABLE" ? { supplier: 7500, hub: 8000, champion: 9000, customer: 11400 } : p.name.includes("large") ? { supplier: 5000, hub: 5500, champion: 6200, customer: 7500 } : { supplier: 3000, hub: 3300, champion: 3800, customer: 4500 };
     const r = (n: number) => Math.round((n * f) / 100) * 100;
-    return { productId: p.id, supplierPriceTzs: r(baseRow.supplier), hubPriceTzs: r(baseRow.hub), championPriceTzs: r(baseRow.champion), customerPriceTzs: r(baseRow.customer) };
+    // Upstream prices may differ per supplier; champion and customer prices are one per area (handbook §7, pricing.ts).
+    return { productId: p.id, supplierPriceTzs: r(baseRow.supplier), hubPriceTzs: Math.min(r(baseRow.hub), baseRow.champion), championPriceTzs: baseRow.champion, customerPriceTzs: baseRow.customer };
   });
-  const { approvalRequestId } = await draftPriceList(w.adminA, { serviceAreaId: area.id, supplierId: area.supplierId, effectiveFrom: tzDay(), items });
+  const { approvalRequestId } = await draftPriceList(w.adminA, { serviceAreaId: area.id, supplierId, effectiveFrom: tzDay(), items });
   w.tick(30, 180);
   await decideApproval(w.adminB, approvalRequestId, "APPROVE", "Prices agreed with supplier");
   w.manifest.count("approvals.PRICE_LIST_ACTIVATE");
@@ -305,7 +381,7 @@ export async function reportFieldProblems(w: World, plans: Plan[], day: number):
 /** Every reportable problem type at least twice over the run (Prompt B §2.3), without faking anything: a real report each. */
 export async function ensureExceptionCoverage(w: World, plans: Plan[]): Promise<void> {
   const counts = await w.db.select({ type: s.exceptions.type, n: sql<number>`count(*)::int` }).from(s.exceptions).groupBy(s.exceptions.type);
-  const have = new Map(counts.map((r) => [r.type as string, Number(r.n)]));
+  void counts;
   const champion = w.rng.pick(w.champions);
   const openPlan = plans.find((p) => !p.handedOver && p.paidTzs < p.totalTzs);
   /** A hub that currently holds an available lot, with that lot — any hub will do for a report. */
@@ -368,12 +444,16 @@ export async function ensureExceptionCoverage(w: World, plans: Plan[]): Promise<
     await fn(p);
     return true;
   }
+  // Re-count from the database after every report: a system-raised scenario may land as a different type
+  // (the verifier decides), so an optimistic +1 would overstate coverage.
+  const countOf = async (type: string) => Number((await w.db.select({ n: sql<number>`count(*)::int` }).from(s.exceptions).where(eq(s.exceptions.type, type as (typeof s.exceptions.$inferSelect)["type"])))[0]?.n ?? 0);
   for (const [type, fn] of Object.entries(reports)) {
-    while ((have.get(type) ?? 0) < 2) {
+    let attempts = 0;
+    while ((await countOf(type)) < 2 && attempts < 4) {
+      attempts++;
       try {
         const r = await fn();
         if (!r) throw new Error("no target available");
-        have.set(type, (have.get(type) ?? 0) + 1);
         if (type === "DAMAGED_OR_WET" || type === "SUSPECTED_THEFT" || type === "STOCK_SHORT" || type === "SEAL_BROKEN") w.manifest.anomaly(type, "reported to reach coverage; lot locked", {});
         w.manifest.count(`exceptions.${type}`);
         w.tick(3, 30);
@@ -382,6 +462,7 @@ export async function ensureExceptionCoverage(w: World, plans: Plan[]): Promise<
         break;
       }
     }
+    if ((await countOf(type)) < 2 && attempts >= 4) w.manifest.skip(`coverage ${type}`, new Error(`still below two after ${attempts} attempts`));
   }
 }
 
@@ -575,15 +656,17 @@ export async function importStatementForLastWeek(w: World, from: Date, to: Date)
   }
   const shuffled = w.rng.shuffle(rows);
   const missingInStatement = shuffled.slice(0, 2);
-  const differs = shuffled[2]!;
   const kept = shuffled.slice(2);
+  // One deliberate difference on a payment to a supplier when the week has one (Prompt B §8.5).
+  const supplierPayees = new Set(w.supplierOrgs.flatMap((o) => o.users.map((u) => u.payee)));
+  const differs = kept.find((r) => r.payee && supplierPayees.has(r.payee)) ?? kept[0]!;
   const stray = await strayProviderTransaction(w, w.hubs[0]!.manager.payee, 4500);
   const lines = ["reference,amount,payee,date"];
   for (const r of kept) lines.push(`${r.providerTxRef},${r === differs ? (r.amount ?? 0) + 500 : r.amount},${r.payee ?? ""},${tzDay(r.at!)}`);
   lines.push(`${stray},4500,${w.hubs[0]!.manager.payee},${tzDay(new Date(to.getTime() - 3_600_000))}`);
   const { importId, diff } = await importStatement(w.adminA, "mock", `statement-${tzDay(from)}.csv`, lines.join("\n"));
   for (const r of missingInStatement) w.manifest.anomaly("STATEMENT_MISSING_IN_STATEMENT", "confirmed here, left out of the statement on purpose", { ids: { providerTxRef: r.providerTxRef! } });
-  w.manifest.anomaly("STATEMENT_AMOUNT_DIFFERS", "statement amount raised by 500 on purpose", { ids: { providerTxRef: differs.providerTxRef! } });
+  w.manifest.anomaly("STATEMENT_AMOUNT_DIFFERS", supplierPayees.has(differs.payee ?? "") ? "statement amount of a supplier payment raised by 500 on purpose" : "statement amount raised by 500 on purpose", { ids: { providerTxRef: differs.providerTxRef! } });
   w.manifest.anomaly("STATEMENT_MISSING_IN_APP", "a provider transaction with no order behind it", { ids: { providerTxRef: stray } });
   w.manifest.count("statement.matched", diff.matched.length);
   w.manifest.count("statement.imports");

@@ -85,11 +85,22 @@ describe("demo profile", () => {
 
   it("uses every approval type the services expose, with approved and rejected outcomes", async () => {
     const types = await distinct("approval_requests", "type");
-    // STAKEHOLDER_ACTIVATE is defined but no service requests it yet.
-    for (const t of APPROVAL_TYPES) if (t !== "STAKEHOLDER_ACTIVATE") expect(types.has(t), `approval type ${t}`).toBe(true);
+    for (const t of APPROVAL_TYPES) expect(types.has(t), `approval type ${t}`).toBe(true);
     const statuses = await distinct("approval_requests", "status");
     expect(statuses.has("EXECUTED")).toBe(true);
     expect(statuses.has("REJECTED")).toBe(true);
+  });
+
+  it("gives every area two active suppliers, each supplying products, with the quality story in the manifest (Prompt B §8.5)", async () => {
+    const perArea = await db().execute<{ n: string }>(sql`select count(*)::text as n from suppliers where active group by service_area_id`);
+    expect(perArea.rows.length).toBeGreaterThan(0);
+    for (const r of perArea.rows) expect(Number(r.n)).toBeGreaterThanOrEqual(2);
+    const unsupplied = await db().execute<{ n: string }>(sql`select count(*)::text as n from suppliers s where active and not exists (select 1 from supplier_products sp where sp.supplier_id = s.id and sp.active)`);
+    expect(unsupplied.rows[0]!.n).toBe("0");
+    expect(manifest.counts["suppliers.poor.pickups"] ?? 0).toBeGreaterThan(0);
+    expect(manifest.counts["suppliers.good.pickups"] ?? 0).toBeGreaterThan(manifest.counts["suppliers.poor.pickups"] ?? 0);
+    expect(manifest.anomalies.some((a) => a.kind === "PICKUP_WAITING_ON_SUPPLIER")).toBe(true);
+    expect(manifest.counts["suppliers.second_user_enrolled"]).toBe(1);
   });
 
   it("shows every user status", async () => {

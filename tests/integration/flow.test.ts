@@ -311,8 +311,9 @@ describe("D/E: customer installments and handover", () => {
     expect(r.outcomes).toContain("PROVIDER_PENDING");
     expect((await order(saleId)).state).toBe("PLAN_ACTIVE");
     await setProviderTxStatus(r.providerTxRef, "SUCCESS");
-    // make the retry due now
-    await getDb().execute(sql`update verification_jobs set next_run_at = now() where status = 'RETRY'`);
+    // Make the retry due. Postgres now() has microseconds and the claim compares against a millisecond clock,
+    // so "due now" set in the same millisecond could still read as in the future: step back a second.
+    await getDb().execute(sql`update verification_jobs set next_run_at = now() - interval '1 second' where status = 'RETRY'`);
     const outcomes = await runDueVerificationJobs();
     expect(outcomes).toContain("CONFIRMED");
     expect((await order(saleId)).state).toBe("FULLY_PAID");

@@ -33,7 +33,7 @@ export async function snapshotFor(actor: Actor, o: Order): Promise<OrderSnapshot
     verifyRef: o.verifyRef,
     kind: o.kind,
     state: o.state,
-    side: o.sellerUserId === actor.userId ? "seller" : "buyer",
+    side: o.sellerUserId === actor.userId || (actor.role === "SUPPLIER" && o.kind === "SUPPLIER_TO_RIDER" && o.supplierId === actor.supplierId) ? "seller" : "buyer",
     totalTzs: o.totalTzs,
     confirmedPaidTzs: t.confirmedTzs,
     donorFundedTzs: t.donorTzs,
@@ -78,7 +78,7 @@ export async function extrasFor(actor: Actor): Promise<RoleExtras> {
 }
 
 export async function homeFor(actor: Actor): Promise<HomeView & { snapshots: OrderSnapshot[] }> {
-  const orders = await recentOrdersFor(actor.userId);
+  const orders = await recentOrdersFor(actor);
   const snapshots = await Promise.all(orders.map((o) => snapshotFor(actor, o)));
   const extras = await extrasFor(actor);
   const view = homeView(actor.role as FieldRole, snapshots, extras);
