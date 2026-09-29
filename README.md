@@ -105,11 +105,24 @@ DATABASE_URL=postgres://YOUR_MAC_USERNAME@localhost:5432/dandelion_dev
 TEST_DATABASE_URL=postgres://YOUR_MAC_USERNAME@localhost:5432/dandelion_test
 ```
 
-Seed logins (all fake): admins `+255700000001` / `+255700000002` with passphrases
-`test-admin-passphrase-alpha` / `-bravo` and TOTP secrets in `scripts/seed.ts`;
-field users `+2557000000{10,21,22,30,41,42,43}` with PIN `2580`. The dev
-simulator lives at `/dev/simulator` (admin session; `SIMULATOR_ENABLED=true`).
-Mock SMS (activation links, OTPs, receipts) appear in the simulator's outbox.
+Seed logins (all fake): admins `+255700000001` / `+255700000002`, field users
+`+2557000000{10,21,22,30,41,42,43}`. **In development** the passphrases are
+`test-admin-passphrase-alpha` / `-bravo`, the TOTP secrets are the fixed ones in
+`scripts/seed.ts` and the field PIN is `2580`. **Everywhere else** (preview,
+production) the seed refuses to create people unless the environment sets
+`SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B` and `SEED_FIELD_PIN` — the
+repository is public, so no deployed environment may use the repo's values
+(ADR-026). Generate them with:
+
+```bash
+echo "SEED_ADMIN_PASSPHRASE_A=$(openssl rand -base64 24 | tr -d '=+/')"; echo "SEED_ADMIN_PASSPHRASE_B=$(openssl rand -base64 24 | tr -d '=+/')"; echo "SEED_ADMIN_TOTP_A=$(openssl rand 20 | base32 | tr -d '=')"; echo "SEED_ADMIN_TOTP_B=$(openssl rand 20 | base32 | tr -d '=')"; echo "SEED_FIELD_PIN=$(( RANDOM % 9000 + 1000 ))"
+```
+
+The seed also refuses any database that already holds a user or customer
+without `(TEST)` in the name, and `npm run build` runs the same check before
+migrating on non-production builds (`scripts/guard-db.ts`). The dev simulator
+lives at `/dev/simulator` (admin session; `SIMULATOR_ENABLED=true`). Mock SMS
+(activation links, OTPs, receipts) appear in the simulator's outbox.
 
 ### Tests
 
@@ -118,12 +131,32 @@ npm run typecheck && npm run lint && npm run i18n:check
 npm run test:unit        # domain machines, policy, crypto, ledger, i18n parity, AI boundary, env guards,
                          # and the AI evals in lib/ai/evals (FakeLlm — no network, no API key)
 npm run test:int         # full service-layer flow on Postgres (+ anvil anchoring when Foundry is installed)
+npm run test:demo        # generates the living demo dataset on dandelion_demo and checks its coverage (~15 s)
 npm run contracts:test   # forge test
 npm run e2e              # Playwright: handbook Day 8 dry run through the UI (starts its own server)
 npm audit --audit-level=high
 ```
 
-CI (`.github/workflows/ci.yml`) runs all of the above on every PR. Dependabot is enabled.
+CI (`.github/workflows/ci.yml`) runs all of the above on every PR, plus `npm run test:demo` (below). Dependabot is enabled.
+
+## Demo data (living dataset)
+
+`SEED_PROFILE=demo` generates weeks of realistic, mutually consistent activity **through the same services the UI uses** — no state is written directly, so every invariant holds for the generated data too. It needs an **empty database**, `SIMULATOR_ENABLED=true` (payments go through the mock provider) and valid seed credentials.
+
+```bash
+createdb dandelion_demo
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo npm run db:migrate
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo SIMULATOR_ENABLED=true SEED_PROFILE=demo DEMO_SCALE=small npm run db:seed
+```
+
+- `DEMO_SCALE=small` (default; ~10 s locally): 1 area, 2 hubs, 2 riders, 6 champions, ~40 customers, 3 weeks of history. `full`: 2 areas, 3 hubs, 3 riders, 12 champions, 150 customers, 6 weeks.
+- `DEMO_SEED` (default `dandelion-2026`) makes the run reproducible; the sequence of service calls is identical for the same seed.
+- Time is simulated with `lib/clock-override.ts` (scripts and tests only — see ADR-024): history is laid down day by day in East Africa Time, quiet at night and on Sundays, with a nightly reconciliation run.
+- Everything deliberate that a reviewer would flag — payments in review, reversals, locked lots, statement differences, pending enrollments, a locked user — is listed with ids in `settings.demoManifest`, and `tests/demo/demo-profile.test.ts` proves that every open reconciliation flag is explained there, that every reachable order, custody and payment state appears, and that no scenario was skipped.
+- Every person is fictional and carries `(TEST)`; phones come from `+255 700 00x xxx` only (ADR-025); no health data anywhere.
+- Preview deployments: set `SEED_PROFILE=demo` (with `SEED_ON_BUILD=true`) on a fresh Neon branch; the build seeds it. The demo profile refuses a non-empty database.
+
+The generator is in `scripts/demo/` (scenario modules `supply.ts`, `admin.ts`; orchestrator `run.ts`). Three things it found in the app are recorded in `docs/REVIEW.md` (a reversal bug, fixed; two exception types no service raises).
 
 ## Environment variables
 

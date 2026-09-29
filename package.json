@@ -12,6 +12,7 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:int": "vitest run --project integration",
+    "test:demo": "vitest run --project demo",
     "e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",

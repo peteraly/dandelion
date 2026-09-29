@@ -71,6 +71,11 @@ export class SimulatedClock {
     this.current = to.getTime();
     return this.now();
   }
+  /** Move to `to` if it is later than now; otherwise stay (a schedule slot that has already passed). */
+  advanceTo(to: Date): Date {
+    if (to.getTime() > this.current) this.current = to.getTime();
+    return this.now();
+  }
   install(): void {
     setClock(() => this.now());
   }

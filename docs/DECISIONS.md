@@ -168,3 +168,19 @@ behind an interface with a mock and must be checked before go-live.
 - **Context.** Fake stakeholders use `+255 700 00[0-9] [0-9]{3}`. Nothing in the build verified that this block is unallocated in Tanzania's numbering plan; it was chosen as obviously test-shaped.
 - **Decision.** Keep the range, because SMS is forced to the mock provider outside production (`lib/env.ts`) and the seed refuses production, so no message can reach a real subscriber from a non-production environment. **To close:** check the block against the current TCRA national numbering plan (or ask the SMS aggregator) and either confirm it is unallocated or move the demo data to a confirmed test block; record the result here.
 - **Status.** open question — verify before any non-mock SMS provider is configured anywhere.
+
+## ADR-026 — Seed credentials from the environment; content guard; clock-consistent defaults
+
+- **Context.** The repository is public and the seed admins' passphrases and TOTP secrets were in it; a preview deployment protected only by obscurity would have been open to anyone reading the code (Prompt B review, C4). Separately, backdated history through the real services needs every timestamp to follow the application clock, and a misconfigured preview must not be able to migrate or seed a real database (C2).
+- **Decision.**
+  - `scripts/seed.ts` builds its identities from `SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B` and `SEED_FIELD_PIN`; development keeps fixed defaults, any other environment gets no default and the seed refuses to create people without valid values. The repository therefore contains no credential usable on a deployed environment.
+  - `assertSafeTargetDatabase()` refuses any database holding a user or customer without `(TEST)` in the name, on top of the production-host checks. `scripts/guard-db.ts` runs it before migrations on every non-production build (`scripts/predeploy.ts`). The demo profile also requires an empty database.
+  - Insert-time defaults for `created_at`, `updated_at`, `last_seen_at` and `next_run_at` are computed by Drizzle from `now()` (`$defaultFn`), with the SQL `default now()` kept for raw inserts; the four SQL expressions that used the database's own `now()` (active-price date, pending-payment age, verification-job claims, rate-limit windows) now take the application time as a parameter. No migration was needed.
+  - `settings.seedProfile` records which seed populated a database; the simulated-data banner keys off it.
+- **Status.** accepted.
+
+## ADR-027 — What a reversed payment undoes
+
+- **Context.** The demo generator (Prompt B) reversed a confirmed final installment through the mock provider and found the plan stuck in `FULLY_PAID` while the payment totals said otherwise; the handover was correctly refused, but nothing reopened the plan and the customer's next payment had no intent to land on.
+- **Decision.** A reversal undoes only what the money had unlocked and never a custody transfer that already happened. `PAYMENT_REVERSED` is a verifier-only order event guarded by "the order is no longer covered": `FULLY_PAID` or `HANDOVER_PENDING` customer plans go back to `PLAN_ACTIVE` with a fresh intent (a unit reserved for the handover returns to the champion's lot; the handover code is cancelled; the customer gets the updated plan SMS); B2B orders in `PAID` go back to `AWAITING_PAYMENT`, and a supplier batch `READY_FOR_PICKUP` back to `RESERVED_FOR_RIDER`. `COMPLETED` orders do not move: the `PAYMENT_REVERSED` exception and the `COMPLETED_WITHOUT_FULL_PAYMENT` reconciliation flag are the refund case (§4.3), handled by people.
+- **Status.** accepted.

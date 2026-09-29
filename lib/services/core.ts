@@ -137,6 +137,14 @@ export const SETTING_DEFAULTS = {
   aiMonthlyBudgetCents: 2000,
   /** Education assistant stays off until the pack is approved. */
   educationPackApproved: false,
+  /** Which seed populated this database ("" = none, "minimal", "demo"); drives the simulated-data banner. */
+  seedProfile: "",
+  demoScale: "",
+  demoSeed: "",
+  /** JSON manifest of the deliberate anomalies the demo generator created. */
+  demoManifest: "",
+  /** Number of "simulate time" ticks run on this database. */
+  demoTicks: 0,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

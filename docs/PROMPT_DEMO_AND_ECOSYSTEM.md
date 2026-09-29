@@ -286,12 +286,15 @@ before it must be re-scoped after step 1.
 
 ### 2.8 Seed safety guards (precondition for step 2)
 
-- **Content guard.** `refuseIfProduction()` additionally refuses when the
-  target database contains any user whose display name lacks `(TEST)` or any
-  ledger event not produced by a seed run (`settings.seedProfile` unset while
-  `ledger_events` is non-empty). This is on top of the existing
-  `PRODUCTION_DB_HOST` and hostname checks. (A host allowlist was considered
-  and rejected: Neon creates a branch with a new host per git branch.)
+- **Content guard.** `assertSafeTargetDatabase()` refuses when the target
+  database contains any user or customer whose display name lacks `(TEST)`.
+  Every real database has people in it and every seeded person carries the
+  marker, so this single rule is sufficient; a "ledger events without a
+  seed marker" rule was dropped because it only produced false positives on
+  legacy test databases. This is on top of the existing `PRODUCTION_DB_HOST`
+  and hostname checks. (A host allowlist was considered and rejected: Neon
+  creates a branch with a new host per git branch.) The demo profile
+  additionally requires an empty database (`assertEmptyDatabase()`).
   The same guard runs in `scripts/predeploy.ts` **before migrations** for every
   non-production build, so a preview whose `DATABASE_URL` points at a
   production database can neither migrate nor seed it.

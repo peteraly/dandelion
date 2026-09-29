@@ -3,6 +3,7 @@
  * $CRON_SECRET` (verify against current Vercel docs). Locally and in tests
  * the dev default applies.
  */
+import { now } from "@/lib/clock";
 import { secret } from "@/lib/env";
 import { safeEqual } from "@/lib/crypto/random";
 import { getDb } from "@/lib/db/client";
@@ -17,6 +18,6 @@ export function cronAuthorized(request: Request): boolean {
 export async function heartbeat(name: string, status: string, details: Record<string, unknown> = {}): Promise<void> {
   await getDb()
     .insert(s.jobHeartbeats)
-    .values({ name, lastRunAt: new Date(), lastStatus: status, details })
-    .onConflictDoUpdate({ target: s.jobHeartbeats.name, set: { lastRunAt: new Date(), lastStatus: status, details } });
+    .values({ name, lastRunAt: now(), lastStatus: status, details })
+    .onConflictDoUpdate({ target: s.jobHeartbeats.name, set: { lastRunAt: now(), lastStatus: status, details } });
 }

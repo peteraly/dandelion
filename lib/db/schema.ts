@@ -6,6 +6,7 @@
  *  - phone numbers are envelope-encrypted with an HMAC blind index (§4.12);
  *  - append-only tables are protected by triggers in the custom migration.
  */
+import { now } from "@/lib/clock";
 import { sql } from "drizzle-orm";
 import {
   bigint,
@@ -46,8 +47,10 @@ const bytea = customType<{ data: Buffer; driverData: Buffer }>({
 });
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
-const createdAt = () => ts("created_at").notNull().defaultNow();
-const updatedAt = () => ts("updated_at").notNull().defaultNow();
+// Insert-time defaults come from the application clock (ADR-024) so seeded history is backdated
+// consistently; the SQL default stays for raw inserts.
+const createdAt = () => ts("created_at").notNull().defaultNow().$defaultFn(() => now());
+const updatedAt = () => ts("updated_at").notNull().defaultNow().$defaultFn(() => now());
 
 // ---------- enums ----------
 export const roleEnum = pgEnum("role", LOGIN_ROLES);
@@ -166,7 +169,7 @@ export const sessions = pgTable(
     mfaVerifiedAt: ts("mfa_verified_at"),
     deviceId: text("device_id"),
     createdAt: createdAt(),
-    lastSeenAt: ts("last_seen_at").notNull().defaultNow(),
+    lastSeenAt: ts("last_seen_at").notNull().defaultNow().$defaultFn(() => now()),
     expiresAt: ts("expires_at").notNull(),
     revokedAt: ts("revoked_at"),
   },
@@ -469,7 +472,7 @@ export const verificationJobs = pgTable(
     providerTxRef: text("provider_tx_ref"),
     status: jobStatusEnum("status").notNull().default("QUEUED"),
     attempts: integer("attempts").notNull().default(0),
-    nextRunAt: ts("next_run_at").notNull().defaultNow(),
+    nextRunAt: ts("next_run_at").notNull().defaultNow().$defaultFn(() => now()),
     outcome: text("outcome"),
     lastError: text("last_error"),
     createdAt: createdAt(),

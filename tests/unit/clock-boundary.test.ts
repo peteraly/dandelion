@@ -29,7 +29,7 @@ afterEach(() => {
 
 describe("clock boundary", () => {
   it("services, payments, auth, ledger and time helpers read the clock only through lib/clock", () => {
-    const files = ["lib/services", "lib/payments", "lib/auth", "lib/ledger"].flatMap((d) => walk(join(root, d))).concat(join(root, "lib/util/time.ts"));
+    const files = ["lib/services", "lib/payments", "lib/auth", "lib/ledger", "lib/security"].flatMap((d) => walk(join(root, d))).concat(join(root, "lib/util/time.ts"), join(root, "scripts/seed.ts"));
     expect(files.length).toBeGreaterThan(10);
     for (const f of files) {
       const src = readFileSync(f, "utf8");

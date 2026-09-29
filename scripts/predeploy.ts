@@ -37,6 +37,8 @@ if (env.SKIP_PREDEPLOY === "1") {
   if (!migrationUrl) {
     console.log("[predeploy] no DATABASE_URL; skipping migrations and seed");
   } else {
+    // Non-production builds must never migrate or seed a database that looks real (Prompt B §2.8).
+    if (!isProductionBuild) run("scripts/guard-db.ts", { DATABASE_URL: migrationUrl });
     run("scripts/migrate.ts", { DATABASE_URL: migrationUrl });
     if (env.SEED_ON_BUILD === "true" && !isProductionBuild) {
       run("scripts/seed.ts", { DATABASE_URL: migrationUrl });

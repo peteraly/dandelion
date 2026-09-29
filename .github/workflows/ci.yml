@@ -39,9 +39,11 @@ jobs:
         run: SKIP_PREDEPLOY=1 npm run build
       - name: Create databases
         run: |
-          psql postgres://postgres:postgres@localhost:5432/postgres -c "create database dandelion_test" -c "create database dandelion_e2e"
+          psql postgres://postgres:postgres@localhost:5432/postgres -c "create database dandelion_test" -c "create database dandelion_e2e" -c "create database dandelion_demo"
       - run: npm run test:unit
       - run: npm run test:int
+      - name: Demo profile (Prompt B) — generates the living dataset and checks its coverage
+        run: npm run test:demo
       - uses: foundry-rs/foundry-toolchain@v1
         with:
           version: stable

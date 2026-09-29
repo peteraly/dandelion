@@ -3,6 +3,7 @@
  * Drafting is admin-only; activation runs through the approvals executor.
  */
 import { now } from "@/lib/clock";
+import { tzDay } from "@/lib/util/time";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type DbOrTx, type Tx } from "@/lib/db/client";
@@ -27,7 +28,7 @@ export async function activePriceItem(db: DbOrTx, q: { serviceAreaId: string; pr
         eq(s.priceLists.status, "ACTIVE"),
         eq(s.priceLists.serviceAreaId, q.serviceAreaId),
         eq(s.priceListItems.productId, q.productId),
-        sql`${s.priceLists.effectiveFrom} <= (now() at time zone 'Africa/Dar_es_Salaam')::date`,
+        sql`${s.priceLists.effectiveFrom} <= ${tzDay()}::date`,
         q.supplierId ? eq(s.priceLists.supplierId, q.supplierId) : sql`true`,
       ),
     );

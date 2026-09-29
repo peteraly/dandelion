@@ -62,7 +62,7 @@ export async function runDailyReconciliation(): Promise<{ checked: number; match
       coalesce((select sum(amount_tzs) from donor_fundings d where d.order_id = o.id), 0)::int as "donorTzs",
       b.custody_state as "batchState",
       (select count(*) from custody_events ce where ce.order_id = o.id and ce.event in ('PICKUP','HUB_ACCEPT','CHAMPION_HANDOVER','CUSTOMER_HANDOVER'))::int as "transferEvents",
-      (select extract(epoch from (now() - min(p.payer_claimed_at)))/60 from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_PENDING' and p.payer_claimed_at is not null) as "pendingIntentAgeMinutes",
+      (select extract(epoch from (${now()}::timestamptz - min(p.payer_claimed_at)))/60 from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_PENDING' and p.payer_claimed_at is not null) as "pendingIntentAgeMinutes",
       (select count(*) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_FAILED_OR_REVIEW')::int as "reviewIntents"
     from orders o left join batches b on b.id = o.batch_id
     where o.updated_at > ${since}

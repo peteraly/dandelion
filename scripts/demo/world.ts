@@ -1,0 +1,241 @@
+/**
+ * The generator's view of the world: reference data, people as `Actor`s the
+ * services accept, the simulated clock, the PRNG and the manifest — plus the
+ * small read helpers scenarios need (an order's ref, the last SMS code).
+ * People are created the way the minimal seed creates them (direct inserts of
+ * fake identities); everything that happens to them afterwards goes through
+ * the services.
+ */
+import { and, desc, eq } from "drizzle-orm";
+import { getDb } from "@/lib/db/client";
+import * as s from "@/lib/db/schema";
+import type { Actor } from "@/lib/policy";
+import { encryptString } from "@/lib/crypto/envelope";
+import { phoneBlindIndex } from "@/lib/crypto/blind-index";
+import { hashPin } from "@/lib/auth/secrets";
+import { now } from "@/lib/clock";
+import type { SimulatedClock } from "@/lib/clock-override";
+import { SEED, type MinimalSeedResult } from "../seed";
+import { Rng } from "./rng";
+import { Names } from "./names";
+import { Manifest } from "./manifest";
+import { MINUTE } from "./time";
+
+export type Scale = "small" | "full";
+
+export interface ScaleParams {
+  areas: number;
+  hubsPerArea: number[];
+  ridersTotal: number;
+  championsPerHub: number;
+  customers: number;
+  weeks: number;
+  /** Rates (Prompt B §2.4). */
+  stallRate: number;
+  reviewRate: number;
+  inspectionIssueRate: number;
+  lockRate: number;
+}
+
+export const SCALES: Record<Scale, ScaleParams> = {
+  small: { areas: 1, hubsPerArea: [2], ridersTotal: 2, championsPerHub: 3, customers: 40, weeks: 3, stallRate: 0.15, reviewRate: 0.05, inspectionIssueRate: 0.03, lockRate: 0.02 },
+  full: { areas: 2, hubsPerArea: [2, 1], ridersTotal: 3, championsPerHub: 4, customers: 150, weeks: 6, stallRate: 0.15, reviewRate: 0.05, inspectionIssueRate: 0.03, lockRate: 0.02 },
+};
+
+export interface Person {
+  actor: Actor;
+  name: string;
+  phone: string;
+  pin: string;
+  payee: string;
+}
+
+export interface Hub {
+  id: string;
+  name: string;
+  areaId: string;
+  manager: Person;
+  champions: Person[];
+  minStockUnits: number;
+}
+
+export interface Area {
+  id: string;
+  name: string;
+  supplierId: string;
+  supplier: Person;
+  hubs: Hub[];
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  champion: Person;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category: "REUSABLE" | "DISPOSABLE";
+}
+
+export class World {
+  readonly db = getDb();
+  readonly names: Names;
+  readonly admins: [Actor, Actor];
+  readonly areas: Area[] = [];
+  readonly riders: Person[] = [];
+  readonly customers: Customer[] = [];
+  readonly products: Product[] = [];
+  readonly manifest: Manifest;
+
+  constructor(
+    readonly rng: Rng,
+    readonly clock: SimulatedClock,
+    readonly scale: Scale,
+    readonly params: ScaleParams,
+    readonly base: MinimalSeedResult,
+    seedName: string,
+  ) {
+    this.names = new Names(rng);
+    this.admins = [
+      { userId: base.adminIds[0], role: "SUPER_ADMIN", hubId: null, supplierId: null, mfa: true },
+      { userId: base.adminIds[1], role: "SUPER_ADMIN", hubId: null, supplierId: null, mfa: true },
+    ];
+    this.manifest = new Manifest(seedName, scale, () => now());
+  }
+
+  get adminA(): Actor {
+    return this.admins[0];
+  }
+  get adminB(): Actor {
+    return this.admins[1];
+  }
+  get hubs(): Hub[] {
+    return this.areas.flatMap((a) => a.hubs);
+  }
+  get champions(): Person[] {
+    return this.hubs.flatMap((h) => h.champions);
+  }
+
+  /** Advance simulated time by a random number of minutes in [min, max]. */
+  tick(minMinutes: number, maxMinutes = minMinutes): Date {
+    return this.clock.advance(this.rng.int(minMinutes, maxMinutes) * MINUTE + this.rng.int(0, 59) * 1000);
+  }
+
+  // ---------- creation of people (direct inserts, like the minimal seed) ----------
+
+  async createFieldPerson(role: "SUPPLIER" | "BOSS_RIDER" | "HUB_MANAGER" | "FIELD_CHAMPION", opts: { areaId: string; hubId?: string; supplierId?: string; payee: string; name?: string; phone?: string }): Promise<Person> {
+    const name = opts.name ?? this.names.person();
+    const phone = opts.phone ?? this.names.fieldPhone();
+    const pin = SEED.fieldPin;
+    const hashed = await hashPin(pin);
+    const [u] = await this.db
+      .insert(s.users)
+      .values({
+        displayName: name,
+        phoneEnc: await encryptString(phone),
+        phoneIndex: phoneBlindIndex(phone),
+        role,
+        status: "ACTIVE",
+        preferredLocale: this.rng.chance(0.8) ? "sw" : "en",
+        serviceAreaId: opts.areaId,
+        hubId: opts.hubId ?? null,
+        supplierId: opts.supplierId ?? null,
+        pinHash: hashed.hash,
+        pinPepperVersion: hashed.pepperVersion,
+        payoutProvider: this.rng.weighted([
+          ["MPESA", 6],
+          ["AIRTEL", 2],
+          ["MIXX", 1],
+          ["HALOPESA", 1],
+        ] as const),
+        payeeAccount: opts.payee,
+        enrolledAt: now(),
+        createdBy: this.adminA.userId,
+      })
+      .returning();
+    await this.db.insert(s.trainingRecords).values({ userId: u!.id, module: "role_training_v1", agreementAccepted: true, recordedBy: this.adminA.userId });
+    this.manifest.count(`people.${role}`);
+    return { actor: { userId: u!.id, role, hubId: opts.hubId ?? null, supplierId: opts.supplierId ?? null, mfa: false }, name, phone, pin, payee: opts.payee };
+  }
+
+  async personFromUser(userId: string, phone: string, payee: string): Promise<Person> {
+    const u = await this.db.query.users.findFirst({ where: eq(s.users.id, userId) });
+    if (!u) throw new Error(`user ${userId} missing`);
+    return { actor: { userId: u.id, role: u.role, hubId: u.hubId, supplierId: u.supplierId, mfa: false }, name: u.displayName, phone, pin: SEED.fieldPin, payee };
+  }
+
+  // ---------- read helpers ----------
+
+  async order(orderId: string) {
+    const o = await this.db.query.orders.findFirst({ where: eq(s.orders.id, orderId) });
+    if (!o) throw new Error(`order ${orderId} missing`);
+    return o;
+  }
+
+  async orderRef(orderId: string): Promise<string> {
+    return (await this.order(orderId)).ref;
+  }
+
+  async deliveryOrderFor(pickupOrderId: string) {
+    const o = await this.db.query.orders.findFirst({ where: and(eq(s.orders.kind, "RIDER_TO_HUB"), eq(s.orders.parentOrderId, pickupOrderId)) });
+    if (!o) throw new Error(`no delivery order for pickup ${pickupOrderId}`);
+    return o;
+  }
+
+  /** The most recent mock SMS to a phone for a purpose (the code lives in its body). */
+  async lastSms(phone: string, purpose: string): Promise<string> {
+    const rows = await this.db
+      .select({ body: s.smsOutbox.body })
+      .from(s.smsOutbox)
+      .where(and(eq(s.smsOutbox.toIndex, phoneBlindIndex(phone)), eq(s.smsOutbox.purpose, purpose)))
+      .orderBy(desc(s.smsOutbox.createdAt))
+      .limit(1);
+    if (!rows[0]) throw new Error(`no ${purpose} SMS for ${phone}`);
+    return rows[0].body;
+  }
+
+  async lastSmsCode(phone: string, purpose: string): Promise<string> {
+    const body = await this.lastSms(phone, purpose);
+    const m = body.match(/\b(\d{6})\b/) ?? body.match(/\b(\d{4,8})\b/);
+    if (!m) throw new Error(`no code in ${purpose} SMS`);
+    return m[1]!;
+  }
+
+  async enrollTokenFromSms(phone: string): Promise<string> {
+    const body = await this.lastSms(phone, "ENROLL_LINK");
+    const m = body.match(/\/enroll\/([A-Za-z0-9_-]+)/);
+    if (!m) throw new Error("no enrollment link in SMS");
+    return m[1]!;
+  }
+
+  async exceptionIdByRef(ref: string): Promise<string> {
+    const e = await this.db.query.exceptions.findFirst({ where: eq(s.exceptions.ref, ref) });
+    if (!e) throw new Error(`exception ${ref} missing`);
+    return e.id;
+  }
+
+  /** Units a champion currently holds for a product (batches WITH_CHAMPION). */
+  async championStock(champion: Person, productId: string): Promise<number> {
+    const rows = await this.db
+      .select({ q: s.batches.quantity })
+      .from(s.batches)
+      .where(and(eq(s.batches.custodianUserId, champion.actor.userId), eq(s.batches.productId, productId), eq(s.batches.custodyState, "WITH_CHAMPION")));
+    return rows.reduce((a, r) => a + r.q, 0);
+  }
+
+  async hubStock(hub: Hub, productId: string): Promise<number> {
+    const rows = await this.db
+      .select({ q: s.batches.quantity })
+      .from(s.batches)
+      .where(and(eq(s.batches.hubId, hub.id), eq(s.batches.productId, productId), eq(s.batches.custodyState, "AVAILABLE_AT_HUB")));
+    return rows.reduce((a, r) => a + r.q, 0);
+  }
+
+  product(category?: "REUSABLE" | "DISPOSABLE"): Product {
+    const pool = category ? this.products.filter((p) => p.category === category) : this.products;
+    return this.rng.pick(pool);
+  }
+}
