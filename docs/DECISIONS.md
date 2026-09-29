@@ -127,7 +127,7 @@ behind an interface with a mock and must be checked before go-live.
 ## ADR-019 — Vercel plan, region, Neon region/encryption: to record
 
 - **Context.** Cron frequency, static IPs and function limits depend on the Vercel plan; Neon region and at-rest encryption are per project.
-- **Decision.** `vercel.json` uses `fra1` and hourly/5-minute crons as placeholders. Record the team's plan, the chosen regions, and Neon's at-rest encryption status here once `vercel link --scope peteraly` and the Neon marketplace integration are done (dashboard steps; see docs/GO_LIVE.md and README).
+- **Decision.** `vercel.json` is sized for Vercel's free (Hobby) plan: no region pin and two daily crons (reconciliation 17:00 UTC, retention 22:30 UTC). The first Git deployments (2026-09-29) were rejected by Vercel within seconds while the file declared four crons at 5-minute/hourly frequency and `regions: ["fra1"]`; the plan's cron limits are the most likely cause (verify against current Vercel docs). The payment poller and anchoring crons are documented in README → Deploy → Production and must be restored on a paid plan. Record the team's plan, the chosen regions, and Neon's at-rest encryption status here once the project is set up (dashboard steps; see docs/GO_LIVE.md and README).
 - **Status.** open question — needs credentials/dashboard access (stop condition reported).
 
 ## ADR-020 — Foundry solc download

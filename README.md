@@ -174,7 +174,18 @@ A demo must be a **preview** deployment: in production the simulator is 404, the
 1. Record the team plan in `docs/DECISIONS.md` ADR-019 — cron frequency, static IPs and function limits depend on it. Use the **pooled** (`-pooler`) Neon string as `DATABASE_URL` for functions; migrations use the unpooled one automatically. Record region and at-rest encryption status (verify) in ADR-019.
 2. Add the env vars from `.env.example` for Production: real secrets, `PRODUCTION_DB_HOST`, `CRON_SECRET`; never `SEED_ON_BUILD` or `SIMULATOR_ENABLED` (both are ignored in production anyway).
 3. Migrations run in the build (`scripts/predeploy.ts`); a failed migration fails the deploy. Rollback = restore a Neon point-in-time branch (below), never a down-migration.
-4. Crons are declared in `vercel.json` (verify allowed frequencies for the plan). Vercel calls them with `Authorization: Bearer $CRON_SECRET`.
+4. Crons are declared in `vercel.json` and run in UTC. The committed file is sized for Vercel's free plan (two daily jobs: reconciliation at 17:00 UTC = 20:00 Dar es Salaam, retention at 22:30 UTC); Vercel rejected deployments outright with the fuller schedule. On a paid plan restore the payment poller and anchoring — verify the plan's allowed frequencies first:
+
+   ```json
+   "crons": [
+     { "path": "/api/cron/verify", "schedule": "*/5 * * * *" },
+     { "path": "/api/cron/anchor", "schedule": "0 * * * *" },
+     { "path": "/api/cron/reconcile", "schedule": "0 17 * * *" },
+     { "path": "/api/cron/retention", "schedule": "30 22 * * *" }
+   ]
+   ```
+
+   Until then, callbacks still trigger verification immediately (`after()`), and the poller and anchoring can be run from `/dev/simulator` (non-production) or the admin Ledger page. Vercel calls crons with `Authorization: Bearer $CRON_SECRET`.
 5. Uptime: point an external monitor (e.g. Better Stack, UptimeRobot — founders' choice) at `GET /api/health` every 5 minutes; it returns 503 when the DB is unreachable, the poller/anchor/reconciliation heartbeat is older than 2× its interval, or the anchor wallet is below the alert threshold.
 6. Run the e2e suite against a preview before promoting: `E2E_BASE_URL=https://<preview> DATABASE_URL=<preview pooled url> E2E_SEED_REMOTE=1 CRON_SECRET=<preview secret> npm run e2e`.
 
