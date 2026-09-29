@@ -14,7 +14,7 @@
  *        SEED_RESET=1 npm run db:seed          (wipes and reseeds; dev/test only)
  *        SEED_PROFILE=demo npm run db:seed     (Prompt B living dataset; empty database only)
  */
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { now } from "@/lib/clock";
 import { closeDb, databaseUrl, getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -128,6 +128,10 @@ export async function assertSafeTargetDatabase(): Promise<void> {
     if (r.rows[0]?.v) return;
   }
   if (has.has("users")) {
+    // Databases seeded before the marker existed still carry the seed admin's fixed fake number, which no real
+    // database can (no SMS could ever reach it to enrol anyone).
+    const legacy = await db.execute<{ n: number }>(sql`select count(*)::int as n from users where phone_index = ${phoneBlindIndex(SEED.adminA.phone)}`);
+    if (Number(legacy.rows[0]?.n ?? 0) > 0) return;
     const r = await db.execute<{ n: number }>(sql`select count(*)::int as n from users where display_name not like '%(TEST)%'`);
     const n = Number(r.rows[0]?.n ?? 0);
     if (n > 0) throw new Error(`seed refuses: the database holds ${n} user(s) without "(TEST)" in the name and no seed marker — this looks like real data`);
@@ -172,6 +176,9 @@ export async function seed(): Promise<MinimalSeedResult | null> {
   const db = getDb();
   const existing = await db.query.serviceAreas.findFirst();
   if (existing) {
+    // Upgrade a database seeded before the marker existed, so the guard and the banner can rely on it.
+    const marker = await db.query.settings.findFirst({ where: eq(s.settings.key, "seedProfile") });
+    if (!marker) await putSetting(db, "seedProfile", "minimal", null);
     console.log("[seed] already seeded; nothing to do");
     return null;
   }

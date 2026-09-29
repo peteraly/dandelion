@@ -47,13 +47,18 @@ describe("clock-driven defaults and guards", () => {
       .values({ role: "FIELD_CHAMPION", status: "INVITED", displayName: "Real Person", phoneEnc: "x", phoneIndex: `probe-${Date.now()}`, preferredLocale: "sw" })
       .returning({ id: s.users.id });
     const marker = await db.query.settings.findFirst({ where: eq(s.settings.key, "seedProfile") });
+    const adminA = await db.query.users.findFirst({ where: eq(s.users.role, "SUPER_ADMIN") });
     try {
       // Still accepted: the seed marker proves this database was populated by a seed run.
       await expect(assertSafeTargetDatabase()).resolves.toBeUndefined();
-      // Without the marker, one person without "(TEST)" is enough to refuse.
+      // Without the marker, the seed admin's fixed fake number still identifies a seeded database.
       await db.execute(sql`delete from settings where key = 'seedProfile'`);
+      await expect(assertSafeTargetDatabase()).resolves.toBeUndefined();
+      // With neither marker, one person without "(TEST)" is enough to refuse.
+      await db.execute(sql`update users set phone_index = 'moved-aside' where id = ${adminA!.id}`);
       await expect(assertSafeTargetDatabase()).rejects.toThrow(/without "\(TEST\)"/);
     } finally {
+      await db.execute(sql`update users set phone_index = ${adminA!.phoneIndex} where id = ${adminA!.id}`);
       if (marker) await db.insert(s.settings).values({ key: "seedProfile", value: marker.value, updatedBy: marker.updatedBy }).onConflictDoNothing();
       await db.execute(sql`delete from users where id = ${u!.id}`);
     }
