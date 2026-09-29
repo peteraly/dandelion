@@ -87,11 +87,22 @@ Requirements: Node 22, Postgres 16, Foundry (optional, for the contract).
 
 ```bash
 npm ci
-cp .env.example .env.local            # dev defaults work as-is
-createdb dandelion_dev && createdb dandelion_test && createdb dandelion_e2e
-npm run db:migrate                    # forward-only Drizzle migrations
-npm run db:seed                       # fake area, supplier, hub, riders, champions, customers, price list
-npm run dev                           # http://localhost:3000
+cp .env.example .env.local
+createdb dandelion_dev
+createdb dandelion_test
+createdb dandelion_e2e
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
+
+Then open http://localhost:3000. `db:migrate` applies the forward-only Drizzle migrations; `db:seed` creates the fake area, supplier, hub, riders, champions, customers and price list.
+
+The dev default connects as user `postgres` with password `postgres`. On macOS (Homebrew or Postgres.app) the superuser is usually your own login name with no password, so set this in `.env.local` before migrating:
+
+```
+DATABASE_URL=postgres://YOUR_MAC_USERNAME@localhost:5432/dandelion_dev
+TEST_DATABASE_URL=postgres://YOUR_MAC_USERNAME@localhost:5432/dandelion_test
 ```
 
 Seed logins (all fake): admins `+255700000001` / `+255700000002` with passphrases
@@ -126,16 +137,46 @@ See `.env.example` for the full list with comments. Rules:
 
 ## Deploy (Vercel + Neon)
 
-These are dashboard/CLI steps that need the founders' credentials (see `docs/GO_LIVE.md`):
+Dashboard steps that need the founders' Vercel account (see `docs/GO_LIVE.md`). Setting names and the variables the Neon integration creates should be checked against current Vercel and Neon docs — they were not reachable from the build environment.
 
-1. `npm i -g vercel && vercel login && vercel link --scope peteraly` (Git integration: PRs → previews, `main` → production). Record the team plan in `docs/DECISIONS.md` ADR-019 — cron frequency, static IPs and function limits depend on it.
-2. Vercel → Storage → **Neon** (Marketplace). Enable the branch-per-preview integration so previews never touch production data. Use the **pooled** (`-pooler`) connection string as `DATABASE_URL`; the app uses `@neondatabase/serverless`. Record region and at-rest encryption status (verify) in ADR-019.
-3. Settings → Deployment Protection → enable for previews.
-4. Add the env vars from `.env.example` (production: real secrets, `PRODUCTION_DB_HOST`, `CRON_SECRET`).
-5. Migrations run in the deploy pipeline: set the build command to `npm run db:migrate && next build` (against the deployment's Neon branch). Rollback = restore a Neon point-in-time branch (below), never a down-migration.
-6. Crons are declared in `vercel.json` (verify allowed frequencies for the plan). Vercel calls them with `Authorization: Bearer $CRON_SECRET`.
-7. Uptime: point an external monitor (e.g. Better Stack, UptimeRobot — founders' choice) at `GET /api/health` every 5 minutes; it returns 503 when the DB is unreachable, the poller/anchor/reconciliation heartbeat is older than 2× its interval, or the anchor wallet is below the alert threshold.
-8. Run the e2e suite against the preview: `E2E_BASE_URL=https://<preview> DATABASE_URL=<preview pooled url> E2E_SEED_REMOTE=1 CRON_SECRET=<preview secret> npm run e2e`.
+### A demo preview with no terminal
+
+A demo must be a **preview** deployment: in production the simulator is 404, the mock provider can confirm nothing and the seed refuses to run (ADR-016, ADR-022). The build itself runs the migrations and, when asked, the demo seed.
+
+1. vercel.com → Add New → Project → import `peteraly/dandelion`. Let the first deployment run: it deploys the repository's default branch as *production* and will complain about missing secrets — expected, harmless.
+2. Project → Settings → Git → **Production Branch** → `main`. From now on the build branch deploys as a preview.
+3. Project → Storage → Create Database → **Neon** (Marketplace; a free plan exists) → connect it to the project with **preview branches** enabled, so each git branch gets its own database. The integration sets `DATABASE_URL` (pooled) and an unpooled variant in every environment.
+4. Project → Settings → Environment Variables → environment **Preview** → add:
+
+   ```
+   SIMULATOR_ENABLED=true
+   SEED_ON_BUILD=true
+   PIN_PEPPER=<random>
+   OTP_HMAC_KEY=<random>
+   BLIND_INDEX_KEY=<random>
+   MOCK_PROVIDER_SIGNING_KEY=<random>
+   CALLBACK_TOKEN_MOCK=<random, letters and digits only — it is part of a URL>
+   CRON_SECRET=<random>
+   DATA_KEK=<exactly 32 random bytes, base64>
+   ```
+
+   One command prints the whole block with fresh values:
+
+   ```bash
+   for k in PIN_PEPPER OTP_HMAC_KEY BLIND_INDEX_KEY MOCK_PROVIDER_SIGNING_KEY CALLBACK_TOKEN_MOCK CRON_SECRET; do echo "$k=$(openssl rand -hex 32)"; done; echo "DATA_KEK=$(openssl rand -base64 32)"
+   ```
+
+5. Settings → Deployment Protection: keep previews behind Vercel login (recommended) or open them for the demo — the data is fake either way.
+6. Trigger a build of the branch (push a commit, or create a deployment for the branch from the Deployments tab). The build migrates and seeds its Neon branch; the preview URL is listed under Deployments. Log in at `/admin/login` with the seed logins from Setup; `/dev/simulator` fakes payments and shows the SMS outbox.
+
+### Production
+
+1. Record the team plan in `docs/DECISIONS.md` ADR-019 — cron frequency, static IPs and function limits depend on it. Use the **pooled** (`-pooler`) Neon string as `DATABASE_URL` for functions; migrations use the unpooled one automatically. Record region and at-rest encryption status (verify) in ADR-019.
+2. Add the env vars from `.env.example` for Production: real secrets, `PRODUCTION_DB_HOST`, `CRON_SECRET`; never `SEED_ON_BUILD` or `SIMULATOR_ENABLED` (both are ignored in production anyway).
+3. Migrations run in the build (`scripts/predeploy.ts`); a failed migration fails the deploy. Rollback = restore a Neon point-in-time branch (below), never a down-migration.
+4. Crons are declared in `vercel.json` (verify allowed frequencies for the plan). Vercel calls them with `Authorization: Bearer $CRON_SECRET`.
+5. Uptime: point an external monitor (e.g. Better Stack, UptimeRobot — founders' choice) at `GET /api/health` every 5 minutes; it returns 503 when the DB is unreachable, the poller/anchor/reconciliation heartbeat is older than 2× its interval, or the anchor wallet is below the alert threshold.
+6. Run the e2e suite against a preview before promoting: `E2E_BASE_URL=https://<preview> DATABASE_URL=<preview pooled url> E2E_SEED_REMOTE=1 CRON_SECRET=<preview secret> npm run e2e`.
 
 Contract (testnet only until G4): verify the current Celo testnet on docs.celo.org, set `CHAIN_ID`/`CHAIN_RPC_URL`/`CHAIN_EXPLORER_URL`, then
 `cd contracts && ADMIN=<safe> WRITER=<writer address> forge script script/Deploy.s.sol --rpc-url $CHAIN_RPC_URL --broadcast --private-key $DEPLOYER_KEY`

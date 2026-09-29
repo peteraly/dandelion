@@ -19,12 +19,13 @@ Legend: ⬜ not started · 🟨 in progress / partially prepared · ✅ signed o
 
 These need credentials or dashboard actions the build did not have. Exact steps are in README → "Deploy".
 
-1. `vercel login` then `vercel link --scope peteraly` in the repo; record the team plan in docs/DECISIONS.md ADR-019.
-2. Vercel dashboard → Storage → add **Neon** (Marketplace) with the branch-per-preview integration; use the **pooled** connection string as `DATABASE_URL`; record region and at-rest encryption status.
-3. Vercel → Settings → Deployment Protection → enable for previews.
-4. Set the environment variables listed in `.env.example` for preview and production (production has no dev defaults and refuses to start without them).
-5. Set `PRODUCTION_DB_HOST` so the seed script can never run against production.
-6. Point an external uptime monitor at `/api/health` (see README).
+1. Import `peteraly/dandelion` into Vercel (dashboard, or `vercel login && vercel link --scope peteraly`); record the team plan in docs/DECISIONS.md ADR-019.
+2. Set the project's **Production Branch** to `main` so the build branch deploys as a *preview* (a demo only works in preview: the simulator, the mock provider's ledger and the seed are all disabled in production). ADR-022.
+3. Vercel dashboard → Storage → add **Neon** (Marketplace) with the branch-per-preview option; the integration sets `DATABASE_URL` (pooled) and the unpooled variant — verify the names against current Neon docs; record region and at-rest encryption status.
+4. Vercel → Settings → Deployment Protection → enable for previews.
+5. Set the environment variables listed in `.env.example` for preview and production (production has no dev defaults and refuses to start without them). For a demo preview add `SIMULATOR_ENABLED=true` and `SEED_ON_BUILD=true`; migrations and the seed then run during the build (ADR-022).
+6. Set `PRODUCTION_DB_HOST` so the seed script can never run against production.
+7. Point an external uptime monitor at `/api/health` (see README).
 
 ## Signed off
 
