@@ -12,8 +12,11 @@
  * SKIP_PREDEPLOY=1 skips everything (builds without a database, e.g. CI).
  */
 import { execFileSync } from "node:child_process";
+import { appEnv } from "@/lib/env";
 
 const env = process.env;
+// Fail-closed environment detection (ADR-023): a production build without VERCEL_ENV is production.
+const isProductionBuild = appEnv() === "production";
 
 function run(script: string, extra: Record<string, string>): void {
   const child = { ...env, ...extra };
@@ -35,10 +38,10 @@ if (env.SKIP_PREDEPLOY === "1") {
     console.log("[predeploy] no DATABASE_URL; skipping migrations and seed");
   } else {
     run("scripts/migrate.ts", { DATABASE_URL: migrationUrl });
-    if (env.SEED_ON_BUILD === "true" && env.VERCEL_ENV !== "production") {
+    if (env.SEED_ON_BUILD === "true" && !isProductionBuild) {
       run("scripts/seed.ts", { DATABASE_URL: migrationUrl });
     } else {
-      console.log(`[predeploy] seed skipped (SEED_ON_BUILD=${env.SEED_ON_BUILD ?? ""}, VERCEL_ENV=${env.VERCEL_ENV ?? ""})`);
+      console.log(`[predeploy] seed skipped (SEED_ON_BUILD=${env.SEED_ON_BUILD ?? ""}, env=${appEnv()})`);
     }
   }
 }

@@ -2,18 +2,33 @@ import { afterEach, describe, expect, it } from "vitest";
 import { appEnv, chainNetwork, paymentProviderId, simulatorEnabled, smsProviderId, aiEnabled } from "@/lib/env";
 
 const saved = { ...process.env };
+// NODE_ENV is typed read-only by Next.js; tests still need to vary it.
+const setNodeEnv = (v: string) => Object.assign(process.env, { NODE_ENV: v });
 afterEach(() => {
   process.env = { ...saved };
 });
 
 describe("environment guards (build prompt §1, §8)", () => {
-  it("VERCEL_ENV decides the environment, never NODE_ENV", () => {
+  it("VERCEL_ENV decides the environment; a preview is never mistaken for production because of NODE_ENV", () => {
     process.env.VERCEL_ENV = "";
+    setNodeEnv("test");
     expect(appEnv()).toBe("development");
     process.env.VERCEL_ENV = "preview";
+    setNodeEnv("production");
     expect(appEnv()).toBe("preview");
     process.env.VERCEL_ENV = "production";
     expect(appEnv()).toBe("production");
+  });
+
+  it("fails closed: a production build without VERCEL_ENV is production (ADR-023)", () => {
+    delete process.env.VERCEL_ENV;
+    setNodeEnv("production");
+    expect(appEnv()).toBe("production");
+    expect(simulatorEnabled()).toBe(false);
+    process.env.VERCEL_ENV = "";
+    expect(appEnv()).toBe("production");
+    setNodeEnv("development");
+    expect(appEnv()).toBe("development");
   });
 
   it("outside production the payment provider, SMS and chain are forced to mocks/testnet", () => {

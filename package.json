@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx scripts/predeploy.ts && next build",
+    "build": "tsx scripts/predeploy.ts && next build && tsx scripts/check-bundle.ts",
+    "check:bundle": "tsx scripts/check-bundle.ts",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

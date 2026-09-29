@@ -35,6 +35,15 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | 5 AI features | **done (off by default; not e2e-tested with a live model)** | Six assistive features behind `AI_ENABLED=false` through one gateway (`lib/services/ai-gateway.ts`): problem-intake proposal, brief explanations, weekly review draft, message drafts from §18 templates, anomaly explainer, education helper limited to `content/education/pack.json`. PII scrubber, deterministic guards, versioned prompts, `ai_interaction_log`, per-user rate limit and monthly budget. 27 evals with `FakeLlm` (no network). The real `AnthropicLlm` path has been type-checked but not exercised against the API (no key in the build). |
 | 6 Docs | **done** | README (setup, env, Mermaid, daily and incident runbooks), DECISIONS.md, GO_LIVE.md, this file. |
 
+## Prompt B (living demo dataset + ecosystem view) — status
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| 1 Fail-closed env, one clock, override boundary, bundle check | **done** | `appEnv()` treats a production build without `VERCEL_ENV` as production (ADR-023). `lib/clock.ts` is the only clock; `lib/clock-override.ts` is importable from `scripts/` and tests only — ESLint rule, `tests/unit/clock-boundary.test.ts`, and `scripts/check-bundle.ts` (fails `npm run build` and CI if the override reaches `.next/`; negative-tested). ADR-024, ADR-025. |
+| 2 Seed guards, env-sourced seed credentials, demo generator | not started | Preconditions on the founders: Deployment Protection on previews; `SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B`, `SEED_FIELD_PIN` in the preview environment. |
+| 3 Simulator time controls | not started | Founders' decision on the demo's purpose first (prompt §4). |
+| 4–6 Ecosystem view, docs | not started | |
+
 ## Known gaps and honest limitations
 
 - **Real payment adapters are stubs.** `VodacomMpesaProvider` and `AggregatorProvider` throw. Nothing can be verified against a real provider until G1 decides the route.

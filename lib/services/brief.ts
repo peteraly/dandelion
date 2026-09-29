@@ -2,6 +2,7 @@
  * Morning brief items (handbook §15–16). Deterministic queries select the
  * items and flag stop-and-fix triggers; AI (when on) only orders/explains.
  */
+import { nowMs } from "@/lib/clock";
 import { and, desc, eq, gte, isNull, lt, ne, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -15,7 +16,7 @@ export async function buildBriefItems(actor: Actor): Promise<BriefItem[]> {
   authorize(actor, "admin.dashboard");
   const db = getDb();
   const items: BriefItem[] = [];
-  const hours = (d: Date) => Math.round((Date.now() - d.getTime()) / 3_600_000);
+  const hours = (d: Date) => Math.round((nowMs() - d.getTime()) / 3_600_000);
 
   const review = await db
     .select({ i: s.paymentIntents, ref: s.orders.ref })
@@ -56,7 +57,7 @@ export async function buildBriefItems(actor: Actor): Promise<BriefItem[]> {
     .select({ i: s.paymentIntents, ref: s.orders.ref })
     .from(s.paymentIntents)
     .innerJoin(s.orders, eq(s.orders.id, s.paymentIntents.orderId))
-    .where(and(eq(s.paymentIntents.status, "PAYMENT_PENDING"), lt(s.paymentIntents.payerClaimedAt, new Date(Date.now() - pendingMinutes * 60_000))))
+    .where(and(eq(s.paymentIntents.status, "PAYMENT_PENDING"), lt(s.paymentIntents.payerClaimedAt, new Date(nowMs() - pendingMinutes * 60_000))))
     .limit(20);
   for (const { i, ref } of stuck) {
     items.push({ id: `stuck:${i.id}`, kind: "PENDING_TOO_LONG", title: `Payment pending too long: ${ref}`, detail: `claimed ${hours(i.payerClaimedAt!)}h ago`, href: `/admin/orders/${i.orderId}`, triggers: ["provider API unavailable or unreliable?"], ageHours: hours(i.payerClaimedAt!) });
@@ -66,7 +67,7 @@ export async function buildBriefItems(actor: Actor): Promise<BriefItem[]> {
     const [n] = await db.select({ n: sql<number>`coalesce(sum(${s.batches.quantity}),0)::int` }).from(s.batches).where(and(eq(s.batches.hubId, h.id), eq(s.batches.custodyState, "AVAILABLE_AT_HUB")));
     if (Number(n?.n ?? 0) < h.minStockUnits) items.push({ id: `hub:${h.id}`, kind: "LOW_STOCK", title: `Low stock: ${h.name}`, detail: `${n?.n ?? 0} < ${h.minStockUnits}`, href: "/admin/inventory", triggers: [], ageHours: 0 });
   }
-  const [alerts] = await db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(Date.now() - 86_400_000))));
+  const [alerts] = await db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(nowMs() - 86_400_000))));
   if (Number(alerts?.n ?? 0) > 0) {
     items.push({ id: "sec:24h", kind: "SECURITY", title: `${alerts!.n} security alerts in 24h`, detail: "", href: "/admin/logs", triggers: ["personal data accessed improperly?"], ageHours: 0 });
   }

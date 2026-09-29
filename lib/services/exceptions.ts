@@ -4,6 +4,7 @@
  * dual-approved resolution (§3.4). Resolution is executed only by the
  * approvals executor.
  */
+import { now } from "@/lib/clock";
 import { and, desc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
@@ -106,7 +107,7 @@ export async function executeExceptionResolution(tx: Tx, p: z.infer<typeof Excep
       }
     }
   }
-  await tx.update(s.exceptions).set({ status: "RESOLVED", resolution: `${p.outcome}: ${p.note}`, resolvedAt: new Date() }).where(eq(s.exceptions.id, ex.id));
+  await tx.update(s.exceptions).set({ status: "RESOLVED", resolution: `${p.outcome}: ${p.note}`, resolvedAt: now() }).where(eq(s.exceptions.id, ex.id));
   await recordLedgerEvent(tx, { type: "EXCEPTION_RESOLVED", subjectRef: ex.ref, batchId: ex.batchId, orderId: ex.orderId, role: "SUPER_ADMIN" });
   await logAdminAction(tx, approverId, "exception.resolved", { type: "exception", id: ex.id }, { outcome: p.outcome });
 }

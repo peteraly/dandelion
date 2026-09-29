@@ -35,6 +35,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run i18n:check
+      - name: Build and check the bundle for the clock override (ADR-024)
+        run: SKIP_PREDEPLOY=1 npm run build
       - name: Create databases
         run: |
           psql postgres://postgres:postgres@localhost:5432/postgres -c "create database dandelion_test" -c "create database dandelion_e2e"

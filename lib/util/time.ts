@@ -1,21 +1,22 @@
+import { now } from "@/lib/clock";
 import { TIMEZONE } from "@/lib/env";
 
 const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" });
 
 /** Calendar day in Africa/Dar_es_Salaam, as YYYY-MM-DD. */
-export function tzDay(d: Date = new Date()): string {
+export function tzDay(d: Date = now()): string {
   return dayFmt.format(d);
 }
 
 /** First day of the month (Africa/Dar_es_Salaam) containing d, as a UTC instant. */
-export function tzMonthStart(d: Date = new Date()): Date {
+export function tzMonthStart(d: Date = now()): Date {
   const [y, m] = tzDay(d).split("-").map(Number) as [number, number];
   // Dar es Salaam is UTC+3 with no DST.
   return new Date(Date.UTC(y, m - 1, 1, -3, 0, 0));
 }
 
 /** Start of the ISO week (Monday 00:00 Africa/Dar_es_Salaam) containing d. */
-export function tzWeekStart(d: Date = new Date()): Date {
+export function tzWeekStart(d: Date = now()): Date {
   const [y, m, day] = tzDay(d).split("-").map(Number) as [number, number, number];
   const local = new Date(Date.UTC(y, m - 1, day));
   const dow = (local.getUTCDay() + 6) % 7; // Monday = 0

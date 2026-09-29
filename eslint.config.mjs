@@ -29,6 +29,20 @@ const eslintConfig = defineConfig([
       ],
     },
   },
+  {
+    // Build prompt B §2.2: the clock override is for seeds and tests only. The
+    // app must not even be able to import it; tests/unit/clock-boundary.test.ts
+    // re-checks the source and scripts/check-bundle.ts checks the built output.
+    files: ["app/**/*.ts", "app/**/*.tsx", "components/**/*.ts", "components/**/*.tsx", "lib/**/*.ts", "i18n/**/*.ts", "proxy.ts", "next.config.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [{ group: ["@/lib/clock-override", "**/clock-override", "./clock-override", "../clock-override"], message: "The clock override is for scripts/ and tests/ only (build prompt B §2.2)." }],
+        },
+      ],
+    },
+  },
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "contracts/**", "drizzle/**", "coverage/**", "playwright-report/**", "test-results/**"]),
 ]);
 

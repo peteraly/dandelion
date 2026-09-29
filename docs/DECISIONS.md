@@ -149,3 +149,22 @@ behind an interface with a mock and must be checked before go-live.
 - **Decision.** `npm run build` runs `scripts/predeploy.ts` first: forward-only migrations whenever a database is configured (preferring the unpooled Neon URL for DDL — variable names set by the Neon integration must be verified against current Neon docs), then the idempotent demo seed only when `SEED_ON_BUILD=true` **and** `VERCEL_ENV !== "production"`; the seed script's own `refuseIfProduction` remains as a second guard and `SEED_RESET` is never forwarded. A failed migration fails the deploy, which is the intended behaviour (rollback is a Neon point-in-time branch, never a down-migration). `SKIP_PREDEPLOY=1` builds without a database.
 - **Consequence.** A demo needs a *preview* deployment: in production the simulator is 404, the mock provider cannot confirm anything and the seed refuses to run. The repository's default branch is currently the build branch, so Vercel would treat it as production until the project's Production Branch is changed (dashboard setting; verify the current location in Vercel docs).
 - **Status.** accepted.
+
+## ADR-023 — Environment detection fails closed
+
+- **Context.** ADR-016 made `VERCEL_ENV` the only signal and treated "unset" as development, which unlocks dev-default secrets, the simulator and (from Prompt B) the clock override. An external review pointed out that a production process started without Vercel's marker would therefore run wide open.
+- **Decision.** `appEnv()` returns `production` when `VERCEL_ENV=production`, **or** when `VERCEL_ENV` is unset/empty and `NODE_ENV=production` (a production build running anywhere). `preview` only when `VERCEL_ENV=preview`. Everything else is development. Dangerous controls additionally require their own positive flag (`SIMULATOR_ENABLED=true`, `SEED_PROFILE=demo`); absence of production is never sufficient on its own. `scripts/predeploy.ts` uses the same function.
+- **Consequences.** Local `next build && next start` without `VERCEL_ENV` now behaves as production (secrets required) — set `VERCEL_ENV=preview` locally to test a preview-like build. CI, tests and `next dev` are unaffected (NODE_ENV is `test`/`development`).
+- **Status.** accepted; amends ADR-016.
+
+## ADR-024 — One clock, and an override the app cannot import
+
+- **Context.** Prompt B needs backdated history generated through the real services. Services stamped time with `new Date()` in ~100 places, including OTP expiry, session idle timeout, lockouts and rate limits, so a settable clock is a security surface.
+- **Decision.** `lib/clock.ts` exposes `now()`/`nowMs()` and reads an override stored under a global symbol; it has no setter. `lib/clock-override.ts` owns the setter and may be imported only from `scripts/**` and `tests/**` — enforced three ways: ESLint `no-restricted-imports` on `app/`, `lib/`, `components/`, `i18n/`, `proxy.ts`; a unit test that scans the source for the import and for the symbol string; and `scripts/check-bundle.ts`, which fails the build if any string unique to the override module appears in `.next/`. The setter also refuses at call time in production and when `NEXT_RUNTIME` is set. Dependency injection through every call site was judged unnecessary once the set path is provably absent from the bundle.
+- **Status.** accepted. Any security review scoped before this change must be re-scoped (GO_LIVE G5 note).
+
+## ADR-025 — The demo phone range is not verified as reserved
+
+- **Context.** Fake stakeholders use `+255 700 00[0-9] [0-9]{3}`. Nothing in the build verified that this block is unallocated in Tanzania's numbering plan; it was chosen as obviously test-shaped.
+- **Decision.** Keep the range, because SMS is forced to the mock provider outside production (`lib/env.ts`) and the seed refuses production, so no message can reach a real subscriber from a non-production environment. **To close:** check the block against the current TCRA national numbering plan (or ask the SMS aggregator) and either confirm it is unallocated or move the demo data to a confirmed test block; record the result here.
+- **Status.** open question — verify before any non-mock SMS provider is configured anywhere.

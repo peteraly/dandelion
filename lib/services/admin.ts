@@ -3,6 +3,7 @@
  * the policy first. Exports are logged as security events; large exports
  * need an executed dual approval.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, desc, eq, gte, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
@@ -43,7 +44,7 @@ export async function priorities(actor: Actor): Promise<Priorities> {
   const openExceptions = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.exceptions).where(ne(s.exceptions.status, "RESOLVED")));
   const reconFlags = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.reconciliationFlags).where(isNull(s.reconciliationFlags.resolvedAt)));
   const alerts24h = await count(
-    db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(Date.now() - 86_400_000)))),
+    db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(nowMs() - 86_400_000)))),
   );
   return { paymentsReview, deliveriesInspection, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h };
 }
@@ -110,7 +111,7 @@ export async function securityLog(actor: Actor, limit = 200) {
 
 export async function alertThresholds(actor: Actor) {
   authorize(actor, "admin.logs.view");
-  const since = new Date(Date.now() - 86_400_000);
+  const since = new Date(nowMs() - 86_400_000);
   const rows = await getDb()
     .select({ type: s.securityEventLog.type, n: sql<number>`count(*)::int` })
     .from(s.securityEventLog)
@@ -138,7 +139,7 @@ export async function reconOverview(actor: Actor) {
 export async function resolveReconFlag(actor: Actor, flagId: string): Promise<void> {
   authorize(actor, "admin.dashboard");
   await withTx(async (tx) => {
-    await tx.update(s.reconciliationFlags).set({ resolvedAt: new Date(), resolvedBy: actor.userId }).where(eq(s.reconciliationFlags.id, flagId));
+    await tx.update(s.reconciliationFlags).set({ resolvedAt: now(), resolvedBy: actor.userId }).where(eq(s.reconciliationFlags.id, flagId));
     await logAdminAction(tx, actor.userId, "recon.flag.resolve", { type: "recon_flag", id: flagId });
   });
 }
@@ -212,13 +213,13 @@ export async function exportCsv(actor: Actor, datasetRaw: string, approvalReques
     const req = await getDb().query.approvalRequests.findFirst({ where: eq(s.approvalRequests.id, approvalRequestId) });
     const payload = req?.payload as { dataset?: string } | undefined;
     if (!req || req.type !== "LARGE_EXPORT" || req.status !== "EXECUTED" || payload?.dataset !== dataset) throw new DomainError("large_export_needs_approval");
-    if (req.executedAt && req.executedAt < new Date(Date.now() - 24 * 60 * 60_000)) throw new DomainError("large_export_needs_approval");
+    if (req.executedAt && req.executedAt < new Date(nowMs() - 24 * 60 * 60_000)) throw new DomainError("large_export_needs_approval");
   }
   await withTx(async (tx) => {
     await logAdminAction(tx, actor.userId, "export.csv", { type: "dataset", id: dataset }, { rows: rows.length, approvalRequestId: approvalRequestId ?? null });
     await logSecurityEvent(tx, "EXPORT", "INFO", { userId: actor.userId, details: { dataset, rows: rows.length } });
   });
-  return { filename: `dandelion-${dataset}-${new Date().toISOString().slice(0, 10)}.csv`, content: csv(rows), rows: rows.length };
+  return { filename: `dandelion-${dataset}-${now().toISOString().slice(0, 10)}.csv`, content: csv(rows), rows: rows.length };
 }
 
 // ---------- data requests (§4.12) ----------
@@ -246,15 +247,15 @@ export async function handleDataRequest(actor: Actor, requestId: string, outcome
     if (outcome === "DONE" && req.kind === "DELETION") {
       const tomb = `deleted-${crypto.randomUUID()}`;
       if (req.subjectType === "CUSTOMER") {
-        await tx.update(s.customers).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "DELETED", updatedAt: new Date() }).where(eq(s.customers.id, req.subjectId));
+        await tx.update(s.customers).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "DELETED", updatedAt: now() }).where(eq(s.customers.id, req.subjectId));
       } else {
         const u = await tx.query.users.findFirst({ where: eq(s.users.id, req.subjectId) });
         if (u && u.role === "SUPER_ADMIN") throw new DomainError("cannot_delete_admin");
-        await tx.update(s.users).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "REMOVED", pinHash: null, updatedAt: new Date() }).where(eq(s.users.id, req.subjectId));
-        await tx.update(s.sessions).set({ revokedAt: new Date() }).where(eq(s.sessions.userId, req.subjectId));
+        await tx.update(s.users).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "REMOVED", pinHash: null, updatedAt: now() }).where(eq(s.users.id, req.subjectId));
+        await tx.update(s.sessions).set({ revokedAt: now() }).where(eq(s.sessions.userId, req.subjectId));
       }
     }
-    await tx.update(s.dataRequests).set({ status: outcome, handledBy: actor.userId, closedAt: new Date(), details: `${req.details}\n---\n${note.slice(0, 500)}` }).where(eq(s.dataRequests.id, requestId));
+    await tx.update(s.dataRequests).set({ status: outcome, handledBy: actor.userId, closedAt: now(), details: `${req.details}\n---\n${note.slice(0, 500)}` }).where(eq(s.dataRequests.id, requestId));
     await logAdminAction(tx, actor.userId, "data_request.handle", { type: "data_request", id: requestId }, { outcome, kind: req.kind });
   });
 }
@@ -270,8 +271,8 @@ export async function retentionPurge(): Promise<{ sessions: number; otps: number
   const sessDays = await getSetting("retentionSessionsDays");
   const otpDays = await getSetting("retentionOtpDays");
   const secDays = await getSetting("retentionSecurityLogDays");
-  const sessions = (await db.delete(s.sessions).where(lt(s.sessions.expiresAt, new Date(Date.now() - sessDays * 86_400_000))).returning({ id: s.sessions.id })).length;
-  const otps = (await db.delete(s.otpChallenges).where(lt(s.otpChallenges.createdAt, new Date(Date.now() - otpDays * 86_400_000))).returning({ id: s.otpChallenges.id })).length;
+  const sessions = (await db.delete(s.sessions).where(lt(s.sessions.expiresAt, new Date(nowMs() - sessDays * 86_400_000))).returning({ id: s.sessions.id })).length;
+  const otps = (await db.delete(s.otpChallenges).where(lt(s.otpChallenges.createdAt, new Date(nowMs() - otpDays * 86_400_000))).returning({ id: s.otpChallenges.id })).length;
   const securityEvents = await withTx(async (tx) => {
     await tx.execute(sql`select set_config('app.retention_purge', 'on', true)`);
     const r = await tx.execute(sql`delete from security_event_log where created_at < now() - make_interval(days => ${secDays})`);

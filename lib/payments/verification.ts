@@ -12,6 +12,7 @@
  * All of it in one transaction marked app.verifier=on, so the DB trigger
  * allows the status change and a crash mid-way leaves no dedupe row.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, asc, eq, isNull, lt, lte, ne, or, sql } from "drizzle-orm";
 import { getDb, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -100,7 +101,7 @@ async function recordDedupe(tx: Tx, provider: string, providerTxRef: string, out
 async function moveToReview(tx: Tx, intent: typeof s.paymentIntents.$inferSelect, reason: string, evidence: VerificationEvidence) {
   const res = paymentMachine.transition(intent.status, "FAIL_OR_REVIEW", "SYSTEM_VERIFIER", evidence);
   if (!res.ok) return; // already confirmed or already in review — leave it
-  await tx.update(s.paymentIntents).set({ status: res.to, reviewReason: reason, updatedAt: new Date() }).where(eq(s.paymentIntents.id, intent.id));
+  await tx.update(s.paymentIntents).set({ status: res.to, reviewReason: reason, updatedAt: now() }).where(eq(s.paymentIntents.id, intent.id));
   const order = await tx.query.orders.findFirst({ where: eq(s.orders.id, intent.orderId) });
   if (order) await onPaymentReview(tx, order);
 }
@@ -145,7 +146,7 @@ export async function verifyTransaction(
     if (confirmed) {
       const res = paymentMachine.transition(confirmed.status, "REVERSED", "SYSTEM_VERIFIER", { providerQueried, providerStatus: "REVERSED" });
       if (res.ok) {
-        await tx.update(s.paymentIntents).set({ status: res.to, reviewReason: "PAYMENT_REVERSED", updatedAt: new Date() }).where(eq(s.paymentIntents.id, confirmed.id));
+        await tx.update(s.paymentIntents).set({ status: res.to, reviewReason: "PAYMENT_REVERSED", updatedAt: now() }).where(eq(s.paymentIntents.id, confirmed.id));
         await openReviewException(tx, "PAYMENT_REVERSED", confirmed.id, confirmed.orderId, `Provider reports reversal of ${ptx.providerTxRef}`);
         await logSecurityEvent(tx, "PAYMENT_REVERSED", "ALERT", { details: { orderId: confirmed.orderId } });
       }
@@ -216,7 +217,7 @@ export async function verifyTransaction(
       if (!res.ok) throw new Error(`verifier: unexpected refusal ${res.reason}`);
       await tx
         .update(s.paymentIntents)
-        .set({ status: res.to, confirmedAmountTzs: ptx.amountTzs, providerTxRef: ptx.providerTxRef, confirmedAt: new Date(), reviewReason: null, updatedAt: new Date() })
+        .set({ status: res.to, confirmedAmountTzs: ptx.amountTzs, providerTxRef: ptx.providerTxRef, confirmedAt: now(), reviewReason: null, updatedAt: now() })
         .where(eq(s.paymentIntents.id, pending!.id));
       await recordLedgerEvent(tx, { type: "PAYMENT_CONFIRMED", subjectRef: order!.ref, orderId: order!.id, amountTzs: ptx.amountTzs, role: purposeRole(pending!.purpose) });
       await onPaymentConfirmed(tx, order!, ptx.amountTzs);
@@ -241,7 +242,7 @@ export async function runVerificationJob(jobId?: string): Promise<JobOutcome | n
     const finish = (outcome: JobOutcome, status: "DONE" | "RETRY" | "DEAD" = "DONE", err?: string) =>
       tx
         .update(s.verificationJobs)
-        .set({ status, outcome, lastError: err ?? null, nextRunAt: status === "RETRY" ? new Date(Date.now() + backoffMs(job.attempts)) : new Date(), updatedAt: new Date() })
+        .set({ status, outcome, lastError: err ?? null, nextRunAt: status === "RETRY" ? new Date(nowMs() + backoffMs(job.attempts)) : now(), updatedAt: now() })
         .where(eq(s.verificationJobs.id, job.id));
 
     try {
@@ -319,7 +320,7 @@ export async function runDueVerificationJobs(max = 25): Promise<JobOutcome[]> {
  */
 export async function enqueueStalePolls(olderThanMs = 2 * 60_000): Promise<number> {
   const db = getDb();
-  const cutoff = new Date(Date.now() - olderThanMs);
+  const cutoff = new Date(nowMs() - olderThanMs);
   const stale = await db
     .select({ id: s.paymentIntents.id, provider: s.paymentIntents.provider })
     .from(s.paymentIntents)
@@ -333,8 +334,8 @@ export async function enqueueStalePolls(olderThanMs = 2 * 60_000): Promise<numbe
   // Also revive RUNNING jobs whose runner died (older than 10 minutes).
   await db
     .update(s.verificationJobs)
-    .set({ status: "RETRY", nextRunAt: new Date() })
-    .where(and(eq(s.verificationJobs.status, "RUNNING"), lt(s.verificationJobs.updatedAt, new Date(Date.now() - 10 * 60_000))));
+    .set({ status: "RETRY", nextRunAt: now() })
+    .where(and(eq(s.verificationJobs.status, "RUNNING"), lt(s.verificationJobs.updatedAt, new Date(nowMs() - 10 * 60_000))));
   return stale.length;
 }
 

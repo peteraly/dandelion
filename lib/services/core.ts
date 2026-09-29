@@ -3,6 +3,7 @@
  * audit/security logging, and settings. Every state change and its
  * LedgerEvent are written in the SAME transaction (§5).
  */
+import { now } from "@/lib/clock";
 import { and, eq, sql } from "drizzle-orm";
 import { getDb, type DbOrTx, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -59,7 +60,7 @@ export interface LedgerInput {
 
 /** Append a LedgerEvent inside the caller's transaction. */
 export async function recordLedgerEvent(tx: DbOrTx, e: LedgerInput): Promise<void> {
-  const date = tzDay(e.at ?? new Date());
+  const date = tzDay(e.at ?? now());
   const fact: LedgerFact = { type: e.type, ref: e.subjectRef, amountTzs: e.amountTzs ?? null, role: e.role ?? null, date };
   const canonical = canonicalJson(fact);
   const salt = newSalt();
@@ -154,7 +155,7 @@ export async function putSetting(tx: DbOrTx, k: SettingKey, value: unknown, by: 
   await tx
     .insert(s.settings)
     .values({ key: k, value: value as object, updatedBy: by })
-    .onConflictDoUpdate({ target: s.settings.key, set: { value: value as object, updatedBy: by, updatedAt: new Date() } });
+    .onConflictDoUpdate({ target: s.settings.key, set: { value: value as object, updatedBy: by, updatedAt: now() } });
 }
 
 // ---------- idempotency (§5) ----------

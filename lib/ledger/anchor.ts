@@ -8,6 +8,7 @@
  * before deploying (docs/DECISIONS.md). The chain definition is read from
  * env so it can be corrected without a code change.
  */
+import { now } from "@/lib/clock";
 import { asc, eq, gt, isNull, sql } from "drizzle-orm";
 import { createPublicClient, createWalletClient, defineChain, http, type Address, type Hex } from "viem";
 import { getDb } from "@/lib/db/client";
@@ -121,7 +122,7 @@ export async function runAnchor(opts: { batchLimit?: number; dryRun?: boolean } 
   try {
     const wallet = createWalletClient({ account, chain, transport: http() });
     const txHash = await wallet.writeContract({ address, abi: LEDGER_ANCHOR_ABI, functionName: "anchor", args: [root, BigInt(fromEventId), BigInt(toEventId)] });
-    await db.update(s.ledgerAnchors).set({ status: "SUBMITTED", txHash, submittedAt: new Date() }).where(eq(s.ledgerAnchors.id, anchorId));
+    await db.update(s.ledgerAnchors).set({ status: "SUBMITTED", txHash, submittedAt: now() }).where(eq(s.ledgerAnchors.id, anchorId));
     await heartbeat("anchor", "ok", { anchored: events.length, txHash });
     return { status: "submitted", anchorId, txHash, count: events.length };
   } catch (e) {
@@ -148,7 +149,7 @@ export async function confirmSubmittedAnchors(): Promise<number> {
     try {
       const receipt = await client.getTransactionReceipt({ hash: a.txHash as Hex });
       if (receipt.status === "success") {
-        await db.update(s.ledgerAnchors).set({ status: "CONFIRMED", confirmedAt: new Date() }).where(eq(s.ledgerAnchors.id, a.id));
+        await db.update(s.ledgerAnchors).set({ status: "CONFIRMED", confirmedAt: now() }).where(eq(s.ledgerAnchors.id, a.id));
         n++;
       } else {
         await db.update(s.ledgerAnchors).set({ status: "FAILED", error: "reverted" }).where(eq(s.ledgerAnchors.id, a.id));

@@ -1,9 +1,12 @@
 /**
  * Environment detection and configuration.
  *
- * We detect the deployment environment from VERCEL_ENV, never NODE_ENV:
- * Vercel previews run with NODE_ENV=production. When VERCEL_ENV is unset we
- * are on a developer machine or in CI, which we treat as "development".
+ * VERCEL_ENV decides the environment: Vercel previews run with
+ * NODE_ENV=production, so NODE_ENV alone cannot tell preview from production.
+ * Detection fails closed (ADR-023): when VERCEL_ENV is unset and the process
+ * is a production build (NODE_ENV=production) we are production. Only a
+ * non-production NODE_ENV without VERCEL_ENV — a developer machine, CI, tests,
+ * scripts — is "development".
  *
  * Secrets have deterministic defaults ONLY in development so tests and local
  * runs work without setup. Preview and production must configure them.
@@ -15,6 +18,7 @@ export type AppEnv = "production" | "preview" | "development";
 export function appEnv(): AppEnv {
   const v = process.env.VERCEL_ENV;
   if (v === "production" || v === "preview") return v;
+  if (!v && process.env.NODE_ENV === "production") return "production";
   return "development";
 }
 

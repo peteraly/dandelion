@@ -129,7 +129,8 @@ CI (`.github/workflows/ci.yml`) runs all of the above on every PR. Dependabot is
 
 See `.env.example` for the full list with comments. Rules:
 
-- `VERCEL_ENV` (not `NODE_ENV`) selects `production | preview | development`. Outside production the payment provider, SMS provider and chain are **forced** to mock / mock / testnet.
+- `VERCEL_ENV` selects `production | preview | development`; detection fails closed, so a production build (`NODE_ENV=production`) without `VERCEL_ENV` is production (ADR-023). Outside production the payment provider, SMS provider and chain are **forced** to mock / mock / testnet.
+- Time is read only through `lib/clock.ts`; the override for seeds and tests (`lib/clock-override.ts`) cannot be imported by the app, and `npm run build` fails if it leaks into the bundle (ADR-024).
 - Secrets have deterministic dev defaults only in development; preview and production must set them.
 - Production refuses `ANCHOR_SIGNER_KEY` (env private key) and, unless `ALLOW_ENV_DATA_KEY=true`, a non-KMS data key.
 - `SIMULATOR_ENABLED=true` is needed for `/dev/simulator`; it is always 404 in production.

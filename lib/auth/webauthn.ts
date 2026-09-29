@@ -2,6 +2,7 @@
  * Admin passkeys (WebAuthn) — the required admin second factor (§3.16), with
  * TOTP as the fallback. Challenges are bound to the pending admin session.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, eq, gt } from "drizzle-orm";
 import {
   generateAuthenticationOptions,
@@ -27,13 +28,13 @@ function rp() {
 async function storeChallenge(sessionId: string, challenge: string, kind: "REGISTER" | "AUTHENTICATE") {
   const db = getDb();
   await db.delete(s.webauthnChallenges).where(eq(s.webauthnChallenges.sessionId, sessionId));
-  await db.insert(s.webauthnChallenges).values({ sessionId, challenge, kind, expiresAt: new Date(Date.now() + CHALLENGE_TTL_MS) });
+  await db.insert(s.webauthnChallenges).values({ sessionId, challenge, kind, expiresAt: new Date(nowMs() + CHALLENGE_TTL_MS) });
 }
 
 async function takeChallenge(sessionId: string, kind: "REGISTER" | "AUTHENTICATE"): Promise<string | null> {
   const db = getDb();
   const row = await db.query.webauthnChallenges.findFirst({
-    where: and(eq(s.webauthnChallenges.sessionId, sessionId), eq(s.webauthnChallenges.kind, kind), gt(s.webauthnChallenges.expiresAt, new Date())),
+    where: and(eq(s.webauthnChallenges.sessionId, sessionId), eq(s.webauthnChallenges.kind, kind), gt(s.webauthnChallenges.expiresAt, now())),
   });
   if (!row) return null;
   await db.delete(s.webauthnChallenges).where(eq(s.webauthnChallenges.id, row.id));
@@ -107,6 +108,6 @@ export async function verifyAuthentication(sessionId: string, userId: string, re
     await logSecurityEvent(db, "ADMIN_2FA_FAILED", "ALERT", { userId, ip, details: { factor: "passkey" } });
     return false;
   }
-  await db.update(s.webauthnCredentials).set({ counter: v.authenticationInfo.newCounter, lastUsedAt: new Date() }).where(eq(s.webauthnCredentials.id, cred.id));
+  await db.update(s.webauthnCredentials).set({ counter: v.authenticationInfo.newCounter, lastUsedAt: now() }).where(eq(s.webauthnCredentials.id, cred.id));
   return true;
 }

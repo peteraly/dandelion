@@ -3,6 +3,7 @@
  * PIN (§4.6), PIN login with lockout (§7), self-lock, and admin-only
  * re-enrollment (§3.15). Admins enroll with a passphrase + TOTP, never SMS.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, eq, isNull, gt } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
@@ -66,14 +67,14 @@ async function issueEnrollmentToken(tx: Tx, userId: string, purpose: "ENROLL" | 
   // Invalidate older unused tokens for this user.
   await tx
     .update(s.enrollmentTokens)
-    .set({ usedAt: new Date() })
+    .set({ usedAt: now() })
     .where(and(eq(s.enrollmentTokens.userId, userId), isNull(s.enrollmentTokens.usedAt)));
   await tx.insert(s.enrollmentTokens).values({
     userId,
     tokenHash: sha256Hex(token),
     purpose,
     createdBy,
-    expiresAt: new Date(Date.now() + ENROLL_TOKEN_TTL_MS),
+    expiresAt: new Date(nowMs() + ENROLL_TOKEN_TTL_MS),
   });
   return token;
 }
@@ -132,7 +133,7 @@ export async function createUser(actor: Actor, raw: CreateUserInput): Promise<{ 
 
 async function findValidToken(token: string) {
   const row = await getDb().query.enrollmentTokens.findFirst({
-    where: and(eq(s.enrollmentTokens.tokenHash, sha256Hex(token)), isNull(s.enrollmentTokens.usedAt), gt(s.enrollmentTokens.expiresAt, new Date())),
+    where: and(eq(s.enrollmentTokens.tokenHash, sha256Hex(token)), isNull(s.enrollmentTokens.usedAt), gt(s.enrollmentTokens.expiresAt, now())),
   });
   if (!row) return null;
   const user = await getDb().query.users.findFirst({ where: eq(s.users.id, row.userId) });
@@ -184,9 +185,9 @@ export async function completeFieldEnrollment(
     const firstActivation = found.user.enrolledAt === null;
     await tx
       .update(s.users)
-      .set({ pinHash: hash, pinPepperVersion: pepperVersion, status: "ACTIVE", failedPinCount: 0, lockedUntil: null, lockReason: null, enrolledAt: new Date(), updatedAt: new Date() })
+      .set({ pinHash: hash, pinPepperVersion: pepperVersion, status: "ACTIVE", failedPinCount: 0, lockedUntil: null, lockReason: null, enrolledAt: now(), updatedAt: now() })
       .where(eq(s.users.id, found.user.id));
-    await tx.update(s.enrollmentTokens).set({ usedAt: new Date() }).where(eq(s.enrollmentTokens.id, found.tokenRow.id));
+    await tx.update(s.enrollmentTokens).set({ usedAt: now() }).where(eq(s.enrollmentTokens.id, found.tokenRow.id));
     if (firstActivation) {
       await recordLedgerEvent(tx, { type: "STAKEHOLDER_ACTIVATED", subjectRef: `U-${sha256Hex(found.user.id).slice(0, 10)}`, role: found.user.role });
     }
@@ -212,7 +213,7 @@ export async function completeAdminEnrollment(token: string, passphrase: string,
   if (!found || found.user.role !== "SUPER_ADMIN" || !found.user.totpSecretEnc) throw new DomainError("enroll_link_invalid");
   if (passphrase.length < 12 || passphrase.length > 200) throw new DomainError("passphrase_too_short");
   const secret = await decryptString(found.user.totpSecretEnc);
-  const step = verifyTotp(secret, totpCode, new Date(), null);
+  const step = verifyTotp(secret, totpCode, now(), null);
   if (step === null) throw new DomainError("totp_invalid");
   await withTx(async (tx) => {
     await tx
@@ -222,12 +223,12 @@ export async function completeAdminEnrollment(token: string, passphrase: string,
         pinPepperVersion: currentPepperVersion(),
         totpLastStep: step,
         status: "ACTIVE",
-        enrolledAt: new Date(),
+        enrolledAt: now(),
         failedPinCount: 0,
         lockedUntil: null,
       })
       .where(eq(s.users.id, found.user.id));
-    await tx.update(s.enrollmentTokens).set({ usedAt: new Date() }).where(eq(s.enrollmentTokens.id, found.tokenRow.id));
+    await tx.update(s.enrollmentTokens).set({ usedAt: now() }).where(eq(s.enrollmentTokens.id, found.tokenRow.id));
     await logAdminAction(tx, found.user.id, "admin.enrolled", { type: "user", id: found.user.id });
   });
 }
@@ -235,7 +236,7 @@ export async function completeAdminEnrollment(token: string, passphrase: string,
 type LoginResult = { ok: true; sessionToken: string; expiresAt: Date; locale: Locale } | { ok: false; error: string };
 
 async function recordPinFailure(user: typeof s.users.$inferSelect, ip: string | null): Promise<string> {
-  const out = afterFailedPin(user.failedPinCount, new Date());
+  const out = afterFailedPin(user.failedPinCount, now());
   await getDb()
     .update(s.users)
     .set({
@@ -264,7 +265,7 @@ export async function loginWithPin(phoneRaw: string, pin: string, deviceId: stri
   if (!phone.success) return { ok: false, error: "login_failed" };
   const user = await getDb().query.users.findFirst({ where: eq(s.users.phoneIndex, phoneBlindIndex(phone.data)) });
   if (!user || !isFieldRole(user.role) || !user.pinHash || user.pinPepperVersion === null) return { ok: false, error: "login_failed" };
-  const gate = loginGate(user.status, user.lockedUntil, new Date());
+  const gate = loginGate(user.status, user.lockedUntil, now());
   if (!gate.allowed) {
     await logSecurityEvent(getDb(), "LOGIN_WHILE_LOCKED", "WARN", { userId: user.id, ip });
     return { ok: false, error: gate.reason === "locked" ? "account_locked" : "temporarily_locked" };
@@ -294,7 +295,7 @@ export async function lockWithPhoneAndPin(phoneRaw: string, pin: string, ip: str
 
 export async function lockUser(userId: string, reason: string, adminId: string | null, ip: string | null = null): Promise<void> {
   await withTx(async (tx) => {
-    await tx.update(s.users).set({ status: "LOCKED", lockReason: reason, updatedAt: new Date() }).where(eq(s.users.id, userId));
+    await tx.update(s.users).set({ status: "LOCKED", lockReason: reason, updatedAt: now() }).where(eq(s.users.id, userId));
     await revokeAllSessions(userId, tx);
     await logSecurityEvent(tx, "ACCOUNT_LOCKED", "ALERT", { userId, ip, details: { reason, by: adminId ? "admin" : "self" } });
     if (adminId) await logAdminAction(tx, adminId, "user.lock", { type: "user", id: userId }, { reason });
@@ -311,7 +312,7 @@ export async function adminSuspendUser(actor: Actor, userId: string, suspend: bo
   authorize(actor, "admin.user.suspend");
   if (userId === actor.userId) throw new DomainError("cannot_lock_self_admin");
   await withTx(async (tx) => {
-    await tx.update(s.users).set({ status: suspend ? "SUSPENDED" : "LOCKED", updatedAt: new Date() }).where(eq(s.users.id, userId));
+    await tx.update(s.users).set({ status: suspend ? "SUSPENDED" : "LOCKED", updatedAt: now() }).where(eq(s.users.id, userId));
     await revokeAllSessions(userId, tx);
     await logAdminAction(tx, actor.userId, suspend ? "user.suspend" : "user.unsuspend", { type: "user", id: userId });
   });
@@ -330,7 +331,7 @@ export async function adminReenrollUser(actor: Actor, userId: string): Promise<{
     if (user.id === actor.userId) throw new DomainError("cannot_reenroll_self");
     await tx
       .update(s.users)
-      .set({ status: "INVITED", pinHash: null, pinPepperVersion: null, passphraseHash: null, totpSecretEnc: null, failedPinCount: 0, lockedUntil: null, lockReason: null, updatedAt: new Date() })
+      .set({ status: "INVITED", pinHash: null, pinPepperVersion: null, passphraseHash: null, totpSecretEnc: null, failedPinCount: 0, lockedUntil: null, lockReason: null, updatedAt: now() })
       .where(eq(s.users.id, userId));
     if (user.role === "SUPER_ADMIN") await tx.delete(s.webauthnCredentials).where(eq(s.webauthnCredentials.userId, userId));
     await revokeAllSessions(userId, tx);
@@ -352,7 +353,7 @@ export async function adminPassphraseLogin(phoneRaw: string, passphrase: string,
   if (!phone.success) return { ok: false, error: "login_failed" };
   const user = await getDb().query.users.findFirst({ where: eq(s.users.phoneIndex, phoneBlindIndex(phone.data)) });
   if (!user || user.role !== "SUPER_ADMIN" || !user.passphraseHash) return { ok: false, error: "login_failed" };
-  const gate = loginGate(user.status, user.lockedUntil, new Date());
+  const gate = loginGate(user.status, user.lockedUntil, now());
   if (!gate.allowed) return { ok: false, error: gate.reason === "locked" ? "account_locked" : "temporarily_locked" };
   if (user.status !== "ACTIVE") return { ok: false, error: "login_failed" };
   if (!(await verifyPassphrase(user.passphraseHash, passphrase, user.pinPepperVersion ?? currentPepperVersion()))) {
@@ -366,7 +367,7 @@ export async function adminPassphraseLogin(phoneRaw: string, passphrase: string,
 export async function adminVerifyTotp(userId: string, code: string, ip: string | null): Promise<boolean> {
   const user = await getDb().query.users.findFirst({ where: eq(s.users.id, userId) });
   if (!user || user.role !== "SUPER_ADMIN" || !user.totpSecretEnc) return false;
-  const step = verifyTotp(await decryptString(user.totpSecretEnc), code, new Date(), user.totpLastStep);
+  const step = verifyTotp(await decryptString(user.totpSecretEnc), code, now(), user.totpLastStep);
   if (step === null) {
     await logSecurityEvent(getDb(), "ADMIN_2FA_FAILED", "ALERT", { userId, ip, details: { factor: "totp" } });
     await recordPinFailure(user, ip);

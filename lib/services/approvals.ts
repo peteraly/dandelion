@@ -5,6 +5,7 @@
  * change inside a transaction marked app.approvals=on, and the request can
  * never be re-executed.
  */
+import { now } from "@/lib/clock";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
@@ -144,17 +145,17 @@ export async function decideApproval(actor: Actor, requestId: string, decision: 
     const ev = evaluateApproval({ requesterId: req.requestedBy, threshold: req.threshold, decisions: [...existing, { adminId: actor.userId, decision }] });
     await logAdminAction(tx, actor.userId, `approval.${decision.toLowerCase()}`, { type: "approval", id: requestId }, { type: req.type }, req.highlighted);
     if (ev.status === "REJECTED") {
-      await tx.update(s.approvalRequests).set({ status: "REJECTED", decidedAt: new Date() }).where(eq(s.approvalRequests.id, requestId));
+      await tx.update(s.approvalRequests).set({ status: "REJECTED", decidedAt: now() }).where(eq(s.approvalRequests.id, requestId));
       await onRejected(tx, req);
       return { status: "REJECTED" };
     }
     if (ev.status !== "APPROVED") return { status: "PENDING" };
-    await tx.update(s.approvalRequests).set({ status: "APPROVED", decidedAt: new Date() }).where(eq(s.approvalRequests.id, requestId));
+    await tx.update(s.approvalRequests).set({ status: "APPROVED", decidedAt: now() }).where(eq(s.approvalRequests.id, requestId));
     const proof: DualApprovalProof = { requesterId: req.requestedBy, approverIds: ev.approverIds, threshold: req.threshold };
     try {
       await actAsApprovals(tx);
       await execute(tx, req, proof, actor.userId);
-      await tx.update(s.approvalRequests).set({ status: "EXECUTED", executedAt: new Date() }).where(eq(s.approvalRequests.id, requestId));
+      await tx.update(s.approvalRequests).set({ status: "EXECUTED", executedAt: now() }).where(eq(s.approvalRequests.id, requestId));
       return { status: "EXECUTED" };
     } catch (e) {
       // Execution failure must not lose the approval record: rethrow so the whole decision rolls back.
@@ -206,7 +207,7 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
         .values({ ...p, approvalRequestId: req.id })
         .onConflictDoUpdate({
           target: [s.productAreaAvailability.productId, s.productAreaAvailability.serviceAreaId],
-          set: { available: p.available, washConditionsConfirmed: p.washConditionsConfirmed, approvalRequestId: req.id, updatedAt: new Date() },
+          set: { available: p.available, washConditionsConfirmed: p.washConditionsConfirmed, approvalRequestId: req.id, updatedAt: now() },
         });
       return;
     }
@@ -224,7 +225,7 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       return;
     case "STAKEHOLDER_ACTIVATE": {
       const { userId } = req.payload as { userId: string };
-      await tx.update(s.users).set({ status: "ACTIVE", updatedAt: new Date() }).where(and(eq(s.users.id, userId), eq(s.users.status, "SUSPENDED")));
+      await tx.update(s.users).set({ status: "ACTIVE", updatedAt: now() }).where(and(eq(s.users.id, userId), eq(s.users.status, "SUSPENDED")));
       return;
     }
   }

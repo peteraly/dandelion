@@ -5,6 +5,7 @@
  *
  * Security events: every OTP request is logged; bursts and new devices alert.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, desc, eq, gt, isNull, sql } from "drizzle-orm";
 import { getDb, type DbOrTx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -23,7 +24,7 @@ export async function issueOtp(
   opts: { purpose: OtpPurpose; phoneIndex: string; subjectId: string | null; deviceId: string | null; userId?: string | null; ip?: string | null },
   db: DbOrTx = getDb(),
 ): Promise<{ challengeId: string; code: string }> {
-  const since = new Date(Date.now() - OTP_WINDOW_MS);
+  const since = new Date(nowMs() - OTP_WINDOW_MS);
   const recent = await db
     .select({ n: sql<number>`count(*)::int`, devices: sql<string[]>`array_agg(distinct device_id)` })
     .from(s.otpChallenges)
@@ -53,7 +54,7 @@ export async function issueOtp(
       subjectId: opts.subjectId,
       codeHash: hashCode(`otp:${opts.purpose}`, code),
       deviceId: opts.deviceId,
-      expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      expiresAt: new Date(nowMs() + OTP_TTL_MS),
     })
     .returning({ id: s.otpChallenges.id });
   await logSecurityEvent(db, "OTP_REQUESTED", "INFO", { userId: opts.userId, subjectIndex: opts.phoneIndex, ip: opts.ip, details: { purpose: opts.purpose } });
@@ -68,7 +69,7 @@ export async function consumeOtp(
   const ch = await db.query.otpChallenges.findFirst({
     where: and(eq(s.otpChallenges.id, opts.challengeId), eq(s.otpChallenges.purpose, opts.purpose), isNull(s.otpChallenges.consumedAt)),
   });
-  if (!ch || ch.expiresAt < new Date() || ch.attempts >= OTP_MAX_ATTEMPTS) return false;
+  if (!ch || ch.expiresAt < now() || ch.attempts >= OTP_MAX_ATTEMPTS) return false;
   if (opts.subjectId !== null && ch.subjectId !== opts.subjectId) return false;
   if (!/^\d{6}$/.test(opts.code) || !codeMatches(`otp:${opts.purpose}`, opts.code, ch.codeHash)) {
     await db.update(s.otpChallenges).set({ attempts: ch.attempts + 1 }).where(eq(s.otpChallenges.id, ch.id));
@@ -76,7 +77,7 @@ export async function consumeOtp(
   }
   const updated = await db
     .update(s.otpChallenges)
-    .set({ consumedAt: new Date() })
+    .set({ consumedAt: now() })
     .where(and(eq(s.otpChallenges.id, ch.id), isNull(s.otpChallenges.consumedAt)))
     .returning({ id: s.otpChallenges.id });
   return updated.length === 1;

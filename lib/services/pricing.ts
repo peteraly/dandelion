@@ -2,6 +2,7 @@
  * Prices come only from the ACTIVE, dual-approved price list (§3.5).
  * Drafting is admin-only; activation runs through the approvals executor.
  */
+import { now } from "@/lib/clock";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type DbOrTx, type Tx } from "@/lib/db/client";
@@ -93,7 +94,7 @@ export async function activatePriceList(tx: Tx, priceListId: string): Promise<vo
     .update(s.priceLists)
     .set({ status: "SUPERSEDED" })
     .where(and(eq(s.priceLists.serviceAreaId, list.serviceAreaId), eq(s.priceLists.supplierId, list.supplierId), eq(s.priceLists.status, "ACTIVE")));
-  await tx.update(s.priceLists).set({ status: "ACTIVE", activatedAt: new Date() }).where(eq(s.priceLists.id, priceListId));
+  await tx.update(s.priceLists).set({ status: "ACTIVE", activatedAt: now() }).where(eq(s.priceLists.id, priceListId));
   await recordLedgerEvent(tx, { type: "PRICE_LIST_UPDATED", subjectRef: `PL-v${list.version}`, role: "SUPER_ADMIN" });
 }
 

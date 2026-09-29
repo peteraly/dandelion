@@ -3,6 +3,7 @@
  * phone, chosen product category, consent — and nothing else. Customers never
  * log in. Phone verification by SMS OTP (§7 security controls).
  */
+import { now } from "@/lib/clock";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
@@ -76,7 +77,7 @@ export async function verifyCustomerPhone(actor: Actor, customerId: string, chal
   // Consumed outside any transaction so a wrong code still counts against the attempt limit.
   const ok = await consumeOtp({ challengeId, purpose: "CUSTOMER_VERIFY", subjectId: c.id, code });
   if (!ok) throw new DomainError("otp_invalid");
-  await getDb().update(s.customers).set({ phoneVerifiedAt: new Date(), updatedAt: new Date() }).where(eq(s.customers.id, c.id));
+  await getDb().update(s.customers).set({ phoneVerifiedAt: now(), updatedAt: now() }).where(eq(s.customers.id, c.id));
 }
 
 export async function myCustomers(actor: Actor) {

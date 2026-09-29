@@ -3,6 +3,7 @@
  * appends a custody_events row, and (for registrations, transfers, handovers,
  * locks) a LedgerEvent — all in the caller's transaction.
  */
+import { now } from "@/lib/clock";
 import { eq, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -52,7 +53,7 @@ export async function applyCustody(tx: Tx, batch: Batch, event: CustodyEvent, ac
       lockedFromState: locking ? batch.custodyState : unlocking ? null : batch.lockedFromState,
       custodianUserId: change.custodianUserId === undefined ? batch.custodianUserId : change.custodianUserId,
       hubId: change.hubId === undefined ? batch.hubId : change.hubId,
-      updatedAt: new Date(),
+      updatedAt: now(),
     })
     .where(eq(s.batches.id, batch.id))
     .returning();
@@ -123,7 +124,7 @@ export async function splitBatch(
 ): Promise<Batch> {
   const refused = canSplit(kind, { state: parent.custodyState, quantity: parent.quantity }, qty);
   if (refused) throw new DomainError(refused);
-  await tx.update(s.batches).set({ quantity: sql`${s.batches.quantity} - ${qty}`, updatedAt: new Date() }).where(eq(s.batches.id, parent.id));
+  await tx.update(s.batches).set({ quantity: sql`${s.batches.quantity} - ${qty}`, updatedAt: now() }).where(eq(s.batches.id, parent.id));
   const state: CustodyState = INITIAL_CUSTODY_STATES[kind];
   const [child] = await tx
     .insert(s.batches)
@@ -163,6 +164,6 @@ export async function returnToParent(tx: Tx, actor: ServiceActor, child: Batch, 
   const parent = await lockBatch(tx, child.parentBatchId);
   if (isLocked(parent.custodyState)) throw new DomainError("batch_locked");
   await applyCustody(tx, child, event, actor, ctx, { orderId });
-  await tx.update(s.batches).set({ quantity: sql`${s.batches.quantity} + ${child.quantity}`, updatedAt: new Date() }).where(eq(s.batches.id, parent.id));
-  await tx.update(s.batches).set({ quantity: 0, updatedAt: new Date() }).where(eq(s.batches.id, child.id));
+  await tx.update(s.batches).set({ quantity: sql`${s.batches.quantity} + ${child.quantity}`, updatedAt: now() }).where(eq(s.batches.id, parent.id));
+  await tx.update(s.batches).set({ quantity: 0, updatedAt: now() }).where(eq(s.batches.id, child.id));
 }

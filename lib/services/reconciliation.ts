@@ -3,6 +3,7 @@
  * events ↔ handovers. Deterministic rules; flags feed the admin brief and
  * the "under review" marker on /verify. It never changes an order.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -54,7 +55,7 @@ export function reconcileOrder(o: OrderSnapshotForRecon, pendingAlertMinutes: nu
 export async function runDailyReconciliation(): Promise<{ checked: number; matched: number; mismatched: number }> {
   const db = getDb();
   const pendingAlert = await getSetting("paymentPendingAlertMinutes");
-  const since = new Date(Date.now() - 45 * 86_400_000);
+  const since = new Date(nowMs() - 45 * 86_400_000);
   const rows = await db.execute<Record<string, unknown>>(sql`
     select o.id, o.kind, o.state, o.total_tzs as "totalTzs", o.batch_id as "batchId", o.completed_at as "completedAt",
       coalesce((select sum(confirmed_amount_tzs) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_CONFIRMED'), 0)::int as "confirmedTzs",
@@ -86,14 +87,14 @@ export async function runDailyReconciliation(): Promise<{ checked: number; match
     const stillOpen = new Set(flags.map((f) => `${f.orderId}:${f.kind}`));
     for (const f of open) {
       if (!stillOpen.has(`${f.orderId}:${f.kind}`)) {
-        await tx.update(s.reconciliationFlags).set({ resolvedAt: new Date() }).where(eq(s.reconciliationFlags.id, f.id));
+        await tx.update(s.reconciliationFlags).set({ resolvedAt: now() }).where(eq(s.reconciliationFlags.id, f.id));
       }
     }
     await recordLedgerEvent(tx, { type: "DAILY_RECONCILIATION", subjectRef: `RECON-${tzDay()}`, amountTzs: null, role: "SYSTEM" });
     await tx
       .insert(s.jobHeartbeats)
-      .values({ name: "reconciliation", lastRunAt: new Date(), lastStatus: "ok", details: result })
-      .onConflictDoUpdate({ target: s.jobHeartbeats.name, set: { lastRunAt: new Date(), lastStatus: "ok", details: result } });
+      .values({ name: "reconciliation", lastRunAt: now(), lastStatus: "ok", details: result })
+      .onConflictDoUpdate({ target: s.jobHeartbeats.name, set: { lastRunAt: now(), lastStatus: "ok", details: result } });
   });
   return result;
 }
@@ -106,5 +107,5 @@ export async function orderUnderReview(orderId: string): Promise<boolean> {
 }
 
 export async function staleFlags(days = 7) {
-  return getDb().query.reconciliationFlags.findMany({ where: and(isNull(s.reconciliationFlags.resolvedAt), lt(s.reconciliationFlags.createdAt, new Date(Date.now() - days * 86_400_000))) });
+  return getDb().query.reconciliationFlags.findMany({ where: and(isNull(s.reconciliationFlags.resolvedAt), lt(s.reconciliationFlags.createdAt, new Date(nowMs() - days * 86_400_000))) });
 }

@@ -6,6 +6,7 @@
  * one transaction. Prices always come from the active dual-approved price
  * list (§3.5); no amount is ever taken from user input.
  */
+import { now, nowMs } from "@/lib/clock";
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { Tx } from "@/lib/db/client";
@@ -61,7 +62,7 @@ export async function applyOrder(tx: Tx, order: Order, event: OrderEvent, actor:
   if (!res.ok) throw new DomainError("transition_refused", res.reason);
   const [o] = await tx
     .update(s.orders)
-    .set({ ...patch, state: res.to, updatedAt: new Date(), completedAt: res.to === "COMPLETED" ? new Date() : undefined })
+    .set({ ...patch, state: res.to, updatedAt: now(), completedAt: res.to === "COMPLETED" ? now() : undefined })
     .where(eq(s.orders.id, order.id))
     .returning();
   return o!;
@@ -196,7 +197,7 @@ export async function claimPaid(actor: Actor, orderId: string): Promise<{ jobId:
     if (order.state !== "AWAITING_PAYMENT") throw new DomainError("not_awaiting_payment");
     const intent = await ensureOpenIntent(tx, order);
     if (!intent.payerClaimedAt) {
-      await tx.update(s.paymentIntents).set({ payerClaimedAt: new Date(), updatedAt: new Date() }).where(eq(s.paymentIntents.id, intent.id));
+      await tx.update(s.paymentIntents).set({ payerClaimedAt: now(), updatedAt: now() }).where(eq(s.paymentIntents.id, intent.id));
     }
     if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
       const batch = await lockBatch(tx, order.batchId);
@@ -311,7 +312,7 @@ export async function confirmRelease(actor: Actor, orderId: string): Promise<voi
     const allowed = order.kind === "RIDER_TO_HUB" ? ["AWAITING_PAYMENT", "PAID"] : ["PAID"];
     if (!allowed.includes(order.state)) throw new DomainError("payment_not_confirmed");
     if (!order.senderConfirmedAt) {
-      await tx.update(s.orders).set({ senderConfirmedAt: new Date(), updatedAt: new Date() }).where(eq(s.orders.id, order.id));
+      await tx.update(s.orders).set({ senderConfirmedAt: now(), updatedAt: now() }).where(eq(s.orders.id, order.id));
     }
     await tryCompleteTransfer(tx, order, asService(actor));
   });
@@ -322,7 +323,7 @@ export async function confirmReceipt(actor: Actor, orderId: string, checks: { qu
   await actOn(actor, orderId, "order.confirm_receipt", async (tx, order) => {
     if (order.state !== "PAID") throw new DomainError("payment_not_confirmed");
     if (!order.receiverConfirmedAt) {
-      await tx.update(s.orders).set({ receiverConfirmedAt: new Date(), updatedAt: new Date() }).where(eq(s.orders.id, order.id));
+      await tx.update(s.orders).set({ receiverConfirmedAt: now(), updatedAt: now() }).where(eq(s.orders.id, order.id));
     }
     await tryCompleteTransfer(tx, order, asService(actor));
   });
@@ -367,8 +368,8 @@ export async function passInspection(actor: Actor, orderId: string, checklist: R
   if (!parsed.success) throw new DomainError("inspection_checklist_incomplete");
   await actOn(actor, orderId, "order.inspect", async (tx, order) => {
     const updated = await applyOrder(tx, order, "INSPECTION_PASSED", asService(actor), {}, {
-      inspectionPassedAt: new Date(),
-      receiverConfirmedAt: new Date(),
+      inspectionPassedAt: now(),
+      receiverConfirmedAt: now(),
     });
     await ensureOpenIntent(tx, updated);
   });
@@ -521,7 +522,7 @@ export async function expectCustomerPayment(actor: Actor, orderId: string): Prom
     if (order.state !== "PLAN_ACTIVE") throw new DomainError("not_awaiting_payment");
     const intent = await ensureOpenIntent(tx, order);
     if (!intent.payerClaimedAt) {
-      await tx.update(s.paymentIntents).set({ payerClaimedAt: new Date(), updatedAt: new Date() }).where(eq(s.paymentIntents.id, intent.id));
+      await tx.update(s.paymentIntents).set({ payerClaimedAt: now(), updatedAt: now() }).where(eq(s.paymentIntents.id, intent.id));
     }
     jobId = await enqueuePoll(tx, intent);
   });
@@ -548,7 +549,7 @@ export async function startHandover(actor: Actor, orderId: string): Promise<void
     await applyOrder(tx, order, "START_HANDOVER", asService(actor), { fullyPaid: t.fullyPaid, stockReserved: true }, {
       batchId: child.id,
       handoverCodeHash: hashCode(`handover:${order.id}`, code),
-      handoverCodeExpiresAt: new Date(Date.now() + HANDOVER_CODE_TTL_MS),
+      handoverCodeExpiresAt: new Date(nowMs() + HANDOVER_CODE_TTL_MS),
     });
     const c = await customerContact(tx, order.customerId!);
     await getSmsProvider().send(c.phone, tr(c.locale, "sms.handoverCode", { name: c.name, code }), "HANDOVER_CODE", tx);
@@ -561,7 +562,7 @@ export async function resendHandoverCode(actor: Actor, orderId: string): Promise
     const code = numericCode(6);
     await tx
       .update(s.orders)
-      .set({ handoverCodeHash: hashCode(`handover:${order.id}`, code), handoverCodeExpiresAt: new Date(Date.now() + HANDOVER_CODE_TTL_MS), updatedAt: new Date() })
+      .set({ handoverCodeHash: hashCode(`handover:${order.id}`, code), handoverCodeExpiresAt: new Date(nowMs() + HANDOVER_CODE_TTL_MS), updatedAt: now() })
       .where(eq(s.orders.id, order.id));
     const c = await customerContact(tx, order.customerId!);
     await getSmsProvider().send(c.phone, tr(c.locale, "sms.handoverCode", { name: c.name, code }), "HANDOVER_CODE", tx);
@@ -582,7 +583,7 @@ export async function completeHandover(actor: Actor, orderId: string, code: stri
     const codeOk =
       !!order.handoverCodeHash &&
       !!order.handoverCodeExpiresAt &&
-      order.handoverCodeExpiresAt > new Date() &&
+      order.handoverCodeExpiresAt > now() &&
       /^\d{6}$/.test(code) &&
       codeMatches(`handover:${order.id}`, code, order.handoverCodeHash);
     if (!codeOk) throw new DomainError("customer_code_invalid");
@@ -599,9 +600,9 @@ export async function completeHandover(actor: Actor, orderId: string, code: stri
     );
     const receiptToken = randomToken();
     await applyOrder(tx, order, "COMPLETE", asService(actor), { fullyPaid: t.fullyPaid, customerCodeValid: true, educationConfirmed: true }, {
-      educationConfirmedAt: new Date(),
-      senderConfirmedAt: new Date(),
-      receiverConfirmedAt: new Date(),
+      educationConfirmedAt: now(),
+      senderConfirmedAt: now(),
+      receiverConfirmedAt: now(),
       receiptTokenHash: sha256Hex(receiptToken),
       handoverCodeHash: null,
     });
@@ -703,7 +704,7 @@ export async function applyDonorFunding(tx: Tx, orderId: string, proof: DualAppr
 // ================= reads =================
 
 export async function recentOrdersFor(userId: string, days = 7) {
-  const since = new Date(Date.now() - days * 86_400_000);
+  const since = new Date(nowMs() - days * 86_400_000);
   const db = getDb();
   return db.query.orders.findMany({
     where: and(sql`(${s.orders.sellerUserId} = ${userId} or ${s.orders.buyerUserId} = ${userId})`, sql`(${s.orders.completedAt} is null or ${s.orders.completedAt} > ${since})`),

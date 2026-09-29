@@ -7,6 +7,7 @@
  * model call (lib/ai) → ai_interaction_log row (prompt version, output,
  * accepted = null until the human decides).
  */
+import { now } from "@/lib/clock";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -85,7 +86,7 @@ async function log<T>(actor: Actor, feature: string, out: AiOutcome<T>): Promise
 
 /** The human's decision on a draft. */
 export async function recordDecision(interactionId: string, accepted: boolean): Promise<void> {
-  await getDb().update(s.aiInteractionLog).set({ accepted, decidedAt: new Date() }).where(eq(s.aiInteractionLog.id, interactionId));
+  await getDb().update(s.aiInteractionLog).set({ accepted, decidedAt: now() }).where(eq(s.aiInteractionLog.id, interactionId));
 }
 
 export async function aiProposeException(actor: Actor, text: string): Promise<{ id: string; proposal: ExceptionProposal | null }> {

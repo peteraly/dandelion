@@ -2,6 +2,7 @@
  * Builds the role-scoped snapshots the One Screen decision tables consume.
  * Read-only.
  */
+import { nowMs } from "@/lib/clock";
 import { and, desc, eq, gte, inArray, isNull, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -24,7 +25,7 @@ export async function snapshotFor(actor: Actor, o: Order): Promise<OrderSnapshot
       orderBy: desc(s.paymentIntents.confirmedAt),
     });
     const since = last?.confirmedAt ?? o.createdAt;
-    daysSinceLastPayment = (Date.now() - since.getTime()) / 86_400_000;
+    daysSinceLastPayment = (nowMs() - since.getTime()) / 86_400_000;
   }
   return {
     id: o.id,

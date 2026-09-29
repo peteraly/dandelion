@@ -5,6 +5,7 @@
  *
  * Hard guard: refuses unless simulatorEnabled() (never in production).
  */
+import { now } from "@/lib/clock";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -80,12 +81,12 @@ export async function simulate(scenario: Scenario, orderRef: string, opts: { amo
   const base = opts.amountTzs ?? target.remainingTzs;
   const callbacks: CallbackResult[] = [];
   const runJobs = opts.runJobs ?? true;
-  const now = new Date().toISOString();
+  const nowIso = now().toISOString();
 
   // One fake payer per order, so the per-payer rate limit behaves as it would in the field.
   const payer = `+2557000${(Number.parseInt(sha256Hex(orderRef).slice(0, 6), 16) % 100_000).toString().padStart(5, "0")}`;
   const fire = async (ref: string, amount: number, payee = target.payeeAccount, sign = true) => {
-    const cb = buildCallback({ transactionId: ref, accountReference: target.accountReference, amount, payee, payer, status: "SUCCESS", timestamp: now }, sign);
+    const cb = buildCallback({ transactionId: ref, accountReference: target.accountReference, amount, payee, payer, status: "SUCCESS", timestamp: nowIso }, sign);
     callbacks.push(await fireCallback(cb));
   };
 
