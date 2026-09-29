@@ -824,7 +824,15 @@
     "statement_empty": "The CSV is empty.",
     "statement_columns_missing": "The CSV needs reference and amount columns.",
     "statement_too_large": "The CSV is too large.",
+    "simulator_disabled": "The simulator is off here.",
+    "demo_profile_required": "This database was not seeded with the demo profile.",
+    "reset_not_allowed": "A reset is not allowed in this environment.",
+    "reset_confirm_required": "Type demo to confirm the reset.",
+    "rate_limited": "Too many requests. Wait a few minutes.",
     "large_export_needs_approval": "This export needs a dual-approved request first.",
     "cannot_delete_admin": "Administrator accounts cannot be deleted this way."
+  },
+  "demo": {
+    "banner": "SIMULATED DATA — generated for testing; no district is running."
   }
 }

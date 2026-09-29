@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { LocaleToggle } from "@/components/shell";
+import { DemoBanner } from "@/components/demo-banner";
 import { requireAdmin } from "@/lib/auth/current";
 import { logoutAdmin } from "@/app/actions/session";
 import { appEnv, simulatorEnabled } from "@/lib/env";
@@ -65,7 +66,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           ) : null}
         </nav>
       </aside>
-      <main className="flex flex-1 flex-col gap-4">{children}</main>
+      <main className="flex flex-1 flex-col gap-4">
+        <DemoBanner />
+        {children}
+      </main>
     </div>
   );
 }

@@ -9,6 +9,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import { asc, eq, or } from "drizzle-orm";
 import { PublicShell } from "@/components/shell";
+import { DemoBanner } from "@/components/demo-banner";
 import { Badge, Card, KV } from "@/components/ui";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -46,6 +47,7 @@ export default async function VerifyPage({ params, searchParams }: { params: Pro
     return (
       <PublicShell path={`/verify/${ref}`}>
         <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <DemoBanner />
         <p>{t("notFound")}</p>
       </PublicShell>
     );
@@ -66,6 +68,7 @@ export default async function VerifyPage({ params, searchParams }: { params: Pro
   return (
     <PublicShell path={`/verify/${ref}`}>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
+      <DemoBanner />
       <p className="rounded-xl bg-brand-50 p-3" data-testid="verify-statement">
         {t("statement", { date: formatDay(firstDate, locale) })}
       </p>

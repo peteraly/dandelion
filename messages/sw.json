@@ -825,7 +825,15 @@
     "statement_empty": "CSV haina data.",
     "statement_columns_missing": "CSV inahitaji safu za kumbukumbu na kiasi.",
     "statement_too_large": "CSV ni kubwa mno.",
+    "simulator_disabled": "Kiigizo kimezimwa hapa.",
+    "demo_profile_required": "Hifadhidata hii haikupandwa kwa wasifu wa mfano.",
+    "reset_not_allowed": "Kuweka upya hakuruhusiwi katika mazingira haya.",
+    "reset_confirm_required": "Andika demo kuthibitisha kuweka upya.",
+    "rate_limited": "Maombi mengi mno. Subiri dakika chache.",
     "large_export_needs_approval": "Uhamishaji huu unahitaji ombi lililoidhinishwa na wawili kwanza.",
     "cannot_delete_admin": "Akaunti za wasimamizi haziwezi kufutwa kwa njia hii."
+  },
+  "demo": {
+    "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi."
   }
 }

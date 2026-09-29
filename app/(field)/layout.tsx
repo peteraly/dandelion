@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 import { FieldShell } from "@/components/shell";
+import { DemoBanner } from "@/components/demo-banner";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { requireField } from "@/lib/auth/current";
 import { logoutField } from "@/app/actions/session";
@@ -15,6 +16,7 @@ export default async function FieldLayout({ children }: { children: ReactNode })
   const path = h.get("x-invoke-path") ?? "/home";
   return (
     <FieldShell roleLabel={t(session.user.role)} name={session.user.displayName} path={path} logout={logoutField}>
+      <DemoBanner />
       <ServiceWorkerRegister />
       {children}
     </FieldShell>

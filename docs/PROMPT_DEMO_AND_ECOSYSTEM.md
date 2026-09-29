@@ -1,11 +1,14 @@
-# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.2)
+# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.3)
 
 v1.1 amends v1 after an external review; the review log is in §7. Changes:
 fail-closed environment detection, a clock override that cannot be imported by
 the app, backdating only into an empty database, seed safety guards, preview
 protection and env-sourced seed credentials as preconditions, no crons on
 previews, visibility-aware refresh, demo banner keyed on a setting, and a
-founders' decision about what the demo is for.
+founders' decision about what the demo is for. v1.2 (§8) makes the supplier
+a full stakeholder. v1.3 (§8.8) records the founder's description of how the
+products actually move — supplier → riders → customers and villages,
+organisations as buyers, factory-gate sales — and adds step 3c for it.
 
 This prompt extends `docs/BUILD_PROMPT.md`. Everything there still applies — the
 §3 invariants, the honesty rules, the stop conditions, the "never mark a gate
@@ -617,6 +620,115 @@ next to hubs and champions.
 ### 8.7 Where it fits in the order of work
 
 Supplier data and pages are their own commit between steps 3 and 4
-("Step 3b — supplier organisation"); the ecosystem view (steps 4–5) then
-consumes them; the demo generator changes ride with step 3b. The review log
-gains a row: "Supplier thinly modelled — accepted (founder request)".
+("Step 3b — supplier organisation"); the sale paths and organisation buyers
+of §8.8 are the commit after it ("Step 3c — sale paths"); the ecosystem view
+(steps 4–5) then consumes both; the demo generator changes ride with 3b and
+3c. The review log gains two rows: "Supplier thinly modelled — accepted
+(founder request)" and "Chain modelled as a fixed ladder — accepted (founder
+clarification, §8.8)".
+
+### 8.8 Amendment (v1.3): how the products actually move
+
+Founder clarification (2026-09-29): the supplier sells mainly to the delivery
+drivers — the handbook's boss riders — who distribute to customers directly or
+to villages. NGOs, non-profits and other organisations take part. The tool is
+the distribution system for feminine-hygiene supplies (disposable pads,
+reusable pads, cups and other approved menstrual-health items) and it exists
+so that the people who take part earn money. And a customer, or any other
+stakeholder, who lives close to the factory may simply buy from it directly.
+
+The handbook's ladder — supplier → boss rider → hub → champion → customer
+(§8 A–E) — stays the default path and the price-list example. It is not the
+only path. Model the chain as a **graph of allowed sales between
+stakeholders**, not a fixed ladder.
+
+**8.8.1 Allowed sales — one table of truth.** `lib/domain/sales.ts` exports
+`ALLOWED_SALES`: rows of (seller role, buyer role, shape, default enabled).
+Every order carries its seller and buyer; the order kind is derived from the
+pair. Anything not in the table is refused with a `DomainError` before any
+row is written.
+
+| Seller | Buyer | Shape | Default | Note |
+|---|---|---|---|---|
+| Supplier | Boss rider | bulk | on | handbook A/B (exists: `SUPPLIER_TO_RIDER`) |
+| Boss rider | Hub | bulk | on | handbook B/C (exists: `RIDER_TO_HUB`) |
+| Hub | Champion | bulk | on | handbook C/D (exists: `HUB_TO_CHAMPION`) |
+| Champion | Customer | plan | on | handbook D/E (exists: `CHAMPION_TO_CUSTOMER`) |
+| Boss rider | Customer | plan | per area | "village drop": the rider sells directly |
+| Supplier | Customer | plan | per area | factory gate: a customer who lives nearby |
+| Supplier | Hub / Champion | bulk | per area | factory gate: a stakeholder collects their own stock |
+| Supplier / Hub / Boss rider | Organisation | bulk | per area | NGO, non-profit, school, community organisation |
+
+Two shapes only, and they are the two machines that exist today: **bulk** is
+the exact-payment sale with pickup or delivery inspection and a custody
+transfer (`amountRuleFor` = `EXACT_REMAINING`); **plan** is the customer
+sale with installments, one open payment intent and a handover code
+(`UP_TO_REMAINING`). Prefer parameterising the two existing machines by the
+(seller, buyer) pair over copying them; if that endangers the existing
+domain tests, add explicit kinds — either way `ALLOWED_SALES` is the single
+place that says what is allowed, and every path has the same invariants:
+
+- No cash. The buyer pays the seller by mobile money; the provider confirms
+  it before custody moves (factory release rule, handbook §8A, applies to
+  every seller).
+- Custody is unbroken: a sale moves a lot from the seller's holding to the
+  buyer's; a sale to a customer or an organisation ends the lot's life in the
+  system (`HANDED_OVER` / `DELIVERED_TO_ORG`). Nothing is tracked past that.
+- Ledger events, exceptions, the verify link and the SMS receipts are the
+  same on every path; the review queue, statements and reconciliation see a
+  direct sale like any other.
+- Policy: the seller sees their sales, the buyer their purchases, admins
+  everything; a supplier still never sees downstream margins.
+- Earnings: every stakeholder home shows "earned this week / this month" =
+  payments **confirmed by the provider** to them minus what they paid their
+  sellers in the window, per path. The ecosystem view shows the same per
+  node (admins only). Never "expected" earnings.
+
+**8.8.2 Per-area switches.** Each row beyond the handbook ladder is a
+per-area setting (`areas.allowedSales`, default: ladder only). Enabling a
+path in a real area is a `SETTING_CHANGE` dual approval, because it decides
+who earns. The demo profile enables every path in every area so the view has
+every node and edge type.
+
+**8.8.3 Prices.** One customer price per (area, product), whoever sells —
+a customer never pays more for buying from a rider or at the factory gate,
+and never less either (the price rules in the handbook forbid per-seller
+customer prices). The seller on a direct sale receives the whole payment;
+the margin a hub or champion would have earned is simply not earned. Price
+lists gain an `organisation` step price; suppliers may quote it. Whether the
+pilot wants direct paths in a real area is the founders' call (§8.8.6).
+
+**8.8.4 Organisations.** A buyer record, not a login: `organisations`
+(name, kind: NGO / NON_PROFIT / SCHOOL / COMMUNITY / OTHER, area, contact
+name, encrypted contact phone, active; activation is `STAKEHOLDER_ACTIVATE`
+dual approval like a supplier). An organisation pays by mobile money, gets
+the same SMS receipt and `/verify/[ref]` link a customer gets, and takes
+custody at delivery. Nothing about the people the organisation serves is
+recorded — no headcounts, no names, no health data. A login for
+organisations is a later decision, not this step.
+
+**8.8.5 Demo dataset.** Both scales get: two organisations (fictional names;
+"never call any organisation a partner", handbook §11) with bulk orders from
+a hub and from the supplier; a rider who does village drops (direct customer
+plans in an area without a champion nearby); a few factory-gate sales — two
+customers and one champion collecting her own stock. Anomalies in the
+manifest: an organisation order unpaid past its due date; a village-drop
+handover whose code was never confirmed; a factory-gate sale where the
+supplier released before the provider confirmed (an exception, not a
+success). The generator's `Manifest.counts` gains one count per path.
+
+**8.8.6 Founders' decisions (record in DECISIONS.md before 3c ships).**
+Which paths are enabled in the first real area; what an organisation pays;
+whether a rider who sells directly keeps the whole customer margin (default:
+yes, it is what the money flow does) or the area sets a different customer
+price rule (not allowed by the handbook today). Until decided, real areas
+stay ladder-only and only the demo shows the other paths.
+
+**8.8.7 Tests.** Unit: `ALLOWED_SALES` refuses a pair not in the table;
+the derived order kind for each row; earnings arithmetic. Integration: a
+disabled path in an area is refused; a factory-gate customer sale pays the
+customer price and moves custody supplier → customer; an organisation sale
+is exact-payment and ends the lot; a supplier user cannot see an
+organisation order it did not sell. e2e: a rider records a village drop
+from the field app and the customer's verify link shows it; the ecosystem
+view shows an organisation node and a dashed direct edge.

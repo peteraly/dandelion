@@ -163,7 +163,11 @@ DATABASE_URL=postgres://postgres:postgres@localhost:5432/dandelion_demo SIMULATO
 - Every person is fictional and carries `(TEST)`; phones come from `+255 700 00x xxx` only (ADR-025); no health data anywhere.
 - Preview deployments: set `SEED_PROFILE=demo` (with `SEED_ON_BUILD=true`) on a fresh Neon branch; the build seeds it. The demo profile refuses a non-empty database.
 
-The generator is in `scripts/demo/` (scenario modules `supply.ts`, `admin.ts`; orchestrator `run.ts`). Three things it found in the app are recorded in `docs/REVIEW.md` (a reversal bug, fixed; two exception types no service raises).
+- **Keep it moving.** On a demo database, `/dev/simulator` (admins; `SIMULATOR_ENABLED=true`) has *Simulate one hour* and *Simulate one day*: new activity on the **real** clock through the real services, then the payment poller — and for a day, reconciliation and anchoring — run in-process, because previews have no crons. Limited to 6 per 10 minutes; every tick is an admin-log entry (`demo.tick`). The seed-only clock override is not involved.
+- **Reset to the demo dataset.** Same page; type `demo`. It logs a security `ALERT`, wipes the database and POSTs the Vercel Deploy Hook (`VERCEL_DEPLOY_HOOK_URL`) so the build re-seeds the demo profile; locally it prints the seed command instead. Never in production; outside development it also needs `SEED_PROFILE=demo` and `SEED_ON_BUILD=true` in the environment. Every session ends with the wipe — sign in again after the rebuild.
+- **Honest labels.** While `settings.seedProfile` is `demo`, every admin and field page, `/verify` and every CSV export carry "SIMULATED DATA — generated for testing; no district is running." (keyed on the setting, never on names).
+
+The generator lives in `lib/demo/` (scenario modules `supply.ts`, `admin.ts`; `day.ts` is shared by the seed and the simulate buttons); `scripts/demo/run.ts` is the seed-only orchestrator that lays down the backdated history. Three things it found in the app are recorded in `docs/REVIEW.md` (a reversal bug, fixed; two exception types no service raises).
 
 ## Environment variables
 
@@ -209,6 +213,7 @@ A demo must be a **preview** deployment: in production the simulator is 404, the
 
 5. Settings → Deployment Protection: keep previews behind Vercel login (recommended) or open them for the demo — the data is fake either way.
 6. Trigger a build of the branch (push a commit, or create a deployment for the branch from the Deployments tab). The build migrates and seeds its Neon branch; the preview URL is listed under Deployments. Log in at `/admin/login` with the seed logins from Setup; `/dev/simulator` fakes payments and shows the SMS outbox.
+7. For the living demo: add `SEED_PROFILE=demo` (Preview) and the seed credentials (`SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B`, `SEED_FIELD_PIN` — generated as in Setup, kept in the password manager), reset the Neon branch to empty, redeploy. Then Settings → Git → **Deploy Hooks** → create one for the build branch and add its URL as `VERCEL_DEPLOY_HOOK_URL` (Preview): that is what "Reset to the demo dataset" on `/dev/simulator` calls after wiping the database.
 
 ### Production
 

@@ -13,6 +13,7 @@ import { decryptString } from "@/lib/crypto/envelope";
 import { maskPhone } from "@/lib/phone";
 import { DomainError, getSetting, logAdminAction, logSecurityEvent, withTx } from "./core";
 import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
+import { DEMO_CSV_HEADER } from "@/lib/demo/label";
 
 export interface Priorities {
   paymentsReview: number;
@@ -219,7 +220,9 @@ export async function exportCsv(actor: Actor, datasetRaw: string, approvalReques
     await logAdminAction(tx, actor.userId, "export.csv", { type: "dataset", id: dataset }, { rows: rows.length, approvalRequestId: approvalRequestId ?? null });
     await logSecurityEvent(tx, "EXPORT", "INFO", { userId: actor.userId, details: { dataset, rows: rows.length } });
   });
-  return { filename: `dandelion-${dataset}-${now().toISOString().slice(0, 10)}.csv`, content: csv(rows), rows: rows.length };
+  // Honest labels travel with the data (Prompt B §1.6): a demo export says so on its first line.
+  const demo = (await getSetting("seedProfile")) === "demo";
+  return { filename: `dandelion-${dataset}-${now().toISOString().slice(0, 10)}.csv`, content: (demo ? `${DEMO_CSV_HEADER}\n` : "") + csv(rows), rows: rows.length };
 }
 
 // ---------- data requests (§4.12) ----------

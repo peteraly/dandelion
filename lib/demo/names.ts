@@ -4,7 +4,7 @@
  * names are invented. Phone numbers come from the reserved-looking fake range
  * +255 700 00[0-9] [0-9][0-9][0-9] only (unverified as reserved — ADR-025).
  */
-import { FAKE_PHONE_RE } from "../seed";
+import { FAKE_PHONE_RE } from "@/lib/seed-identities";
 import type { Rng } from "./rng";
 
 const FIRST = [
@@ -24,6 +24,17 @@ export class Names {
   private nextCustomer = 1000; // +255 700 001 000 … for customers
 
   constructor(private rng: Rng) {}
+
+  /** Continue numbering above phones that already exist (ticks on a populated database). */
+  reserveAbove(existingPhones: readonly string[]): void {
+    for (const p of existingPhones) {
+      const m = p.match(/^\+2557000(\d{5})$/);
+      if (!m) continue;
+      const n = Number(m[1]);
+      if (n >= 100 && n < 1000) this.nextField = Math.max(this.nextField, n + 1);
+      else if (n >= 1000) this.nextCustomer = Math.max(this.nextCustomer, n + 1);
+    }
+  }
 
   person(): string {
     for (let i = 0; i < 100; i++) {

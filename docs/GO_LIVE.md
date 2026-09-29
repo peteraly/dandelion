@@ -26,6 +26,7 @@ These need credentials or dashboard actions the build did not have. Exact steps 
 5. ✅ 2026-09-29 — preview secrets set (`PIN_PEPPER`, `OTP_HMAC_KEY`, `BLIND_INDEX_KEY`, `DATA_KEK`, `MOCK_PROVIDER_SIGNING_KEY`, `CALLBACK_TOKEN_MOCK`, `CRON_SECRET`) plus `SIMULATOR_ENABLED=true` and `SEED_ON_BUILD=true`; migrations and the seed run during the build (ADR-022). **Production must get its own real secrets before launch** — the current values were generated for the demo.
 6. ⬜ Set `PRODUCTION_DB_HOST` so the seed script can never run against production.
 7. ⬜ Point an external uptime monitor at `/api/health` (see README).
+8. ⬜ Living demo on the preview: `SEED_PROFILE=demo` plus the five `SEED_*` credentials (password manager, never chat or repo) in the Preview environment; Neon branch reset to empty; then Vercel → Settings → Git → **Deploy Hooks** → one hook for the build branch, its URL as `VERCEL_DEPLOY_HOOK_URL` (Preview) so "Reset to the demo dataset" can rebuild (ADR-028).
 
 ## Signed off
 

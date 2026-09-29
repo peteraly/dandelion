@@ -14,8 +14,8 @@ import { encryptString } from "@/lib/crypto/envelope";
 import { phoneBlindIndex } from "@/lib/crypto/blind-index";
 import { hashPin } from "@/lib/auth/secrets";
 import { now } from "@/lib/clock";
-import type { SimulatedClock } from "@/lib/clock-override";
-import { SEED, type MinimalSeedResult } from "../seed";
+import type { DemoClock } from "./clock";
+import { SEED, type MinimalSeedResult } from "@/lib/seed-identities";
 import { Rng } from "./rng";
 import { Names } from "./names";
 import { Manifest } from "./manifest";
@@ -92,7 +92,7 @@ export class World {
 
   constructor(
     readonly rng: Rng,
-    readonly clock: SimulatedClock,
+    readonly clock: DemoClock,
     readonly scale: Scale,
     readonly params: ScaleParams,
     readonly base: MinimalSeedResult,

@@ -4,7 +4,7 @@
  * anomaly in its manifest, keep every identity fake, and finish in budget.
  * Uses DATABASE_URL from the "demo" vitest project (dandelion_demo by default).
  */
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDb, getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -12,7 +12,9 @@ import { APPROVAL_TYPES, CUSTODY_STATES, EXCEPTION_TYPES, ORDER_STATES, PAYMENT_
 import { runMigrations } from "@/lib/db/migrate";
 import { resetDatabase } from "@/scripts/seed";
 import { runDemoSeed, type DemoRunResult } from "@/scripts/demo/run";
-import type { DemoManifest } from "@/scripts/demo/manifest";
+import type { DemoManifest } from "@/lib/demo/manifest";
+import { simulateTick } from "@/lib/demo/tick";
+import { resetToDemoDataset } from "@/lib/demo/reset";
 
 process.env.VERCEL_ENV = "";
 process.env.SIMULATOR_ENABLED = "true";
@@ -115,3 +117,52 @@ describe("demo profile", () => {
     expect(manifest.needsNativeReview.length).toBeGreaterThan(0);
   });
 });
+
+// Prompt B §2.5 — runs last: the final test wipes the database.
+describe("simulate one hour / one day, then reset", () => {
+  const adminId = async () => (await db().query.users.findFirst({ where: eq(s.users.role, "SUPER_ADMIN") }))!.id;
+  const count = async (table: string) => Number((await db().execute<{ n: string }>(sql.raw(`select count(*)::text as n from ${table}`))).rows[0]!.n);
+
+  it("an hour adds activity on the real clock through the services and runs the poller", async () => {
+    // An hour is a slice: it may hold new plans, installments, handovers, problems or resolutions — not all of them.
+    const activity = async () => (await count("orders")) + (await count("payment_intents")) + (await count("ledger_events")) + (await count("exceptions"));
+    const before = await activity();
+    const r = await simulateTick("hour", await adminId());
+    expect(r.kind).toBe("hour");
+    expect(r.tick).toBe(1);
+    expect(Object.values(r.counts).reduce((a, b) => a + b, 0), JSON.stringify(r.skipped)).toBeGreaterThan(0);
+    expect(await activity()).toBeGreaterThan(before);
+    const hb = await db().query.jobHeartbeats.findFirst({ where: eq(s.jobHeartbeats.name, "poller") });
+    expect(hb?.lastStatus).toBe("ok (manual)");
+    const ticks = await db().query.settings.findFirst({ where: eq(s.settings.key, "demoTicks") });
+    expect(Number(ticks?.value)).toBe(1);
+  });
+
+  it("a day also runs reconciliation and anchoring, and both ticks are in the admin log", async () => {
+    const r = await simulateTick("day", await adminId());
+    expect(r.tick).toBe(2);
+    expect(r.jobs.reconciled).toBe(true);
+    expect(r.jobs.anchor.startsWith("error")).toBe(false);
+    const hb = await db().query.jobHeartbeats.findFirst({ where: eq(s.jobHeartbeats.name, "reconciliation") });
+    expect(hb?.lastStatus).toBe("ok (manual)");
+    const log = await db().execute<{ n: string }>(sql`select count(*)::text as n from admin_action_log where action = 'demo.tick'`);
+    expect(Number(log.rows[0]!.n)).toBe(2);
+    // The new rows carry the real clock, not the seed's simulated past.
+    const newest = await db().execute<{ at: string }>(sql`select max(created_at)::text as at from orders`);
+    expect(Date.now() - new Date(newest.rows[0]!.at).getTime()).toBeLessThan(10 * 60_000);
+  });
+
+  it("the reset needs the typed word, then leaves nothing behind", async () => {
+    const id = await adminId();
+    await expect(resetToDemoDataset(id, "yes")).rejects.toMatchObject({ code: "reset_confirm_required" });
+    expect(await count("users")).toBeGreaterThan(0);
+    const r = await resetToDemoDataset(id, "demo");
+    expect(r.wiped).toBe(true);
+    expect(r.redeployTriggered).toBe(false);
+    expect(r.note).toContain("npm run db:seed");
+    // The wipe drops the schema (append-only triggers forbid TRUNCATE); the rebuild's migrations recreate it.
+    const tables = await db().execute<{ n: string }>(sql`select count(*)::text as n from information_schema.tables where table_schema = 'public'`);
+    expect(tables.rows[0]!.n).toBe("0");
+  });
+});
+

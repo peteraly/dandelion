@@ -11,7 +11,9 @@ import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { SCENARIOS } from "@/lib/payments/simulator";
 import type { SearchParams } from "@/lib/actions";
-import { simulateAction, runJobsAction } from "./actions";
+import { demoStatus } from "@/lib/demo/tick";
+import { resetPreconditions } from "@/lib/demo/reset";
+import { simulateAction, runJobsAction, tickAction, resetDemoAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,9 @@ export default async function SimulatorPage({ searchParams }: { searchParams: Se
   const result = typeof sp.result === "string" ? sp.result : null;
   const orders = await getDb().query.orders.findMany({ where: inArray(s.orders.state, ["AWAITING_PAYMENT", "PLAN_ACTIVE"]), orderBy: desc(s.orders.updatedAt), limit: 50 });
   const outbox = await getDb().query.smsOutbox.findMany({ orderBy: desc(s.smsOutbox.createdAt), limit: 15 });
+  const demo = await demoStatus();
+  const isDemo = demo.profile === "demo";
+  const pre = resetPreconditions();
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 p-4">
       <h1 className="text-2xl font-bold">Dev simulator — MockProvider</h1>
@@ -64,6 +69,47 @@ export default async function SimulatorPage({ searchParams }: { searchParams: Se
           Run due verification jobs (poller)
         </button>
       </form>
+      <Card id="living-demo" data-testid="living-demo">
+        <h2 className="mb-1 font-semibold">Living demo</h2>
+        <p className="text-sm text-stone-700">
+          Dataset: <b data-testid="demo-profile">{demo.profile || "none"}</b>
+          {isDemo ? ` · scale ${demo.scale} · seed ${demo.seed} · ${demo.ticks} tick${demo.ticks === 1 ? "" : "s"} so far` : " — the buttons below need the demo profile (SEED_PROFILE=demo on an empty database)."}
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <form action={tickAction}>
+            <input type="hidden" name="kind" value="hour" />
+            <button type="submit" className="btn btn-secondary" disabled={!isDemo} data-testid="tick-hour">
+              Simulate one hour
+            </button>
+          </form>
+          <form action={tickAction}>
+            <input type="hidden" name="kind" value="day" />
+            <button type="submit" className="btn btn-secondary" disabled={!isDemo} data-testid="tick-day">
+              Simulate one day
+            </button>
+          </form>
+        </div>
+        <p className="mt-2 text-xs text-stone-500">New activity on the real clock through the real services, then the poller — and for a day, reconciliation and anchoring — run here because previews have no crons. Limit: 6 per 10 minutes; every tick is in the admin log.</p>
+        <details className="mt-4 rounded-xl border border-red-200 p-3">
+          <summary className="cursor-pointer font-semibold text-red-800">Reset to the demo dataset</summary>
+          <p className="mt-2 text-sm text-stone-700">Wipes this database and asks Vercel to rebuild it with the demo profile. Everything anyone did in the demo is gone; every session ends, yours too.</p>
+          {pre.problems.length > 0 ? (
+            <ul className="mt-2 list-disc pl-5 text-sm text-stone-700" data-testid="reset-problems">
+              {pre.problems.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+          ) : null}
+          <form action={resetDemoAction} className="mt-3 flex flex-wrap items-end gap-2">
+            <Field label='Type "demo" to confirm' htmlFor="confirm">
+              <input id="confirm" name="confirm" className="field" autoComplete="off" required pattern="demo" />
+            </Field>
+            <button type="submit" className="btn btn-danger" disabled={!pre.ok} data-testid="reset-demo">
+              Wipe and rebuild
+            </button>
+          </form>
+        </details>
+      </Card>
       <Card>
         <h2 className="mb-2 font-semibold">Mock SMS outbox</h2>
         <ul className="divide-y divide-stone-100 text-xs">

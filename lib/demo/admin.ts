@@ -16,7 +16,7 @@ import { createDataRequest, handleDataRequest, openDataRequests } from "@/lib/se
 import { syncOfflineNotes } from "@/lib/services/notes";
 import { importStatement } from "@/lib/services/statements";
 import { isLocked } from "@/lib/domain/custody";
-import { SEED } from "../seed";
+import { SEED } from "@/lib/seed-identities";
 import { reversedPayment, reviewPayment, strayProviderTransaction, type Plan } from "./supply";
 import type { Area, Hub, Person, World } from "./world";
 
