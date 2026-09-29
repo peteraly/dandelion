@@ -232,3 +232,7 @@ To enable on a preview: set `AI_ENABLED=true` and `ANTHROPIC_API_KEY`, then have
 ## What is mocked
 
 `MockProvider` (payments), the mock SMS outbox, the KMS clients (`KmsSignClient`, `KmsEncryptClient` throw), the model behind the AI features (`FakeLlm` in tests; the real `AnthropicLlm` runs only with `AI_ENABLED=true` and a key). The chain is a real testnet when `ANCHOR_SIGNER_KEY` and a recorded deployment exist; otherwise anchoring is skipped and events accumulate.
+
+## Status
+
+Pilot build complete on mocks and testnet. Preview deployments follow the Deploy section above; go-live gates are tracked in `docs/GO_LIVE.md`.
