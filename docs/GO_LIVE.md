@@ -19,13 +19,13 @@ Legend: ⬜ not started · 🟨 in progress / partially prepared · ✅ signed o
 
 These need credentials or dashboard actions the build did not have. Exact steps are in README → "Deploy".
 
-1. Import `peteraly/dandelion` into Vercel (dashboard, or `vercel login && vercel link --scope peteraly`); record the team plan in docs/DECISIONS.md ADR-019.
-2. Set the project's **Production Branch** to `main` so the build branch deploys as a *preview* (a demo only works in preview: the simulator, the mock provider's ledger and the seed are all disabled in production). ADR-022.
-3. Vercel dashboard → Storage → add **Neon** (Marketplace) with the branch-per-preview option; the integration sets `DATABASE_URL` (pooled) and the unpooled variant — verify the names against current Neon docs; record region and at-rest encryption status.
-4. Vercel → Settings → Deployment Protection → enable for previews.
-5. Set the environment variables listed in `.env.example` for preview and production (production has no dev defaults and refuses to start without them). For a demo preview add `SIMULATOR_ENABLED=true` and `SEED_ON_BUILD=true`; migrations and the seed then run during the build (ADR-022).
-6. Set `PRODUCTION_DB_HOST` so the seed script can never run against production.
-7. Point an external uptime monitor at `/api/health` (see README).
+1. ✅ 2026-09-29 — `peteraly/dandelion` imported into Vercel (project `dandelion`, free plan; ADR-019).
+2. ✅ 2026-09-29 — **Production Branch** is `main`, so the build branch deploys as a *preview* (a demo only works in preview: the simulator, the mock provider's ledger and the seed are all disabled in production). ADR-022. The first deployments were rejected until `vercel.json` fitted the free plan's cron limits.
+3. ✅ 2026-09-29 — **Neon** (Marketplace, free plan, Washington D.C. `iad1`, resource `neon-charcoal-elephant`) connected with prefix `DATABASE`; the integration set `DATABASE_URL` and `DATABASE_URL_UNPOOLED` for Production and Preview. At-rest encryption status still to verify in Neon docs.
+4. ⬜ Vercel → Settings → Deployment Protection → decide for previews (fake data; founders' choice).
+5. ✅ 2026-09-29 — preview secrets set (`PIN_PEPPER`, `OTP_HMAC_KEY`, `BLIND_INDEX_KEY`, `DATA_KEK`, `MOCK_PROVIDER_SIGNING_KEY`, `CALLBACK_TOKEN_MOCK`, `CRON_SECRET`) plus `SIMULATOR_ENABLED=true` and `SEED_ON_BUILD=true`; migrations and the seed run during the build (ADR-022). **Production must get its own real secrets before launch** — the current values were generated for the demo.
+6. ⬜ Set `PRODUCTION_DB_HOST` so the seed script can never run against production.
+7. ⬜ Point an external uptime monitor at `/api/health` (see README).
 
 ## Signed off
 

@@ -128,7 +128,8 @@ behind an interface with a mock and must be checked before go-live.
 
 - **Context.** Cron frequency, static IPs and function limits depend on the Vercel plan; Neon region and at-rest encryption are per project.
 - **Decision.** `vercel.json` is sized for Vercel's free (Hobby) plan: no region pin and two daily crons (reconciliation 17:00 UTC, retention 22:30 UTC). The first Git deployments (2026-09-29) were rejected by Vercel within seconds while the file declared four crons at 5-minute/hourly frequency and `regions: ["fra1"]`; the plan's cron limits are the most likely cause (verify against current Vercel docs). The payment poller and anchoring crons are documented in README → Deploy → Production and must be restored on a paid plan. Record the team's plan, the chosen regions, and Neon's at-rest encryption status here once the project is set up (dashboard steps; see docs/GO_LIVE.md and README).
-- **Status.** open question — needs credentials/dashboard access (stop condition reported).
+- **Recorded 2026-09-29.** Vercel project `dandelion` on the free plan (team `peteraly`); production branch `main`. Neon on the free plan in Washington D.C. (`iad1`), resource `neon-charcoal-elephant`, connected through the Vercel Marketplace with env-var prefix `DATABASE`. Region choice was pragmatic for the demo; revisit (Frankfurt is closer to Tanzania) together with at-rest encryption status before launch.
+- **Status.** partially recorded — plan and regions above; encryption status and the paid-plan decision (crons, static IPs) remain open.
 
 ## ADR-020 — Foundry solc download
 
