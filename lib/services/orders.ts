@@ -693,6 +693,57 @@ export async function onPaymentReview(tx: Tx, order: Order): Promise<void> {
   }
 }
 
+/**
+ * Verifier: the provider reversed a payment it had confirmed. Undo only what
+ * the money had unlocked — never a custody transfer that already happened:
+ * - a customer plan that was FULLY_PAID (or waiting for the handover code)
+ *   reopens with the remaining balance and a fresh intent; a reserved unit
+ *   goes back to the champion's lot;
+ * - a B2B order that was PAID but not yet completed returns to AWAITING_PAYMENT
+ *   (and a batch READY_FOR_PICKUP back to RESERVED_FOR_RIDER);
+ * - a COMPLETED order stays completed: the exception and the reconciliation
+ *   flag it raises are the refund case (§4.3), nothing moves backwards.
+ */
+export async function onPaymentReversed(tx: Tx, orderIn: Order): Promise<void> {
+  const verifier: ServiceActor = { kind: "SYSTEM_VERIFIER", userId: null };
+  const order = await lockOrder(tx, orderIn.id);
+  const t = await paidTotals(tx, order);
+  if (t.fullyPaid) return; // other confirmed payments still cover the order
+  if (order.kind === "CHAMPION_TO_CUSTOMER") {
+    if (order.state !== "FULLY_PAID" && order.state !== "HANDOVER_PENDING") return;
+    if (order.state === "HANDOVER_PENDING" && order.batchId) {
+      const child = await lockBatch(tx, order.batchId);
+      if (child.custodyState === "RESERVED_FOR_CUSTOMER") {
+        await returnToParent(tx, verifier, child, "CANCEL_CUSTOMER_RESERVATION", { orderHasConfirmedPayment: t.hasConfirmed }, order.id);
+      }
+    }
+    const reopened = await applyOrder(tx, order, "PAYMENT_REVERSED", verifier, { fullyPaid: false }, { batchId: null, handoverCodeHash: null, handoverCodeExpiresAt: null });
+    const intent = await ensureOpenIntent(tx, reopened);
+    const c = await customerContact(tx, order.customerId!);
+    await getSmsProvider().send(
+      c.phone,
+      tr(c.locale, "sms.customerPlan", {
+        name: c.name,
+        price: formatTzs(t.totalTzs, c.locale),
+        paid: formatTzs(t.confirmedTzs + t.donorTzs, c.locale),
+        remaining: formatTzs(t.remainingTzs, c.locale),
+        payee: intent.payeeAccount,
+        reference: order.paymentRef,
+      }),
+      "CUSTOMER_PLAN",
+      tx,
+    );
+    return;
+  }
+  if (order.state !== "PAID") return;
+  const back = await applyOrder(tx, order, "PAYMENT_REVERSED", verifier, { fullyPaid: false });
+  if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
+    const batch = await lockBatch(tx, order.batchId);
+    if (batch.custodyState === "READY_FOR_PICKUP") await applyCustody(tx, batch, "PAYMENT_REVERSED", verifier, {}, { orderId: order.id });
+  }
+  await ensureOpenIntent(tx, back);
+}
+
 // ================= donor funding (approvals executor only) =================
 
 export async function applyDonorFunding(tx: Tx, orderId: string, proof: DualApprovalProof): Promise<void> {

@@ -22,7 +22,7 @@ import { tzs } from "@/lib/money";
 import { providerById } from "./index";
 import { ProviderUnavailableError, type ProviderTransaction } from "./provider";
 import { actAsVerifier, logSecurityEvent, recordLedgerEvent, withTx, VERIFIER } from "@/lib/services/core";
-import { onPaymentConfirmed, onPaymentReview } from "@/lib/services/orders";
+import { onPaymentConfirmed, onPaymentReversed, onPaymentReview } from "@/lib/services/orders";
 import { ensureOpenIntent, paidTotals } from "@/lib/services/payments";
 import { PAYABLE_ORDER_STATES } from "@/lib/domain/orders";
 import type { ProviderId } from "@/lib/env";
@@ -53,10 +53,10 @@ type ClaimedJob = Pick<typeof s.verificationJobs.$inferSelect, "id" | "providerT
 /** Claim one due job with SKIP LOCKED so concurrent runners never double-process. */
 async function claimJob(tx: Tx, jobId?: string): Promise<ClaimedJob | null> {
   const rows = await tx.execute<Record<string, unknown>>(sql`
-    update verification_jobs set status = 'RUNNING', attempts = attempts + 1, updated_at = now()
+    update verification_jobs set status = 'RUNNING', attempts = attempts + 1, updated_at = ${now()}::timestamptz
     where id = (
       select id from verification_jobs
-      where status in ('QUEUED','RETRY') and next_run_at <= now() ${jobId ? sql`and id = ${jobId}` : sql``}
+      where status in ('QUEUED','RETRY') and next_run_at <= ${now()}::timestamptz ${jobId ? sql`and id = ${jobId}` : sql``}
       order by created_at asc limit 1 for update skip locked
     )
     returning id, provider_transaction_id as "providerTransactionId", payment_intent_id as "paymentIntentId",
@@ -149,6 +149,8 @@ export async function verifyTransaction(
         await tx.update(s.paymentIntents).set({ status: res.to, reviewReason: "PAYMENT_REVERSED", updatedAt: now() }).where(eq(s.paymentIntents.id, confirmed.id));
         await openReviewException(tx, "PAYMENT_REVERSED", confirmed.id, confirmed.orderId, `Provider reports reversal of ${ptx.providerTxRef}`);
         await logSecurityEvent(tx, "PAYMENT_REVERSED", "ALERT", { details: { orderId: confirmed.orderId } });
+        // The order must stop claiming money it no longer has (found by the demo generator: a FULLY_PAID plan stayed FULLY_PAID).
+        if (order) await onPaymentReversed(tx, order);
       }
       return "REVERSED";
     }

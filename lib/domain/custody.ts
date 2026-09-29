@@ -12,6 +12,7 @@ export type CustodyEvent =
   | "PAYMENT_CLAIMED"
   | "PAYMENT_CONFIRMED"
   | "PAYMENT_FAILED"
+  | "PAYMENT_REVERSED"
   | "PICKUP"
   | "START_TRANSIT"
   | "START_INSPECTION"
@@ -104,6 +105,7 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
     guards: [fullyPaid],
   },
   { event: "PAYMENT_FAILED", from: ["PAYMENT_PENDING"], to: "RESERVED_FOR_RIDER", actors: ["SYSTEM_VERIFIER"] },
+  { event: "PAYMENT_REVERSED", from: ["READY_FOR_PICKUP"], to: "RESERVED_FOR_RIDER", actors: ["SYSTEM_VERIFIER"] },
   {
     event: "PICKUP",
     from: ["READY_FOR_PICKUP"],
@@ -154,7 +156,7 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
       requireTrue((c) => c.educationConfirmed, "education_not_confirmed"),
     ],
   },
-  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "SUPER_ADMIN"] },
+  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "SUPER_ADMIN", "SYSTEM_VERIFIER"] },
   { event: "QUARANTINE", from: UNLOCKED_ACTIVE, to: "DAMAGED_OR_QUARANTINED", actors: ALL_FIELD },
   {
     event: "RESOLVE_RESUME",

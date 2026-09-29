@@ -160,7 +160,7 @@ describe("order machines", () => {
       const covered = coverAllFixedEdges(m, (i) => {
         const row = m.rows[i]!;
         // Rows guarded by "not fully paid" need fullyPaid=false.
-        if (row.event === "INSTALLMENT_CONFIRMED") return { ...okOrder, fullyPaid: false };
+        if (row.event === "INSTALLMENT_CONFIRMED" || row.event === "PAYMENT_REVERSED") return { ...okOrder, fullyPaid: false };
         return okOrder;
       });
       const rows = new Set([...covered].map((k) => k.split(":")[0]));

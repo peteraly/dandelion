@@ -17,6 +17,7 @@ export type OrderEvent =
   | "PREPARE_TRANSFER"
   | "DECLINE"
   | "PAYMENT_CONFIRMED"
+  | "PAYMENT_REVERSED"
   | "INSTALLMENT_CONFIRMED"
   | "DONOR_FUNDED"
   | "START_HANDOVER"
@@ -52,6 +53,8 @@ export const supplierToRiderMachine = defineMachine<OrderState, OrderEvent, Orde
   { event: "CONFIRM_BATCH_READY", from: ["PICKUP_ASSIGNED"], to: "BATCH_READY", actors: ["SUPPLIER"] },
   { event: "ACCEPT_PICKUP", from: ["BATCH_READY"], to: "AWAITING_PAYMENT", actors: ["BOSS_RIDER"] },
   { event: "PAYMENT_CONFIRMED", from: ["AWAITING_PAYMENT"], to: "PAID", actors: ["SYSTEM_VERIFIER"], guards: [fullyPaid] },
+  // The provider reversed the payment before the transfer completed: back to waiting, nothing moved.
+  { event: "PAYMENT_REVERSED", from: ["PAID"], to: "AWAITING_PAYMENT", actors: ["SYSTEM_VERIFIER"], guards: [notFullyPaid] },
   {
     event: "COMPLETE",
     from: ["PAID"],
@@ -75,6 +78,8 @@ export const riderToHubMachine = defineMachine<OrderState, OrderEvent, OrderCtx>
   { event: "RESUME", from: ["ON_HOLD"], to: "INSPECTING", actors: ["SYSTEM_APPROVALS"], guards: [dualApproved] },
   { event: "RETURN", from: ["ON_HOLD"], to: "CANCELLED", actors: ["SYSTEM_APPROVALS"], guards: [dualApproved] },
   { event: "PAYMENT_CONFIRMED", from: ["AWAITING_PAYMENT"], to: "PAID", actors: ["SYSTEM_VERIFIER"], guards: [fullyPaid] },
+  // The provider reversed the payment before the transfer completed: back to waiting, nothing moved.
+  { event: "PAYMENT_REVERSED", from: ["PAID"], to: "AWAITING_PAYMENT", actors: ["SYSTEM_VERIFIER"], guards: [notFullyPaid] },
   {
     event: "COMPLETE",
     from: ["PAID"],
@@ -95,6 +100,8 @@ export const hubToChampionMachine = defineMachine<OrderState, OrderEvent, OrderC
   { event: "DECLINE", from: ["REQUESTED"], to: "CANCELLED", actors: ["HUB_MANAGER", "FIELD_CHAMPION"] },
   { event: "CANCEL", from: ["AWAITING_PAYMENT"], to: "CANCELLED", actors: ["HUB_MANAGER", "FIELD_CHAMPION", "SUPER_ADMIN"], guards: [noPayment] },
   { event: "PAYMENT_CONFIRMED", from: ["AWAITING_PAYMENT"], to: "PAID", actors: ["SYSTEM_VERIFIER"], guards: [fullyPaid] },
+  // The provider reversed the payment before the transfer completed: back to waiting, nothing moved.
+  { event: "PAYMENT_REVERSED", from: ["PAID"], to: "AWAITING_PAYMENT", actors: ["SYSTEM_VERIFIER"], guards: [notFullyPaid] },
   {
     event: "COMPLETE",
     from: ["PAID"],
@@ -107,6 +114,8 @@ export const hubToChampionMachine = defineMachine<OrderState, OrderEvent, OrderC
 export const championToCustomerMachine = defineMachine<OrderState, OrderEvent, OrderCtx>("order:CHAMPION_TO_CUSTOMER", ORDER_STATES, [
   { event: "INSTALLMENT_CONFIRMED", from: ["PLAN_ACTIVE"], to: "PLAN_ACTIVE", actors: ["SYSTEM_VERIFIER"], guards: [notFullyPaid] },
   { event: "PAYMENT_CONFIRMED", from: ["PLAN_ACTIVE"], to: "FULLY_PAID", actors: ["SYSTEM_VERIFIER"], guards: [fullyPaid] },
+  // A reversed payment reopens the plan (and cancels a pending handover) as long as the product has not been handed over.
+  { event: "PAYMENT_REVERSED", from: ["FULLY_PAID", "HANDOVER_PENDING"], to: "PLAN_ACTIVE", actors: ["SYSTEM_VERIFIER"], guards: [notFullyPaid] },
   {
     event: "DONOR_FUNDED",
     from: ["PLAN_ACTIVE"],
