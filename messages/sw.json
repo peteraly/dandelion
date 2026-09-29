@@ -1,0 +1,830 @@
+{
+  "_meta": {
+    "locale": "sw",
+    "needs_native_review": true,
+    "note": "Machine translation. Every string must be reviewed by a native Swahili speaker before go-live (gate G6)."
+  },
+  "app": {
+    "name": "Dandelion",
+    "tagline": "Jaribio la usambazaji wa bidhaa za afya ya hedhi"
+  },
+  "common": {
+    "loading": "Inapakia…",
+    "back": "Rudi",
+    "cancel": "Ghairi",
+    "confirm": "Thibitisha",
+    "continue": "Endelea",
+    "save": "Hifadhi",
+    "close": "Funga",
+    "yes": "Ndiyo",
+    "no": "Hapana",
+    "logout": "Toka",
+    "help": "Msaada",
+    "callHelp": "Piga simu {phone}",
+    "whatsappHelp": "WhatsApp {phone}",
+    "language": "Lugha",
+    "reference": "Kumbukumbu",
+    "verifyLink": "Hakiki rekodi hii",
+    "lastUpdated": "Imesasishwa {time}",
+    "reportProblem": "RIPOTI TATIZO",
+    "lockAccount": "Funga akaunti yangu",
+    "status": "Hali",
+    "nextAction": "Hatua inayofuata",
+    "amount": "Kiasi",
+    "quantity": "Idadi",
+    "product": "Bidhaa",
+    "units": "{count, plural, one {kipande #} other {vipande #}}",
+    "price": "Bei",
+    "paid": "Imelipwa",
+    "remaining": "Iliyobaki",
+    "margin": "Faida yako",
+    "marginNote": "Bei ya kuuza ukiondoa bei ya kununua. Inaonyeshwa kwa kumbukumbu zako; programu hailipi pesa yoyote.",
+    "offline": "Hauko mtandaoni. Maelezo tu yanaweza kuhifadhiwa.",
+    "online": "Umerudi mtandaoni",
+    "role": "Nafasi",
+    "yourRole": "Nafasi yako",
+    "phone": "Namba ya simu",
+    "pin": "PIN (tarakimu 4)",
+    "submit": "Tuma",
+    "done": "Imekamilika",
+    "idempotencyReplay": "Hatua hii ilikamilika tayari.",
+    "noPressure": "Hakuna makato ya kiotomatiki. Hakuna faini ya kuchelewa. Hakuna deni.",
+    "ledgerPending": "Leja: inasubiri",
+    "ledgerRecorded": "Leja: imerekodiwa",
+    "underReview": "Inakaguliwa"
+  },
+  "roles": {
+    "SUPER_ADMIN": "Msimamizi",
+    "SUPPLIER": "Msambazaji",
+    "BOSS_RIDER": "Bosi Dereva",
+    "HUB_MANAGER": "Meneja wa Kituo",
+    "FIELD_CHAMPION": "Bingwa wa Uwandani",
+    "CUSTOMER": "Mteja"
+  },
+  "orderKinds": {
+    "SUPPLIER_TO_RIDER": "Kuchukua kiwandani",
+    "RIDER_TO_HUB": "Kuwasilisha kituoni",
+    "HUB_TO_CHAMPION": "Bidhaa kwa bingwa",
+    "CHAMPION_TO_CUSTOMER": "Ununuzi wa mteja"
+  },
+  "payment": {
+    "PAYMENT_PENDING": "Malipo yanasubiri — yanahakikiwa na mtoa huduma",
+    "PAYMENT_CONFIRMED": "Malipo yamethibitishwa",
+    "PAYMENT_FAILED_OR_REVIEW": "Malipo yameshindikana au yanakaguliwa — wasiliana na msaada",
+    "howToPay": "Lipa kwa pesa za simu kwenye akaunti {payee} ukitumia kumbukumbu {reference}.",
+    "payExactly": "Lipa kiasi kamili cha {amount}.",
+    "payUpTo": "Lipa kiasi chochote hadi {amount}.",
+    "claimNote": "Kubonyeza hapa hakuthibitishi malipo. Mtoa huduma ndiye anayethibitisha; sisi tunakagua tu.",
+    "checking": "Tunakagua na mtoa huduma…",
+    "confirmedAt": "Imethibitishwa {time}",
+    "providerRef": "Kumbukumbu ya mtoa huduma"
+  },
+  "home": {
+    "educationLink": "Msaada wa matumizi ya bidhaa",
+    "status": {
+      "no_pickup": {
+        "title": "Hakuna uchukuzi ulioidhinishwa",
+        "explain": "Subiri. Utaona uchukuzi unaofuata hapa msimamizi akiupanga."
+      },
+      "pickup_assigned": {
+        "title": "Uchukuzi umepangwa",
+        "explain": "Andaa idadi iliyoidhinishwa, funga kifungashio kwa muhuri, na thibitisha kuwa iko tayari."
+      },
+      "batch_ready": {
+        "title": "Kundi liko tayari kwa malipo na uchukuzi wa dereva",
+        "explain": "Subiri malipo yathibitishwe. Usitoe bidhaa."
+      },
+      "payment_pending": {
+        "title": "Malipo yanahakikiwa na mtoa huduma",
+        "explain": "Usitoe bidhaa au kukamilisha uhamisho hadi programu ionyeshe MALIPO YAMETHIBITISHWA."
+      },
+      "payment_confirmed": {
+        "title": "Malipo yamethibitishwa",
+        "explain": "Hesabu vipande na kagua namba ya kundi pamoja, kisha thibitisha kutoa."
+      },
+      "waiting_rider_pickup": {
+        "title": "Inasubiri uthibitisho wa dereva",
+        "explain": "Umethibitisha kutoa. Uhamisho unakamilika dereva akithibitisha."
+      },
+      "pickup_complete": {
+        "title": "Bidhaa zimetoka kiwandani",
+        "explain": "Hifadhi rekodi ya kidijitali. Hakuna hatua nyingine kwa uchukuzi huu."
+      },
+      "problem_reported": {
+        "title": "Tatizo limeripotiwa",
+        "explain": "Bidhaa hizi zimefungwa hadi msimamizi atatue tatizo. Usizihamishe."
+      },
+      "no_assignment": {
+        "title": "Hakuna uchukuzi uliopangwa kwako",
+        "explain": "Subiri. Onyesha upya kuangalia kazi mpya."
+      },
+      "pickup_available": {
+        "title": "Uchukuzi unapatikana",
+        "explain": "Kagua eneo, bidhaa, idadi na gharama yote, kisha kubali."
+      },
+      "awaiting_payment": {
+        "title": "Mlipe msambazaji kwa pesa za simu",
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya msambazaji ukitumia kumbukumbu iliyoonyeshwa. Kisha tuambie umelipa."
+      },
+      "waiting_supplier_release": {
+        "title": "Inasubiri msambazaji athibitishe kutoa",
+        "explain": "Malipo yamethibitishwa. Msambazaji anathibitisha hesabu na namba ya kundi."
+      },
+      "in_transit": {
+        "title": "Njiani",
+        "explain": "Safirisha moja kwa moja hadi kituo kilichopangwa. Onyesha msimbo wa uwasilishaji kwa meneja wa kituo."
+      },
+      "hub_inspection_pending": {
+        "title": "Kituo kinahesabu na kukagua bidhaa",
+        "explain": "Subiri ukaguzi ukamilike."
+      },
+      "hub_accepted": {
+        "title": "Kituo kimekubali bidhaa",
+        "explain": "Thibitisha kuwa umekabidhi bidhaa. Mauzo yanakamilika malipo ya kituo yakithibitishwa."
+      },
+      "hub_payment_pending": {
+        "title": "Inasubiri uthibitisho wa malipo ya kituo",
+        "explain": "Usiondoke hadi hali iwe wazi."
+      },
+      "hub_payment_confirmed": {
+        "title": "Mauzo yamekamilika",
+        "explain": "Faida yako imeonyeshwa hapa chini. Hifadhi risiti ya kidijitali."
+      },
+      "delivery_problem": {
+        "title": "Usihamishe bidhaa au kuondoka eneo",
+        "explain": "Tatizo limefunga kundi hili. Wasiliana na msaada."
+      },
+      "no_delivery": {
+        "title": "Hakuna uwasilishaji wa dereva unaotarajiwa sasa",
+        "explain": "Angalia bidhaa zako au subiri uwasilishaji unaofuata."
+      },
+      "rider_arriving": {
+        "title": "Dereva anakuja",
+        "explain": "Andaa eneo safi na kavu la ukaguzi. Ingiza msimbo wa uwasilishaji wa dereva kuanza."
+      },
+      "inspection_required": {
+        "title": "Kagua muhuri, hesabu vipande, kagua hali",
+        "explain": "Kubali tu ikiwa kila ukaguzi umefaulu. Vinginevyo ripoti upungufu au uharibifu."
+      },
+      "stock_accepted": {
+        "title": "Thibitisha malipo kwa dereva kwa pesa za simu",
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya dereva ukitumia kumbukumbu iliyoonyeshwa."
+      },
+      "rider_payment_pending": {
+        "title": "Malipo yanahakikiwa na mtoa huduma",
+        "explain": "Usiweke alama ya uhamisho umekamilika hadi yathibitishwe."
+      },
+      "waiting_rider_handover": {
+        "title": "Inasubiri uthibitisho wa dereva",
+        "explain": "Malipo yamethibitishwa. Dereva anathibitisha makabidhiano."
+      },
+      "stock_recorded": {
+        "title": "Bidhaa zimerekodiwa kituoni kwako",
+        "explain": "Hifadhi bidhaa kwa usalama."
+      },
+      "champion_request": {
+        "title": "Ombi la bidhaa la bingwa",
+        "explain": "Thibitisha una bidhaa, kisha andaa uhamisho."
+      },
+      "champion_payment_pending": {
+        "title": "Malipo ya bingwa yanahakikiwa",
+        "explain": "Usitoe bidhaa hadi yathibitishwe."
+      },
+      "champion_payment_confirmed": {
+        "title": "Toa idadi iliyoidhinishwa kwa bingwa",
+        "explain": "Hesabu bidhaa pamoja na bingwa na thibitisha."
+      },
+      "low_stock": {
+        "title": "Bidhaa chini ya kiwango cha chini",
+        "explain": "Omba kuongezewa bidhaa."
+      },
+      "no_active_customer": {
+        "title": "Sajili mteja kwa ridhaa tu",
+        "explain": "Ingiza maelezo ya chini yanayohitajika: jina au jina anapendelea na namba ya simu iliyohakikiwa."
+      },
+      "customer_enrolled": {
+        "title": "Mteja amesajiliwa",
+        "explain": "Eleza bidhaa, matumizi salama, bei kamili na chaguo za malipo. Kisha anza mpango wa ununuzi."
+      },
+      "installment_active": {
+        "title": "Mpango wa awamu unaendelea",
+        "explain": "Malipo yaliyothibitishwa tu ndiyo yanahesabika. Mteja akilipa, tuombe tukague."
+      },
+      "customer_paused": {
+        "title": "Mteja amesitisha malipo",
+        "explain": "Hakuna malipo kwa siku 14. Usimshinikize au kukata kiotomatiki. Tuma kikumbusho cha heshima au funga mpango."
+      },
+      "full_payment_complete": {
+        "title": "Mteja amelipa kikamilifu",
+        "explain": "Andaa bidhaa iliyoidhinishwa na anza makabidhiano."
+      },
+      "full_payment_no_stock": {
+        "title": "Mteja amelipa kikamilifu — hauna bidhaa",
+        "explain": "Omba bidhaa kutoka kituoni kwako kabla ya makabidhiano."
+      },
+      "handover_required": {
+        "title": "Makabidhiano yanahitajika",
+        "explain": "Toa bidhaa na elimu. Ingiza msimbo wa mteja kuthibitisha."
+      },
+      "handover_complete": {
+        "title": "Bidhaa imekabidhiwa",
+        "explain": "Risiti imetumwa kwa mteja. Faida yako imeonyeshwa hapa chini."
+      },
+      "stock_requested": {
+        "title": "Bidhaa zimeombwa kutoka kituoni",
+        "explain": "Subiri kituo kiandae uhamisho."
+      },
+      "stock_awaiting_payment": {
+        "title": "Lipa kituo kwa pesa za simu",
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya kituo ukitumia kumbukumbu iliyoonyeshwa."
+      },
+      "stock_payment_pending": {
+        "title": "Malipo yanahakikiwa na mtoa huduma",
+        "explain": "Usichukue bidhaa hadi yathibitishwe."
+      },
+      "stock_payment_confirmed": {
+        "title": "Malipo yamethibitishwa — chukua bidhaa zako",
+        "explain": "Hesabu vipande na meneja wa kituo na thibitisha kupokea."
+      },
+      "stock_problem": {
+        "title": "Tatizo la bidhaa limeripotiwa",
+        "explain": "Bidhaa hizi zimefungwa hadi msimamizi atatue tatizo."
+      },
+      "order_completed": {
+        "title": "Imekamilika",
+        "explain": "Oda hii imekamilika. Hakuna hatua nyingine hapa."
+      },
+      "order_cancelled": {
+        "title": "Imeghairiwa",
+        "explain": "Oda hii ilighairiwa. Hakuna malipo yaliyothibitishwa kwake."
+      },
+      "order_closed": {
+        "title": "Mpango umefungwa",
+        "explain": "Mpango huu ulifungwa bila malipo."
+      }
+    },
+    "action": {
+      "view_upcoming": "Tazama uchukuzi ujao",
+      "confirm_batch_ready": "Thibitisha kundi liko tayari",
+      "view_payment_status": "Tazama hali ya malipo",
+      "refresh_payment": "Onyesha upya hali ya malipo",
+      "confirm_release": "Thibitisha kutoa",
+      "confirm_receipt": "Thibitisha kupokea",
+      "view_completed": "Tazama iliyokamilika",
+      "report_problem": "Ripoti tatizo",
+      "refresh": "Onyesha upya",
+      "accept_pickup": "Kubali uchukuzi",
+      "i_have_paid": "Nimelipa",
+      "open_delivery_code": "Fungua msimbo wa uwasilishaji",
+      "refresh_delivery": "Onyesha upya hali ya uwasilishaji",
+      "confirm_handover_to_hub": "Thibitisha makabidhiano kwa kituo",
+      "view_inventory": "Tazama bidhaa",
+      "start_inspection": "Anza ukaguzi",
+      "inspect_stock": "Kagua bidhaa",
+      "prepare_transfer": "Andaa uhamisho kwa bingwa",
+      "request_restock": "Omba kuongezewa bidhaa",
+      "add_customer": "Ongeza mteja",
+      "start_plan": "Anza mpango wa ununuzi",
+      "record_payment": "Kagua hali ya malipo",
+      "complete_handover": "Anza makabidhiano",
+      "confirm_customer_handover": "Thibitisha makabidhiano",
+      "request_stock": "Omba bidhaa",
+      "contact_or_close": "Wasiliana na mteja au funga mpango",
+      "view_customers": "Tazama wateja"
+    }
+  },
+  "auth": {
+    "loginTitle": "Ingia",
+    "loginIntro": "Ingiza namba yako ya simu na PIN yako ya tarakimu 4.",
+    "adminLoginTitle": "Kuingia kwa msimamizi",
+    "passphrase": "Neno la siri refu",
+    "secondFactor": "Hatua ya pili",
+    "usePasskey": "Tumia passkey",
+    "useTotp": "Tumia msimbo wa programu ya uthibitisho",
+    "totpCode": "Msimbo wa tarakimu 6",
+    "enrollTitle": "Thibitisha simu yako na tengeneza PIN yako",
+    "enrollIntro": "Habari {name}. Umeongezwa kama {role} baada ya uhakiki na wasimamizi. Hauwezi kuhamisha akaunti hii kwa mtu mwingine.",
+    "enterPhone": "Ingiza namba ya simu ambayo msimamizi alikusajili nayo.",
+    "sendCode": "Tuma msimbo",
+    "codeSent": "Tumetuma msimbo wa tarakimu 6 kwa SMS.",
+    "enterCode": "Ingiza msimbo",
+    "choosePin": "Chagua PIN ya tarakimu 4",
+    "repeatPin": "Rudia PIN",
+    "pinMismatch": "PIN hazilingani.",
+    "activate": "Washa akaunti yangu",
+    "linkInvalid": "Kiungo hiki si sahihi au kimeisha muda. Omba msimamizi kiungo kipya.",
+    "lockTitle": "Funga akaunti yangu",
+    "lockIntro": "Umepoteza simu au kubadilisha SIM? Funga akaunti yako sasa kutoka kifaa chochote. Msimamizi pekee anaweza kuifungua.",
+    "locked": "Akaunti yako imefungwa. Wasiliana na msimamizi.",
+    "lockedTemporarily": "Majaribio mengi mno. Jaribu tena baada ya dakika 30.",
+    "sessionExpired": "Kipindi chako kimeisha baada ya dakika 15 bila shughuli. Ingia tena.",
+    "pinResetNote": "Umesahau PIN? Msimamizi pekee anaweza kuiweka upya. Msimbo wa SMS pekee hauwezi.",
+    "adminEnrollTitle": "Weka akaunti yako ya msimamizi",
+    "adminEnrollIntro": "Chagua neno la siri refu na ongeza siri kwenye programu ya uthibitisho. Utasajili passkey baada ya kuingia mara ya kwanza.",
+    "totpSecret": "Siri ya programu ya uthibitisho",
+    "registerPasskey": "Sajili passkey",
+    "passkeyRegistered": "Passkey imesajiliwa.",
+    "passkeyRequired": "Kuingia kwa msimamizi kunahitaji passkey. Msimbo wa programu ya uthibitisho ni mbadala tu."
+  },
+  "field": {
+    "orderDetails": "Maelezo ya oda",
+    "deliveryCode": "Msimbo wa uwasilishaji",
+    "showCodeToHub": "Onyesha msimbo huu kwa meneja wa kituo.",
+    "enterDeliveryCode": "Ingiza msimbo wa uwasilishaji wa dereva",
+    "sealId": "Namba ya muhuri au kifungashio",
+    "inspection": {
+      "title": "Orodha ya ukaguzi",
+      "correctRider": "Dereva sahihi",
+      "correctProduct": "Aina sahihi ya bidhaa",
+      "correctCount": "Idadi sahihi ya vipande",
+      "correctBatch": "Namba sahihi ya kundi",
+      "sealIntact": "Muhuri wa kifungashio haujaguswa",
+      "goodCondition": "Hali ya bidhaa ni nzuri",
+      "noWaterDamage": "Hakuna uharibifu wa maji au kuchezewa",
+      "accept": "Kubali bidhaa",
+      "reportShortage": "Ripoti upungufu",
+      "reportDamage": "Ripoti uharibifu"
+    },
+    "receiptChecks": {
+      "quantityOk": "Nimehesabu vipande na idadi ni sahihi",
+      "sealOk": "Muhuri na namba ya kundi vinalingana"
+    },
+    "customer": {
+      "add": "Ongeza mteja",
+      "name": "Jina au jina anapendelea",
+      "consentMessages": "Mteja anakubali kupokea jumbe za miamala kwa SMS",
+      "consentReminders": "Mteja anakubali vikumbusho vya malipo",
+      "privacyShort": "Tunakusanya jina tu, namba ya simu iliyohakikiwa, chaguo la bidhaa na hali ya malipo. Hatukusanyi kamwe maelezo ya afya.",
+      "verifyPhone": "Hakiki simu ya mteja",
+      "codeSentToCustomer": "Msimbo wa tarakimu 6 umetumwa kwenye simu ya mteja.",
+      "list": "Wateja wangu",
+      "noPlan": "Hakuna mpango unaoendelea",
+      "chooseProduct": "Chagua bidhaa pamoja na mteja",
+      "startPlan": "Anza mpango wa ununuzi",
+      "fullPriceNote": "Bei kamili inaonyeshwa kabla ya malipo yoyote. Mteja anaweza kulipa yote au kwa awamu za hiari."
+    },
+    "handover": {
+      "title": "Makabidhiano",
+      "codeSent": "Msimbo wa uthibitisho umetumwa kwa mteja. Mwombe akusomee.",
+      "enterCode": "Msimbo wa mteja",
+      "resend": "Tuma msimbo tena",
+      "education": "Elimu imetolewa",
+      "reusable": {
+        "wash": "Osha kwa maji na sabuni baada ya kutumia",
+        "dry": "Kausha kabisa kabla ya kutumia tena",
+        "store": "Hifadhi kwa usalama",
+        "whenNotToUse": "Wakati wa kutoitumia",
+        "whenToSeekCare": "Wakati wa kutafuta huduma ya afya"
+      },
+      "disposable": {
+        "safeUse": "Matumizi salama",
+        "disposal": "Utupaji salama"
+      },
+      "complete": "Thibitisha makabidhiano",
+      "receiptSent": "Risiti {receiptNo} imetumwa kwa mteja."
+    },
+    "requestStock": {
+      "title": "Omba bidhaa kutoka kituoni kwako",
+      "quantity": "Vipande"
+    },
+    "closePlan": "Funga mpango (hakuna malipo yaliyofanyika)",
+    "refund": {
+      "title": "Omba ukaguzi wa marejesho",
+      "reason": "Mteja alisema nini?",
+      "note": "Hii inafungua ukaguzi. Usiahidi matokeo. Hakuna pesa inayohamishwa.",
+      "opened": "Kesi {ref} imefunguliwa."
+    },
+    "notes": {
+      "title": "Maelezo ya nje ya mtandao",
+      "body": "Maelezo (yasiyo ya kifedha tu)",
+      "category": "Aina",
+      "GENERAL": "Jumla",
+      "STOCK": "Bidhaa",
+      "CUSTOMER_VISIT": "Ziara ya mteja",
+      "PROBLEM": "Tatizo",
+      "saved": "Yamehifadhiwa kwenye simu hii. Yatatumwa ukiwa mtandaoni.",
+      "synced": "Yametumwa",
+      "pending": "Yanasubiri kutumwa",
+      "rule": "Maelezo hayathibitishi kamwe malipo, uhamisho au makabidhiano."
+    },
+    "inventory": {
+      "title": "Bidhaa za kituo",
+      "empty": "Hakuna bidhaa kituoni hapa.",
+      "locked": "Imefungwa"
+    }
+  },
+  "problems": {
+    "title": "Ripoti tatizo",
+    "intro": "Chagua kilichotokea. Fuata maelekezo yaliyoonyeshwa. Matatizo mengine hufunga bidhaa hadi msimamizi ayatatue.",
+    "note": "Maelezo (hiari). Usiweke majina au namba za simu za wateja.",
+    "whichStock": "Bidhaa zipi zimeathirika? (kuchagua kundi kunalifunga hadi msimamizi atatue tatizo)",
+    "aiHelp": "Eleza tatizo kwa maneno yako na tutapendekeza aina. Wewe unathibitisha.",
+    "PAYMENT_PENDING_TOO_LONG": {
+      "label": "Malipo yanasubiri muda mrefu",
+      "instruction": "Usitoe bidhaa. Wasiliana na msaada."
+    },
+    "WRONG_AMOUNT": {
+      "label": "Kiasi kibaya kimelipwa",
+      "instruction": "Usirekebishe wewe mwenyewe. Omba ukaguzi wa malipo."
+    },
+    "STOCK_SHORT": {
+      "label": "Bidhaa zimepungua",
+      "instruction": "Hesabu tena mtumaji akiwepo. Hii inafunga kundi."
+    },
+    "DAMAGED_OR_WET": {
+      "label": "Bidhaa imeharibika au imelowa",
+      "instruction": "Tenganisha bidhaa. Usiuze. Hii inaweka kundi karantini."
+    },
+    "SEAL_BROKEN": {
+      "label": "Muhuri umevunjwa",
+      "instruction": "Usikubali kama bidhaa za kawaida. Hii inafunga kundi."
+    },
+    "WRONG_HUB": {
+      "label": "Dereva yuko kituo kibaya",
+      "instruction": "Usihamishe bidhaa. Wasiliana na msimamizi."
+    },
+    "REFUND_REQUEST": {
+      "label": "Mteja anaomba marejesho",
+      "instruction": "Usiahidi matokeo. Omba ukaguzi wa marejesho."
+    },
+    "CUSTOMER_UNWELL": {
+      "label": "Mteja anajisikia vibaya",
+      "instruction": "Usitoe uchunguzi wa kitabibu. Onyesha mwongozo wa rufaa ya afya."
+    },
+    "SUSPECTED_THEFT": {
+      "label": "Wizi au udanganyifu unaoshukiwa",
+      "instruction": "Usimshtaki mtu hadharani. Linda bidhaa na wasiliana na msimamizi."
+    },
+    "WASH_CONCERN": {
+      "label": "Wasiwasi wa maji au usafi (WASH)",
+      "instruction": "Ripoti. Wasimamizi hukagua upatikanaji wa bidhaa kwa eneo hili."
+    },
+    "OTHER": {
+      "label": "Jambo jingine",
+      "instruction": "Lieleze. Msimamizi atafuatilia."
+    },
+    "PHONE_LOST": {
+      "label": "Simu imepotea au SIM imebadilishwa",
+      "instruction": "Acha kutumia akaunti. Ifunge sasa."
+    },
+    "reported": "Tatizo {ref} limeripotiwa.",
+    "lockedBatch": "Kundi limefungwa sasa hadi msimamizi atatue hili.",
+    "referral": {
+      "title": "Mwongozo wa rufaa ya afya",
+      "draft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
+      "body": "Usitoe uchunguzi au ushauri wa kitabibu. Mhimize mteja kutembelea kituo cha afya au zahanati iliyo karibu. Dalili zikiwa kali, msaidie kupata huduma haraka.",
+      "helpline": "Msaada: {phone}"
+    }
+  },
+  "admin": {
+    "title": "Dashibodi ya msimamizi",
+    "priorities": "Vipaumbele vya leo",
+    "paymentsReview": "Malipo yanayohitaji ukaguzi",
+    "deliveriesInspection": "Uwasilishaji unaosubiri ukaguzi",
+    "lowStockHubs": "Vituo vyenye bidhaa chache",
+    "pendingApprovals": "Idhini zinazosubiri msimamizi wa pili",
+    "openExceptions": "Matatizo ambayo hayajatatuliwa",
+    "reconFlags": "Alama za usuluhishi",
+    "ledgerStatus": "Leja",
+    "ledgerUnanchored": "Matukio {count} bado hayajanakiliwa",
+    "walletBalance": "Salio la pochi ya kunakili",
+    "nextAction": "Tatua jambo la zamani zaidi linalosubiri",
+    "nav": {
+      "home": "Nyumbani",
+      "approvals": "Idhini",
+      "stakeholders": "Wadau",
+      "prices": "Orodha za bei",
+      "exceptions": "Matatizo",
+      "inventory": "Bidhaa",
+      "orders": "Oda",
+      "reconciliation": "Usuluhishi",
+      "statements": "Taarifa za mtoa huduma",
+      "ledger": "Leja",
+      "logs": "Kumbukumbu",
+      "security": "Usalama",
+      "settings": "Mipangilio",
+      "exports": "Hamisha data",
+      "data": "Maombi ya data",
+      "brief": "Muhtasari wa asubuhi",
+      "messages": "Jumbe"
+    },
+    "approvals": {
+      "title": "Kikasha cha idhini",
+      "requestedBy": "Imeombwa na",
+      "threshold": "Saini {have} kati ya {need}",
+      "approve": "Idhinisha",
+      "reject": "Kataa",
+      "ownRequest": "Ombi hili ni lako. Msimamizi mwingine lazima aamue.",
+      "donorHighlight": "IMEFADHILIWA NA MFADHILI",
+      "executed": "Imetekelezwa",
+      "none": "Hakuna kinachosubiri."
+    },
+    "users": {
+      "title": "Wadau",
+      "create": "Ongeza mdau",
+      "name": "Jina kamili",
+      "phone": "Namba ya simu iliyohakikiwa",
+      "role": "Nafasi",
+      "area": "Eneo la huduma",
+      "hub": "Kituo",
+      "supplier": "Msambazaji",
+      "payout": "Mtoa huduma wa pesa za simu",
+      "payee": "Akaunti ya kupokea (till ya mfanyabiashara / kumbukumbu ya akaunti)",
+      "created": "Mdau ameongezwa. SMS yenye kiungo cha kuwasha imetumwa.",
+      "adminCreated": "Msimamizi ameongezwa. Kabidhi kiungo hiki cha mara moja ana kwa ana:",
+      "reenroll": "Weka upya PIN / sajili upya",
+      "reenrollNote": "Inafuta PIN, inamaliza vipindi vyote na kutuma kiungo kipya cha kuwasha. Wasimamizi pekee wanaweza kufanya hivi.",
+      "lock": "Funga",
+      "suspend": "Simamisha",
+      "unsuspend": "Ondoa kusimamishwa",
+      "status": {
+        "INVITED": "Amealikwa",
+        "ACTIVE": "Anatumika",
+        "SUSPENDED": "Amesimamishwa",
+        "LOCKED": "Amefungwa",
+        "REMOVED": "Ameondolewa"
+      },
+      "training": "Mafunzo yamerekodiwa"
+    },
+    "prices": {
+      "title": "Orodha za bei",
+      "draft": "Andaa orodha mpya ya bei",
+      "version": "Toleo",
+      "effectiveFrom": "Inaanza kutumika",
+      "supplierPrice": "Bei ya msambazaji",
+      "hubPrice": "Bei ya kituo",
+      "championPrice": "Bei ya bingwa",
+      "customerPrice": "Bei ya mteja",
+      "submitted": "Rasimu imetumwa. Msimamizi wa pili lazima aidhinishe kabla haianzi kutumika.",
+      "status": {
+        "DRAFT": "Rasimu",
+        "PENDING_APPROVAL": "Inasubiri idhini",
+        "ACTIVE": "Inatumika",
+        "SUPERSEDED": "Imepitwa",
+        "REJECTED": "Imekataliwa"
+      }
+    },
+    "pickups": {
+      "title": "Panga uchukuzi kiwandani",
+      "rider": "Dereva",
+      "date": "Tarehe ya uchukuzi",
+      "created": "Uchukuzi umepangwa na dereva amearifiwa."
+    },
+    "exceptions": {
+      "title": "Matatizo",
+      "propose": "Pendekeza suluhisho",
+      "RESUME": "Endelea (fungua na endelea)",
+      "RETURN": "Rudisha bidhaa kwa mlinzi wa awali",
+      "CLOSE": "Funga bila kubadilisha bidhaa",
+      "note": "Maelezo ya suluhisho",
+      "proposed": "Imependekezwa. Msimamizi wa pili lazima aidhinishe."
+    },
+    "donor": {
+      "title": "Oda iliyofadhiliwa na mfadhili",
+      "intro": "Ubaguzi pekee wa sheria ya hakuna mkopo. Inahitaji idhini ya wawili, faili la ushahidi, kumbukumbu ya mfadhili, na kubaki ndani ya kikomo cha mwezi.",
+      "donorRef": "Kumbukumbu ya mfadhili / ruzuku",
+      "evidence": "Faili la ushahidi (PDF, JPG au PNG)",
+      "cap": "Kikomo cha mwezi: {cap}. Kilichotumika mwezi huu: {used}.",
+      "submitted": "Ombi limetumwa kwa idhini ya pili."
+    },
+    "recon": {
+      "title": "Usuluhishi",
+      "run": "Endesha sasa",
+      "lastRun": "Mara ya mwisho {time}: oda {checked} zimekaguliwa, {mismatched} zimewekwa alama.",
+      "flags": "Alama zilizo wazi",
+      "resolve": "Weka alama imetatuliwa",
+      "statementTitle": "Kuingiza taarifa ya mtoa huduma",
+      "statementIntro": "Pakia CSV ya taarifa ya mfanyabiashara ya mwezi (safu: kumbukumbu, kiasi, mpokeaji, tarehe). Tofauti inaonyesha malipo yaliyothibitishwa hapa lakini hayapo kwenye taarifa, na safu za taarifa ambazo hatukuthibitisha.",
+      "upload": "Ingiza CSV",
+      "missingInStatement": "Yamethibitishwa hapa, hayapo kwenye taarifa",
+      "missingInApp": "Yapo kwenye taarifa, hayajathibitishwa hapa",
+      "amountDiffers": "Kiasi kinatofautiana",
+      "matched": "Yamelingana",
+      "explain": "Eleza"
+    },
+    "ledger": {
+      "title": "Nakala za leja",
+      "unanchored": "Matukio ambayo hayajanakiliwa",
+      "anchorNow": "Nakili sasa",
+      "paused": "Mkataba umesitishwa; matukio yanajikusanya.",
+      "contract": "Mkataba",
+      "network": "Mtandao",
+      "txLink": "Tazama muamala wa kunakili"
+    },
+    "logs": {
+      "title": "Vitendo vya wasimamizi",
+      "security": "Matukio ya usalama",
+      "alerts": "Tahadhari (saa 24)"
+    },
+    "settings": {
+      "title": "Mipangilio",
+      "note": "Mabadiliko yanahitaji idhini ya wawili.",
+      "propose": "Pendekeza mabadiliko",
+      "aiUsage": "AI mwezi huu: simu {calls}, takriban senti {cost} za Marekani; {accepted} zimekubaliwa, {rejected} zimekataliwa na walinzi.",
+      "approvePack": "Idhinisha kifurushi cha elimu",
+      "packStatus": "Kifurushi cha elimu {version}: {status}",
+      "packApproved": "Kifurushi cha elimu kimeidhinishwa."
+    },
+    "messages": {
+      "title": "Rasimu za ujumbe",
+      "introAi": "Msaidizi anajaza kiolezo kilichoidhinishwa. Kagua kila neno kabla ya kutuma.",
+      "introNoAi": "AI imezimwa. Chagua kiolezo na ujaze thamani mwenyewe.",
+      "recipient": "Mpokeaji",
+      "template": "Kiolezo",
+      "values": "Thamani (jina=thamani kwa kila mstari)",
+      "context": "Muktadha wa rasimu",
+      "draft": "Rasimu",
+      "review": "Kagua rasimu",
+      "toneOk": "Ukaguzi wa sauti umepita",
+      "toneBad": "Ukaguzi wa sauti umeshindwa — hariri kabla ya kutuma",
+      "approveSend": "Idhinisha na tuma",
+      "sent": "Ujumbe umewekwa kwenye foleni ya SMS."
+    },
+    "exports": {
+      "title": "Hamisha CSV",
+      "large": "Uhamishaji wa zaidi ya safu {rows} unahitaji idhini ya wawili.",
+      "download": "Pakua"
+    },
+    "data": {
+      "title": "Maombi ya kurekebisha na kufuta",
+      "open": "Wazi",
+      "done": "Imekamilika",
+      "declined": "Imekataliwa",
+      "handle": "Shughulikia"
+    },
+    "brief": {
+      "title": "Muhtasari wa asubuhi",
+      "aiOff": "AI imezimwa. Haya ni mambo ya leo kwa mpangilio wa kawaida.",
+      "draft": "Rasimu — kagua kila jambo kabla ya kuchukua hatua.",
+      "triggers": "Vichocheo vya simama-na-rekebisha"
+    }
+  },
+  "public": {
+    "title": "Jaribio la Dandelion",
+    "hero": "Bidhaa za afya ya hedhi, zinazowasilishwa kupitia watu wa karibu wanaoaminika, zinalipwa kwa pesa za simu.",
+    "howItWorks": "Inavyofanya kazi",
+    "steps": {
+      "1": "Msambazaji aliyeidhinishwa anaandaa kundi lililofungwa kwa muhuri.",
+      "2": "Dereva aliyehakikiwa analipa kwa pesa za simu na kuchukua. Malipo yanathibitishwa na mtoa huduma wa pesa za simu, kamwe si kwa picha ya skrini.",
+      "3": "Kituo kinakagua na kuhifadhi bidhaa, kisha kinauza kwa mabingwa wa uwandani waliofunzwa.",
+      "4": "Wateja wanalipa yote au kwa awamu za hiari. Hakuna mkopo, hakuna faini ya kuchelewa, hakuna deni.",
+      "5": "Bidhaa inakabidhiwa tu baada ya malipo kamili kuthibitishwa, pamoja na risiti."
+    },
+    "ledgerTitle": "Rekodi zetu zinathibitisha nini",
+    "ledgerHonest": "Kila siku tunachapisha alama ya kidole ya rekodi zetu kwenye leja ya umma. Mtu yeyote mwenye kiungo cha risiti anaweza kuangalia kuwa rekodi haijabadilishwa tangu ilipoandikwa. Hii haithibitishi kuwa tukio lenyewe lilikuwa la kweli — ukaguzi wetu dhidi ya taarifa za mtoa huduma wa malipo ndio unaofanya hivyo. Hakuna kinachohakikishwa na blockchain.",
+    "stats": "Wiki hii",
+    "fewerThan10": "chini ya 10",
+    "statsNote": "Hesabu za jumla za wiki tu. Hesabu ndogo zinaonyeshwa kama \"chini ya 10\" kulinda faragha.",
+    "handovers": "Bidhaa zilizokabidhiwa",
+    "activeChampions": "Mabingwa wanaofanya kazi",
+    "privacy": "Taarifa ya faragha",
+    "safety": "Usalama wa bidhaa na mwongozo wa WASH",
+    "safetyDraft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
+    "safetyReusable": "Bidhaa zinazotumika tena zinatolewa tu pale mteja anapoweza kupata maji safi, sabuni, faragha, mahali pa kuosha, mahali pa kukausha bidhaa kabisa, na uhifadhi salama. Vifaa vinavyotumika tena lazima vioshwe na kukaushwa baada ya kutumika.",
+    "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Mabingwa wanaeleza matumizi salama na utupaji.",
+    "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi."
+  },
+  "verify": {
+    "title": "Ukaguzi wa rekodi",
+    "notFound": "Hakuna rekodi iliyopatikana kwa kumbukumbu hii.",
+    "statement": "Rekodi hii ilitengenezwa tarehe {date} na haijabadilishwa tangu wakati huo. Inaonyesha kile mfumo ulirekodi wakati huo.",
+    "events": "Matukio",
+    "eventTypes": {
+      "BATCH_REGISTERED": "Kundi limesajiliwa",
+      "PAYMENT_CONFIRMED": "Malipo yamethibitishwa",
+      "PAYMENT_REVIEW": "Malipo yanakaguliwa",
+      "CUSTODY_TRANSFERRED": "Ulinzi umehamishwa",
+      "HANDOVER_COMPLETED": "Makabidhiano yamekamilika",
+      "EXCEPTION_RAISED": "Tatizo limeripotiwa",
+      "EXCEPTION_RESOLVED": "Tatizo limetatuliwa",
+      "STAKEHOLDER_ACTIVATED": "Mdau amewashwa",
+      "PRICE_LIST_UPDATED": "Orodha ya bei imesasishwa",
+      "DONOR_FUNDING_APPROVED": "Ufadhili wa mfadhili umeidhinishwa",
+      "DAILY_RECONCILIATION": "Usuluhishi wa kila siku"
+    },
+    "anchored": "Imerekodiwa kwenye leja ya umma",
+    "pending": "Inasubiri kurekodiwa kwenye leja ya umma",
+    "proof": "Uthibitisho",
+    "showProof": "Onyesha uthibitisho wa kiufundi",
+    "anchorTx": "Muamala wa kunakili",
+    "underReview": "Rekodi hii inakaguliwa.",
+    "receipt": "Risiti yako",
+    "receiptNo": "Namba ya risiti",
+    "rateLimited": "Maombi mengi mno. Jaribu tena baada ya dakika moja.",
+    "whatThisMeans": "Hii ina maana gani",
+    "honest": "Ulinganifu unathibitisha kuwa rekodi haijabadilika tangu iliponakiliwa. Peke yake, hauthibitishi kuwa tukio lilitokea. Malipo pia hukaguliwa kila mwezi dhidi ya taarifa za mtoa huduma wa pesa za simu."
+  },
+  "privacy": {
+    "title": "Taarifa ya faragha",
+    "version": "Toleo {version}",
+    "p1": "Tunakusanya jina lako au jina unalopendelea, namba ya simu, chaguo la bidhaa na hali ya malipo ili kusimamia ununuzi wako na kutuma risiti au vikumbusho.",
+    "p2": "Hatukusanyi maelezo ya mzunguko wa hedhi, uchunguzi wa kitabibu, hali ya ujauzito, historia ya kimapenzi au mahali hasa unapoishi.",
+    "p3": "Namba yako ya simu imehifadhiwa ikiwa imefichwa kwa usimbaji. Rekodi zinapewa alama ya kidole na alama hiyo inachapishwa kwenye leja ya umma; utambulisho wako hauchapishwi kamwe.",
+    "p4": "Hatuuzi taarifa zako. Data yako inaweza kuchakatwa kwenye seva zilizo nje ya Tanzania; mpango huu unatathminiwa chini ya matakwa ya ulinzi wa data ya Tanzania kabla ya kuanza.",
+    "p5": "Unaweza kutuomba kurekebisha taarifa zako, kusitisha vikumbusho, au kufuta data yako. Wasiliana na {phone}.",
+    "draft": "RASIMU — inahitaji idhini ya mwanasheria kabla ya kuanza"
+  },
+  "education": {
+    "title": "Msaada wa matumizi ya bidhaa",
+    "draft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
+    "ask": "Swali lako (matumizi ya bidhaa, kuosha, kukausha, kuhifadhi, kutupa)",
+    "askButton": "Uliza",
+    "sources": "Kutoka",
+    "notCovered": "Maudhui yaliyoidhinishwa hayajumuishi hili. Muulize msimamizi.",
+    "disabled": "Msaidizi umezimwa hadi msimamizi aidhinishe maudhui ya elimu. Maudhui yaliyoidhinishwa yanaonyeshwa hapa chini.",
+    "packTitle": "Maudhui yaliyoidhinishwa"
+  },
+  "sms": {
+    "activation": "Habari {name}. Umeidhinishwa kama {role} katika jaribio la usambazaji wa bidhaa za afya ya hedhi. Akaunti yako iliongezwa baada ya uhakiki na wasimamizi. Hauwezi kuihamisha kwa mtu mwingine. Fungua kiungo hiki, thibitisha simu yako na tengeneza PIN yako: {link} Msaada: {help}",
+    "otp": "Msimbo wako wa uthibitisho ni {code}. Unaisha baada ya dakika 5. Usimpe mtu yeyote.",
+    "pickup": "Habari {name}. Uchukuzi umepangwa kwako. Bidhaa: {product}. Idadi: {quantity}. Msambazaji: {supplier}. Jumla iliyoidhinishwa: {amount}. Fungua programu, kagua uchukuzi na chagua Kubali Uchukuzi. Lipa kwa pesa za simu. Usichukue bidhaa hadi programu ionyeshe MALIPO YAMETHIBITISHWA.",
+    "customerPlan": "Habari {name}. Bei ya bidhaa yako ni {price}. Imethibitishwa kulipwa: {paid}. Iliyobaki: {remaining}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Bidhaa inakabidhiwa baada ya malipo kamili kuthibitishwa.",
+    "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na Bingwa wako wa Afya aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
+    "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee Bingwa wako wa Afya tu unapopokea bidhaa yako.",
+    "receipt": "Habari {name}. Risiti {receiptNo}: {product} imekabidhiwa. Rekodi yako: {link}",
+    "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa."
+  },
+  "errors": {
+    "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
+    "forbidden": "Hauruhusiwi kufanya hivyo.",
+    "not_found": "Haipatikani.",
+    "invalid_phone": "Ingiza namba sahihi ya simu ya Tanzania.",
+    "amount_digits_only": "Ingiza shilingi nzima tu.",
+    "missing_idempotency_key": "Ombi halikuwa kamili. Jaribu tena.",
+    "idempotency_key_reused": "Ufunguo huu wa ombi ulitumika kwa hatua nyingine.",
+    "otp_rate_limited": "Misimbo mingi mno imeombwa. Subiri dakika 15.",
+    "otp_invalid": "Msimbo si sahihi au umeisha muda.",
+    "phone_or_payee_in_use": "Namba hiyo ya simu au akaunti ya kupokea imesajiliwa tayari.",
+    "enroll_link_invalid": "Kiungo hiki cha kuwasha si sahihi au kimeisha muda.",
+    "enroll_phone_mismatch": "Hiyo si namba ya simu iliyosajiliwa kwa akaunti hii.",
+    "pin_format": "PIN lazima iwe tarakimu 4 haswa.",
+    "pin_too_simple": "Chagua PIN isiyo rahisi kukisia.",
+    "passphrase_too_short": "Tumia herufi 12 au zaidi.",
+    "totp_invalid": "Msimbo wa programu ya uthibitisho si sahihi.",
+    "login_failed": "Kuingia kumeshindikana. Angalia namba yako ya simu na PIN.",
+    "account_locked": "Akaunti hii imefungwa. Wasiliana na msimamizi.",
+    "temporarily_locked": "Majaribio mengi mno. Jaribu tena baada ya dakika 30.",
+    "cannot_lock_self_admin": "Omba msimamizi mwingine afanye hivi.",
+    "cannot_reenroll_self": "Omba msimamizi mwingine akusajili upya.",
+    "transition_refused": "Hatua hiyo hairuhusiwi kwa sasa.",
+    "not_a_split_lot": "Kundi hili haliwezi kurudishwa.",
+    "batch_locked": "Kundi hili limefungwa hadi msimamizi atatue tatizo.",
+    "parent_wrong_state": "Bidhaa haziko katika hali inayoruhusu hili.",
+    "invalid_quantity": "Ingiza idadi sahihi.",
+    "insufficient_stock": "Bidhaa hazitoshi.",
+    "already_fully_paid": "Oda hii imelipwa kikamilifu tayari.",
+    "seller_has_no_payee_account": "Muuzaji hana akaunti ya kupokea iliyosajiliwa. Wasiliana na msimamizi.",
+    "supplier_not_active": "Msambazaji hafanyi kazi.",
+    "hub_not_active": "Kituo hakifanyi kazi.",
+    "rider_not_active": "Dereva hafanyi kazi.",
+    "counterparty_unavailable": "Hakuna mdau anayefanya kazi kwa hatua hii.",
+    "seal_id_invalid": "Ingiza namba ya muhuri au kifungashio.",
+    "not_awaiting_payment": "Oda hii haisubiri malipo.",
+    "payment_not_confirmed": "Malipo bado hayajathibitishwa.",
+    "checks_required": "Thibitisha kila ukaguzi kwanza.",
+    "no_delivery_code": "Hakuna msimbo wa uwasilishaji unaopatikana.",
+    "delivery_code_invalid": "Msimbo wa uwasilishaji si sahihi.",
+    "inspection_checklist_incomplete": "Kila ukaguzi lazima ufaulu ili kukubali.",
+    "champion_has_no_hub": "Akaunti yako haina kituo kilichopangwa. Wasiliana na msimamizi.",
+    "plan_already_active": "Mteja huyu ana mpango unaoendelea tayari.",
+    "customer_phone_not_verified": "Hakiki simu ya mteja kwanza.",
+    "product_unavailable": "Bidhaa hii haipatikani katika eneo hili.",
+    "product_unavailable_wash": "Bidhaa zinazotumika tena hazipatikani hapa hadi mazingira salama ya kuosha na kukausha yathibitishwe.",
+    "no_stock_for_handover": "Hauna vipande vya bidhaa hii. Omba bidhaa kwanza.",
+    "full_payment_not_confirmed": "Bei kamili haijathibitishwa kulipwa.",
+    "customer_code_invalid": "Msimbo wa mteja si sahihi au umeisha muda.",
+    "education_not_confirmed": "Thibitisha kila kipengele cha elimu kwanza.",
+    "reason_required": "Eleza sababu.",
+    "no_active_price": "Hakuna orodha ya bei inayotumika kwa bidhaa hii na eneo hili.",
+    "ambiguous_price": "Zaidi ya orodha moja ya bei inatumika. Wasiliana na msimamizi.",
+    "price_ladder_invalid": "Kila bei lazima iwe angalau bei ya hatua iliyotangulia.",
+    "price_list_not_pending": "Orodha hii ya bei haisubiri idhini.",
+    "donor_evidence_required": "Ambatisha faili la ushahidi kwanza.",
+    "donor_order_invalid": "Ufadhili wa mfadhili unatumika tu kwa mpango wa mteja unaoendelea.",
+    "donor_amount_exceeds_remaining": "Kiasi ni zaidi ya salio lililobaki.",
+    "donor_cap_exceeded": "Hili litazidi kikomo cha mwezi cha ufadhili.",
+    "approval_not_pending": "Ombi hili halisubiri tena.",
+    "self_approval": "Hauwezi kuidhinisha ombi lako mwenyewe.",
+    "already_decided": "Umeamua tayari kuhusu ombi hili.",
+    "unknown_setting": "Mpangilio haujulikani.",
+    "setting_type_mismatch": "Aina isiyo sahihi kwa mpangilio huu.",
+    "threshold_too_low": "Kiwango cha idhini hakiwezi kuwa chini ya 2.",
+    "exception_not_open": "Tatizo hili haliko wazi.",
+    "locked_batch_needs_resume_or_return": "Kundi lililofungwa lazima liendelee au lirudishwe.",
+    "consent_required": "Ridhaa inahitajika kusajili mteja.",
+    "customer_phone_in_use": "Mteja mwenye namba hii ya simu yupo tayari.",
+    "already_verified": "Imehakikiwa tayari.",
+    "already_locked": "Akaunti hii imefungwa tayari.",
+    "ai_disabled": "Vipengele vya AI vimezimwa.",
+    "ai_rate_limited": "Maombi mengi mno ya AI. Jaribu tena baadaye.",
+    "ai_budget_exhausted": "Bajeti ya AI ya mwezi imetumika yote.",
+    "message_tone": "Ujumbe una lugha ya shinikizo au deni.",
+    "message_has_phone": "Usiweke namba za simu kwenye jumbe.",
+    "invalid_input": "Angalia fomu na jaribu tena.",
+    "statement_empty": "CSV haina data.",
+    "statement_columns_missing": "CSV inahitaji safu za kumbukumbu na kiasi.",
+    "statement_too_large": "CSV ni kubwa mno.",
+    "large_export_needs_approval": "Uhamishaji huu unahitaji ombi lililoidhinishwa na wawili kwanza.",
+    "cannot_delete_admin": "Akaunti za wasimamizi haziwezi kufutwa kwa njia hii."
+  }
+}

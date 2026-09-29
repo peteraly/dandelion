@@ -1,0 +1,148 @@
+/**
+ * Shared domain vocabulary. These arrays are the single source of truth for
+ * the Postgres enums in lib/db/schema.ts.
+ */
+
+export const LOGIN_ROLES = ["SUPER_ADMIN", "SUPPLIER", "BOSS_RIDER", "HUB_MANAGER", "FIELD_CHAMPION"] as const;
+export type Role = (typeof LOGIN_ROLES)[number];
+export const FIELD_ROLES = ["SUPPLIER", "BOSS_RIDER", "HUB_MANAGER", "FIELD_CHAMPION"] as const satisfies readonly Role[];
+export type FieldRole = (typeof FIELD_ROLES)[number];
+
+/** Non-human actors. Only these can perform certain transitions. */
+export const SYSTEM_ACTORS = ["SYSTEM_VERIFIER", "SYSTEM_APPROVALS", "SYSTEM"] as const;
+export type SystemActor = (typeof SYSTEM_ACTORS)[number];
+export type ActorKind = Role | SystemActor;
+
+/** Handbook §10 custody states. */
+export const CUSTODY_STATES = [
+  "AVAILABLE_AT_SUPPLIER",
+  "RESERVED_FOR_RIDER",
+  "PAYMENT_PENDING",
+  "READY_FOR_PICKUP",
+  "PICKED_UP",
+  "IN_TRANSIT",
+  "AT_HUB_INSPECTION",
+  "ACCEPTED_AT_HUB",
+  "AVAILABLE_AT_HUB",
+  "RESERVED_FOR_CHAMPION",
+  "WITH_CHAMPION",
+  "RESERVED_FOR_CUSTOMER",
+  "HANDED_TO_CUSTOMER",
+  "INSPECTION_ISSUE",
+  "DAMAGED_OR_QUARANTINED",
+  "RETURNED",
+] as const;
+export type CustodyState = (typeof CUSTODY_STATES)[number];
+
+export const LOCKED_CUSTODY_STATES = ["INSPECTION_ISSUE", "DAMAGED_OR_QUARANTINED"] as const satisfies readonly CustodyState[];
+
+/** Handbook §9: exactly three payment statuses. */
+export const PAYMENT_STATUSES = ["PAYMENT_PENDING", "PAYMENT_CONFIRMED", "PAYMENT_FAILED_OR_REVIEW"] as const;
+export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
+
+export const ORDER_KINDS = ["SUPPLIER_TO_RIDER", "RIDER_TO_HUB", "HUB_TO_CHAMPION", "CHAMPION_TO_CUSTOMER"] as const;
+export type OrderKind = (typeof ORDER_KINDS)[number];
+
+export const ORDER_STATES = [
+  "PICKUP_ASSIGNED",
+  "BATCH_READY",
+  "EN_ROUTE",
+  "INSPECTING",
+  "REQUESTED",
+  "PLAN_ACTIVE",
+  "AWAITING_PAYMENT",
+  "PAID",
+  "FULLY_PAID",
+  "HANDOVER_PENDING",
+  "ON_HOLD",
+  "COMPLETED",
+  "CANCELLED",
+  "CLOSED",
+] as const;
+export type OrderState = (typeof ORDER_STATES)[number];
+
+export const PAYMENT_PURPOSES = ["SUPPLIER_SALE", "HUB_SALE", "CHAMPION_SALE", "CUSTOMER_SALE"] as const;
+export type PaymentPurpose = (typeof PAYMENT_PURPOSES)[number];
+
+export const PURPOSE_BY_ORDER_KIND: Record<OrderKind, PaymentPurpose> = {
+  SUPPLIER_TO_RIDER: "SUPPLIER_SALE",
+  RIDER_TO_HUB: "HUB_SALE",
+  HUB_TO_CHAMPION: "CHAMPION_SALE",
+  CHAMPION_TO_CUSTOMER: "CUSTOMER_SALE",
+};
+
+/** Handbook §12 problem list (plus WASH concern from §11). */
+export const EXCEPTION_TYPES = [
+  "PAYMENT_PENDING_TOO_LONG",
+  "PAYMENT_REVERSED",
+  "WRONG_AMOUNT",
+  "OVERPAYMENT",
+  "PAYEE_MISMATCH",
+  "UNMATCHED_PAYMENT",
+  "STOCK_SHORT",
+  "DAMAGED_OR_WET",
+  "SEAL_BROKEN",
+  "WRONG_HUB",
+  "PHONE_LOST",
+  "REFUND_REQUEST",
+  "CUSTOMER_UNWELL",
+  "SUSPECTED_THEFT",
+  "WASH_CONCERN",
+  "RECONCILIATION_MISMATCH",
+  "OTHER",
+] as const;
+export type ExceptionType = (typeof EXCEPTION_TYPES)[number];
+
+/** Problems a field user may report from REPORT A PROBLEM. */
+export const REPORTABLE_PROBLEMS = [
+  "PAYMENT_PENDING_TOO_LONG",
+  "WRONG_AMOUNT",
+  "STOCK_SHORT",
+  "DAMAGED_OR_WET",
+  "SEAL_BROKEN",
+  "WRONG_HUB",
+  "REFUND_REQUEST",
+  "CUSTOMER_UNWELL",
+  "SUSPECTED_THEFT",
+  "WASH_CONCERN",
+  "OTHER",
+] as const satisfies readonly ExceptionType[];
+export type ReportableProblem = (typeof REPORTABLE_PROBLEMS)[number];
+
+/** Problems that lock the batch they are about. */
+export const LOCKING_PROBLEMS: Partial<Record<ExceptionType, "INSPECTION_ISSUE" | "DAMAGED_OR_QUARANTINED">> = {
+  STOCK_SHORT: "INSPECTION_ISSUE",
+  SEAL_BROKEN: "INSPECTION_ISSUE",
+  DAMAGED_OR_WET: "DAMAGED_OR_QUARANTINED",
+  SUSPECTED_THEFT: "DAMAGED_OR_QUARANTINED",
+};
+
+export const APPROVAL_TYPES = [
+  "PRICE_LIST_ACTIVATE",
+  "EXCEPTION_RESOLVE",
+  "DONOR_FUNDING",
+  "LARGE_EXPORT",
+  "SETTING_CHANGE",
+  "PRODUCT_AVAILABILITY",
+  "STAKEHOLDER_ACTIVATE",
+] as const;
+export type ApprovalType = (typeof APPROVAL_TYPES)[number];
+
+export const PRODUCT_CATEGORIES = ["REUSABLE", "DISPOSABLE"] as const;
+export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
+
+/** Ledger event types (handbook §3.2 adapted to the anchored-Merkle design). */
+export const LEDGER_EVENT_TYPES = [
+  "BATCH_REGISTERED",
+  "PAYMENT_CONFIRMED",
+  "PAYMENT_REVIEW",
+  "CUSTODY_TRANSFERRED",
+  "HANDOVER_COMPLETED",
+  "EXCEPTION_RAISED",
+  "EXCEPTION_RESOLVED",
+  "STAKEHOLDER_ACTIVATED",
+  "PRICE_LIST_UPDATED",
+  "DONOR_FUNDING_APPROVED",
+  "DAILY_RECONCILIATION",
+] as const;
+export type LedgerEventType = (typeof LEDGER_EVENT_TYPES)[number];

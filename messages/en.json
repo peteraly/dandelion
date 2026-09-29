@@ -1,0 +1,829 @@
+{
+  "_meta": {
+    "locale": "en",
+    "needs_native_review": false
+  },
+  "app": {
+    "name": "Dandelion",
+    "tagline": "Menstrual-health supply pilot"
+  },
+  "common": {
+    "loading": "Loading…",
+    "back": "Back",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "continue": "Continue",
+    "save": "Save",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "logout": "Log out",
+    "help": "Help",
+    "callHelp": "Call {phone}",
+    "whatsappHelp": "WhatsApp {phone}",
+    "language": "Language",
+    "reference": "Reference",
+    "verifyLink": "Verify this record",
+    "lastUpdated": "Last updated {time}",
+    "reportProblem": "REPORT A PROBLEM",
+    "lockAccount": "Lock my account",
+    "status": "Status",
+    "nextAction": "Next action",
+    "amount": "Amount",
+    "quantity": "Quantity",
+    "product": "Product",
+    "units": "{count, plural, one {# unit} other {# units}}",
+    "price": "Price",
+    "paid": "Paid",
+    "remaining": "Remaining",
+    "margin": "Your margin",
+    "marginNote": "Sale price minus purchase price. Shown for your records; nothing is paid out by the app.",
+    "offline": "You are offline. Only notes can be saved.",
+    "online": "Back online",
+    "role": "Role",
+    "yourRole": "Your role",
+    "phone": "Phone number",
+    "pin": "PIN (4 digits)",
+    "submit": "Submit",
+    "done": "Done",
+    "idempotencyReplay": "This action was already completed.",
+    "noPressure": "No automatic deductions. No late fees. No debt.",
+    "ledgerPending": "Ledger: pending",
+    "ledgerRecorded": "Ledger: recorded",
+    "underReview": "Under review"
+  },
+  "roles": {
+    "SUPER_ADMIN": "Administrator",
+    "SUPPLIER": "Supplier",
+    "BOSS_RIDER": "Boss Rider",
+    "HUB_MANAGER": "Hub Manager",
+    "FIELD_CHAMPION": "Field Champion",
+    "CUSTOMER": "Customer"
+  },
+  "orderKinds": {
+    "SUPPLIER_TO_RIDER": "Factory pickup",
+    "RIDER_TO_HUB": "Hub delivery",
+    "HUB_TO_CHAMPION": "Champion stock",
+    "CHAMPION_TO_CUSTOMER": "Customer purchase"
+  },
+  "payment": {
+    "PAYMENT_PENDING": "Payment pending — verifying with provider",
+    "PAYMENT_CONFIRMED": "Payment confirmed",
+    "PAYMENT_FAILED_OR_REVIEW": "Payment failed or under review — contact support",
+    "howToPay": "Pay with mobile money to account {payee} using reference {reference}.",
+    "payExactly": "Pay exactly {amount}.",
+    "payUpTo": "Pay any amount up to {amount}.",
+    "claimNote": "Pressing this does not confirm payment. The provider confirms it; we only check.",
+    "checking": "Checking with the provider…",
+    "confirmedAt": "Confirmed {time}",
+    "providerRef": "Provider reference"
+  },
+  "home": {
+    "educationLink": "Product-use help",
+    "status": {
+      "no_pickup": {
+        "title": "No approved pickup scheduled",
+        "explain": "Wait. You will see the next pickup here when an admin assigns it."
+      },
+      "pickup_assigned": {
+        "title": "Pickup assigned",
+        "explain": "Prepare the approved quantity, seal the batch, and confirm it is ready."
+      },
+      "batch_ready": {
+        "title": "Batch ready for rider payment and pickup",
+        "explain": "Wait for confirmed payment. Do not release goods."
+      },
+      "payment_pending": {
+        "title": "Payment being verified with provider",
+        "explain": "Do not release goods or complete the transfer until the app shows PAYMENT CONFIRMED."
+      },
+      "payment_confirmed": {
+        "title": "Payment confirmed",
+        "explain": "Count the units and check the batch ID together, then confirm the release."
+      },
+      "waiting_rider_pickup": {
+        "title": "Waiting for the rider's confirmation",
+        "explain": "You confirmed the release. The transfer completes when the rider confirms."
+      },
+      "pickup_complete": {
+        "title": "Stock has left the factory",
+        "explain": "Keep the digital record. Nothing more to do for this pickup."
+      },
+      "problem_reported": {
+        "title": "A problem was reported",
+        "explain": "This stock is locked until an admin resolves the problem. Do not move it."
+      },
+      "no_assignment": {
+        "title": "No pickup assigned to you",
+        "explain": "Wait. Refresh to check for a new assignment."
+      },
+      "pickup_available": {
+        "title": "Pickup available",
+        "explain": "Review the location, product, quantity and total cost, then accept."
+      },
+      "awaiting_payment": {
+        "title": "Pay the supplier via mobile money",
+        "explain": "Pay the exact approved amount to the supplier's account with the reference shown. Then tell us you have paid."
+      },
+      "waiting_supplier_release": {
+        "title": "Waiting for the supplier to confirm release",
+        "explain": "Payment is confirmed. The supplier confirms the count and batch ID."
+      },
+      "in_transit": {
+        "title": "In transit",
+        "explain": "Transport directly to the assigned hub. Show the delivery code to the hub manager."
+      },
+      "hub_inspection_pending": {
+        "title": "Hub is counting and checking stock",
+        "explain": "Wait for the inspection to finish."
+      },
+      "hub_accepted": {
+        "title": "Hub accepted stock",
+        "explain": "Confirm that you handed the stock over. The sale completes when the hub's payment is confirmed."
+      },
+      "hub_payment_pending": {
+        "title": "Awaiting hub payment confirmation",
+        "explain": "Do not leave until the status is clear."
+      },
+      "hub_payment_confirmed": {
+        "title": "Sale complete",
+        "explain": "Your margin is shown below. Keep the digital receipt."
+      },
+      "delivery_problem": {
+        "title": "Do not transfer stock or leave the site",
+        "explain": "A problem locked this batch. Contact support."
+      },
+      "no_delivery": {
+        "title": "No rider delivery expected now",
+        "explain": "Check your inventory or wait for the next delivery."
+      },
+      "rider_arriving": {
+        "title": "Rider arriving",
+        "explain": "Prepare a clean, dry inspection space. Enter the rider's delivery code to start."
+      },
+      "inspection_required": {
+        "title": "Check seal, count units, inspect condition",
+        "explain": "Accept only if every check passes. Otherwise report a shortage or damage."
+      },
+      "stock_accepted": {
+        "title": "Confirm payment to rider via mobile money",
+        "explain": "Pay the exact approved amount to the rider's account with the reference shown."
+      },
+      "rider_payment_pending": {
+        "title": "Payment being verified with provider",
+        "explain": "Do not mark the transfer complete until it is confirmed."
+      },
+      "waiting_rider_handover": {
+        "title": "Waiting for the rider's confirmation",
+        "explain": "Payment is confirmed. The rider confirms the handover."
+      },
+      "stock_recorded": {
+        "title": "Stock recorded at your hub",
+        "explain": "Store the stock safely."
+      },
+      "champion_request": {
+        "title": "Champion stock request",
+        "explain": "Confirm you have the stock available, then prepare the transfer."
+      },
+      "champion_payment_pending": {
+        "title": "Champion payment being verified",
+        "explain": "Do not release stock until confirmed."
+      },
+      "champion_payment_confirmed": {
+        "title": "Release approved quantity to champion",
+        "explain": "Count the stock with the champion and confirm."
+      },
+      "low_stock": {
+        "title": "Stock below minimum level",
+        "explain": "Request replenishment."
+      },
+      "no_active_customer": {
+        "title": "Enroll a customer only with consent",
+        "explain": "Enter the minimum required details: name or preferred name and a verified phone number."
+      },
+      "customer_enrolled": {
+        "title": "Customer enrolled",
+        "explain": "Explain the product, safe use, the full price and payment choices. Then start the purchase plan."
+      },
+      "installment_active": {
+        "title": "Installment plan active",
+        "explain": "Only confirmed payments count. When the customer pays, ask us to check."
+      },
+      "customer_paused": {
+        "title": "Customer paused payments",
+        "explain": "No payment for 14 days. Do not pressure or auto-charge. Send a respectful reminder or close the plan."
+      },
+      "full_payment_complete": {
+        "title": "Customer has paid in full",
+        "explain": "Prepare the approved product and start the handover."
+      },
+      "full_payment_no_stock": {
+        "title": "Customer has paid in full — you have no stock",
+        "explain": "Request stock from your hub before the handover."
+      },
+      "handover_required": {
+        "title": "Handover required",
+        "explain": "Give the product and education. Enter the customer's code to confirm."
+      },
+      "handover_complete": {
+        "title": "Product handed over",
+        "explain": "The receipt was sent to the customer. Your margin is shown below."
+      },
+      "stock_requested": {
+        "title": "Stock requested from hub",
+        "explain": "Wait for the hub to prepare the transfer."
+      },
+      "stock_awaiting_payment": {
+        "title": "Pay the hub via mobile money",
+        "explain": "Pay the exact approved amount to the hub's account with the reference shown."
+      },
+      "stock_payment_pending": {
+        "title": "Payment being verified with provider",
+        "explain": "Do not collect stock until confirmed."
+      },
+      "stock_payment_confirmed": {
+        "title": "Payment confirmed — collect your stock",
+        "explain": "Count the units with the hub manager and confirm receipt."
+      },
+      "stock_problem": {
+        "title": "Stock problem reported",
+        "explain": "This stock is locked until an admin resolves the problem."
+      },
+      "order_completed": {
+        "title": "Completed",
+        "explain": "This order is finished. Nothing more to do here."
+      },
+      "order_cancelled": {
+        "title": "Cancelled",
+        "explain": "This order was cancelled. No payment was confirmed for it."
+      },
+      "order_closed": {
+        "title": "Plan closed",
+        "explain": "This plan was closed without payments."
+      }
+    },
+    "action": {
+      "view_upcoming": "View upcoming pickups",
+      "confirm_batch_ready": "Confirm batch ready",
+      "view_payment_status": "View payment status",
+      "refresh_payment": "Refresh payment status",
+      "confirm_release": "Confirm release",
+      "confirm_receipt": "Confirm receipt",
+      "view_completed": "View completed",
+      "report_problem": "Report a problem",
+      "refresh": "Refresh",
+      "accept_pickup": "Accept pickup",
+      "i_have_paid": "I have paid",
+      "open_delivery_code": "Open delivery code",
+      "refresh_delivery": "Refresh delivery status",
+      "confirm_handover_to_hub": "Confirm handover to hub",
+      "view_inventory": "View inventory",
+      "start_inspection": "Start inspection",
+      "inspect_stock": "Inspect stock",
+      "prepare_transfer": "Prepare champion transfer",
+      "request_restock": "Request restock",
+      "add_customer": "Add customer",
+      "start_plan": "Start purchase plan",
+      "record_payment": "Check payment status",
+      "complete_handover": "Start handover",
+      "confirm_customer_handover": "Confirm handover",
+      "request_stock": "Request stock",
+      "contact_or_close": "Contact customer or close plan",
+      "view_customers": "View customers"
+    }
+  },
+  "auth": {
+    "loginTitle": "Sign in",
+    "loginIntro": "Enter your phone number and your 4-digit PIN.",
+    "adminLoginTitle": "Administrator sign-in",
+    "passphrase": "Passphrase",
+    "secondFactor": "Second step",
+    "usePasskey": "Use passkey",
+    "useTotp": "Use authenticator code",
+    "totpCode": "6-digit code",
+    "enrollTitle": "Confirm your phone and create your PIN",
+    "enrollIntro": "Hello {name}. You were added as a {role} after verification by the administrators. You cannot transfer this account to anyone else.",
+    "enterPhone": "Enter the phone number the administrator registered for you.",
+    "sendCode": "Send code",
+    "codeSent": "We sent a 6-digit code by SMS.",
+    "enterCode": "Enter the code",
+    "choosePin": "Choose a 4-digit PIN",
+    "repeatPin": "Repeat the PIN",
+    "pinMismatch": "The PINs do not match.",
+    "activate": "Activate my account",
+    "linkInvalid": "This link is not valid or has expired. Ask an administrator for a new one.",
+    "lockTitle": "Lock my account",
+    "lockIntro": "Lost your phone or changed your SIM? Lock your account now from any device. Only an administrator can unlock it.",
+    "locked": "Your account is locked. Contact an administrator.",
+    "lockedTemporarily": "Too many attempts. Try again in 30 minutes.",
+    "sessionExpired": "Your session ended after 15 minutes without activity. Sign in again.",
+    "pinResetNote": "Forgot your PIN? Only an administrator can reset it. An SMS code alone cannot.",
+    "adminEnrollTitle": "Set up your administrator account",
+    "adminEnrollIntro": "Choose a long passphrase and add the secret to an authenticator app. You will register a passkey after your first sign-in.",
+    "totpSecret": "Authenticator secret",
+    "registerPasskey": "Register a passkey",
+    "passkeyRegistered": "Passkey registered.",
+    "passkeyRequired": "Admin sign-in needs a passkey. Authenticator code is the fallback only."
+  },
+  "field": {
+    "orderDetails": "Order details",
+    "deliveryCode": "Delivery code",
+    "showCodeToHub": "Show this code to the hub manager.",
+    "enterDeliveryCode": "Enter the rider's delivery code",
+    "sealId": "Seal or package ID",
+    "inspection": {
+      "title": "Inspection checklist",
+      "correctRider": "Correct rider",
+      "correctProduct": "Correct product category",
+      "correctCount": "Correct unit count",
+      "correctBatch": "Correct batch ID",
+      "sealIntact": "Package seal intact",
+      "goodCondition": "Product condition good",
+      "noWaterDamage": "No water damage or tampering",
+      "accept": "Accept stock",
+      "reportShortage": "Report shortage",
+      "reportDamage": "Report damage"
+    },
+    "receiptChecks": {
+      "quantityOk": "I counted the units and the quantity is correct",
+      "sealOk": "The seal and batch ID match"
+    },
+    "customer": {
+      "add": "Add customer",
+      "name": "Name or preferred name",
+      "consentMessages": "The customer consents to transaction messages by SMS",
+      "consentReminders": "The customer consents to payment reminders",
+      "privacyShort": "We collect only a name, a verified phone number, the product choice and payment status. We never collect health details.",
+      "verifyPhone": "Verify the customer's phone",
+      "codeSentToCustomer": "A 6-digit code was sent to the customer's phone.",
+      "list": "My customers",
+      "noPlan": "No active plan",
+      "chooseProduct": "Choose the product with the customer",
+      "startPlan": "Start purchase plan",
+      "fullPriceNote": "The full price is shown before any payment. The customer may pay in full or in voluntary installments."
+    },
+    "handover": {
+      "title": "Handover",
+      "codeSent": "A confirmation code was sent to the customer. Ask them to read it to you.",
+      "enterCode": "Customer's code",
+      "resend": "Send the code again",
+      "education": "Education given",
+      "reusable": {
+        "wash": "Wash with water and soap after use",
+        "dry": "Dry fully before reuse",
+        "store": "Store safely",
+        "whenNotToUse": "When not to use it",
+        "whenToSeekCare": "When to seek medical care"
+      },
+      "disposable": {
+        "safeUse": "Safe use",
+        "disposal": "Safe disposal"
+      },
+      "complete": "Confirm handover",
+      "receiptSent": "Receipt {receiptNo} was sent to the customer."
+    },
+    "requestStock": {
+      "title": "Request stock from your hub",
+      "quantity": "Units"
+    },
+    "closePlan": "Close plan (no payments made)",
+    "refund": {
+      "title": "Request refund review",
+      "reason": "What did the customer say?",
+      "note": "This opens a review. Do not promise a result. No money moves.",
+      "opened": "Case {ref} opened."
+    },
+    "notes": {
+      "title": "Offline notes",
+      "body": "Note (non-financial only)",
+      "category": "Category",
+      "GENERAL": "General",
+      "STOCK": "Stock",
+      "CUSTOMER_VISIT": "Customer visit",
+      "PROBLEM": "Problem",
+      "saved": "Saved on this phone. It will sync when you are online.",
+      "synced": "Synced",
+      "pending": "Waiting to sync",
+      "rule": "Notes never confirm payments, transfers or handovers."
+    },
+    "inventory": {
+      "title": "Hub inventory",
+      "empty": "No stock at this hub.",
+      "locked": "Locked"
+    }
+  },
+  "problems": {
+    "title": "Report a problem",
+    "intro": "Choose what happened. Follow the instruction shown. Some problems lock the stock until an admin resolves them.",
+    "note": "Details (optional). Do not include customer names or phone numbers.",
+    "whichStock": "Which stock is affected? (choosing a lot locks it until an admin resolves the problem)",
+    "aiHelp": "Describe the problem in your words and we will suggest the category. You confirm.",
+    "PAYMENT_PENDING_TOO_LONG": {
+      "label": "Payment pending too long",
+      "instruction": "Do not release product or stock. Contact support."
+    },
+    "WRONG_AMOUNT": {
+      "label": "Wrong amount paid",
+      "instruction": "Do not adjust manually. Request a payment review."
+    },
+    "STOCK_SHORT": {
+      "label": "Stock is short",
+      "instruction": "Count again with the sender present. This locks the batch."
+    },
+    "DAMAGED_OR_WET": {
+      "label": "Product damaged or wet",
+      "instruction": "Separate the stock. Do not sell. This quarantines the batch."
+    },
+    "SEAL_BROKEN": {
+      "label": "Seal is broken",
+      "instruction": "Do not accept as normal stock. This locks the batch."
+    },
+    "WRONG_HUB": {
+      "label": "Rider at wrong hub",
+      "instruction": "Do not transfer stock. Contact an admin."
+    },
+    "REFUND_REQUEST": {
+      "label": "Customer requests refund",
+      "instruction": "Do not promise a result. Request a refund review."
+    },
+    "CUSTOMER_UNWELL": {
+      "label": "Customer feels unwell",
+      "instruction": "Do not diagnose. Show the health referral guidance."
+    },
+    "SUSPECTED_THEFT": {
+      "label": "Suspected theft or fraud",
+      "instruction": "Do not accuse publicly. Secure the stock and contact an admin."
+    },
+    "WASH_CONCERN": {
+      "label": "WASH or water concern",
+      "instruction": "Report it. Admins review product availability for this area."
+    },
+    "OTHER": {
+      "label": "Something else",
+      "instruction": "Describe it. An admin will follow up."
+    },
+    "PHONE_LOST": {
+      "label": "Phone lost or SIM changed",
+      "instruction": "Stop using the account. Lock it now."
+    },
+    "reported": "Problem {ref} reported.",
+    "lockedBatch": "The batch is now locked until an admin resolves this.",
+    "referral": {
+      "title": "Health referral guidance",
+      "draft": "DRAFT — requires review by a qualified health advisor",
+      "body": "Do not diagnose or give medical advice. Encourage the customer to visit the nearest health facility or dispensary. If symptoms are severe, help them seek care urgently.",
+      "helpline": "Support: {phone}"
+    }
+  },
+  "admin": {
+    "title": "Admin dashboard",
+    "priorities": "Today's priorities",
+    "paymentsReview": "Payments needing review",
+    "deliveriesInspection": "Deliveries awaiting inspection",
+    "lowStockHubs": "Low-stock hubs",
+    "pendingApprovals": "Approvals waiting for a second admin",
+    "openExceptions": "Exceptions unresolved",
+    "reconFlags": "Reconciliation flags",
+    "ledgerStatus": "Ledger",
+    "ledgerUnanchored": "{count} events not yet anchored",
+    "walletBalance": "Anchor wallet balance",
+    "nextAction": "Resolve the oldest pending item",
+    "nav": {
+      "home": "Home",
+      "approvals": "Approvals",
+      "stakeholders": "Stakeholders",
+      "prices": "Price lists",
+      "exceptions": "Exceptions",
+      "inventory": "Inventory",
+      "orders": "Orders",
+      "reconciliation": "Reconciliation",
+      "statements": "Statements",
+      "ledger": "Ledger",
+      "logs": "Logs",
+      "security": "Security",
+      "settings": "Settings",
+      "exports": "Exports",
+      "data": "Data requests",
+      "brief": "Morning brief",
+      "messages": "Messages"
+    },
+    "approvals": {
+      "title": "Approvals inbox",
+      "requestedBy": "Requested by",
+      "threshold": "{have} of {need} signatures",
+      "approve": "Approve",
+      "reject": "Reject",
+      "ownRequest": "You made this request. Another admin must decide.",
+      "donorHighlight": "DONOR-FUNDED",
+      "executed": "Executed",
+      "none": "Nothing waiting."
+    },
+    "users": {
+      "title": "Stakeholders",
+      "create": "Add stakeholder",
+      "name": "Full name",
+      "phone": "Verified phone number",
+      "role": "Role",
+      "area": "Service area",
+      "hub": "Hub",
+      "supplier": "Supplier",
+      "payout": "Mobile-money provider",
+      "payee": "Payee account (merchant till / account reference)",
+      "created": "Stakeholder added. An SMS with the activation link was sent.",
+      "adminCreated": "Administrator added. Hand over this one-time link in person:",
+      "reenroll": "Reset PIN / re-enroll",
+      "reenrollNote": "Clears the PIN, ends all sessions and sends a new activation link. Only admins can do this.",
+      "lock": "Lock",
+      "suspend": "Suspend",
+      "unsuspend": "Lift suspension",
+      "status": {
+        "INVITED": "Invited",
+        "ACTIVE": "Active",
+        "SUSPENDED": "Suspended",
+        "LOCKED": "Locked",
+        "REMOVED": "Removed"
+      },
+      "training": "Training recorded"
+    },
+    "prices": {
+      "title": "Price lists",
+      "draft": "Draft a new price list",
+      "version": "Version",
+      "effectiveFrom": "Effective from",
+      "supplierPrice": "Supplier price",
+      "hubPrice": "Hub price",
+      "championPrice": "Champion price",
+      "customerPrice": "Customer price",
+      "submitted": "Draft submitted. A second admin must approve it before it takes effect.",
+      "status": {
+        "DRAFT": "Draft",
+        "PENDING_APPROVAL": "Pending approval",
+        "ACTIVE": "Active",
+        "SUPERSEDED": "Superseded",
+        "REJECTED": "Rejected"
+      }
+    },
+    "pickups": {
+      "title": "Assign a factory pickup",
+      "rider": "Rider",
+      "date": "Pickup date",
+      "created": "Pickup assigned and the rider was notified."
+    },
+    "exceptions": {
+      "title": "Exceptions",
+      "propose": "Propose resolution",
+      "RESUME": "Resume (unlock and continue)",
+      "RETURN": "Return stock to previous custodian",
+      "CLOSE": "Close without stock change",
+      "note": "Resolution note",
+      "proposed": "Proposed. A second admin must approve."
+    },
+    "donor": {
+      "title": "Donor-funded order",
+      "intro": "The only exception to no-credit. Needs dual approval, an evidence file, a donor reference, and stays within the monthly cap.",
+      "donorRef": "Donor / subsidy reference",
+      "evidence": "Evidence file (PDF, JPG or PNG)",
+      "cap": "Monthly cap: {cap}. Used this month: {used}.",
+      "submitted": "Request submitted for a second approval."
+    },
+    "recon": {
+      "title": "Reconciliation",
+      "run": "Run now",
+      "lastRun": "Last run {time}: {checked} orders checked, {mismatched} flagged.",
+      "flags": "Open flags",
+      "resolve": "Mark resolved",
+      "statementTitle": "Provider statement import",
+      "statementIntro": "Upload the monthly merchant statement CSV (columns: reference, amount, payee, date). The diff shows confirmed payments missing from the statement and statement rows we never confirmed.",
+      "upload": "Import CSV",
+      "missingInStatement": "Confirmed here, missing in statement",
+      "missingInApp": "In statement, not confirmed here",
+      "amountDiffers": "Amount differs",
+      "matched": "Matched",
+      "explain": "Explain"
+    },
+    "ledger": {
+      "title": "Ledger anchors",
+      "unanchored": "Unanchored events",
+      "anchorNow": "Anchor now",
+      "paused": "Contract is paused; events accumulate.",
+      "contract": "Contract",
+      "network": "Network",
+      "txLink": "View anchor transaction"
+    },
+    "logs": {
+      "title": "Admin actions",
+      "security": "Security events",
+      "alerts": "Alerts (24h)"
+    },
+    "settings": {
+      "title": "Settings",
+      "note": "Changes need dual approval.",
+      "propose": "Propose change",
+      "aiUsage": "AI this month: {calls} calls, about {cost} US cents; {accepted} accepted, {rejected} rejected by guards.",
+      "approvePack": "Approve education pack",
+      "packStatus": "Education pack {version}: {status}",
+      "packApproved": "Education pack approved."
+    },
+    "messages": {
+      "title": "Message drafts",
+      "introAi": "The assistant fills an approved template. Review every word before sending.",
+      "introNoAi": "AI is off. Pick a template and fill the values yourself.",
+      "recipient": "Recipient",
+      "template": "Template",
+      "values": "Values (key=value per line)",
+      "context": "Context for the draft",
+      "draft": "Draft",
+      "review": "Review the draft",
+      "toneOk": "Tone check passed",
+      "toneBad": "Tone check failed — edit before sending",
+      "approveSend": "Approve and send",
+      "sent": "Message queued to the SMS outbox."
+    },
+    "exports": {
+      "title": "CSV export",
+      "large": "Exports over {rows} rows need dual approval.",
+      "download": "Download"
+    },
+    "data": {
+      "title": "Correction and deletion requests",
+      "open": "Open",
+      "done": "Done",
+      "declined": "Declined",
+      "handle": "Handle"
+    },
+    "brief": {
+      "title": "Morning brief",
+      "aiOff": "AI is off. Here are today's items in deterministic order.",
+      "draft": "Draft — check each item before acting.",
+      "triggers": "Stop-and-fix triggers"
+    }
+  },
+  "public": {
+    "title": "Dandelion pilot",
+    "hero": "Menstrual-health products, delivered through trusted local people, paid with mobile money.",
+    "howItWorks": "How it works",
+    "steps": {
+      "1": "An approved supplier prepares a sealed batch.",
+      "2": "A verified rider pays with mobile money and collects it. The payment is confirmed by the mobile-money provider, never by a screenshot.",
+      "3": "The hub inspects and stores the stock, then sells to trained field champions.",
+      "4": "Customers pay in full or in voluntary installments. No credit, no late fees, no debt.",
+      "5": "The product is handed over only after full confirmed payment, with a receipt."
+    },
+    "ledgerTitle": "What our records prove",
+    "ledgerHonest": "Each day we publish a fingerprint of our records to a public ledger. Anyone with a receipt link can check that a record has not been changed since it was recorded. This does not prove the event itself was true — our checks against the payment provider's statements do that. Nothing is guaranteed by a blockchain.",
+    "stats": "This week",
+    "fewerThan10": "fewer than 10",
+    "statsNote": "Weekly aggregate counts only. Small counts are shown as \"fewer than 10\" to protect privacy.",
+    "handovers": "Products handed over",
+    "activeChampions": "Active champions",
+    "privacy": "Privacy notice",
+    "safety": "Product safety and WASH guidance",
+    "safetyDraft": "DRAFT — requires review by a qualified health advisor",
+    "safetyReusable": "Reusable products are offered only where the customer has access to clean water, soap, privacy, a place to wash, a place to dry products thoroughly, and safe storage. Reusable materials must be washed and dried after use.",
+    "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Champions explain safe use and disposal.",
+    "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products."
+  },
+  "verify": {
+    "title": "Record check",
+    "notFound": "No record found for this reference.",
+    "statement": "This record was made on {date} and has not been changed since. It shows what the system recorded at that time.",
+    "events": "Events",
+    "eventTypes": {
+      "BATCH_REGISTERED": "Batch registered",
+      "PAYMENT_CONFIRMED": "Payment confirmed",
+      "PAYMENT_REVIEW": "Payment under review",
+      "CUSTODY_TRANSFERRED": "Custody transferred",
+      "HANDOVER_COMPLETED": "Handover completed",
+      "EXCEPTION_RAISED": "Problem reported",
+      "EXCEPTION_RESOLVED": "Problem resolved",
+      "STAKEHOLDER_ACTIVATED": "Stakeholder activated",
+      "PRICE_LIST_UPDATED": "Price list updated",
+      "DONOR_FUNDING_APPROVED": "Donor funding approved",
+      "DAILY_RECONCILIATION": "Daily reconciliation"
+    },
+    "anchored": "Recorded on the public ledger",
+    "pending": "Waiting to be recorded on the public ledger",
+    "proof": "Proof",
+    "showProof": "Show technical proof",
+    "anchorTx": "Anchor transaction",
+    "underReview": "This record is under review.",
+    "receipt": "Your receipt",
+    "receiptNo": "Receipt number",
+    "rateLimited": "Too many requests. Try again in a minute.",
+    "whatThisMeans": "What this means",
+    "honest": "A match proves the record has not changed since it was anchored. It does not, by itself, prove the event happened. Payments are also checked monthly against the mobile-money provider's statements."
+  },
+  "privacy": {
+    "title": "Privacy notice",
+    "version": "Version {version}",
+    "p1": "We collect your name or preferred name, phone number, product choice and payment status to manage your purchase and send receipts or reminders.",
+    "p2": "We do not collect menstrual-cycle details, diagnoses, pregnancy status, sexual history or your exact home location.",
+    "p3": "Your phone number is stored encrypted. Records are fingerprinted and the fingerprint is published to a public ledger; your identity is never published.",
+    "p4": "We do not sell your information. Your data may be processed on servers outside Tanzania; this arrangement is being assessed under Tanzanian data-protection requirements before launch.",
+    "p5": "You can ask us to correct your information, stop reminders, or delete your data. Contact {phone}.",
+    "draft": "DRAFT — requires approval by counsel before launch"
+  },
+  "education": {
+    "title": "Product-use help",
+    "draft": "DRAFT — requires review by a qualified health advisor",
+    "ask": "Your question (product use, washing, drying, storage, disposal)",
+    "askButton": "Ask",
+    "sources": "From",
+    "notCovered": "The approved content does not cover this. Ask an administrator.",
+    "disabled": "The assistant is off until an administrator approves the education content. The approved content is shown below.",
+    "packTitle": "Approved content"
+  },
+  "sms": {
+    "activation": "Habari {name}. You have been approved as a {role} in the menstrual health supply pilot. Your account was added after verification by the administrators. You cannot transfer it to another person. Open this link, confirm your phone and create your PIN: {link} Help: {help}",
+    "otp": "Your confirmation code is {code}. It expires in 5 minutes. Never share it.",
+    "pickup": "Habari {name}. A pickup has been assigned to you. Product: {product}. Quantity: {quantity}. Supplier: {supplier}. Approved total: {amount}. Open the app, review the pickup and select Accept Pickup. Pay via mobile money. Do not collect stock until the app shows PAYMENT CONFIRMED.",
+    "customerPlan": "Habari {name}. Your product price is {price}. Confirmed paid: {paid}. Remaining: {remaining}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. The product is handed over after full payment is confirmed.",
+    "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved Health Champion to receive your product and use instructions. Your receipt will be available after handover.",
+    "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your Health Champion only when you receive your product.",
+    "receipt": "Habari {name}. Receipt {receiptNo}: {product} handed over. Your record: {link}",
+    "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money."
+  },
+  "errors": {
+    "unknown": "Something went wrong. Try again or contact support.",
+    "forbidden": "You are not allowed to do that.",
+    "not_found": "Not found.",
+    "invalid_phone": "Enter a valid Tanzanian mobile number.",
+    "amount_digits_only": "Enter whole shillings only.",
+    "missing_idempotency_key": "The request was incomplete. Try again.",
+    "idempotency_key_reused": "This request key was used for a different action.",
+    "otp_rate_limited": "Too many codes requested. Wait 15 minutes.",
+    "otp_invalid": "The code is wrong or expired.",
+    "phone_or_payee_in_use": "That phone number or payee account is already registered.",
+    "enroll_link_invalid": "This activation link is not valid or has expired.",
+    "enroll_phone_mismatch": "That is not the phone number registered for this account.",
+    "pin_format": "The PIN must be exactly 4 digits.",
+    "pin_too_simple": "Choose a less obvious PIN.",
+    "passphrase_too_short": "Use at least 12 characters.",
+    "totp_invalid": "The authenticator code is wrong.",
+    "login_failed": "Sign-in failed. Check your phone number and PIN.",
+    "account_locked": "This account is locked. Contact an administrator.",
+    "temporarily_locked": "Too many attempts. Try again in 30 minutes.",
+    "cannot_lock_self_admin": "Ask another administrator to do this.",
+    "cannot_reenroll_self": "Ask another administrator to re-enroll you.",
+    "transition_refused": "That step is not allowed right now.",
+    "not_a_split_lot": "This lot cannot be returned.",
+    "batch_locked": "This batch is locked until an admin resolves the problem.",
+    "parent_wrong_state": "The stock is not in a state that allows this.",
+    "invalid_quantity": "Enter a valid quantity.",
+    "insufficient_stock": "Not enough stock.",
+    "already_fully_paid": "This order is already fully paid.",
+    "seller_has_no_payee_account": "The seller has no payee account registered. Contact an administrator.",
+    "supplier_not_active": "The supplier is not active.",
+    "hub_not_active": "The hub is not active.",
+    "rider_not_active": "The rider is not active.",
+    "counterparty_unavailable": "No active stakeholder is available for this step.",
+    "seal_id_invalid": "Enter the seal or package ID.",
+    "not_awaiting_payment": "This order is not waiting for a payment.",
+    "payment_not_confirmed": "Payment is not confirmed yet.",
+    "checks_required": "Confirm every check first.",
+    "no_delivery_code": "No delivery code is available.",
+    "delivery_code_invalid": "The delivery code is wrong.",
+    "inspection_checklist_incomplete": "Every inspection check must pass to accept.",
+    "champion_has_no_hub": "Your account has no hub assigned. Contact an administrator.",
+    "plan_already_active": "This customer already has an active plan.",
+    "customer_phone_not_verified": "Verify the customer's phone first.",
+    "product_unavailable": "This product is not available in this area.",
+    "product_unavailable_wash": "Reusable products are not available here until safe washing and drying conditions are confirmed.",
+    "no_stock_for_handover": "You have no units of this product. Request stock first.",
+    "full_payment_not_confirmed": "The full price has not been confirmed as paid.",
+    "customer_code_invalid": "The customer's code is wrong or expired.",
+    "education_not_confirmed": "Confirm each education point first.",
+    "reason_required": "Describe the reason.",
+    "no_active_price": "There is no active price list for this product and area.",
+    "ambiguous_price": "More than one active price list applies. Contact an administrator.",
+    "price_ladder_invalid": "Each price must be at least the previous step's price.",
+    "price_list_not_pending": "This price list is not waiting for approval.",
+    "donor_evidence_required": "Attach an evidence file first.",
+    "donor_order_invalid": "Donor funding applies only to an active customer plan.",
+    "donor_amount_exceeds_remaining": "The amount is more than the remaining balance.",
+    "donor_cap_exceeded": "This would exceed the monthly donor-funding cap.",
+    "approval_not_pending": "This request is no longer pending.",
+    "self_approval": "You cannot approve your own request.",
+    "already_decided": "You already decided on this request.",
+    "unknown_setting": "Unknown setting.",
+    "setting_type_mismatch": "Wrong type for this setting.",
+    "threshold_too_low": "The approval threshold cannot be below 2.",
+    "exception_not_open": "This exception is not open.",
+    "locked_batch_needs_resume_or_return": "A locked batch must be resumed or returned.",
+    "consent_required": "Consent is required to enroll a customer.",
+    "customer_phone_in_use": "A customer with this phone number already exists.",
+    "already_verified": "Already verified.",
+    "already_locked": "This account is already locked.",
+    "ai_disabled": "AI features are off.",
+    "ai_rate_limited": "Too many AI requests. Try again later.",
+    "ai_budget_exhausted": "The monthly AI budget is used up.",
+    "message_tone": "The message contains pressure or debt language.",
+    "message_has_phone": "Do not put phone numbers in messages.",
+    "invalid_input": "Check the form and try again.",
+    "statement_empty": "The CSV is empty.",
+    "statement_columns_missing": "The CSV needs reference and amount columns.",
+    "statement_too_large": "The CSV is too large.",
+    "large_export_needs_approval": "This export needs a dual-approved request first.",
+    "cannot_delete_admin": "Administrator accounts cannot be deleted this way."
+  }
+}

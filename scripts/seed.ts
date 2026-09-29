@@ -1,0 +1,186 @@
+/**
+ * Seed data for development, preview and tests (build prompt §9).
+ * Obviously fake names and numbers only. Refuses to run in production or
+ * against a database whose host looks like the production branch.
+ *
+ * Usage: npm run db:seed            (idempotent: exits if already seeded)
+ *        SEED_RESET=1 npm run db:seed  (wipes and reseeds; dev/test only)
+ */
+import { sql } from "drizzle-orm";
+import { closeDb, databaseUrl, getDb } from "@/lib/db/client";
+import * as s from "@/lib/db/schema";
+import { appEnv } from "@/lib/env";
+import { encryptString } from "@/lib/crypto/envelope";
+import { phoneBlindIndex } from "@/lib/crypto/blind-index";
+import { hashPin, hashPassphrase, currentPepperVersion } from "@/lib/auth/secrets";
+import { runMigrations } from "@/lib/db/migrate";
+import { tzDay } from "@/lib/util/time";
+
+export const SEED = {
+  adminA: { phone: "+255700000001", name: "Admin Alpha (TEST)", passphrase: "test-admin-passphrase-alpha", totp: "JBSWY3DPEHPK3PXP" },
+  adminB: { phone: "+255700000002", name: "Admin Bravo (TEST)", passphrase: "test-admin-passphrase-bravo", totp: "KRSXG5CTMVRXEZLU" },
+  supplier: { phone: "+255700000010", name: "Supplier Test Co.", pin: "2580", payee: "TILL-SUP-001" },
+  riders: [
+    { phone: "+255700000021", name: "Rider One (TEST)", pin: "2580", payee: "TILL-RID-001" },
+    { phone: "+255700000022", name: "Rider Two (TEST)", pin: "2580", payee: "TILL-RID-002" },
+  ],
+  hub: { phone: "+255700000030", name: "Hub Manager (TEST)", pin: "2580", payee: "TILL-HUB-001" },
+  champions: [
+    { phone: "+255700000041", name: "Champion One (TEST)", pin: "2580", payee: "TILL-CHA-001" },
+    { phone: "+255700000042", name: "Champion Two (TEST)", pin: "2580", payee: "TILL-CHA-002" },
+    { phone: "+255700000043", name: "Champion Three (TEST)", pin: "2580", payee: "TILL-CHA-003" },
+  ],
+  customers: [
+    { phone: "+255700000051", name: "Customer A (TEST)" },
+    { phone: "+255700000052", name: "Customer B (TEST)" },
+    { phone: "+255700000053", name: "Customer C (TEST)" },
+    { phone: "+255700000054", name: "Customer D (TEST)" },
+    { phone: "+255700000055", name: "Customer E (TEST)" },
+  ],
+  prices: { supplier: 7500, hub: 8000, champion: 9000, customer: 11400 },
+};
+
+export function refuseIfProduction(): void {
+  if (appEnv() === "production") throw new Error("seed refuses to run in production");
+  const host = new URL(databaseUrl()).hostname;
+  const prodHost = process.env.PRODUCTION_DB_HOST;
+  if (prodHost && host === prodHost) throw new Error(`seed refuses to run against production host ${host}`);
+  if (/prod/i.test(host) || /main/i.test(host)) throw new Error(`seed refuses to run against host ${host} (looks like production)`);
+}
+
+export async function resetDatabase(): Promise<void> {
+  refuseIfProduction();
+  const db = getDb();
+  // Triggers forbid TRUNCATE on append-only tables; drop and recreate the schema instead.
+  await db.execute(sql`drop schema public cascade`);
+  await db.execute(sql`create schema public`);
+  await db.execute(sql`drop schema if exists drizzle cascade`);
+  await runMigrations();
+}
+
+async function person(p: { phone: string; name: string }) {
+  return { displayName: p.name, phoneEnc: await encryptString(p.phone), phoneIndex: phoneBlindIndex(p.phone) };
+}
+
+export async function seed(): Promise<void> {
+  refuseIfProduction();
+  const db = getDb();
+  const existing = await db.query.serviceAreas.findFirst();
+  if (existing) {
+    console.log("[seed] already seeded; nothing to do");
+    return;
+  }
+  await db.transaction(async (tx) => {
+    const [area] = await tx.insert(s.serviceAreas).values({ code: "TEST-AREA", name: "Test Village (TEST)", region: "Test Region" }).returning();
+    const [supplier] = await tx.insert(s.suppliers).values({ businessName: SEED.supplier.name, serviceAreaId: area!.id, active: true }).returning();
+    const [hub] = await tx.insert(s.hubs).values({ name: "Test Hub (TEST)", serviceAreaId: area!.id, minStockUnits: 10, active: true }).returning();
+    const [kit] = await tx
+      .insert(s.products)
+      .values({ name: "Standard kit (reusable)", category: "REUSABLE", unitDescription: "1 kit: reusable pads + storage bag" })
+      .returning();
+    const [disposable] = await tx
+      .insert(s.products)
+      .values({ name: "Disposable pack", category: "DISPOSABLE", unitDescription: "1 pack of disposable pads" })
+      .returning();
+    await tx.insert(s.productAreaAvailability).values([
+      { productId: kit!.id, serviceAreaId: area!.id, available: true, washConditionsConfirmed: true },
+      { productId: disposable!.id, serviceAreaId: area!.id, available: true, washConditionsConfirmed: false },
+    ]);
+
+    const pv = currentPepperVersion();
+    const admins = [];
+    for (const a of [SEED.adminA, SEED.adminB]) {
+      const [u] = await tx
+        .insert(s.users)
+        .values({
+          ...(await person(a)),
+          role: "SUPER_ADMIN",
+          status: "ACTIVE",
+          preferredLocale: "en",
+          passphraseHash: await hashPassphrase(a.passphrase),
+          pinPepperVersion: pv,
+          totpSecretEnc: await encryptString(a.totp),
+          enrolledAt: new Date(),
+        })
+        .returning();
+      admins.push(u!);
+    }
+    const adminId = admins[0]!.id;
+
+    const field = async (p: { phone: string; name: string; pin: string; payee: string }, role: (typeof s.roleEnum.enumValues)[number], extra: Partial<typeof s.users.$inferInsert> = {}) => {
+      const pin = await hashPin(p.pin);
+      const [u] = await tx
+        .insert(s.users)
+        .values({
+          ...(await person(p)),
+          role,
+          status: "ACTIVE",
+          preferredLocale: "sw",
+          serviceAreaId: area!.id,
+          pinHash: pin.hash,
+          pinPepperVersion: pin.pepperVersion,
+          payoutProvider: "MPESA",
+          payeeAccount: p.payee,
+          enrolledAt: new Date(),
+          createdBy: adminId,
+          ...extra,
+        })
+        .returning();
+      await tx.insert(s.trainingRecords).values({ userId: u!.id, module: "role_training_v1", agreementAccepted: true, recordedBy: adminId });
+      return u!;
+    };
+
+    await field(SEED.supplier, "SUPPLIER", { supplierId: supplier!.id });
+    for (const r of SEED.riders) await field(r, "BOSS_RIDER");
+    await field(SEED.hub, "HUB_MANAGER", { hubId: hub!.id });
+    const champions = [];
+    for (const c of SEED.champions) champions.push(await field(c, "FIELD_CHAMPION", { hubId: hub!.id }));
+
+    for (const [i, c] of SEED.customers.entries()) {
+      const champion = champions[i % champions.length]!;
+      const [cust] = await tx
+        .insert(s.customers)
+        .values({ ...(await person(c)), championId: champion.id, serviceAreaId: area!.id, phoneVerifiedAt: new Date() })
+        .returning();
+      await tx.insert(s.consentRecords).values([
+        { customerId: cust!.id, kind: "TRANSACTION_MESSAGES", granted: true, noticeVersion: "2026-09-v1", recordedBy: champion.id },
+        { customerId: cust!.id, kind: "REMINDERS", granted: true, noticeVersion: "2026-09-v1", recordedBy: champion.id },
+      ]);
+    }
+
+    // Dual-approved active price list: requested by A, approved by B.
+    const [req] = await tx
+      .insert(s.approvalRequests)
+      .values({ type: "PRICE_LIST_ACTIVATE", status: "EXECUTED", payload: {}, summary: "Seed price list v1", requestedBy: adminId, threshold: 2, decidedAt: new Date(), executedAt: new Date() })
+      .returning();
+    await tx.insert(s.approvalDecisions).values({ requestId: req!.id, adminId: admins[1]!.id, decision: "APPROVE" });
+    const [pl] = await tx
+      .insert(s.priceLists)
+      .values({ version: 1, serviceAreaId: area!.id, supplierId: supplier!.id, effectiveFrom: tzDay(), status: "DRAFT", createdBy: adminId, approvalRequestId: req!.id })
+      .returning();
+    await tx.insert(s.priceListItems).values([
+      { priceListId: pl!.id, productId: kit!.id, supplierPriceTzs: SEED.prices.supplier, hubPriceTzs: SEED.prices.hub, championPriceTzs: SEED.prices.champion, customerPriceTzs: SEED.prices.customer },
+      { priceListId: pl!.id, productId: disposable!.id, supplierPriceTzs: 3000, hubPriceTzs: 3300, championPriceTzs: 3800, customerPriceTzs: 4500 },
+    ]);
+    await tx.execute(sql`select set_config('app.approvals', 'on', true)`);
+    await tx.update(s.priceLists).set({ status: "ACTIVE", activatedAt: new Date() }).where(sql`${s.priceLists.id} = ${pl!.id}`);
+    await tx.update(s.approvalRequests).set({ payload: { priceListId: pl!.id } }).where(sql`${s.approvalRequests.id} = ${req!.id}`);
+
+    await tx.insert(s.contractDeployments).values({ chainId: 11142220, network: "celo-sepolia", contractAddress: "0x0000000000000000000000000000000000000000", active: false, notes: "placeholder — replaced by scripts/deploy-contract.ts" });
+  });
+  console.log("[seed] done");
+}
+
+if (process.argv[1]?.endsWith("seed.ts")) {
+  (async () => {
+    try {
+      if (process.env.SEED_RESET === "1") await resetDatabase();
+      await seed();
+    } catch (e) {
+      console.error("[seed] failed", e);
+      process.exitCode = 1;
+    } finally {
+      await closeDb();
+    }
+  })();
+}

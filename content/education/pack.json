@@ -1,0 +1,70 @@
+{
+  "version": "2026-09-draft-1",
+  "status": "DRAFT",
+  "_notice": "DRAFT — requires review by a qualified health advisor. Content is limited to handbook v3.1 §8E and §11; nothing here is medical advice.",
+  "sections": [
+    {
+      "id": "reusable.wash",
+      "title": { "en": "Washing reusable products", "sw": "Kuosha bidhaa zinazotumika tena" },
+      "body": {
+        "en": "Wash reusable pads or cups with clean water and soap after each use.",
+        "sw": "Osha pedi au vikombe vinavyotumika tena kwa maji safi na sabuni baada ya kila matumizi."
+      },
+      "source": "handbook v3.1 §8E, §11 (UNICEF guidance)"
+    },
+    {
+      "id": "reusable.dry",
+      "title": { "en": "Drying before reuse", "sw": "Kukausha kabla ya kutumia tena" },
+      "body": {
+        "en": "Dry reusable products fully before using them again, in a clean place with air and, where possible, sunlight.",
+        "sw": "Kausha bidhaa zinazotumika tena kabisa kabla ya kuzitumia tena, mahali safi penye hewa na, inapowezekana, mwanga wa jua."
+      },
+      "source": "handbook v3.1 §8E, §11"
+    },
+    {
+      "id": "reusable.store",
+      "title": { "en": "Safe storage", "sw": "Uhifadhi salama" },
+      "body": {
+        "en": "Store clean, dry products in a clean, dry bag or container away from dirt and moisture.",
+        "sw": "Hifadhi bidhaa safi na kavu kwenye mfuko au chombo safi na kikavu mbali na uchafu na unyevu."
+      },
+      "source": "handbook v3.1 §8E"
+    },
+    {
+      "id": "reusable.conditions",
+      "title": { "en": "When reusable products are suitable", "sw": "Wakati bidhaa zinazotumika tena zinafaa" },
+      "body": {
+        "en": "Reusable products are offered only where there is access to clean water, soap, privacy, a place to wash, a place to dry thoroughly, and safe storage. Where these are missing, disposable products are offered instead.",
+        "sw": "Bidhaa zinazotumika tena zinatolewa tu pale panapo maji safi, sabuni, faragha, mahali pa kuosha, mahali pa kukausha kabisa, na uhifadhi salama. Pale hivi vinakosekana, bidhaa za kutupwa zinatolewa badala yake."
+      },
+      "source": "handbook v3.1 §11"
+    },
+    {
+      "id": "disposable.use",
+      "title": { "en": "Using disposable products", "sw": "Kutumia bidhaa za kutupwa" },
+      "body": {
+        "en": "Use each disposable pad once, change it regularly, and never reuse it.",
+        "sw": "Tumia kila pedi ya kutupwa mara moja, ibadilishe mara kwa mara, na usiitumie tena."
+      },
+      "source": "handbook v3.1 §8E"
+    },
+    {
+      "id": "disposable.disposal",
+      "title": { "en": "Disposal", "sw": "Utupaji" },
+      "body": {
+        "en": "Wrap used disposable products and dispose of them with household waste or as locally advised; do not flush them.",
+        "sw": "Funga bidhaa za kutupwa zilizotumika na uzitupe pamoja na taka za nyumbani au kama inavyoshauriwa kieneo; usizitupe chooni."
+      },
+      "source": "handbook v3.1 §8E, §11"
+    },
+    {
+      "id": "care.when_not_to_use",
+      "title": { "en": "When not to use and when to seek care", "sw": "Wakati wa kutotumia na wakati wa kutafuta huduma" },
+      "body": {
+        "en": "Do not use a product that is damaged, wet from storage, or past its condition. If a customer feels unwell, has pain, unusual bleeding or a rash, do not give health advice or try to name the cause: refer them to the nearest health facility.",
+        "sw": "Usitumie bidhaa iliyoharibika, iliyolowa kwenye hifadhi, au iliyopitwa na hali. Mteja akijisikia vibaya, akiwa na maumivu, kuvuja damu kusiko kawaida au upele, usitoe uchunguzi: mpe rufaa kwenye kituo cha afya kilicho karibu."
+      },
+      "source": "handbook v3.1 §8E, §12 (Customer feels unwell → Show Health Referral Guidance)"
+    }
+  ]
+}
