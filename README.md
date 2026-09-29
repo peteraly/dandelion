@@ -115,6 +115,13 @@ repository is public, so no deployed environment may use the repo's values
 (ADR-026). Generate them with:
 
 ```bash
+python3 -c "import base64,os,secrets,string;a=string.ascii_letters+string.digits;print('SEED_ADMIN_PASSPHRASE_A='+''.join(secrets.choice(a) for _ in range(32)));print('SEED_ADMIN_PASSPHRASE_B='+''.join(secrets.choice(a) for _ in range(32)));print('SEED_ADMIN_TOTP_A='+base64.b32encode(os.urandom(20)).decode().rstrip('='));print('SEED_ADMIN_TOTP_B='+base64.b32encode(os.urandom(20)).decode().rstrip('='));print('SEED_FIELD_PIN='+str(secrets.randbelow(9000)+1000))"
+```
+
+(Python is used because macOS has no `base32` command.)
+
+```bash
+# equivalent, Linux with coreutils:
 echo "SEED_ADMIN_PASSPHRASE_A=$(openssl rand -base64 24 | tr -d '=+/')"; echo "SEED_ADMIN_PASSPHRASE_B=$(openssl rand -base64 24 | tr -d '=+/')"; echo "SEED_ADMIN_TOTP_A=$(openssl rand 20 | base32 | tr -d '=')"; echo "SEED_ADMIN_TOTP_B=$(openssl rand 20 | base32 | tr -d '=')"; echo "SEED_FIELD_PIN=$(( RANDOM % 9000 + 1000 ))"
 ```
 
