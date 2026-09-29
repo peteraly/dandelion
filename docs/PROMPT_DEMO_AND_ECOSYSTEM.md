@@ -1,4 +1,4 @@
-# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.1)
+# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.2)
 
 v1.1 amends v1 after an external review; the review log is in §7. Changes:
 fail-closed environment detection, a clock override that cannot be imported by
@@ -520,3 +520,103 @@ push.
 | Determinism wording | Accepted | Spy test only; no ledger-equality claim |
 | Time zone | Accepted | Explicit conversion + Sunday / quiet-window / UTC-boundary tests |
 | Low items (champion pages, typed reset confirm, p95 soft in CI) | Accepted | Included above |
+
+## 8. Amendment (v1.2): the supplier is a full stakeholder
+
+The supplier — the company or organisation that manufactures or sells the
+products to the pilot — must be as visible in the tool and in the demo as the
+hubs and champions are. Today it is a thin record (`suppliers`: business name,
+area, active flag) plus one login that confirms batches and gets paid. That is
+not enough to run a pilot with, or to show one.
+
+### 8.1 Data (migration; data-minimising)
+
+- `suppliers` gains: `contactName` (optional, business contact), `contactPhoneEnc`/`contactPhoneIndex`
+  (encrypted like every phone; optional), `leadTimeDays` (integer, default 2),
+  `paymentTermsNote` (short text, display only), `notes`. No personal data
+  beyond a business contact; nothing about health.
+- `supplier_products` (supplierId, productId, `supplierSku` optional, active):
+  which products each supplier supplies. A pickup can only be created for a
+  product the supplier supplies; the active price list for (area, supplier)
+  already prices it.
+- Several `SUPPLIER` users may belong to one supplier organisation
+  (`users.supplierId` already allows it); the policy stays "sees only its own
+  organisation's orders and batches".
+- Activating a supplier organisation is a dual-approved action:
+  `STAKEHOLDER_ACTIVATE` (the enum value exists and is unused — this gives it
+  its meaning). Deactivation is dual-approved too. Money flows to suppliers;
+  two admins decide who is one.
+
+### 8.2 Supplier-side app (One Screen rule)
+
+- Home: the one next action — a pickup to prepare (`PICKUP_ASSIGNED` →
+  confirm batch ready with seal id), a rider waiting for release
+  (`PAID` → confirm release), or "nothing to do".
+- Below it, display-only: today's and this week's pickups (state, rider,
+  quantity), payments **confirmed by the provider** to this supplier this
+  week and this month (never "expected"), and batches with a quality issue
+  raised downstream (inspection failures, damaged lots) so the supplier learns
+  what came back. Problem reporting already exists.
+- Any supplier user of the organisation sees the same organisation view.
+
+### 8.3 Admin
+
+- `/admin/suppliers`: directory (name, area, active, lead time, products,
+  users, last pickup, open pickups, quality signal); add/edit reference data;
+  request activation/deactivation (dual approval); add supplier users through
+  the existing `createUser` flow with `supplierId`.
+- `/admin/suppliers/[id]`: organisation profile, users, products, price lists
+  (area, supplier), pickups and their outcomes, payments confirmed to the
+  supplier (with statement matches), quality issues traced to its batches,
+  the activation approval history.
+- Pickup creation offers only (supplier, product) pairs from
+  `supplier_products` and only active suppliers.
+
+### 8.4 Ecosystem view
+
+Supplier nodes carry: batches prepared and units shipped in the window; TZS
+confirmed to the supplier; pickups waiting on the supplier (attention when
+`PICKUP_ASSIGNED` is older than the supplier's lead time); quality signal —
+share of this supplier's batches with an inspection failure or damage report
+in the window; "stale" when no pickup for N days. Edges supplier → riders are
+drawn per open pickup as for the other legs. The attention strip gets
+"waiting on supplier" and "supplier quality" chips. Tables: a supplier table
+next to hubs and champions.
+
+### 8.5 Demo dataset
+
+- Both scales have **two suppliers**: a primary one with a short lead time and
+  a good quality record, and an occasional one with a longer lead time whose
+  batches carry most of the inspection issues — so the view has a story to
+  tell. Names are fictional companies; never a real manufacturer's name or
+  anything that could be read as a partnership claim.
+- Each supplier has 1–2 users; the second user is enrolled through the SMS
+  link flow during the run.
+- Supplier-caused anomalies are deliberate and in the manifest: a batch short
+  on count (`STOCK_SHORT`), a broken seal, a batch confirmed ready two days
+  late, a pickup left `PICKUP_ASSIGNED` past the lead time at the end.
+- Supplier payments appear in the statement import with one deliberate
+  difference attributable to a supplier payment.
+
+### 8.6 Tests, docs, honesty
+
+- Unit: supplier metrics aggregation; policy per supplier organisation
+  (user of supplier A cannot see supplier B's pickup).
+- Integration: `STAKEHOLDER_ACTIVATE` for a supplier needs two different
+  admins; a pickup for a product the supplier does not supply is refused.
+- e2e: the supplier home shows the pickup to prepare; the admin supplier page
+  shows the payment after the rider pays; the ecosystem view shows both
+  supplier nodes with the quality chip on the second.
+- Docs: README (supplier section), REVIEW rows, an ADR for
+  `STAKEHOLDER_ACTIVATE` semantics. The handbook calls this role "Supplier"
+  (§8A); keep that word in the UI and note that "manufacturer" and "vendor"
+  mean the same organisation here.
+- Money to suppliers is shown only as **confirmed by the provider**; margins
+  are the hub's and champion's business, not shown to suppliers.
+
+### 8.7 Where it fits in the order of work
+
+Supplier data and pages are their own commit between steps 3 and 4
+("Step 3b — supplier organisation"); the ecosystem view (steps 4–5) then
+consumes them; the demo generator changes ride with step 3b. The review log
+gains a row: "Supplier thinly modelled — accepted (founder request)".
