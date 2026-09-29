@@ -43,7 +43,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^22.20.4",
+    "@types/node": "^26.6.3",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
