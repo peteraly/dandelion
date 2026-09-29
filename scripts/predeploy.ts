@@ -41,7 +41,14 @@ if (env.SKIP_PREDEPLOY === "1") {
     if (!isProductionBuild) run("scripts/guard-db.ts", { DATABASE_URL: migrationUrl });
     run("scripts/migrate.ts", { DATABASE_URL: migrationUrl });
     if (env.SEED_ON_BUILD === "true" && !isProductionBuild) {
-      run("scripts/seed.ts", { DATABASE_URL: migrationUrl });
+      // Outside development the seed needs its credentials from the environment (ADR-026). Without them the app
+      // still deploys — there is just nobody to log in as — and the log says what to set. The seed itself refuses too.
+      const missing = ["SEED_ADMIN_PASSPHRASE_A", "SEED_ADMIN_PASSPHRASE_B", "SEED_ADMIN_TOTP_A", "SEED_ADMIN_TOTP_B", "SEED_FIELD_PIN"].filter((k) => !env[k]);
+      if (appEnv() !== "development" && missing.length) {
+        console.warn(`[predeploy] seed skipped: set ${missing.join(", ")} in this environment to seed demo logins (README → Setup)`);
+      } else {
+        run("scripts/seed.ts", { DATABASE_URL: migrationUrl });
+      }
     } else {
       console.log(`[predeploy] seed skipped (SEED_ON_BUILD=${env.SEED_ON_BUILD ?? ""}, env=${appEnv()})`);
     }

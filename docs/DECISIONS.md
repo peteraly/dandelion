@@ -177,6 +177,7 @@ behind an interface with a mock and must be checked before go-live.
   - `assertSafeTargetDatabase()` refuses any database holding a user or customer without `(TEST)` in the name, on top of the production-host checks. `scripts/guard-db.ts` runs it before migrations on every non-production build (`scripts/predeploy.ts`). The demo profile also requires an empty database.
   - Insert-time defaults for `created_at`, `updated_at`, `last_seen_at` and `next_run_at` are computed by Drizzle from `now()` (`$defaultFn`), with the SQL `default now()` kept for raw inserts; the four SQL expressions that used the database's own `now()` (active-price date, pending-payment age, verification-job claims, rate-limit windows) now take the application time as a parameter. No migration was needed.
   - `settings.seedProfile` records which seed populated a database; the simulated-data banner keys off it.
+  - On a non-production build, `scripts/predeploy.ts` skips the seed with a loud log line when the `SEED_*` variables are missing instead of failing the deployment: the site stays up (nobody to log in as yet) and the log names what to set. The seed itself still refuses, as a backstop.
 - **Status.** accepted.
 
 ## ADR-027 — What a reversed payment undoes
