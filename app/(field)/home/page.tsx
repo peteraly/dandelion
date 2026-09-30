@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
-import { Card, LinkButton } from "@/components/ui";
+import { Badge, Card, LinkButton } from "@/components/ui";
 import { OrderSummary } from "@/components/order-bits";
 import { requireField } from "@/lib/auth/current";
 import { homeFor } from "@/lib/services/home";
@@ -10,7 +10,8 @@ import { directSalesFor, sellerAreaId } from "@/lib/services/areas";
 import { earningsFor, type Earnings } from "@/lib/services/earnings";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
-import type { ActionKey } from "@/lib/domain/workflows";
+import { rowForOrder, type ActionKey } from "@/lib/domain/workflows";
+import type { FieldRole } from "@/lib/domain/types";
 import { formatTzs } from "@/lib/money";
 
 export const dynamic = "force-dynamic";
@@ -72,25 +73,38 @@ export default async function HomePage() {
       </div>
       <EarningsCard earnings={earnings} locale={locale} />
       {supplier ? <SupplierCards data={supplier} locale={locale} /> : null}
-      {others.length > 0 ? (
-        <Card>
-          <p className="mb-2 text-sm font-semibold text-stone-600">
-            {others.length} {t("orderKinds.SUPPLIER_TO_RIDER").length ? "" : ""}
-            {t("common.status")}
-          </p>
+      {others.length > 0 || (view.extras.riderStockUnits ?? 0) > 0 ? (
+        // "My day" (Prompt C §5.1): the other open orders with one verb each; never a second primary action.
+        <Card data-testid="my-day">
+          <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-semibold">{t("home.myDay.title")}</h2>
+            {(view.extras.riderStockUnits ?? 0) > 0 ? (
+              <span className="text-sm text-stone-600" data-testid="rider-stock">
+                {t("home.myDay.stock", { n: view.extras.riderStockUnits ?? 0 })}
+              </span>
+            ) : null}
+          </div>
+          {others.length === 0 ? <p className="text-sm text-stone-500">{t("home.myDay.none")}</p> : null}
           <ul className="divide-y divide-stone-100">
-            {others.map((o) => (
-              <li key={o.id}>
-                <Link href={`/orders/${o.id}`} className="flex items-center justify-between py-3">
-                  <span>
-                    <span className="font-mono text-sm">{o.ref}</span>
-                    <span className="block text-sm text-stone-600">{t(`orderKinds.${o.kind}`)}</span>
-                  </span>
-                  <span className="text-sm text-stone-500">→</span>
-                </Link>
-              </li>
-            ))}
+            {others.slice(0, 8).map((o) => {
+              const row = rowForOrder(actor.role as FieldRole, o, view.extras);
+              return (
+                <li key={o.id} data-testid="my-day-row">
+                  <Link href={`/orders/${o.id}`} className="flex items-center justify-between gap-2 py-3">
+                    <span className="min-w-0">
+                      <span className="font-mono text-sm">{o.ref}</span>
+                      <span className="block text-sm text-stone-600">{t(`orderKinds.${o.kind}`)}</span>
+                      <span className="mt-1 inline-block">
+                        <Badge tone={o.batchState && ["LOCKED_DAMAGED", "LOCKED_DISPUTE", "LOCKED_QUARANTINE"].includes(o.batchState) ? "red" : "neutral"}>{t(`orderStates.${o.state}`)}</Badge>
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-right text-sm font-medium text-brand-800">{row ? t(`home.action.${row.action}`) : t(`orderStates.${o.state}`)} →</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
+          {others.length > 8 ? <p className="mt-2 text-sm text-stone-500">{t("home.myDay.more", { n: others.length - 8 })}</p> : null}
         </Card>
       ) : null}
       <nav className="grid grid-cols-2 gap-2 text-sm">

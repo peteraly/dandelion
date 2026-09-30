@@ -59,6 +59,13 @@ export async function extrasFor(actor: Actor): Promise<RoleExtras> {
       .where(and(eq(s.batches.hubId, actor.hubId), eq(s.batches.custodyState, "AVAILABLE_AT_HUB")));
     extras.lowStock = Number(stock?.n ?? 0) < (hub?.minStockUnits ?? 0);
   }
+  if (actor.role === "BOSS_RIDER") {
+    const [units] = await db
+      .select({ n: sql<number>`coalesce(sum(${s.batches.quantity}), 0)::int` })
+      .from(s.batches)
+      .where(and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.custodyState, "WITH_RIDER")));
+    extras.riderStockUnits = Number(units?.n ?? 0);
+  }
   if (actor.role === "FIELD_CHAMPION") {
     const [units] = await db
       .select({ n: sql<number>`coalesce(sum(${s.batches.quantity}), 0)::int` })
@@ -78,12 +85,12 @@ export async function extrasFor(actor: Actor): Promise<RoleExtras> {
   return extras;
 }
 
-export async function homeFor(actor: Actor): Promise<HomeView & { snapshots: OrderSnapshot[] }> {
+export async function homeFor(actor: Actor): Promise<HomeView & { snapshots: OrderSnapshot[]; extras: RoleExtras }> {
   const orders = await recentOrdersFor(actor);
   const snapshots = await Promise.all(orders.map((o) => snapshotFor(actor, o)));
   const extras = await extrasFor(actor);
   const view = homeView(actor.role as FieldRole, snapshots, extras);
-  return { ...view, snapshots };
+  return { ...view, snapshots, extras };
 }
 
 /** The single action for one order, as the home screen would compute it for that order alone. */

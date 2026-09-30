@@ -39,6 +39,8 @@ export interface RoleExtras {
   customersWithoutPlan?: number;
   /** Champion's units on hand, by product id. */
   championStockUnits?: number;
+  /** Units a rider keeps for village drops (custody WITH_RIDER). */
+  riderStockUnits?: number;
 }
 
 export type ActionKey =
@@ -231,4 +233,13 @@ export function homeView(role: FieldRole, orders: readonly OrderSnapshot[], extr
     return { status: row.status, action: row.action, order: done };
   }
   return IDLE[role];
+}
+
+/**
+ * The row one order matches on its own — the verb the "my day" list shows next
+ * to it (Prompt C §5.1). Null when no row of the role's workflow fits the order.
+ */
+export function rowForOrder(role: FieldRole, o: OrderSnapshot, extras: RoleExtras = {}): Pick<HomeView, "status" | "action"> | null {
+  const v = homeView(role, [o], extras);
+  return v.order?.id === o.id ? { status: v.status, action: v.action } : null;
 }

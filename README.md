@@ -191,6 +191,14 @@ The handbook's ladder — supplier → rider → hub → champion → customer �
 - **Deletion requests** are refused while the subject still has open orders (`subject_has_open_orders`): the phone is tombstoned on deletion and open orders still need it for codes, receipts and reminders. Decline the request or finish the orders first.
 - The demo switches every path on for its fictional areas. Real areas stay ladder-only until the founders record their §8.8.6 decisions (`docs/GO_LIVE.md` item 9; ADR-031).
 
+## Field interface (prompt C)
+
+What each participant sees, and why it is not a DoorDash, is `docs/PROMPT_INTERFACES.md`. Two of its small changes are in:
+
+- **My day** — under the one primary action, a field home lists the person's other open orders (at most eight) with the order kind, a state chip and one verb, taken from the same workflow rows that pick the primary action. Riders also see the units they keep for village drops. Never a second primary button.
+- **What happened** — the field order page ends with the order's timeline: the ledger's own events (payments confirmed or sent to review, custody, handover, problems), each labelled by type and by the *role* that acted, never by name.
+- The customer status keyword by SMS (§5.3) waits on the founders' decisions in §7 of that document.
+
 ## Ecosystem view (`/admin/ecosystem`)
 
 One read-only screen for the founders (Prompt B §3): *where is the stock, where is the money, who is stuck, is the machine healthy?* Everything on it comes from one snapshot service (`lib/services/ecosystem.ts`, Zod-typed, aggregated in SQL; admin-only through `admin.ecosystem.view`).

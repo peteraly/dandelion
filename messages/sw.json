@@ -328,6 +328,12 @@
       "contact_or_close": "Wasiliana na mteja au funga mpango",
       "view_customers": "Tazama wateja",
       "deliver_org": "Thibitisha kupeleka kwa shirika"
+    },
+    "myDay": {
+      "title": "Siku yangu",
+      "none": "Hakuna kingine kilicho wazi.",
+      "stock": "vipande {n} mkononi",
+      "more": "{n} zaidi chini ya Oda"
     }
   },
   "auth": {
@@ -481,6 +487,12 @@
       "thisWeek": "Wiki hii",
       "thisMonth": "Mwezi huu",
       "note": "Ulichopokea ukitoa ulicholipa wauzaji wako. Malipo yanayosubiri hayahesabiwi hadi mtoa huduma athibitishe."
+    },
+    "timeline": {
+      "title": "Kilichotokea",
+      "by": "na {role}",
+      "empty": "Hakuna kilichorekodiwa bado.",
+      "system": "mfumo"
     }
   },
   "problems": {

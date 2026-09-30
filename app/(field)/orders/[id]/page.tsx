@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { eq } from "drizzle-orm";
+import { asc, eq, or } from "drizzle-orm";
 import { Card, Check, Field, IdemKey, KV, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
 import { OrderSummary } from "@/components/order-bits";
@@ -14,6 +14,7 @@ import { viewForOrder } from "@/lib/services/home";
 import { orderResource, revealDeliveryCode } from "@/lib/services/orders";
 import { openIntent, paidTotals } from "@/lib/services/payments";
 import { formatTzs } from "@/lib/money";
+import { formatDateTime } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
 import * as a from "../../actions";
 
@@ -317,6 +318,23 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const receipt = order.state === "COMPLETED" && (isPlanKind(order.kind) || isOrgKind(order.kind)) ? await db.query.receipts.findFirst({ where: eq(s.receipts.orderId, order.id) }) : null;
   const margin = order.state === "COMPLETED" && snap.side === "seller" ? (order.unitPriceTzs - order.unitCostTzs) * order.quantity : null;
   const HANDLED_OK = ["checking", "refundOpened", "receiptSent", "codeSent", "done", "delivered"];
+  // The order's timeline (Prompt C §5.2): the ledger's own events, labelled by type and by the role that acted — never by name.
+  const timeline = (
+    await db.query.ledgerEvents.findMany({
+      where: order.batchId ? or(eq(s.ledgerEvents.orderId, order.id), eq(s.ledgerEvents.batchId, order.batchId)) : eq(s.ledgerEvents.orderId, order.id),
+      orderBy: asc(s.ledgerEvents.id),
+      columns: { id: true, type: true, canonical: true, createdAt: true },
+    })
+  ).map((e) => {
+    let role: string | null = null;
+    try {
+      role = (JSON.parse(e.canonical) as { role?: string | null }).role ?? null;
+    } catch {
+      role = null;
+    }
+    return { id: e.id, type: e.type, at: e.createdAt, role };
+  });
+  const roleLabel = (role: string | null) => (role && t.has(`roles.${role}`) ? t(`roles.${role}`) : t("field.timeline.system"));
 
   return (
     <>
@@ -352,6 +370,23 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
           <KV items={[[t("verify.receiptNo"), receipt.receiptNo]]} />
         </Card>
       ) : null}
+      <Card data-testid="timeline">
+        <h2 className="mb-2 font-semibold">{t("field.timeline.title")}</h2>
+        {timeline.length === 0 ? <p className="text-sm text-stone-500">{t("field.timeline.empty")}</p> : null}
+        <ol className="divide-y divide-stone-100 text-sm">
+          {timeline.map((e) => (
+            <li key={e.id} className="flex items-start justify-between gap-3 py-2" data-testid="timeline-item">
+              <span>
+                <span className="font-medium">{t(`verify.eventTypes.${e.type}`)}</span>
+                <span className="block text-xs text-stone-500">{t("field.timeline.by", { role: roleLabel(e.role) })}</span>
+              </span>
+              <time dateTime={e.at.toISOString()} className="shrink-0 text-xs text-stone-500">
+                {formatDateTime(e.at, locale)}
+              </time>
+            </li>
+          ))}
+        </ol>
+      </Card>
       <Link href="/home" className="text-center text-sm underline">
         {t("common.back")}
       </Link>

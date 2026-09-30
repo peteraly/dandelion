@@ -327,6 +327,12 @@
       "contact_or_close": "Contact customer or close plan",
       "view_customers": "View customers",
       "deliver_org": "Confirm delivery to organisation"
+    },
+    "myDay": {
+      "title": "My day",
+      "none": "Nothing else open.",
+      "stock": "{n} units on hand",
+      "more": "{n} more under Orders"
     }
   },
   "auth": {
@@ -480,6 +486,12 @@
       "thisWeek": "This week",
       "thisMonth": "This month",
       "note": "Received minus what you paid your own sellers. Pending payments count for nothing until the provider confirms them."
+    },
+    "timeline": {
+      "title": "What happened",
+      "by": "by {role}",
+      "empty": "Nothing recorded yet.",
+      "system": "the system"
     }
   },
   "problems": {

@@ -323,6 +323,13 @@ test("customer: enrol with OTP, installments to full payment, overpayment to rev
   await champ.page.getByRole("button", { name: "Confirm handover" }).click();
   await expect(champ.page.getByText(/Receipt RC-/)).toBeVisible();
   await expect(champ.page.getByText(/Your margin:/)).toBeVisible();
+  // The order's timeline (Prompt C §5.2): payments, then the handover; the other side appears by role, never by name.
+  const timeline = champ.page.getByTestId("timeline").getByTestId("timeline-item");
+  expect(await timeline.count()).toBeGreaterThanOrEqual(4);
+  await expect(timeline.first()).toContainText("Payment confirmed");
+  await expect(timeline.last()).toContainText("Handover completed");
+  await expect(champ.page.getByTestId("timeline")).toContainText("Payment under review");
+  await expect(champ.page.getByTestId("timeline")).not.toContainText("Customer F");
   await champ.ctx.close();
 
   const receiptSms = await lastSms(request, "RECEIPT");
@@ -619,38 +626,58 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await b.page.getByLabel("Quantity").fill("4");
   await b.page.getByRole("button", { name: "Assign a factory pickup" }).click();
   await expect(b.page).toHaveURL(/ok=created/);
+  // A second pickup for the same rider, so the home screen has a "my day" list (Prompt C §5.1).
+  await b.page.goto("/admin/orders/new");
+  await b.page.getByLabel("Supplier · product").selectOption({ label: `${SEED.supplier.name} · Standard kit (reusable)` });
+  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— rider keeps the stock —" });
+  await b.page.getByLabel("Quantity").fill("3");
+  await b.page.getByRole("button", { name: "Assign a factory pickup" }).click();
+  await expect(b.page).toHaveURL(/ok=created/);
   await b.ctx.close();
 
   const supplier = await fieldLogin(browser, SEED.supplier.phone, SEED.supplier.pin);
   await english(supplier.page);
-  await expect(supplier.page.getByRole("heading", { name: "Pickup assigned" })).toBeVisible();
-  await supplier.page.getByRole("link", { name: "Confirm batch ready" }).click();
-  const pickupRef = await currentOrderRef(supplier.page);
-  await supplier.page.getByLabel(/Seal/).fill("SEAL-VD1");
-  await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
+  const readyRefs: string[] = [];
+  for (const seal of ["SEAL-VD1", "SEAL-VD2"]) {
+    await supplier.page.goto("/home");
+    await expect(supplier.page.getByRole("heading", { name: "Pickup assigned" })).toBeVisible();
+    await supplier.page.getByRole("link", { name: "Confirm batch ready", exact: true }).click();
+    readyRefs.push(await currentOrderRef(supplier.page));
+    await supplier.page.getByLabel(/Seal/).fill(seal);
+    await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
+    await expect(supplier.page.getByRole("heading", { name: "Batch ready for rider payment and pickup" })).toBeVisible();
+  }
 
   const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
   await english(rider.page);
-  await rider.page.getByRole("link", { name: "Accept pickup" }).click();
+  // One primary action; the other pickup waits in "my day" with its own verb.
+  expect(await rider.page.locator("a.btn-primary, button.btn-primary").count()).toBe(1);
+  await expect(rider.page.getByTestId("my-day-row")).toHaveCount(1);
+  await expect(rider.page.getByTestId("my-day")).toContainText("Accept pickup");
+  await rider.page.getByRole("link", { name: "Accept pickup", exact: true }).click();
   await rider.page.getByRole("button", { name: "Accept pickup" }).click();
   await expect(rider.page.getByRole("heading", { name: "Pay the supplier via mobile money" })).toBeVisible();
+  const pickupRef = await currentOrderRef(rider.page);
+  expect(readyRefs).toContain(pickupRef);
   const paid = (await sim(request, { op: "simulate", scenario: "success", orderRef: pickupRef })) as { outcomes: string[] };
   expect(paid.outcomes).toContain("CONFIRMED");
   await supplier.page.goto("/home");
-  await supplier.page.getByRole("link", { name: "Confirm release" }).click();
+  await supplier.page.getByRole("link", { name: "Confirm release", exact: true }).click();
   await supplier.page.getByLabel(/counted the units/).check();
   await supplier.page.getByRole("button", { name: "Confirm release" }).click();
+  await expect(supplier.page.getByRole("heading", { name: "Waiting for the rider's confirmation" })).toBeVisible();
   await rider.page.goto("/home");
-  await rider.page.getByRole("link", { name: "Confirm receipt" }).click();
+  await rider.page.getByRole("link", { name: "Confirm receipt", exact: true }).click();
   await rider.page.getByLabel(/counted the units/).check();
   await rider.page.getByLabel(/seal and batch ID/).check();
   await rider.page.getByRole("button", { name: "Confirm receipt" }).click();
   await expect(rider.page.getByRole("heading", { name: "Stock has left the factory" })).toBeVisible();
   await supplier.ctx.close();
 
-  // The village drop: the rider enrols the customer and sells like a champion would.
+  // The village drop: the rider enrols the customer and sells like a champion would. The stock on hand shows on the home screen.
   await rider.page.goto("/home");
   await expect(rider.page.getByTestId("customers-link")).toBeVisible();
+  await expect(rider.page.getByTestId("rider-stock")).toContainText("4 units");
   await rider.page.goto("/customers/new");
   await rider.page.getByLabel("Name or preferred name").fill("Village customer (TEST)");
   await rider.page.getByLabel(/Phone number/).fill("+255700000057");
