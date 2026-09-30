@@ -15,7 +15,7 @@ export default async function FieldLayout({ children }: { children: ReactNode })
   const h = await headers();
   const path = h.get("x-invoke-path") ?? "/home";
   return (
-    <FieldShell roleLabel={t(session.user.role)} name={session.user.displayName} path={path} logout={logoutField}>
+    <FieldShell roleLabel={t(session.user.role)} name={session.user.displayName} path={path} logout={logoutField} switchRole={session.via === "OPEN_DEMO"}>
       <DemoBanner />
       <ServiceWorkerRegister />
       {children}

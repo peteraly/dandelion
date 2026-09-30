@@ -225,6 +225,8 @@ export const sessions = pgTable(
     kind: text("kind", { enum: ["FIELD", "ADMIN"] }).notNull(),
     mfaVerifiedAt: ts("mfa_verified_at"),
     deviceId: text("device_id"),
+    /** How the session began: a real sign-in, or the open demo's one-click entry (Prompt E; never in production). */
+    via: text("via", { enum: ["LOGIN", "OPEN_DEMO"] }).notNull().default("LOGIN"),
     createdAt: createdAt(),
     lastSeenAt: ts("last_seen_at").notNull().defaultNow().$defaultFn(() => now()),
     expiresAt: ts("expires_at").notNull(),

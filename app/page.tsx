@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { PublicShell } from "@/components/shell";
 import { Card } from "@/components/ui";
 import { publicWeeklyStats } from "@/lib/services/public-stats";
+import { openDemoEnabled } from "@/lib/demo/open";
 
 export const dynamic = "force-dynamic";
 
@@ -13,10 +14,16 @@ export default async function LandingPage() {
     console.error("[public] stats unavailable:", e instanceof Error ? e.message : e);
     return null;
   });
+  const openDemo = await openDemoEnabled();
   return (
     <PublicShell path="/">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-lg">{t("hero")}</p>
+      {openDemo ? (
+        <Link href="/demo" className="btn btn-primary" data-testid="try-demo">
+          {(await getTranslations("openDemo"))("landingCta")}
+        </Link>
+      ) : null}
       <Card>
         <h2 className="mb-2 text-lg font-semibold">{t("howItWorks")}</h2>
         <ol className="list-decimal space-y-2 pl-5">
@@ -52,7 +59,7 @@ export default async function LandingPage() {
         <Link href="/privacy" className="btn btn-secondary">
           {t("privacy")}
         </Link>
-        <Link href="/login" className="btn btn-primary">
+        <Link href="/login" className={openDemo ? "btn btn-secondary" : "btn btn-primary"}>
           {t("title")} — {(await getTranslations("auth"))("loginTitle")}
         </Link>
       </nav>

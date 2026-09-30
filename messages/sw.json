@@ -51,7 +51,8 @@
     "noPressure": "Hakuna makato ya kiotomatiki. Hakuna faini ya kuchelewa. Hakuna deni.",
     "ledgerPending": "Leja: inasubiri",
     "ledgerRecorded": "Leja: imerekodiwa",
-    "underReview": "Inakaguliwa"
+    "underReview": "Inakaguliwa",
+    "switchRole": "Badili jukumu"
   },
   "roles": {
     "SUPER_ADMIN": "Msimamizi",
@@ -976,7 +977,9 @@
         "district": "Hakuna wilaya inayoendeshwa. Historia ilitengenezwa kupitia msimbo uleule ambao wilaya halisi itatumia.",
         "provider": "Viunganishi halisi vya malipo, SMS na uthibitisho kwenye mnyororo vimezimwa hadi waanzilishi watie saini milango ya kuanza."
       }
-    }
+    },
+    "openDemoChip": "onyesho la wazi",
+    "switchRole": "Badili jukumu"
   },
   "public": {
     "title": "Jaribio la Dandelion",
@@ -1170,7 +1173,10 @@
     "buyer_required": "Chagua anayechukua bidhaa.",
     "organisation_already_in_state": "Shirika tayari liko katika hali hiyo.",
     "organisation_activation_pending": "Ombi la kuwasha shirika hili tayari linasubiri uamuzi.",
-    "area_sales_pending": "Ombi la njia za mauzo za eneo hili tayari linasubiri uamuzi."
+    "area_sales_pending": "Ombi la njia za mauzo za eneo hili tayari linasubiri uamuzi.",
+    "open_demo_disabled": "Onyesho la wazi halipatikani hapa.",
+    "open_demo_fake_phone": "Kwenye onyesho la wazi, tumia namba ya majaribio: +255 700 00x xxx.",
+    "open_demo_not_allowed": "Hili linahitaji kuingia halisi, si onyesho la wazi."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1178,7 +1184,7 @@
   },
   "ecosystem": {
     "title": "Mfumo mzima",
-    "subtitle": "Bidhaa ziko wapi, pesa ziko wapi, nani amekwama, na kama mfumo wenyewe uko sawa. Kusoma tu; kila tarakimu inafuatiliwa hadi tukio la leja.",
+    "subtitle": "Bidhaa na pesa ziko wapi, nani amekwama, na kama mfumo uko salama.",
     "asOf": "hadi {time}",
     "live": "Moja kwa moja",
     "paused": "Imesitishwa",
@@ -1212,7 +1218,9 @@
       "waitingOnSupplier": "Zinasubiri msambazaji",
       "supplierQuality": "Ubora wa msambazaji",
       "clear": "Onyesha yote",
-      "orgOrdersUnpaid": "Oda za mashirika hazijalipwa siku 3+"
+      "orgOrdersUnpaid": "Oda za mashirika hazijalipwa siku 3+",
+      "allClear": "Yote safi",
+      "clearCount": "Ukaguzi {n} uko safi"
     },
     "graph": {
       "title": "Mtiririko",
@@ -1254,7 +1262,8 @@
       "title": "Pesa (zilizothibitishwa na mtoa huduma)",
       "pendingIntents": "{n} zinasubiri",
       "reviewIntents": "{n} zinakaguliwa",
-      "plans": "Mipango: {active} inaendelea · {completed} imekamilika katika kipindi · {stalled} imekwama"
+      "plans": "Mipango: {active} inaendelea · {completed} imekamilika katika kipindi · {stalled} imekwama",
+      "none": "Hakuna malipo yaliyothibitishwa katika kipindi hiki."
     },
     "system": {
       "title": "Mfumo",
@@ -1270,7 +1279,10 @@
       "ai": "AI",
       "aiOff": "imezimwa",
       "aiOn": "imewashwa · miito {calls} · {usd} mwezi huu",
-      "seedProfile": "Seti ya data"
+      "seedProfile": "Seti ya data",
+      "summaryOk": "Kazi zimeendeshwa kwa wakati",
+      "summaryIssues": "Kazi {n} zinahitaji kuangaliwa",
+      "details": "Maelezo"
     },
     "feed": {
       "title": "Mkondo wa moja kwa moja",
@@ -1318,7 +1330,8 @@
         "PROBLEM": "Tatizo limeripotiwa: {type}",
         "UNKNOWN": "Tukio la usalama",
         "ORGANISATION_ACTIVATED": "Shirika limewashwa",
-        "ORGANISATION_DEACTIVATED": "Shirika limezimwa"
+        "ORGANISATION_DEACTIVATED": "Shirika limezimwa",
+        "OPEN_DEMO_ENTRY": "Onyesho la wazi limefunguliwa"
       },
       "admin": {
         "admin_enrolled": "Msimamizi amejiandikisha",
@@ -1358,7 +1371,8 @@
         "organisation_create": "Shirika limeongezwa",
         "organisation_deactivate": "Shirika limezimwa",
         "organisation_update": "Shirika limesasishwa"
-      }
+      },
+      "more": "Onyesha {n} zaidi"
     },
     "tables": {
       "hubs": "Vituo",
@@ -1379,7 +1393,8 @@
       "to": "Kwenda",
       "age": "Umri (siku)",
       "payment": "Malipo",
-      "none": "—"
+      "none": "—",
+      "tabs": "Majedwali"
     },
     "map": {
       "title": "Ramani ya wilaya",
@@ -1400,8 +1415,66 @@
       "quality": "makundi {n} yenye matatizo",
       "marker": "vipande {n} barabarani",
       "attention": "inahitaji umakini",
-      "direct": "Wateja wa moja kwa moja"
+      "direct": "Wateja wa moja kwa moja",
+      "recent": "Matukio {n} katika saa iliyopita",
+      "howToRead": "Jinsi ya kusoma ramani",
+      "key": {
+        "ladder": "Ngazi ya mwongozo",
+        "direct": "Njia ya moja kwa moja",
+        "road": "Oda barabarani",
+        "locked": "Kundi lililofungwa",
+        "recent": "Hai katika saa iliyopita"
+      }
     },
-    "present": "Mwonekano wa mtangazaji"
+    "present": "Mwonekano wa mtangazaji",
+    "filters": "Vichujio",
+    "kpi": {
+      "title": "Kwa mtazamo mmoja",
+      "units": "Vipande wilayani",
+      "unitsNote": "vilivyo kwa wasambazaji, waendesha pikipiki, vituo na mabingwa",
+      "confirmed": "Malipo yaliyothibitishwa",
+      "confirmedNote": "na mtoa huduma · {window}",
+      "plans": "Mipango hai",
+      "plansNote": "{stalled} imekwama",
+      "attention": "Inahitaji umakini",
+      "attentionNote": "katika ukaguzi {n}",
+      "allClear": "yote safi"
+    }
+  },
+  "openDemo": {
+    "title": "Jaribu onyesho",
+    "intro": "Chagua jukumu na uingie: hakuna simu, nenosiri wala msimbo. Kila unachokiona ni wilaya ya kuigwa yenye watu na pesa za kubuni.",
+    "shared": "Hili ni onyesho la pamoja. Kila mwenye kiungo hiki anaona na kubadilisha wilaya ileile ya kubuni. Tafadhali usiandike majina halisi wala namba za simu halisi.",
+    "enter": "Ingia",
+    "limits": "Kwenye onyesho la wazi, kufuta data, kuhamisha data na kusajili funguo za kuingia kunahitaji kuingia halisi, na namba za majaribio tu (+255 700 00x xxx) zinakubaliwa.",
+    "landingCta": "Jaribu onyesho — bila kuingia",
+    "loginLink": "Huna akaunti? Jaribu onyesho la wazi →",
+    "noPasskeys": "Funguo za kuingia haziwezi kusajiliwa kutoka onyesho la wazi. Ingia kwa akaunti yako kuongeza moja.",
+    "roles": {
+      "founder": {
+        "title": "Mwanzilishi",
+        "what": "Mwonekano wa juu, idhini na mwongozo wa onyesho."
+      },
+      "founder2": {
+        "title": "Mwanzilishi wa pili",
+        "what": "Msimamizi mwingine: idhinisha alichoomba wa kwanza."
+      },
+      "supplier": {
+        "title": "Msambazaji",
+        "what": "Uchukuaji, pesa zilizothibitishwa na mtoa huduma, mauzo kwa mashirika."
+      },
+      "rider": {
+        "title": "Boss rider",
+        "what": "Chukua kiwandani, peleka vituoni, usambazaji vijijini."
+      },
+      "hub": {
+        "title": "Meneja wa kituo",
+        "what": "Kagua bidhaa zinazofika, hifadhi, wapatie mabingwa."
+      },
+      "champion": {
+        "title": "Bingwa wa uwandani",
+        "what": "Sajili wateja kwa ridhaa, mipango, makabidhiano, risiti."
+      }
+    }
   }
 }

@@ -6,6 +6,7 @@
  * serve is stored.
  */
 import { and, desc, eq, ne, sql } from "drizzle-orm";
+import { assertOpenDemoPhone } from "@/lib/security/open-demo";
 import { z } from "zod";
 import { now } from "@/lib/clock";
 import { getDb, type DbOrTx } from "@/lib/db/client";
@@ -43,6 +44,7 @@ async function columns(input: z.infer<typeof OrganisationInput>) {
 export async function createOrganisation(actor: Actor, raw: OrganisationInputT): Promise<{ organisationId: string }> {
   authorize(actor, "admin.organisation.manage");
   const input = OrganisationInput.parse(raw);
+  assertOpenDemoPhone(actor, input.contactPhone);
   return withTx(async (tx) => {
     const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, input.serviceAreaId) });
     if (!area) throw new DomainError("not_found");
@@ -58,6 +60,7 @@ export async function createOrganisation(actor: Actor, raw: OrganisationInputT):
 export async function updateOrganisation(actor: Actor, organisationId: string, raw: OrganisationInputT): Promise<void> {
   authorize(actor, "admin.organisation.manage");
   const input = OrganisationInput.parse(raw);
+  assertOpenDemoPhone(actor, input.contactPhone);
   await withTx(async (tx) => {
     const existing = await tx.query.organisations.findFirst({ where: eq(s.organisations.id, organisationId) });
     if (!existing) throw new DomainError("organisation_not_found");

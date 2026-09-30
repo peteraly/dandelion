@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { act, bool, str } from "@/lib/actions";
-import { actorFromCookies } from "@/lib/auth/current";
+import { adminActorFromCookies } from "@/lib/auth/current";
 import type { Actor } from "@/lib/policy";
 import { adminCreatePickup } from "@/lib/services/orders";
 import { adminLockUser, adminReenrollUser, adminSuspendUser, createUser } from "@/lib/services/users";
@@ -22,7 +22,7 @@ import type { OrderKind } from "@/lib/domain/types";
 import { idempotent, DomainError } from "@/lib/services/core";
 
 async function admin(): Promise<Actor> {
-  const a = await actorFromCookies();
+  const a = await adminActorFromCookies();
   if (!a || a.role !== "SUPER_ADMIN" || !a.mfa) redirect("/admin/login");
   return a;
 }

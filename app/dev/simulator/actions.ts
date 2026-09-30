@@ -73,6 +73,8 @@ export async function tickAction(fd: FormData): Promise<void> {
  */
 export async function resetDemoAction(fd: FormData): Promise<void> {
   const session = await guard();
+  // Wiping the district needs a real sign-in; an open-demo visitor must not end everyone's demo (Prompt E).
+  if (session.via === "OPEN_DEMO") redirect("/admin/demo?error=open_demo_not_allowed");
   let result: string;
   let ok = false;
   try {

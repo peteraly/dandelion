@@ -4,6 +4,7 @@
  * re-enrollment (§3.15). Admins enroll with a passphrase + TOTP, never SMS.
  */
 import { now, nowMs } from "@/lib/clock";
+import { assertOpenDemoPhone } from "@/lib/security/open-demo";
 import { and, eq, isNull, gt } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
@@ -97,6 +98,7 @@ async function sendEnrollSms(tx: Tx, user: { displayName: string; role: Role; pr
 export async function createUser(actor: Actor, raw: CreateUserInput): Promise<{ userId: string; adminEnrollLink?: string }> {
   authorize(actor, "admin.user.create");
   const input = CreateUserSchema.parse(raw);
+  assertOpenDemoPhone(actor, input.phone);
   const locale: Locale = input.preferredLocale ?? (input.role === "SUPER_ADMIN" ? "en" : "sw");
   try {
     return await withTx(async (tx) => {

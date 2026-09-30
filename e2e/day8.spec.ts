@@ -504,6 +504,12 @@ test("provider statement import shows matched, amount-differs, missing-in-statem
   await admin.ctx.close();
 });
 
+test("the open demo does not exist unless switched on", async ({ request }) => {
+  expect((await request.get("/demo")).status()).toBe(404);
+  const landing = await (await request.get("/")).text();
+  expect(landing).not.toContain('data-testid="try-demo"');
+});
+
 test("simulator is not reachable without the guard", async ({ request }) => {
   const r = await request.post("/dev/simulator/api", { data: { op: "poll" } });
   expect(r.status()).toBe(401);
@@ -524,9 +530,11 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await expect(page.getByTestId("flow-table")).toContainText("Supplier Test Co. (TEST)");
   await expect(page.getByTestId("demo-banner")).toHaveCount(0);
 
-  // Keyboard path: the attention chips are focusable links with a count and a label.
-  await page.getByTestId("attention-paymentReviews").focus();
-  await expect(page.getByTestId("attention-paymentReviews")).toBeFocused();
+  // At a glance: four numbers; the attention strip shows only what needs action, the rest folds into "all clear".
+  await expect(page.getByTestId("kpis").locator('[data-testid^="kpi-"]')).toHaveCount(4);
+  const chip = page.getByTestId("attention-strip").getByRole("link").first();
+  await chip.focus();
+  await expect(chip).toBeFocused(); // keyboard path: chips are focusable links with a count and a label
 
   // The refresh happens only while the tab is visible.
   let refreshes = 0;
@@ -571,10 +579,16 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   expect(await page.locator('[data-testid="map-tile"][data-kind="HUB"]').count()).toBe(await page.getByTestId("hub-row").count());
   expect(await page.getByTestId("map-tile").count()).toBe(await page.getByTestId("flow-table").locator("tbody tr").count());
   expect(await page.getByTestId("map-speed").count()).toBe(0);
+  // The active chip is always shown (even at zero) and outlines exactly the tiles it counts.
+  await page.goto("/admin/ecosystem?window=7d&attention=hubsBelowMin");
   const below = Number((await page.getByTestId("attention-hubsBelowMin").locator("span").first().innerText()).trim());
-  await page.getByTestId("attention-hubsBelowMin").click();
-  await expect(page).toHaveURL(/attention=hubsBelowMin/);
+  await expect(page.getByTestId("attention-hubsBelowMin")).toHaveAttribute("aria-current", "true");
   expect(await page.locator('[data-testid="map-tile"][data-attention="true"]').count()).toBe(below);
+  // Tables sit behind tabs: one at a time.
+  await page.getByTestId("tab-orders").click();
+  await expect(page.getByTestId("orders-table")).toBeVisible();
+  expect(await page.getByTestId("hubs-table").count()).toBe(0);
+  await page.goto("/admin/ecosystem?window=7d");
   const axeWide = await new AxeBuilder({ page }).analyze();
   const seriousWide = axeWide.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(seriousWide, JSON.stringify(seriousWide.map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 3).map((n) => n.target) })), null, 1)).toEqual([]);

@@ -1,0 +1,1 @@
+ALTER TABLE "sessions" ADD COLUMN "via" text DEFAULT 'LOGIN' NOT NULL;

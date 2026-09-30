@@ -5,6 +5,7 @@
  * organisation view, and money is shown only as the provider confirmed it.
  */
 import { and, desc, eq, gte, inArray, ne, sql } from "drizzle-orm";
+import { assertOpenDemoPhone } from "@/lib/security/open-demo";
 import { z } from "zod";
 import { now, nowMs } from "@/lib/clock";
 import { getDb } from "@/lib/db/client";
@@ -57,6 +58,7 @@ async function contactColumns(input: z.infer<typeof SupplierInput>) {
 export async function createSupplier(actor: Actor, raw: SupplierInputT): Promise<{ supplierId: string }> {
   authorize(actor, "admin.supplier.manage");
   const input = SupplierInput.parse(raw);
+  assertOpenDemoPhone(actor, input.contactPhone);
   return withTx(async (tx) => {
     const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, input.serviceAreaId) });
     if (!area) throw new DomainError("not_found");
@@ -72,6 +74,7 @@ export async function createSupplier(actor: Actor, raw: SupplierInputT): Promise
 export async function updateSupplier(actor: Actor, supplierId: string, raw: SupplierInputT): Promise<void> {
   authorize(actor, "admin.supplier.manage");
   const input = SupplierInput.parse(raw);
+  assertOpenDemoPhone(actor, input.contactPhone);
   await withTx(async (tx) => {
     const existing = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, supplierId) });
     if (!existing) throw new DomainError("supplier_not_found");

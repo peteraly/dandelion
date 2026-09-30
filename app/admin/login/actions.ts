@@ -51,12 +51,13 @@ export async function passkeyAuthVerifyAction(response: AuthenticationResponseJS
 
 export async function passkeyRegisterOptionsAction(): Promise<unknown> {
   const session = await currentAdminSession();
-  if (!session?.mfaVerified) return null;
+  // A passkey on a shared demo account would let one visitor's device sign in for everyone (Prompt E).
+  if (!session?.mfaVerified || session.via === "OPEN_DEMO") return null;
   return registrationOptions(session.id, { id: session.user.id, displayName: session.user.displayName });
 }
 
 export async function passkeyRegisterVerifyAction(response: RegistrationResponseJSON): Promise<{ ok: boolean }> {
   const session = await currentAdminSession();
-  if (!session?.mfaVerified) return { ok: false };
+  if (!session?.mfaVerified || session.via === "OPEN_DEMO") return { ok: false };
   return { ok: await verifyRegistration(session.id, session.user.id, response) };
 }

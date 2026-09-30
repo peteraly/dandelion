@@ -3,11 +3,11 @@
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { str } from "@/lib/actions";
-import { actorFromCookies } from "@/lib/auth/current";
+import { fieldActorFromCookies } from "@/lib/auth/current";
 import { aiEducation } from "@/lib/services/ai-gateway";
 
 export async function askEducationAction(fd: FormData): Promise<void> {
-  const actor = await actorFromCookies();
+  const actor = await fieldActorFromCookies();
   if (!actor || actor.role !== "FIELD_CHAMPION") redirect("/login?expired=1");
   const locale = ((await getLocale()) as "sw" | "en") ?? "sw";
   try {

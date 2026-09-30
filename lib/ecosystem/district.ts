@@ -27,6 +27,8 @@ export interface Tile {
   locked: boolean;
   /** The active attention chip points at this tile (outline + icon). */
   attention: boolean;
+  /** Something happened here in the hour before the snapshot (a pulsing dot; Prompt E §3). */
+  recent: boolean;
 }
 
 export interface Band {
@@ -99,6 +101,14 @@ const RIGHT_W = 176;
 const ORG_H = 48;
 const V_GAP = 8;
 const SILENT_MS = 7 * 86_400_000;
+/** "Live" on the map: activity within the hour before the snapshot. */
+export const RECENT_MS = 60 * 60_000;
+
+function isRecent(n: EcoNode, asOfMs: number): boolean {
+  if (!n.lastActivityAt) return false;
+  const age = asOfMs - new Date(n.lastActivityAt).getTime();
+  return age >= 0 && age <= RECENT_MS;
+}
 
 const GLYPH: Record<EcoNode["kind"], Glyph> = {
   SUPPLIER: "factory",
@@ -198,6 +208,7 @@ export function layoutDistrict(input: { nodes: EcoNode[]; edges: EcoEdge[]; area
         node: n,
         locked: !!n.stock && n.stock.lockedUnits > 0,
         attention: isAttention(n, attention, asOfMs, edges),
+        recent: isRecent(n, asOfMs),
       });
 
     // Factory column: suppliers stacked.

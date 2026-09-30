@@ -4,6 +4,7 @@
  * log in. Phone verification by SMS OTP (§7 security controls).
  */
 import { now } from "@/lib/clock";
+import { assertOpenDemoPhone } from "@/lib/security/open-demo";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
@@ -31,6 +32,7 @@ export const CreateCustomerSchema = z
 export async function createCustomer(actor: Actor, raw: z.input<typeof CreateCustomerSchema>, deviceId: string | null, ip: string | null): Promise<{ customerId: string; challengeId: string }> {
   authorize(actor, "customer.create");
   const input = CreateCustomerSchema.parse(raw);
+  assertOpenDemoPhone(actor, input.phone);
   const champion = await getDb().query.users.findFirst({ where: eq(s.users.id, actor.userId) });
   try {
     return await withTx(async (tx) => {

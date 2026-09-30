@@ -59,6 +59,7 @@ export function toActor(s: LoadedSession): Actor {
     hubId: s.user.hubId,
     supplierId: s.user.supplierId,
     mfa: s.kind === "ADMIN" && s.mfaVerified,
+    openDemo: s.via === "OPEN_DEMO",
   };
 }
 
@@ -87,6 +88,18 @@ export async function requireAdmin(): Promise<{ session: LoadedSession; actor: A
   if (!session) redirect("/admin/login");
   if (!session.mfaVerified) redirect("/admin/login/second-factor");
   return { session, actor: toActor(session) };
+}
+
+/** Field server actions: the field session only, even when the same browser also holds an admin session. */
+export async function fieldActorFromCookies(): Promise<Actor | null> {
+  const field = await currentFieldSession();
+  return field ? toActor(field) : null;
+}
+
+/** Admin server actions: the admin session only, even when the same browser also holds a field session. */
+export async function adminActorFromCookies(): Promise<Actor | null> {
+  const admin = await currentAdminSession();
+  return admin ? toActor(admin) : null;
 }
 
 /** For server actions: returns null instead of redirecting. */

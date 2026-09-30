@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { act, str, withParam } from "@/lib/actions";
-import { actorFromCookies } from "@/lib/auth/current";
+import { adminActorFromCookies } from "@/lib/auth/current";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { decryptString } from "@/lib/crypto/envelope";
@@ -17,7 +17,7 @@ import { DomainError, logAdminAction, withTx } from "@/lib/services/core";
 import type { Actor } from "@/lib/policy";
 
 async function admin(): Promise<Actor> {
-  const a = await actorFromCookies();
+  const a = await adminActorFromCookies();
   if (!a || a.role !== "SUPER_ADMIN" || !a.mfa) redirect("/admin/login");
   return a;
 }

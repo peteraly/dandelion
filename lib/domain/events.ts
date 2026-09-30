@@ -6,6 +6,7 @@
 import type { ExceptionType } from "./types";
 
 export const SECURITY_EVENT_TYPES = [
+  "OPEN_DEMO_ENTRY",
   "ACCOUNT_LOCKED",
   "ADMIN_2FA_FAILED",
   "ADMIN_PASSKEY_REGISTERED",

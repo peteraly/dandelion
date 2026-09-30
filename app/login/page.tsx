@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { openDemoEnabled } from "@/lib/demo/open";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { PublicShell } from "@/components/shell";
@@ -33,6 +34,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <PrimaryButton>{t("loginTitle")}</PrimaryButton>
         </form>
       </Card>
+      {(await openDemoEnabled()) ? (
+        <Link href="/demo" className="text-center text-sm underline" data-testid="open-demo-link">
+          {(await getTranslations("openDemo"))("loginLink")}
+        </Link>
+      ) : null}
       <p className="text-sm text-stone-600">{t("pinResetNote")}</p>
       <Link href="/lock" className="btn btn-danger">
         {tc("lockAccount")}

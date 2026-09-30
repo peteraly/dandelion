@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { act, bool, checks, str } from "@/lib/actions";
-import { actorFromCookies, clientIp, deviceId } from "@/lib/auth/current";
+import { fieldActorFromCookies, clientIp, deviceId } from "@/lib/auth/current";
 import { revokeAllSessions } from "@/lib/auth/session";
 import { idempotent, DomainError } from "@/lib/services/core";
 import * as orders from "@/lib/services/orders";
@@ -15,7 +15,8 @@ import type { Actor } from "@/lib/policy";
 import { PolicyError } from "@/lib/policy";
 
 async function me(): Promise<Actor> {
-  const a = await actorFromCookies();
+  // The field session only: a browser may also hold an admin session (founders testing both; the open demo's role switch).
+  const a = await fieldActorFromCookies();
   if (!a || a.role === "SUPER_ADMIN") redirect("/login?expired=1");
   return a;
 }

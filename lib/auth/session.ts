@@ -19,7 +19,7 @@ export type SessionKind = "FIELD" | "ADMIN";
 export async function createSession(
   userId: string,
   kind: SessionKind,
-  opts: { deviceId?: string | null; mfaVerified?: boolean } = {},
+  opts: { deviceId?: string | null; mfaVerified?: boolean; via?: "LOGIN" | "OPEN_DEMO" } = {},
   db: DbOrTx = getDb(),
 ): Promise<{ token: string; expiresAt: Date }> {
   const token = randomToken();
@@ -31,6 +31,7 @@ export async function createSession(
     kind,
     deviceId: opts.deviceId ?? null,
     mfaVerifiedAt: opts.mfaVerified ? now() : null,
+    via: opts.via ?? "LOGIN",
     expiresAt,
   });
   return { token, expiresAt };
@@ -40,6 +41,8 @@ export interface LoadedSession {
   id: string;
   kind: SessionKind;
   mfaVerified: boolean;
+  /** "OPEN_DEMO" when the session came from the open demo's one-click entry. */
+  via: "LOGIN" | "OPEN_DEMO";
   user: typeof s.users.$inferSelect;
 }
 
@@ -58,7 +61,7 @@ export async function loadSession(token: string | undefined, at = now(), touch =
   if (touch && at.getTime() - row.lastSeenAt.getTime() > 20_000) {
     await db.update(s.sessions).set({ lastSeenAt: at }).where(eq(s.sessions.id, id));
   }
-  return { id, kind: row.kind, mfaVerified: row.mfaVerifiedAt !== null, user };
+  return { id, kind: row.kind, mfaVerified: row.mfaVerifiedAt !== null, via: row.via, user };
 }
 
 export async function revokeSession(token: string): Promise<void> {

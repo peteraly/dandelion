@@ -17,7 +17,13 @@ export default async function PasskeysPage({ searchParams }: { searchParams: Sea
       <h1 className="text-2xl font-bold">{t("registerPasskey")}</h1>
       {sp.first ? <p className="rounded-xl bg-amber-50 p-3 text-amber-950">{t("passkeyRequired")}</p> : null}
       <Card>
-        <PasskeyRegister label={t("registerPasskey")} done={t("passkeyRegistered")} />
+        {session.via === "OPEN_DEMO" ? (
+          <p className="text-sm text-stone-700" data-testid="passkey-open-demo">
+            {(await getTranslations("openDemo"))("noPasskeys")}
+          </p>
+        ) : (
+          <PasskeyRegister label={t("registerPasskey")} done={t("passkeyRegistered")} />
+        )}
       </Card>
       <Card>
         <ul className="text-sm">

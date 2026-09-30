@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SimulatorPage({ searchParams }: { searchParams: SearchParams }) {
   if (!simulatorEnabled()) notFound();
-  await requireAdmin();
+  const { session } = await requireAdmin();
   const sp = await searchParams;
   const result = typeof sp.result === "string" ? sp.result : null;
   const orders = await getDb().query.orders.findMany({ where: inArray(s.orders.state, ["AWAITING_PAYMENT", "PLAN_ACTIVE"]), orderBy: desc(s.orders.updatedAt), limit: 50 });
@@ -90,6 +90,7 @@ export default async function SimulatorPage({ searchParams }: { searchParams: Se
           </form>
         </div>
         <p className="mt-2 text-xs text-stone-500">New activity on the real clock through the real services, then the poller — and for a day, reconciliation and anchoring — run here because previews have no crons. Limit: 6 per 10 minutes; every tick is in the admin log.</p>
+{session.via !== "OPEN_DEMO" ? (
         <details className="mt-4 rounded-xl border border-red-200 p-3">
           <summary className="cursor-pointer font-semibold text-red-800">Reset to the demo dataset</summary>
           <p className="mt-2 text-sm text-stone-700">Wipes this database and asks Vercel to rebuild it with the demo profile. Everything anyone did in the demo is gone; every session ends, yours too.</p>
@@ -109,6 +110,7 @@ export default async function SimulatorPage({ searchParams }: { searchParams: Se
             </button>
           </form>
         </details>
+        ) : null}
       </Card>
       <Card>
         <h2 className="mb-2 font-semibold">Mock SMS outbox</h2>

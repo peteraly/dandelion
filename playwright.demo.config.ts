@@ -24,6 +24,6 @@ export default defineConfig({
         url: `${baseURL}/api/health`,
         reuseExistingServer: false,
         timeout: 300_000,
-        env: { DATABASE_URL: DEMO_DB, VERCEL_ENV: "", SIMULATOR_ENABLED: "true", E2E: "true", APP_ORIGIN: baseURL, CRON_SECRET: "demo-cron-secret", NEXT_TELEMETRY_DISABLED: "1", DEMO_SCREENS: "1" },
+        env: { DATABASE_URL: DEMO_DB, VERCEL_ENV: "", SIMULATOR_ENABLED: "true", E2E: "true", APP_ORIGIN: baseURL, CRON_SECRET: "demo-cron-secret", NEXT_TELEMETRY_DISABLED: "1", DEMO_SCREENS: "1", DEMO_OPEN_ACCESS: "true" },
       },
 });

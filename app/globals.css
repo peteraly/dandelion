@@ -74,8 +74,24 @@ input[type="radio"] {
 .district-marker {
   transition: transform 900ms ease-in-out;
 }
+/* A place active in the last hour breathes gently; still when motion is reduced. */
+.district-pulse {
+  animation: district-pulse 2.4s ease-in-out infinite;
+}
+@keyframes district-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .district-marker {
     transition: none;
+  }
+  .district-pulse {
+    animation: none;
   }
 }

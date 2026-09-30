@@ -50,7 +50,8 @@
     "noPressure": "No automatic deductions. No late fees. No debt.",
     "ledgerPending": "Ledger: pending",
     "ledgerRecorded": "Ledger: recorded",
-    "underReview": "Under review"
+    "underReview": "Under review",
+    "switchRole": "Switch role"
   },
   "roles": {
     "SUPER_ADMIN": "Administrator",
@@ -975,7 +976,9 @@
         "district": "No district is running. The history was generated through the same code a real district will use.",
         "provider": "Real payment adapters, SMS and on-chain anchoring are switched off until the founders sign the go-live gates."
       }
-    }
+    },
+    "openDemoChip": "open demo",
+    "switchRole": "Switch role"
   },
   "public": {
     "title": "Dandelion pilot",
@@ -1169,7 +1172,10 @@
     "buyer_required": "Choose who collects the pickup.",
     "organisation_already_in_state": "The organisation is already in that state.",
     "organisation_activation_pending": "An activation request for this organisation is already waiting for a decision.",
-    "area_sales_pending": "A request for this area's sale paths is already waiting for a decision."
+    "area_sales_pending": "A request for this area's sale paths is already waiting for a decision.",
+    "open_demo_disabled": "The open demo is not available here.",
+    "open_demo_fake_phone": "In the open demo, use a test number: +255 700 00x xxx.",
+    "open_demo_not_allowed": "This needs a real sign-in, not the open demo."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
@@ -1177,7 +1183,7 @@
   },
   "ecosystem": {
     "title": "Ecosystem",
-    "subtitle": "Where the stock is, where the money is, who is stuck, and whether the machine itself is healthy. Read-only; every figure is traceable to a ledger event.",
+    "subtitle": "Where the stock and the money are, who is stuck, and whether the machine is healthy.",
     "asOf": "as of {time}",
     "live": "Live",
     "paused": "Paused",
@@ -1211,7 +1217,9 @@
       "waitingOnSupplier": "Waiting on a supplier",
       "supplierQuality": "Supplier quality",
       "clear": "Show everything",
-      "orgOrdersUnpaid": "Organisation orders unpaid 3+ days"
+      "orgOrdersUnpaid": "Organisation orders unpaid 3+ days",
+      "allClear": "All clear",
+      "clearCount": "{n} checks all clear"
     },
     "graph": {
       "title": "Flow",
@@ -1253,7 +1261,8 @@
       "title": "Money (confirmed by the provider)",
       "pendingIntents": "{n} pending",
       "reviewIntents": "{n} in review",
-      "plans": "Plans: {active} active · {completed} completed in window · {stalled} stalled"
+      "plans": "Plans: {active} active · {completed} completed in window · {stalled} stalled",
+      "none": "No confirmed payments in this window."
     },
     "system": {
       "title": "System",
@@ -1269,7 +1278,10 @@
       "ai": "AI",
       "aiOff": "off",
       "aiOn": "on · {calls} calls · {usd} this month",
-      "seedProfile": "Dataset"
+      "seedProfile": "Dataset",
+      "summaryOk": "Jobs ran on time",
+      "summaryIssues": "{n} jobs need a look",
+      "details": "Details"
     },
     "feed": {
       "title": "Live feed",
@@ -1317,7 +1329,8 @@
         "PROBLEM": "Problem reported: {type}",
         "UNKNOWN": "Security event",
         "ORGANISATION_ACTIVATED": "Organisation activated",
-        "ORGANISATION_DEACTIVATED": "Organisation deactivated"
+        "ORGANISATION_DEACTIVATED": "Organisation deactivated",
+        "OPEN_DEMO_ENTRY": "Open demo entered"
       },
       "admin": {
         "admin_enrolled": "Admin enrolled",
@@ -1357,7 +1370,8 @@
         "organisation_create": "Organisation added",
         "organisation_deactivate": "Organisation deactivated",
         "organisation_update": "Organisation updated"
-      }
+      },
+      "more": "Show {n} more"
     },
     "tables": {
       "hubs": "Hubs",
@@ -1378,7 +1392,8 @@
       "to": "To",
       "age": "Age (days)",
       "payment": "Payment",
-      "none": "—"
+      "none": "—",
+      "tabs": "Tables"
     },
     "map": {
       "title": "District map",
@@ -1399,8 +1414,66 @@
       "quality": "{n} batches with issues",
       "marker": "{n} units on the road",
       "attention": "needs attention",
-      "direct": "Direct customers"
+      "direct": "Direct customers",
+      "recent": "{n} events in the last hour",
+      "howToRead": "How to read the map",
+      "key": {
+        "ladder": "Handbook ladder",
+        "direct": "Direct path",
+        "road": "Order on the road",
+        "locked": "Locked lot",
+        "recent": "Active in the last hour"
+      }
     },
-    "present": "Presenter view"
+    "present": "Presenter view",
+    "filters": "Filters",
+    "kpi": {
+      "title": "At a glance",
+      "units": "Units in the district",
+      "unitsNote": "held by suppliers, riders, hubs and champions",
+      "confirmed": "Confirmed payments",
+      "confirmedNote": "by the provider · {window}",
+      "plans": "Active plans",
+      "plansNote": "{stalled} stalled",
+      "attention": "Needs attention",
+      "attentionNote": "in {n} checks",
+      "allClear": "all clear"
+    }
+  },
+  "openDemo": {
+    "title": "Try the demo",
+    "intro": "Pick a role and you are in: no phone, no password, no code. Everything you see is a simulated district with fictional people and money.",
+    "shared": "This is a shared demo. Everyone with this link sees and changes the same fictional district. Please do not type real names or phone numbers.",
+    "enter": "Enter",
+    "limits": "In the open demo, wiping the dataset, exporting data and registering passkeys need a real sign-in, and only test phone numbers (+255 700 00x xxx) are accepted.",
+    "landingCta": "Try the demo — no sign-in",
+    "loginLink": "No account? Try the open demo →",
+    "noPasskeys": "Passkeys cannot be registered from the open demo. Sign in with your own account to add one.",
+    "roles": {
+      "founder": {
+        "title": "Founder",
+        "what": "The bird's-eye view, approvals and the demo guide."
+      },
+      "founder2": {
+        "title": "Second founder",
+        "what": "The other admin: approve what the first one asked for."
+      },
+      "supplier": {
+        "title": "Supplier",
+        "what": "Pickups, money confirmed by the provider, organisation sales."
+      },
+      "rider": {
+        "title": "Boss rider",
+        "what": "Collect at the factory, deliver to hubs, village drops."
+      },
+      "hub": {
+        "title": "Hub manager",
+        "what": "Inspect deliveries, stock, supply champions."
+      },
+      "champion": {
+        "title": "Field champion",
+        "what": "Enrol customers with consent, plans, handovers, receipts."
+      }
+    }
   }
 }

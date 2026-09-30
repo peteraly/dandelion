@@ -25,6 +25,8 @@ export interface MapLabels {
   marker: (n: number) => string;
   attention: string;
   direct: string;
+  howToRead: string;
+  recent: string;
 }
 
 export interface MapContext {
@@ -190,7 +192,8 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
               ) : null}
               {t.locked ? <use href="#d-lock" x={t.x + t.w - 20} y={t.y + 4} width={14} height={14} /> : null}
               {t.attention && !t.locked ? <use href="#d-alert" x={t.x + t.w - 20} y={t.y + 4} width={14} height={14} /> : null}
-              <title>{`${t.node.name} · ${c.columns[t.kind]} · ${c.status(t.node.status)} · ${line2}${line3 ? ` · ${line3}` : ""}${t.locked ? ` · ${c.locked}` : ""}${t.attention ? ` · ${c.map.attention}` : ""}`}</title>
+              {t.recent ? <circle className="district-pulse" cx={t.x + t.w - (t.locked || t.attention ? 28 : 12)} cy={t.y + 11} r={4} fill="#22c55e" data-testid="tile-recent" /> : null}
+              <title>{`${t.node.name} · ${c.columns[t.kind]} · ${c.status(t.node.status)} · ${line2}${line3 ? ` · ${line3}` : ""}${t.locked ? ` · ${c.locked}` : ""}${t.attention ? ` · ${c.map.attention}` : ""}${t.recent ? ` · ${c.map.recent}` : ""}`}</title>
             </a>
           );
         })}
@@ -203,7 +206,10 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
           </g>
         ))}
       </svg>
-      <p className="mt-1 text-xs text-stone-500">{c.map.legend}</p>
+      <details className="mt-1 text-xs text-stone-500">
+        <summary className="cursor-pointer underline decoration-dotted">{c.map.howToRead}</summary>
+        <p className="mt-1">{c.map.legend}</p>
+      </details>
     </div>
   );
 }

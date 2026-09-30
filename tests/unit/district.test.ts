@@ -140,6 +140,13 @@ describe("district layout", () => {
     expect(lay.tiles.filter((t) => t.locked).map((t) => t.id)).toEqual(["hub:h1"]);
   });
 
+  it("marks a place live when something happened there in the hour before the snapshot, never in the future", () => {
+    const at = (iso: string) => node({ id: `user:${iso}`, kind: "RIDER", name: iso, lastActivityAt: iso });
+    const lay = layoutDistrict({ nodes: [at("2026-09-30T07:30:00.000Z"), at("2026-09-30T06:59:00.000Z"), at("2026-09-30T08:10:00.000Z"), node({ id: "user:none", kind: "RIDER", name: "none", lastActivityAt: null })], edges: [], areas, asOf: AS_OF });
+    const recent = Object.fromEntries(lay.tiles.map((x) => [x.node.name, x.recent]));
+    expect(recent).toEqual({ "2026-09-30T07:30:00.000Z": true, "2026-09-30T06:59:00.000Z": false, "2026-09-30T08:10:00.000Z": false, none: false });
+  });
+
   it("copes with an empty snapshot and with nodes outside the listed areas", () => {
     const empty = layoutDistrict({ nodes: [], edges: [], areas, asOf: AS_OF });
     expect(empty.tiles).toEqual([]);

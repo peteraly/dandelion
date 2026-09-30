@@ -33,6 +33,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <p className="text-sm text-stone-600">
               <Name value={session.user.displayName} />
             </p>
+            {session.via === "OPEN_DEMO" ? (
+              <p className="mt-1 flex items-center gap-2 text-xs">
+                <span className="rounded bg-amber-100 px-1.5 py-0.5 font-semibold uppercase tracking-wide text-amber-900" data-testid="open-demo-chip">
+                  {t("openDemoChip")}
+                </span>
+                <Link href="/demo" className="underline" data-testid="switch-role">
+                  {t("switchRole")}
+                </Link>
+              </p>
+            ) : null}
             <p className="text-xs uppercase text-stone-600">{appEnv()}</p>
           </div>
           <div className="flex gap-2 md:mt-2">

@@ -28,6 +28,7 @@ These need credentials or dashboard actions the build did not have. Exact steps 
 7. ⬜ Point an external uptime monitor at `/api/health` (see README).
 8. ⬜ Living demo on the preview: `SEED_PROFILE=demo` plus the five `SEED_*` credentials (password manager, never chat or repo) in the Preview environment; Neon branch reset to empty; then Vercel → Settings → Git → **Deploy Hooks** → one hook for the build branch, its URL as `VERCEL_DEPLOY_HOOK_URL` (Preview) so "Reset to the demo dataset" can rebuild (ADR-028).
 9. ⬜ Founders' decisions on sale paths (prompt §8.8.6, ADR-031): which paths beyond the ladder the first real area allows (switched on under `/admin/areas` by two admins); what an organisation pays (the price list's organisation column; the demo uses the champion price); whether a rider who sells directly keeps the whole customer margin (default: yes). Until decided, real areas stay ladder-only and only the demo shows the other paths.
+10. ⬜ Open demo (ADR-033): `DEMO_OPEN_ACCESS=true` only on a preview holding the fictional dataset; remove it before any environment holds real data. Production ignores it by design.
 
 ## Signed off
 

@@ -21,6 +21,8 @@ export interface Actor {
   supplierId: string | null;
   /** Admin session has passed passkey/TOTP. Always false for field users. */
   mfa: boolean;
+  /** Entered through the open demo (Prompt E): fictional data only, and a few actions are refused. */
+  openDemo?: boolean;
 }
 
 export interface OrderResource {

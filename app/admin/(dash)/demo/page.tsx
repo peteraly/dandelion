@@ -26,7 +26,7 @@ const BEATS = ["landing", "map", "hour", "phone", "money", "verify", "earn"] as 
 const BEAT_HREF: Record<(typeof BEATS)[number], string> = { landing: "/", map: "/admin/ecosystem", hour: "/admin/ecosystem", phone: "/login", money: "/dev/simulator", verify: "/admin/messages", earn: "/admin/approvals" };
 
 export default async function DemoGuidePage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAdmin();
+  const { session } = await requireAdmin();
   if (!(await isDemoDataset())) notFound();
   const t = await getTranslations("admin.demo");
   const locale = (await getLocale()) as "sw" | "en";
@@ -85,7 +85,7 @@ export default async function DemoGuidePage({ searchParams }: { searchParams: Se
           </Link>
         </div>
         <p className="mt-2 text-xs text-stone-500">{t("controls.note")}</p>
-        {simulatorEnabled() ? (
+        {simulatorEnabled() && session.via !== "OPEN_DEMO" ? (
           <details className="mt-4 rounded-xl border border-red-200 p-3">
             <summary className="cursor-pointer font-semibold text-red-800">{t("reset.title")}</summary>
             <p className="mt-2 text-sm text-stone-700">{t("reset.explain")}</p>

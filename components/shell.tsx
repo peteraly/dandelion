@@ -40,12 +40,15 @@ export async function FieldShell({
   name,
   path,
   logout,
+  switchRole = false,
 }: {
   children: ReactNode;
   roleLabel: string;
   name: string;
   path: string;
   logout: () => Promise<void>;
+  /** Open-demo sessions get a way back to the role picker (Prompt E). */
+  switchRole?: boolean;
 }) {
   const t = await getTranslations("common");
   return (
@@ -57,6 +60,11 @@ export async function FieldShell({
           <p className="text-sm text-stone-600">
             <Name value={name} />
           </p>
+          {switchRole ? (
+            <Link href="/demo" className="text-xs underline" data-testid="switch-role">
+              {t("switchRole")}
+            </Link>
+          ) : null}
         </div>
         <div className="flex flex-col items-end gap-2">
           <LocaleToggle back={path} />

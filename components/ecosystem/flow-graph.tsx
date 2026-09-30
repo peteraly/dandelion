@@ -66,8 +66,10 @@ export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { no
           map: labels.map,
         }}
       />
-      <details className="md:open" open>
-        <summary className="cursor-pointer text-sm font-semibold">{labels.tableTitle}</summary>
+      <details className="text-sm" data-testid="flow-table-details">
+        <summary className="cursor-pointer text-sm text-stone-600 underline decoration-dotted">
+          {labels.tableTitle} · {nodes.length} · {drawable.length}
+        </summary>
         <table className="mt-2 w-full text-sm" data-testid="flow-table">
           <thead>
             <tr className="text-left text-stone-500">

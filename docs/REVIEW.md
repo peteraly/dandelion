@@ -29,7 +29,7 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 
 | Milestone | Status | Notes |
 | --- | --- | --- |
-| 1 Vertical slice | **done** | 21 Playwright tests cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, the demo polish (guide gating, presenter view, name chip, earnings), a village drop after two admins switch the path on, and an organisation sale; 287 Vitest tests (196 unit incl. AI evals, 73 integration on Postgres, 18 demo-profile). |
+| 1 Vertical slice | **done** | 22 Playwright tests (plus 2 in the demo-profile suite `e2e-demo/`) cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, the demo polish (guide gating, presenter view, name chip, earnings), a village drop after two admins switch the path on, and an organisation sale; 298 Vitest tests (202 unit incl. AI evals, 78 integration on Postgres, 18 demo-profile). |
 | 2 Ledger | **done (testnet not yet deployed)** | Merkle leaves/proofs, `LedgerAnchor.sol` + 9 Foundry tests, anchoring cron, `/verify/[ref]` public + receipt token, `Signer` (env/KMS stub), statement import + diff. Real-chain anchoring is proven against Anvil in `tests/integration/anchor.test.ts`; Celo testnet deployment needs a funded key and the current network id (ADR-017). |
 | 3 Deploy | **not done — blocked on credentials** | `vercel.json`, crons, health check, migration runner and deploy docs are ready. `vercel link`, Neon marketplace setup, deployment protection and env vars are dashboard/CLI steps for the founders (README → Deploy; GO_LIVE.md prerequisites). |
 | 4 Public website & PWA | **done** | Landing, how it works, honest ledger copy, weekly stats (<10 suppressed), safety (DRAFT), privacy (DRAFT), manifest, service worker for offline notes. Accessibility: labelled controls, 48 px targets, server-rendered pages, minimal client JS. Performance: only the `problems` i18n namespace is shipped to the client. |
@@ -75,6 +75,15 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | 5.7 Feed subjects | **done** | `isHumanRef` (`lib/domain/events.ts`): only order, batch, exception, receipt, approval, price-list and reconciliation references are shown. Unit test. |
 | 5.8 Presenter view `/admin/present` | **done** | Same view component (`components/ecosystem/view.tsx`), no sidebar, map full width, "Exit" link; e2e. |
 | 5.9 Deck screens | **done** | `npm run demo:screens` (`playwright.demo.config.ts`, `e2e-demo/screens.spec.ts`): seeds a throwaway demo database, walks the beats, saves PNGs to `docs/demo-screens/` (git-ignored; founders decide §7.5). |
+
+## Prompt E (blockchain in plain language, open demo, interface) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Blockchain answer | **done** | `docs/PROMPT_E_BLOCKCHAIN_OPEN_DEMO_UX.md` Part 1: a public notary for record fingerprints; nothing personal on-chain; off in the preview until a testnet key and contract are set; §1.6 is the prompt to switch it on and show it. |
+| Open demo | **done** | `/demo`, `lib/demo/open.ts`, `lib/security/open-demo.ts`, migration `0005`. Gated (non-production + `DEMO_OPEN_ACCESS=true` + seeded fictional data); reset, export and passkeys refused; test phones only; entries logged and rate-limited. ADR-033. Tests: `tests/unit/open-demo.test.ts`, `tests/integration/open-demo.test.ts`, e2e (404 when off), `e2e-demo/open-demo.spec.ts` (on). |
+| Session shadowing bug | **fixed** | Field and admin actions now read their own session type (`fieldActorFromCookies`, `adminActorFromCookies`). Found by the open-demo e2e (founder then champion in one browser). |
+| Interface clean-up | **done** | Bird's-eye view per Part 3 §3.2: headline numbers, action-only chips, tabs, compact filters, map key, folded system/legend/table twin, "live in the last hour" pulses. Unit test for the pulse rule; e2e updated; screens regenerated. |
 
 ## Red team (2026-09-30)
 

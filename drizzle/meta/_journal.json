@@ -36,6 +36,13 @@
       "when": 1790710103237,
       "tag": "0004_sale_paths",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790788123303,
+      "tag": "0005_open_demo_sessions",
+      "breakpoints": true
     }
   ]
 }

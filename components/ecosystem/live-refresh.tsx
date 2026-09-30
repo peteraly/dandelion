@@ -74,7 +74,7 @@ export function LiveRefresh({ intervalSeconds, attentionTotal, labels, asOf }: {
 
   const state = paused ? "paused" : idle ? "idle" : hidden ? "hidden" : "live";
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm" data-testid="live-refresh" data-state={state}>
+    <div className="flex flex-wrap items-center gap-2 text-xs" data-testid="live-refresh" data-state={state}>
       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${state === "live" ? "bg-green-100 text-green-900" : "bg-stone-200 text-stone-700"}`}>
         <span aria-hidden="true">{state === "live" ? "●" : "◌"}</span>
         {state === "live" ? labels.live : labels.paused}
@@ -84,7 +84,7 @@ export function LiveRefresh({ intervalSeconds, attentionTotal, labels, asOf }: {
       {idle ? (
         <button
           type="button"
-          className="btn btn-secondary min-h-12 px-3 py-1 text-sm"
+          className="btn btn-secondary w-auto min-h-10 px-3 py-1 text-sm"
           onClick={() => {
             lastInteraction.current = Date.now();
             setIdle(false);
@@ -94,7 +94,7 @@ export function LiveRefresh({ intervalSeconds, attentionTotal, labels, asOf }: {
           {labels.idle}
         </button>
       ) : (
-        <button type="button" className="btn btn-secondary min-h-12 px-3 py-1 text-sm" aria-pressed={paused} onClick={() => setPaused((p) => !p)} data-testid="pause-refresh">
+        <button type="button" className="btn btn-secondary w-auto min-h-10 px-3 py-1 text-sm" aria-pressed={paused} onClick={() => setPaused((p) => !p)} data-testid="pause-refresh">
           {paused ? labels.resume : labels.pause}
         </button>
       )}
