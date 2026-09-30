@@ -152,6 +152,8 @@ export const SETTING_DEFAULTS = {
   demoLastLiveAt: "",
   /** Why the last build could not make the demo district (scripts/seed.ts); shown on the admin home. */
   demoSeedError: "",
+  /** A setup note from the last seed, e.g. a preview's derived sign-in secret (lib/seed-identities.ts); shown on the admin home. */
+  seedNotice: "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

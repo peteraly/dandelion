@@ -31,7 +31,7 @@ export default async function AdminHome() {
   const { actor, session } = await requireAdmin();
   const t = await getTranslations("admin.home");
   const locale = (await getLocale()) as "sw" | "en";
-  const [p, live, groups, seedError] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups(), getSetting("demoSeedError")]);
+  const [p, live, groups, seedError, seedNotice] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups(), getSetting("demoSeedError"), getSetting("seedNotice")]);
   const needs = NEEDS.map(([k, href]) => ({ k, href, n: p[k] })).filter((x) => x.n > 0);
   const stats: [string, string][] = [
     ["road", String(live.road)],
@@ -53,6 +53,11 @@ export default async function AdminHome() {
       {seedError ? (
         <p className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="note" data-testid="demo-seed-error">
           {t("seedError", { reason: String(seedError) })}
+        </p>
+      ) : null}
+      {seedNotice ? (
+        <p className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="note" data-testid="seed-notice">
+          {t("seedNotice", { notice: String(seedNotice) })}
         </p>
       ) : null}
 

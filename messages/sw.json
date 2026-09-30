@@ -1057,7 +1057,8 @@
           "hint": "Kuingia kusiko kawaida au vitendo vilivyokataliwa vinavyostahili kuangaliwa."
         }
       },
-      "seedError": "Wilaya kamili ya onyesho haikuweza kujengwa kwenye usambazaji uliopita, kwa hiyo data ndogo ya mwanzo inaonyeshwa badala yake. Tuma mstari huu kwa anayetunza programu: {reason}"
+      "seedError": "Wilaya kamili ya onyesho haikuweza kujengwa kwenye usambazaji uliopita, kwa hiyo data ndogo ya mwanzo inaonyeshwa badala yake. Tuma mstari huu kwa anayetunza programu: {reason}",
+      "seedNotice": "Taarifa kutoka usambazaji uliopita: {notice}."
     },
     "live": {
       "running": "Moja kwa moja — wilaya ya onyesho inasonga",

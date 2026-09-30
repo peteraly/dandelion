@@ -6,7 +6,9 @@
  * SEED_ADMIN_PASSPHRASE_A/B, SEED_ADMIN_TOTP_A/B and SEED_FIELD_PIN, so the
  * public repository holds no credential usable on a deployed environment.
  */
+import { createHash } from "node:crypto";
 import { appEnv } from "@/lib/env";
+import { base32Encode } from "@/lib/auth/totp";
 
 /** Fake-range check shared with the demo generator: +255 700 00[0-9] [0-9][0-9][0-9] (unverified as reserved — ADR-025). */
 export const FAKE_PHONE_RE = /^\+2557000{2}\d{4}$/;
@@ -32,21 +34,47 @@ export interface MinimalSeedResult {
   adminIds: [string, string];
 }
 
+const B32_RE = /^[A-Z2-7]{16,64}$/;
+
+/**
+ * A base32 secret as people paste it — grouped with spaces or dashes the way
+ * authenticator apps show it, in lower case, with "=" padding, even the whole
+ * `NAME=value` line — is the same secret: base32 ignores case, the rest is layout.
+ */
+export function normaliseTotpSecret(raw: string, name = ""): string {
+  let v = raw.trim();
+  if (name && v.toUpperCase().startsWith(`${name}=`)) v = v.slice(name.length + 1);
+  return v.replace(/[\s-]/g, "").replace(/=+$/, "").toUpperCase();
+}
+
+/** Variables whose sign-in secret a preview had to derive (see buildSeed); the seed says so on the admin home. */
+export const SEED_NOTES: string[] = [];
+
 /**
  * Identities from the environment. `isDev` decides whether the fixed
  * development defaults apply; otherwise a missing variable yields "" and
- * `requireSeedCredentials` refuses later.
+ * `requireSeedCredentials` refuses later. Values are trimmed and a pasted
+ * `NAME=` prefix is dropped. With `derivePreviewTotp` (previews only), a TOTP
+ * variable that is still not base32 does not stop the preview: a valid secret
+ * is derived from it — as secret as the value itself — and a note says so.
  */
-export function buildSeed(env: Record<string, string | undefined>, isDev: boolean): SeedIdentities {
+export function buildSeed(env: Record<string, string | undefined>, isDev: boolean, opts: { derivePreviewTotp?: boolean; notes?: string[] } = {}): SeedIdentities {
   const fromEnv = (name: string, devDefault: string): string => {
-    const v = env[name];
-    if (v && v.length > 0) return v;
+    let v = env[name]?.trim() ?? "";
+    if (v.startsWith(`${name}=`)) v = v.slice(name.length + 1).trim();
+    if (v.length > 0) return v;
     return isDev ? devDefault : "";
+  };
+  const totp = (name: string, devDefault: string): string => {
+    const v = normaliseTotpSecret(fromEnv(name, devDefault), name);
+    if (!v || B32_RE.test(v) || !opts.derivePreviewTotp) return v;
+    opts.notes?.push(name);
+    return base32Encode(createHash("sha1").update(v).digest());
   };
   const fieldPin = fromEnv("SEED_FIELD_PIN", "2580");
   return {
-    adminA: { phone: "+255700000001", name: "Admin Alpha (TEST)", passphrase: fromEnv("SEED_ADMIN_PASSPHRASE_A", "test-admin-passphrase-alpha"), totp: fromEnv("SEED_ADMIN_TOTP_A", "JBSWY3DPEHPK3PXP") },
-    adminB: { phone: "+255700000002", name: "Admin Bravo (TEST)", passphrase: fromEnv("SEED_ADMIN_PASSPHRASE_B", "test-admin-passphrase-bravo"), totp: fromEnv("SEED_ADMIN_TOTP_B", "KRSXG5CTMVRXEZLU") },
+    adminA: { phone: "+255700000001", name: "Admin Alpha (TEST)", passphrase: fromEnv("SEED_ADMIN_PASSPHRASE_A", "test-admin-passphrase-alpha"), totp: totp("SEED_ADMIN_TOTP_A", "JBSWY3DPEHPK3PXP") },
+    adminB: { phone: "+255700000002", name: "Admin Bravo (TEST)", passphrase: fromEnv("SEED_ADMIN_PASSPHRASE_B", "test-admin-passphrase-bravo"), totp: totp("SEED_ADMIN_TOTP_B", "KRSXG5CTMVRXEZLU") },
     fieldPin,
     supplier: { phone: "+255700000010", name: "Supplier Test Co. (TEST)", pin: fieldPin, payee: "TILL-SUP-001" },
     riders: [
@@ -70,12 +98,12 @@ export function buildSeed(env: Record<string, string | undefined>, isDev: boolea
   };
 }
 
-export const SEED: SeedIdentities = buildSeed(process.env, appEnv() === "development");
+export const SEED: SeedIdentities = buildSeed(process.env, appEnv() === "development", { derivePreviewTotp: appEnv() === "preview", notes: SEED_NOTES });
 
 /** Refuses to create people with missing or weak credentials (outside development the env must set them). */
 export function requireSeedCredentials(seed: SeedIdentities = SEED): void {
   const problems: string[] = [];
-  const b32 = /^[A-Z2-7]{16,64}$/;
+  const b32 = B32_RE;
   for (const [label, a] of [
     ["A", seed.adminA],
     ["B", seed.adminB],

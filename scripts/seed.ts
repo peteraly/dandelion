@@ -25,11 +25,11 @@ import { hashPin, hashPassphrase, currentPepperVersion } from "@/lib/auth/secret
 import { runMigrations } from "@/lib/db/migrate";
 import { tzDay } from "@/lib/util/time";
 import { putSetting } from "@/lib/services/core";
-import { SEED, requireSeedCredentials, type MinimalSeedResult } from "@/lib/seed-identities";
+import { SEED, SEED_NOTES, requireSeedCredentials, type MinimalSeedResult } from "@/lib/seed-identities";
 import { assertSafeTargetDatabase, wipeDatabase } from "@/lib/seed-guards";
 import { appEnv, simulatorEnabled } from "@/lib/env";
 
-export { FAKE_PHONE_RE, SEED, buildSeed, requireSeedCredentials, type SeedIdentities, type MinimalSeedResult } from "@/lib/seed-identities";
+export { FAKE_PHONE_RE, SEED, buildSeed, normaliseTotpSecret, requireSeedCredentials, type SeedIdentities, type MinimalSeedResult } from "@/lib/seed-identities";
 export { assertEmptyDatabase, assertSafeTargetDatabase, refuseIfProduction } from "@/lib/seed-guards";
 
 export type SeedProfile = "minimal" | "demo";
@@ -228,6 +228,12 @@ if (process.argv[1]?.endsWith("seed.ts")) {
         await seedDemoProfile();
       } else {
         await seed();
+      }
+      // A preview that had to derive a sign-in secret says so on the admin home (lib/seed-identities.ts).
+      if (SEED_NOTES.length) {
+        const note = `${SEED_NOTES.join(" and ")} ${SEED_NOTES.length > 1 ? "are" : "is"} not in base32 (letters A–Z and digits 2–7), so the admin sign-in codes on this preview come from a secret derived from ${SEED_NOTES.length > 1 ? "them" : "it"}. Use the no-sign-in demo, or set a base32 value in Vercel and redeploy`;
+        console.warn(`[seed] note: ${note}`);
+        await putSetting(getDb(), "seedNotice", note, null);
       }
     } catch (e) {
       console.error("[seed] failed", e);

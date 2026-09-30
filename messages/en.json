@@ -1056,7 +1056,8 @@
           "hint": "Unusual sign-ins or refused actions worth a look."
         }
       },
-      "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}"
+      "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}",
+      "seedNotice": "Note from the last deployment: {notice}."
     },
     "live": {
       "running": "Live — the demo district is moving",
