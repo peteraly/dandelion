@@ -82,3 +82,12 @@ export function securityLabelKey(type: string): { key: string; problem: string |
   if (type.startsWith("PROBLEM_")) return { key: "PROBLEM", problem: type.slice("PROBLEM_".length) };
   return { key: (SECURITY_EVENT_TYPES as readonly string[]).includes(type) ? type : "UNKNOWN", problem: null };
 }
+
+/**
+ * Prompt D §5.7: a feed subject is shown only when a person would recognise
+ * it as a reference (order, batch, exception, receipt, approval, price list,
+ * reconciliation run) — never internal words like "session" or "statement".
+ */
+export function isHumanRef(subject: string): boolean {
+  return /^(OR|B|EX|RC|AP|PL|RECON|S|O)-[A-Za-z0-9][A-Za-z0-9-]+$/.test(subject.trim());
+}

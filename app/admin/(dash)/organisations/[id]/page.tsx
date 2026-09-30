@@ -1,5 +1,6 @@
 /** One buyer organisation: profile, activation request, orders and history (prompt §8.8.4). */
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, KV, PrimaryButton } from "@/components/ui";
@@ -31,7 +32,9 @@ export default async function OrganisationPage({ params, searchParams }: { param
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold">{o.name}</h1>
+        <h1 className="text-2xl font-bold">
+          <Name value={o.name} />
+        </h1>
         <Badge>{t(`kinds.${o.kind}`)}</Badge>
         <Badge tone={o.active ? "green" : "amber"}>{o.active ? t("active") : t("inactive")}</Badge>
         {o.pendingActivation ? <Badge tone="purple">{t("pending")}</Badge> : null}

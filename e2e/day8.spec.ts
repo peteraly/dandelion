@@ -596,6 +596,51 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
 
 const KIT_EDUCATION = ["Wash with water and soap after use", "Dry fully before reuse", "Store safely", "When not to use it", "When to seek medical care"];
 
+test("demo polish: the guide is demo-only, the presenter view drops the sidebar, names carry a chip, earnings show net", async ({ browser }) => {
+  const admin = await adminLogin(browser, SEED.adminA);
+  await english(admin.page);
+  const { page } = admin;
+  // Not the demo dataset: no guide, no guide link, no speed controls.
+  expect((await page.goto("/admin/demo"))!.status()).toBe(404);
+  await page.goto("/admin/ecosystem");
+  expect(await page.getByTestId("demo-guide-link").count()).toBe(0);
+  expect(await page.getByTestId("nav-demo-guide").count()).toBe(0);
+  // Sidebar groups and the presenter view.
+  await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Overview");
+  await page.getByTestId("present-link").click();
+  await expect(page).toHaveURL(/\/admin\/present/);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await expect(page.getByTestId("presenter")).toBeVisible();
+  expect(await page.getByRole("navigation", { name: "Admin" }).count()).toBe(0);
+  await expect(page.getByTestId("district-map")).toBeVisible();
+  await page.getByTestId("exit-presenter").click();
+  await expect(page).toHaveURL(/\/admin\/ecosystem/);
+  // Names: the suffix is in the data and in the accessible name, but never printed raw for sighted users.
+  await page.goto("/admin/stakeholders");
+  expect(await page.getByTestId("test-chip").count()).toBeGreaterThan(0);
+  await expect(page.getByRole("link", { name: "Rider One (TEST)" })).toBeVisible();
+  const raw = await page.evaluate(() => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let n = 0;
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.textContent?.includes("(TEST)")) continue;
+      const parent = node.parentElement as HTMLElement | null;
+      if (parent?.closest(".sr-only") || parent?.closest("script, style, noscript, template")) continue; // the RSC payload is data, not the page
+      n++;
+    }
+    return n;
+  });
+  expect(raw).toBe(0);
+  await admin.ctx.close();
+
+  // Earnings show net, received and paid out — never a bare negative "earned".
+  const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
+  await english(rider.page);
+  await expect(rider.page.getByTestId("earned-week")).toContainText("net");
+  await expect(rider.page.getByTestId("earnings")).toContainText("received");
+  await rider.ctx.close();
+});
+
 test("sale paths: two admins switch on village drops; a rider keeps factory stock and sells it in a village", async ({ browser, request }) => {
   // Ladder-only until two admins decide otherwise (prompt §8.8.2).
   const a = await adminLogin(browser, SEED.adminA);

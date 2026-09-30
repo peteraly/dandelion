@@ -4,6 +4,7 @@
  * quality issues traced to its batches, and the activation history.
  */
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, KV, PrimaryButton } from "@/components/ui";
@@ -37,7 +38,9 @@ export default async function SupplierPage({ params, searchParams }: { params: P
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-2xl font-bold">{sup.businessName}</h1>
+        <h1 className="text-2xl font-bold">
+          <Name value={sup.businessName} />
+        </h1>
         <Badge tone={sup.active ? "green" : "amber"}>{sup.active ? t("active") : t("inactive")}</Badge>
         {d.summary.pendingActivation ? <Badge tone="purple">{t("pending")}</Badge> : null}
       </div>
@@ -138,7 +141,7 @@ export default async function SupplierPage({ params, searchParams }: { params: P
             {d.users.map((u) => (
               <li key={u.id} className="flex items-center justify-between py-2">
                 <Link href={`/admin/stakeholders/${u.id}`} className="underline">
-                  {u.displayName}
+                  <Name value={u.displayName} />
                 </Link>
                 <span className="font-mono text-stone-500">{u.phoneMasked}</span>
                 <Badge tone={u.status === "ACTIVE" ? "green" : "amber"}>{tu(`status.${u.status}`)}</Badge>

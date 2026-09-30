@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Name } from "@/components/name";
 import { getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
 import { Badge, Card, IdemKey, KV } from "@/components/ui";
@@ -25,7 +26,9 @@ export default async function StakeholderPage({ params, searchParams }: { params
   const self = u.id === actor.userId;
   return (
     <>
-      <h1 className="text-2xl font-bold">{u.displayName}</h1>
+      <h1 className="text-2xl font-bold">
+        <Name value={u.displayName} />
+      </h1>
       <Notice error={error} ok={ok} okNamespace="admin.users" />
       {link ? (
         <Card className="border-2 border-amber-400">

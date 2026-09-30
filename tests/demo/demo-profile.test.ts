@@ -136,6 +136,15 @@ describe("demo profile", () => {
     for (const f of open.rows) expect(expected.has(f.kind), `unexplained flag ${f.kind}`).toBe(true);
   });
 
+  it("gives suppliers and organisations names short enough for a map tile (Prompt D §5.6)", async () => {
+    const suppliers = await db().query.suppliers.findMany({ columns: { businessName: true } });
+    const orgs = await db().query.organisations.findMany({ columns: { name: true } });
+    for (const n of [...suppliers.map((x) => x.businessName), ...orgs.map((x) => x.name)]) {
+      expect(n.endsWith(" (TEST)"), n).toBe(true);
+      expect(n.replace(" (TEST)", "").length, n).toBeLessThanOrEqual(18);
+    }
+  });
+
   it("keeps every person fictional and marked", async () => {
     const users = await db().select({ n: s.users.displayName }).from(s.users);
     const customers = await db().select({ n: s.customers.displayName }).from(s.customers);

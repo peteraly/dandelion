@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Name } from "@/components/name";
 import { getLocale, getTranslations } from "next-intl/server";
 import { and, eq } from "drizzle-orm";
 import { Card, Field, IdemKey, PrimaryButton } from "@/components/ui";
@@ -43,7 +44,9 @@ export default async function CustomerPage({ params, searchParams }: { params: P
 
   return (
     <>
-      <h1 className="text-2xl font-bold">{customer.displayName}</h1>
+      <h1 className="text-2xl font-bold">
+        <Name value={customer.displayName} />
+      </h1>
       <p className="text-stone-600">{maskPhone(await decryptString(customer.phoneEnc))}</p>
       <Notice error={error} ok={ok} okNamespace="field.customer" />
       {!customer.phoneVerifiedAt ? (

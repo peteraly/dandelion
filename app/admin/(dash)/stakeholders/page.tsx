@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { getTranslations } from "next-intl/server";
 import { Badge, Card, LinkButton } from "@/components/ui";
 import { requireAdmin } from "@/lib/auth/current";
@@ -32,7 +33,7 @@ export default async function StakeholdersPage() {
               <tr key={u.id}>
                 <td className="py-2">
                   <Link href={`/admin/stakeholders/${u.id}`} className="underline">
-                    {u.displayName}
+                    <Name value={u.displayName} />
                   </Link>
                 </td>
                 <td>{tr(u.role)}</td>

@@ -21,7 +21,8 @@
     "contracts:build": "cd contracts && forge build",
     "contracts:test": "cd contracts && forge test -vv",
     "i18n:check": "tsx scripts/check-i18n.ts",
-    "ledger:record": "tsx scripts/record-deployment.ts"
+    "ledger:record": "tsx scripts/record-deployment.ts",
+    "demo:screens": "playwright test -c playwright.demo.config.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.68",

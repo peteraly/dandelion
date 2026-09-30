@@ -17,7 +17,8 @@ const LAST = [
   "Mgaya", "Chuwa", "Sanga", "Komba", "Haule", "Mlowe", "Kessy", "Temba", "Urassa", "Mwaipopo", "Sumari", "Mbise", "Nnko", "Mollel", "Laizer",
 ];
 /** Fictional supplier companies — never a real manufacturer's name (Prompt B §8.5). */
-const COMPANIES = ["Jua Kali Hygiene Supplies Ltd", "Maua Sanitary Products Co.", "Nyota Pads Works", "Tumaini Health Goods Ltd", "Bahari Textiles & Care Co."];
+/** ≤ 18 characters before the suffix, so a map tile shows the whole name (Prompt D §5.6). */
+const COMPANIES = ["Jua Kali Hygiene", "Maua Sanitary Co.", "Nyota Pads Works", "Tumaini Health Ltd", "Bahari Care Co."];
 const VILLAGES = ["Mwembe Chai", "Kilima Moto", "Bonde la Amani", "Mtoni Juu", "Kijiji Kipya", "Mlima Mrefu", "Ziwa Ndogo", "Msitu Mweupe", "Tumaini Mashariki", "Upendo Kaskazini"];
 
 export class Names {

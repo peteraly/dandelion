@@ -201,6 +201,8 @@ What each participant sees, and why it is not a DoorDash, is `docs/PROMPT_INTERF
 - **What happened** — the field order page ends with the order's timeline: the ledger's own events (payments confirmed or sent to review, custody, handover, problems), each labelled by type and by the *role* that acted, never by name.
 - The customer status keyword by SMS (§5.3) waits on the founders' decisions in §7 of that document.
 
+The investor demo (`docs/PROMPT_DEMO_POLISH.md`) adds, on the demo profile only: a **demo guide** at `/admin/demo` (the seven-beat script with deep links, the accounts by phone, the *one hour / one day* controls, a warm-up button, the reset), a **presenter view** at `/admin/present` (the ecosystem view without the sidebar, map at full width), and `npm run demo:screens` (seeds a throwaway demo database and saves the seven beats as PNGs under `docs/demo-screens/`, git-ignored until the founders decide). Everywhere: fictional names keep their " (TEST)" suffix in the data and show it as a small *test* chip (`components/name.tsx`; screen readers still hear the suffix); the sidebar is grouped; the field earnings card shows received, paid out and net; the live feed shows a subject only when it is a reference a person would recognise; demo companies and organisations get names short enough for a map tile.
+
 ## Ecosystem view (`/admin/ecosystem`)
 
 One read-only screen for the founders (Prompt B §3): *where is the stock, where is the money, who is stuck, is the machine healthy?* Everything on it comes from one snapshot service (`lib/services/ecosystem.ts`, Zod-typed, aggregated in SQL; admin-only through `admin.ecosystem.view`).

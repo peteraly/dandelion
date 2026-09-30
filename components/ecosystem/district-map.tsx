@@ -7,6 +7,7 @@
  * it honours prefers-reduced-motion. Customers are dots and counts, never names.
  */
 import type { DistrictLayout, Tile } from "@/lib/ecosystem/district";
+import { displayName } from "@/components/name";
 import type { EcoEdge, EcoNode } from "@/lib/services/ecosystem";
 
 export interface MapLabels {
@@ -23,6 +24,7 @@ export interface MapLabels {
   quality: (n: number) => string;
   marker: (n: number) => string;
   attention: string;
+  direct: string;
 }
 
 export interface MapContext {
@@ -133,7 +135,7 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
         {layout.bands.map((b) => (
           <g key={b.id} data-testid="map-band">
             <text x={16} y={b.y + 16} fontSize="13" fontWeight="700" fill={INK}>
-              {b.name}
+              {displayName(b.name)}
             </text>
             <line x1={b.roadX1} y1={b.roadY} x2={b.roadX2} y2={b.roadY} stroke="#e7e5e4" strokeWidth={12} strokeLinecap="round" />
             <line x1={b.roadX1} y1={b.roadY} x2={b.roadX2} y2={b.roadY} stroke="#fafaf9" strokeWidth={1.5} strokeDasharray="10 8" />
@@ -175,7 +177,7 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
               />
               <use href={`#d-${t.glyph}`} x={t.x + 6} y={t.y + 5} width={18} height={18} />
               <text x={t.x + 28} y={t.y + 17} fontSize="11.5" fontWeight="700" fill={INK}>
-                {clip(isBlock && t.node.hubId ? c.columns.CUSTOMERS : t.node.name, 19)}
+                {clip(isBlock ? (t.node.hubId ? c.columns.CUSTOMERS : c.map.direct) : displayName(t.node.name), 19)}
               </text>
               {isBlock ? <Dots t={t} /> : null}
               <text x={t.x + 8} y={t.y + (isBlock ? t.h - 20 : 33)} fontSize="10.5" fill={INK}>

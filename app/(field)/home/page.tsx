@@ -217,17 +217,24 @@ async function EarningsCard({ earnings, locale }: { earnings: Earnings; locale: 
     <Card data-testid="earnings">
       <h2 className="mb-2 font-semibold">{t("title")}</h2>
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-xl bg-green-50 p-3">
-          <p className="text-xs uppercase text-green-800">{t("thisWeek")}</p>
-          <p className="text-xl font-bold text-green-900" data-testid="earned-week">
-            {formatTzs(earnings.weekTzs, locale)}
-          </p>
-        </div>
-        <div className="rounded-xl bg-green-50 p-3">
-          <p className="text-xs uppercase text-green-800">{t("thisMonth")}</p>
-          <p className="text-xl font-bold text-green-900">{formatTzs(earnings.monthTzs, locale)}</p>
-        </div>
+        {(
+          [
+            ["thisWeek", earnings.receivedWeekTzs, earnings.paidWeekTzs, earnings.weekTzs, "earned-week"],
+            ["thisMonth", earnings.receivedMonthTzs, earnings.paidMonthTzs, earnings.monthTzs, "earned-month"],
+          ] as const
+        ).map(([label, received, paid, net, testId]) => (
+          <div key={label} className={`rounded-xl p-3 ${net < 0 ? "bg-amber-50" : "bg-green-50"}`}>
+            <p className={`text-xs uppercase ${net < 0 ? "text-amber-900" : "text-green-800"}`}>{t(label)}</p>
+            <p className={`text-xl font-bold ${net < 0 ? "text-amber-950" : "text-green-900"}`} data-testid={testId}>
+              {t("net")} {formatTzs(net, locale)}
+            </p>
+            <p className="mt-1 text-xs text-stone-600">
+              {t("received")} {formatTzs(received, locale)} · {t("paidOut")} {formatTzs(paid, locale)}
+            </p>
+          </div>
+        ))}
       </div>
+      {earnings.weekTzs < 0 ? <p className="mt-2 text-xs text-amber-900">{t("negativeNote")}</p> : null}
       <p className="mt-2 text-xs text-stone-500">{t("note")}</p>
     </Card>
   );

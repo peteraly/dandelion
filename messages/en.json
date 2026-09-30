@@ -485,7 +485,11 @@
       "title": "Earned (confirmed by the provider)",
       "thisWeek": "This week",
       "thisMonth": "This month",
-      "note": "Received minus what you paid your own sellers. Pending payments count for nothing until the provider confirms them."
+      "note": "Received minus what you paid your own sellers. Pending payments count for nothing until the provider confirms them.",
+      "received": "received",
+      "paidOut": "paid out",
+      "net": "net",
+      "negativeNote": "You bought more stock than you sold this week. Net turns positive as the units are sold."
     },
     "timeline": {
       "title": "What happened",
@@ -591,7 +595,14 @@
       "suppliers": "Suppliers",
       "ecosystem": "Ecosystem",
       "organisations": "Organisations",
-      "areas": "Areas & sale paths"
+      "areas": "Areas & sale paths",
+      "title": "Admin",
+      "demo": "Demo guide",
+      "demoControls": "Demo controls",
+      "devSimulator": "Dev simulator",
+      "passkeys": "Passkeys",
+      "present": "Presenter view",
+      "exitPresent": "Exit presenter view"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -875,6 +886,95 @@
         "RIDER_TO_ORG": "Riders sell to organisations"
       },
       "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
+    },
+    "navGroups": {
+      "overview": "Overview",
+      "operate": "Operate",
+      "people": "People & places",
+      "money": "Money & record",
+      "admin": "Admin"
+    },
+    "demo": {
+      "title": "Demo guide",
+      "intro": "One presenter, one laptop, ten minutes, seven beats. Everything else stays reachable but off the path. The banner stays on every screen: simulated people and money, real rules.",
+      "warmDone": "Warmed up: the database and the district snapshot answered.",
+      "controls": {
+        "title": "Controls",
+        "dataset": "Dataset: scale {scale} · {ticks} simulated ticks so far · generated {generated}",
+        "hour": "Simulate one hour",
+        "day": "Simulate one day",
+        "warm": "Warm up",
+        "present": "Presenter view",
+        "note": "Ticks run new activity through the real services on the real clock (limit 6 per 10 minutes; every tick is in the admin log). Warm up wakes the database before a demo."
+      },
+      "reset": {
+        "title": "Reset to the demo dataset",
+        "explain": "Wipes this database and asks the host to rebuild it with the demo profile. Everything anyone did in the demo is gone; every session ends, yours too. Do it the evening before, not during.",
+        "confirm": "Type \"demo\" to confirm",
+        "button": "Wipe and rebuild"
+      },
+      "script": {
+        "title": "The script — seven beats, ten minutes",
+        "intro": "Laptop window for the founders' view, a phone-width window for the field app. English. Say one line per beat.",
+        "landing": {
+          "where": "Landing page",
+          "time": "30 s",
+          "do": "Open the public site.",
+          "say": "Zero cash. Every shilling verified by the provider. People earn by moving the product."
+        },
+        "map": {
+          "where": "District map",
+          "time": "2 min",
+          "do": "Open the ecosystem view; point at the attention strip.",
+          "say": "This is a district after three weeks. This strip is what the founders see at seven in the morning."
+        },
+        "hour": {
+          "where": "Simulate one hour",
+          "time": "1 min",
+          "do": "Press One hour in the map header; watch the road and the feed.",
+          "say": "Everything that just happened went through the real services."
+        },
+        "phone": {
+          "where": "A champion's phone",
+          "time": "2 min",
+          "do": "Phone window: sign in as the champion, enrol a customer with consent, choose the product; show the SMS under Messages.",
+          "say": "One screen, one action. Consent first. The full price before any payment."
+        },
+        "money": {
+          "where": "The payment and the handover",
+          "time": "2 min",
+          "do": "Simulate the customer's payment; back on the phone: Customer has paid in full → handover with the code → receipt.",
+          "say": "The app never confirms money. The provider does. Then the code, then the receipt."
+        },
+        "verify": {
+          "where": "The public record",
+          "time": "1 min",
+          "do": "Open the verify link from the receipt SMS.",
+          "say": "What happened and when. No names. It does not prove more than it says."
+        },
+        "earn": {
+          "where": "Who earned, and the two-admin rule",
+          "time": "1.5 min",
+          "do": "Back to the map: earnings on the tiles; then the approvals inbox.",
+          "say": "Who earned what this week. And nothing important happens on one admin's word."
+        }
+      },
+      "accounts": {
+        "title": "Accounts",
+        "note": "Phones only. Passphrases, authenticator secrets and PINs live in the password manager, never on a screen.",
+        "admin": "Admin (founders' view)",
+        "supplier": "Supplier",
+        "rider": "Boss rider",
+        "hub": "Hub manager",
+        "champion": "Field champion"
+      },
+      "claims": {
+        "title": "What this demo does not claim",
+        "money": "No real money moves. The provider is a mock that behaves like the real one, including its failures.",
+        "people": "Every person, company and place is fictional and marked test.",
+        "district": "No district is running. The history was generated through the same code a real district will use.",
+        "provider": "Real payment adapters, SMS and on-chain anchoring are switched off until the founders sign the go-live gates."
+      }
     }
   },
   "public": {
@@ -1072,7 +1172,8 @@
     "area_sales_pending": "A request for this area's sale paths is already waiting for a decision."
   },
   "demo": {
-    "banner": "SIMULATED DATA — generated for testing; no district is running."
+    "banner": "SIMULATED DATA — generated for testing; no district is running.",
+    "howTo": "How to demo"
   },
   "ecosystem": {
     "title": "Ecosystem",
@@ -1287,7 +1388,7 @@
       "tickedHour": "One hour of activity simulated through the real services.",
       "tickedDay": "One day of activity simulated through the real services, then reconciliation and anchoring.",
       "legend": "Left to right: factory · riders · hubs, with their champions' kiosks and their customers underneath · organisations and customers served directly. Solid lines are the handbook ladder, dashed lines direct paths; grey pending · green confirmed · amber in review · red on hold. A motorbike is one open order on the road; a padlock a locked lot; a triangle a tile the attention chip points at. Customers are dots and counts, never names.",
-      "earned": "earned {tzs}",
+      "earned": "net {tzs}",
       "confirmed": "{tzs} confirmed",
       "plans": "{active} active · {stalled} stalled",
       "min": "min {n}",
@@ -1297,7 +1398,9 @@
       "waiting": "{n} waiting past lead time",
       "quality": "{n} batches with issues",
       "marker": "{n} units on the road",
-      "attention": "needs attention"
-    }
+      "attention": "needs attention",
+      "direct": "Direct customers"
+    },
+    "present": "Presenter view"
   }
 }

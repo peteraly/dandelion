@@ -5,6 +5,7 @@
  * library, no client JavaScript.
  */
 import { layoutDistrict } from "@/lib/ecosystem/district";
+import { Name, displayName } from "@/components/name";
 import type { AttentionKey, EcoEdge, EcoNode } from "@/lib/services/ecosystem";
 import { DistrictMap, type MapLabels } from "./district-map";
 
@@ -82,7 +83,7 @@ export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { no
               <tr key={n.id}>
                 <td className="py-1">
                   <a href={n.href} className="underline">
-                    {n.name}
+                    <Name value={n.name} />
                   </a>
                 </td>
                 <td>{labels.columns[n.kind]}</td>
@@ -109,7 +110,7 @@ export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { no
               <span aria-hidden="true" className={EDGE_TEXT[e.paymentState]}>
                 ━
               </span>{" "}
-              {nodes.find((n) => n.id === e.fromId)?.name} → {nodes.find((n) => n.id === e.toId)?.name}: {labels.edge(e)} · {labels.payment(e.paymentState)}
+              {displayName(nodes.find((n) => n.id === e.fromId)?.name ?? "")} → {displayName(nodes.find((n) => n.id === e.toId)?.name ?? "")}: {labels.edge(e)} · {labels.payment(e.paymentState)}
             </li>
           ))}
         </ul>

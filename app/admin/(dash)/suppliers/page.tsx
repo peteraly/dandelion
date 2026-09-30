@@ -4,6 +4,7 @@
  * that adds one (inactive until two admins approve).
  */
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
@@ -51,7 +52,7 @@ export default async function SuppliersPage({ searchParams }: { searchParams: Se
                 <tr key={r.id} data-testid="supplier-row">
                   <td className="py-2">
                     <Link href={`/admin/suppliers/${r.id}`} className="underline">
-                      {r.businessName}
+                      <Name value={r.businessName} />
                     </Link>
                   </td>
                   <td>{r.areaName}</td>

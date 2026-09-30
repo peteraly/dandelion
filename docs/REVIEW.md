@@ -29,7 +29,7 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 
 | Milestone | Status | Notes |
 | --- | --- | --- |
-| 1 Vertical slice | **done** | 20 Playwright tests cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, a village drop after two admins switch the path on, and an organisation sale; 278 Vitest tests (190 unit incl. AI evals, 71 integration on Postgres, 17 demo-profile). |
+| 1 Vertical slice | **done** | 21 Playwright tests cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, the demo polish (guide gating, presenter view, name chip, earnings), a village drop after two admins switch the path on, and an organisation sale; 282 Vitest tests (193 unit incl. AI evals, 71 integration on Postgres, 18 demo-profile). |
 | 2 Ledger | **done (testnet not yet deployed)** | Merkle leaves/proofs, `LedgerAnchor.sol` + 9 Foundry tests, anchoring cron, `/verify/[ref]` public + receipt token, `Signer` (env/KMS stub), statement import + diff. Real-chain anchoring is proven against Anvil in `tests/integration/anchor.test.ts`; Celo testnet deployment needs a funded key and the current network id (ADR-017). |
 | 3 Deploy | **not done — blocked on credentials** | `vercel.json`, crons, health check, migration runner and deploy docs are ready. `vercel link`, Neon marketplace setup, deployment protection and env vars are dashboard/CLI steps for the founders (README → Deploy; GO_LIVE.md prerequisites). |
 | 4 Public website & PWA | **done** | Landing, how it works, honest ledger copy, weekly stats (<10 suppressed), safety (DRAFT), privacy (DRAFT), manifest, service worker for offline notes. Accessibility: labelled controls, 48 px targets, server-rendered pages, minimal client JS. Performance: only the `problems` i18n namespace is shipped to the client. |
@@ -60,6 +60,21 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | 5.1 "My day" list | **done** | `rowForOrder` (`lib/domain/workflows.ts`) gives each open order the verb of the row it matches on its own; the home card lists up to eight with a state chip; riders see units on hand (`extras.riderStockUnits`). Unit `tests/unit/my-day.test.ts`; e2e: a rider with two pickups sees one primary action and the other pickup in the list. |
 | 5.2 Order timeline | **done** | The field order page ends with the ledger events of the order (and its batch), labelled through `verify.eventTypes.*`, with the acting role parsed from the event's canonical JSON — never a name. e2e: after a handover the timeline reads payments → review → handover and does not contain the customer's name. |
 | 5.3 Customer status by SMS keyword | **waiting on the founders** | Off by default by design; the reply text and the first area's choice are §7 of the document. |
+
+## Prompt D (investor-ready demo) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response: what confuses an investor today | **done** | `docs/PROMPT_DEMO_POLISH.md` §2: thirteen concrete findings from walking the preview. |
+| 5.1 Demo guide `/admin/demo` | **done** | Demo profile only (404 otherwise); the seven beats with deep links, accounts by phone, hour/day ticks (same rate-limited, logged action), warm-up, reset, "what this demo does not claim". Linked from the banner and the sidebar on the demo profile. |
+| 5.2 Names as a *test* chip | **done** | `components/name.tsx`: suffix stays in data, SMS, exports and the accessible name (sr-only); sighted users see a chip. Applied to layouts, tables, headings, the feed, the map (SVG strips the suffix; tooltip keeps it). Unit `tests/unit/name.test.ts`; e2e scans the stakeholders page for raw suffixes outside `.sr-only` and script payloads. |
+| 5.3 Banner wording | **waiting on the founders** | Text unchanged; the banner now carries a "How to demo" link on admin pages. One key (`demo.banner`) to change. |
+| 5.4 Sidebar groups | **done** | Overview · Operate · People & places · Money & record · Admin; "Demo controls" naming on the demo profile. |
+| 5.5 Earnings without bare negatives | **done** | Card shows net (amber when negative, with a one-line explanation), received and paid out, week and month; the map tile says "net". |
+| 5.6 Shorter fictional names | **done** | Companies ≤ 18 characters before the suffix; organisations are "<village> School" / "<village> Health NGO". Demo test asserts the rule. |
+| 5.7 Feed subjects | **done** | `isHumanRef` (`lib/domain/events.ts`): only order, batch, exception, receipt, approval, price-list and reconciliation references are shown. Unit test. |
+| 5.8 Presenter view `/admin/present` | **done** | Same view component (`components/ecosystem/view.tsx`), no sidebar, map full width, "Exit" link; e2e. |
+| 5.9 Deck screens | **done** | `npm run demo:screens` (`playwright.demo.config.ts`, `e2e-demo/screens.spec.ts`): seeds a throwaway demo database, walks the beats, saves PNGs to `docs/demo-screens/` (git-ignored; founders decide §7.5). |
 
 ## Review log (Prompt B §8.7)
 

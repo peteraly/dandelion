@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { getLocale, getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { setLocale } from "@/app/actions/session";
@@ -53,7 +54,9 @@ export async function FieldShell({
         <div>
           <p className="text-xs uppercase tracking-wide text-stone-500">{t("yourRole")}</p>
           <p className="text-lg font-bold">{roleLabel}</p>
-          <p className="text-sm text-stone-600">{name}</p>
+          <p className="text-sm text-stone-600">
+            <Name value={name} />
+          </p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <LocaleToggle back={path} />

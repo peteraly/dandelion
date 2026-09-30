@@ -6,6 +6,8 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // The deck-screens job (Prompt D §5.9) runs the dev server and must not capture the dev tools button.
+  ...(process.env.DEMO_SCREENS === "1" ? { devIndicators: false as const } : {}),
   // Native / wasm modules that must not be bundled.
   serverExternalPackages: ["@node-rs/argon2", "pg"],
   // Static-asset fallback headers. The per-request CSP (with nonce) and the

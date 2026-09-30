@@ -486,7 +486,11 @@
       "title": "Umepata (imethibitishwa na mtoa huduma)",
       "thisWeek": "Wiki hii",
       "thisMonth": "Mwezi huu",
-      "note": "Ulichopokea ukitoa ulicholipa wauzaji wako. Malipo yanayosubiri hayahesabiwi hadi mtoa huduma athibitishe."
+      "note": "Ulichopokea ukitoa ulicholipa wauzaji wako. Malipo yanayosubiri hayahesabiwi hadi mtoa huduma athibitishe.",
+      "received": "zimepokelewa",
+      "paidOut": "zimelipwa",
+      "net": "halisi",
+      "negativeNote": "Ulinunua bidhaa nyingi kuliko ulizouza wiki hii. Halisi itakuwa chanya vipande vinapouzwa."
     },
     "timeline": {
       "title": "Kilichotokea",
@@ -592,7 +596,14 @@
       "suppliers": "Wasambazaji",
       "ecosystem": "Mfumo mzima",
       "organisations": "Mashirika",
-      "areas": "Maeneo na njia za mauzo"
+      "areas": "Maeneo na njia za mauzo",
+      "title": "Usimamizi",
+      "demo": "Mwongozo wa onyesho",
+      "demoControls": "Vidhibiti vya onyesho",
+      "devSimulator": "Kiigaji cha wasanidi",
+      "passkeys": "Funguo za kuingia",
+      "present": "Mwonekano wa mtangazaji",
+      "exitPresent": "Ondoka mwonekano wa mtangazaji"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -876,6 +887,95 @@
         "RIDER_TO_ORG": "Madereva wanauza kwa mashirika"
       },
       "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
+    },
+    "navGroups": {
+      "overview": "Muhtasari",
+      "operate": "Uendeshaji",
+      "people": "Watu na maeneo",
+      "money": "Pesa na kumbukumbu",
+      "admin": "Usimamizi"
+    },
+    "demo": {
+      "title": "Mwongozo wa onyesho",
+      "intro": "Mtangazaji mmoja, kompyuta moja, dakika kumi, hatua saba. Mengine yote yanapatikana lakini nje ya njia. Bango linabaki kwenye kila skrini: watu na pesa za kuigwa, sheria halisi.",
+      "warmDone": "Imepashwa moto: hifadhidata na muhtasari wa wilaya vimejibu.",
+      "controls": {
+        "title": "Vidhibiti",
+        "dataset": "Data: kiwango {scale} · vipindi {ticks} vilivyoigwa hadi sasa · imetengenezwa {generated}",
+        "hour": "Iga saa moja",
+        "day": "Iga siku moja",
+        "warm": "Pasha moto",
+        "present": "Mwonekano wa mtangazaji",
+        "note": "Vipindi vinaendesha shughuli mpya kupitia huduma halisi kwa saa halisi (kikomo 6 kwa dakika 10; kila kipindi kiko kwenye kumbukumbu ya msimamizi). Pasha moto huamsha hifadhidata kabla ya onyesho."
+      },
+      "reset": {
+        "title": "Rudisha data ya onyesho",
+        "explain": "Inafuta hifadhidata hii na kuomba mwenyeji aijenge upya kwa wasifu wa onyesho. Kila kitu mtu yeyote alichofanya kwenye onyesho kinapotea; kila kikao kinaisha, chako pia. Fanya jioni kabla, si wakati wa onyesho.",
+        "confirm": "Andika \"demo\" kuthibitisha",
+        "button": "Futa na ujenge upya"
+      },
+      "script": {
+        "title": "Mwongozo — hatua saba, dakika kumi",
+        "intro": "Dirisha la kompyuta kwa mwonekano wa waanzilishi, dirisha la upana wa simu kwa programu ya uwandani. Kiingereza. Sema mstari mmoja kwa kila hatua.",
+        "landing": {
+          "where": "Ukurasa wa mwanzo",
+          "time": "sekunde 30",
+          "do": "Fungua tovuti ya umma.",
+          "say": "Hakuna pesa taslimu. Kila shilingi inathibitishwa na mtoa huduma. Watu wanapata kwa kusafirisha bidhaa."
+        },
+        "map": {
+          "where": "Ramani ya wilaya",
+          "time": "dakika 2",
+          "do": "Fungua mwonekano wa mfumo; onyesha mstari wa umakini.",
+          "say": "Hii ni wilaya baada ya wiki tatu. Mstari huu ndio waanzilishi wanaona saa moja asubuhi."
+        },
+        "hour": {
+          "where": "Iga saa moja",
+          "time": "dakika 1",
+          "do": "Bonyeza Saa moja kwenye kichwa cha ramani; tazama barabara na mtiririko.",
+          "say": "Kila kilichotokea sasa hivi kilipitia huduma halisi."
+        },
+        "phone": {
+          "where": "Simu ya bingwa",
+          "time": "dakika 2",
+          "do": "Dirisha la simu: ingia kama bingwa, sajili mteja kwa ridhaa, chagua bidhaa; onyesha SMS chini ya Ujumbe.",
+          "say": "Skrini moja, kitendo kimoja. Ridhaa kwanza. Bei kamili kabla ya malipo yoyote."
+        },
+        "money": {
+          "where": "Malipo na makabidhiano",
+          "time": "dakika 2",
+          "do": "Iga malipo ya mteja; rudi kwenye simu: Mteja amelipa kamili → makabidhiano kwa msimbo → risiti.",
+          "say": "Programu haithibitishi pesa kamwe. Mtoa huduma anathibitisha. Kisha msimbo, kisha risiti."
+        },
+        "verify": {
+          "where": "Rekodi ya umma",
+          "time": "dakika 1",
+          "do": "Fungua kiungo cha uthibitisho kutoka SMS ya risiti.",
+          "say": "Kilichotokea na lini. Hakuna majina. Haithibitishi zaidi ya inavyosema."
+        },
+        "earn": {
+          "where": "Nani alipata, na sheria ya wasimamizi wawili",
+          "time": "dakika 1.5",
+          "do": "Rudi kwenye ramani: mapato kwenye vigae; kisha kikasha cha idhini.",
+          "say": "Nani alipata nini wiki hii. Na hakuna jambo muhimu linalofanyika kwa neno la msimamizi mmoja."
+        }
+      },
+      "accounts": {
+        "title": "Akaunti",
+        "note": "Simu tu. Maneno ya siri, siri za kithibitishaji na PIN ziko kwenye kihifadhi nywila, kamwe si kwenye skrini.",
+        "admin": "Msimamizi (mwonekano wa waanzilishi)",
+        "supplier": "Msambazaji",
+        "rider": "Boss rider",
+        "hub": "Meneja wa kituo",
+        "champion": "Bingwa wa uwandani"
+      },
+      "claims": {
+        "title": "Onyesho hili halidai nini",
+        "money": "Hakuna pesa halisi inayohamishwa. Mtoa huduma ni kiigaji kinachofanya kama halisi, pamoja na makosa yake.",
+        "people": "Kila mtu, kampuni na mahali ni ya kubuni na imewekwa alama ya jaribio.",
+        "district": "Hakuna wilaya inayoendeshwa. Historia ilitengenezwa kupitia msimbo uleule ambao wilaya halisi itatumia.",
+        "provider": "Viunganishi halisi vya malipo, SMS na uthibitisho kwenye mnyororo vimezimwa hadi waanzilishi watie saini milango ya kuanza."
+      }
     }
   },
   "public": {
@@ -1073,7 +1173,8 @@
     "area_sales_pending": "Ombi la njia za mauzo za eneo hili tayari linasubiri uamuzi."
   },
   "demo": {
-    "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi."
+    "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
+    "howTo": "Jinsi ya kuonyesha"
   },
   "ecosystem": {
     "title": "Mfumo mzima",
@@ -1288,7 +1389,7 @@
       "tickedHour": "Saa moja ya shughuli imeigwa kupitia huduma halisi.",
       "tickedDay": "Siku moja ya shughuli imeigwa kupitia huduma halisi, kisha usuluhishi na uthibitisho.",
       "legend": "Kushoto kwenda kulia: kiwanda · waendesha pikipiki · vituo, na vibanda vya mabingwa na wateja wao chini yake · mashirika na wateja wanaohudumiwa moja kwa moja. Mistari mizima ni ngazi ya mwongozo, mistari ya vitone ni njia za moja kwa moja; kijivu inasubiri · kijani imethibitishwa · kahawia inapitiwa · nyekundu imezuiwa. Pikipiki ni oda moja iliyo wazi barabarani; kufuli ni kundi lililofungwa; pembetatu ni kigae kinachohitaji umakini. Wateja ni nukta na idadi, si majina.",
-      "earned": "imepata {tzs}",
+      "earned": "halisi {tzs}",
       "confirmed": "{tzs} zimethibitishwa",
       "plans": "{active} hai · {stalled} zimekwama",
       "min": "chini {n}",
@@ -1298,7 +1399,9 @@
       "waiting": "{n} zimepitisha muda wa kusubiri",
       "quality": "makundi {n} yenye matatizo",
       "marker": "vipande {n} barabarani",
-      "attention": "inahitaji umakini"
-    }
+      "attention": "inahitaji umakini",
+      "direct": "Wateja wa moja kwa moja"
+    },
+    "present": "Mwonekano wa mtangazaji"
   }
 }

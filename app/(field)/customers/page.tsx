@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { getTranslations } from "next-intl/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { Badge, Card, LinkButton } from "@/components/ui";
@@ -31,7 +32,7 @@ export default async function CustomersPage() {
             <li key={c.id}>
               <Link href={plan ? `/orders/${plan.id}` : `/customers/${c.id}`} className="flex items-center justify-between py-3">
                 <span>
-                  <span className="font-semibold">{c.displayName}</span>
+                  <Name value={c.displayName} className="font-semibold" />
                   <span className="block text-sm text-stone-600">{phone}</span>
                 </span>
                 {plan ? <Badge tone="purple">{plan.state.replace(/_/g, " ")}</Badge> : c.phoneVerifiedAt ? <Badge>{t("noPlan")}</Badge> : <Badge tone="amber">{t("verifyPhone")}</Badge>}

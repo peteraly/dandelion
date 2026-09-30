@@ -372,7 +372,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     const activePlans = direct.reduce((a, u) => a + (plansOf.get(u.id)?.active ?? 0), 0);
     const handoverPending = direct.reduce((a, u) => a + (plansOf.get(u.id)?.handover ?? 0), 0);
     if (count === 0 && activePlans === 0) continue;
-    nodes.push({ id: `customers:area:${areaId}`, kind: "CUSTOMERS", name: `${areaName.get(areaId) ?? "—"} · direct`, status: "active", areaId, areaName: areaName.get(areaId) ?? "—", hubId: null, lastActivityAt: null, href: `/admin/orders`, stock: null, hub: null, champion: null, supplier: null, customers: { count, activePlans, handoverPending }, organisation: null, earnedTzs: null });
+    nodes.push({ id: `customers:area:${areaId}`, kind: "CUSTOMERS", name: `${(areaName.get(areaId) ?? "—").replace(" (TEST)", "")} · direct`, status: "active", areaId, areaName: areaName.get(areaId) ?? "—", hubId: null, lastActivityAt: null, href: `/admin/orders`, stock: null, hub: null, champion: null, supplier: null, customers: { count, activePlans, handoverPending }, organisation: null, earnedTzs: null });
   }
   // Buyer organisations (prompt §8.8.4).
   const orgs = await db.query.organisations.findMany({ orderBy: s.organisations.name });
@@ -405,7 +405,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     const hubEnd = { id: `hub:${r.hub_id}`, name: hubNameOf.get(r.hub_id ?? "") ?? "—" };
     const orgEnd = { id: `org:${r.organisation_id}`, name: orgName.get(r.organisation_id ?? "") ?? "—" };
     // Direct customer sales point at the area's "direct" customers box; ladder sales at the hub's.
-    const directCustomers = { id: `customers:area:${areaOfUser.get(r.seller) ?? ""}`, name: `${areaName.get(areaOfUser.get(r.seller) ?? "") ?? "—"} · direct` };
+    const directCustomers = { id: `customers:area:${areaOfUser.get(r.seller) ?? ""}`, name: `${(areaName.get(areaOfUser.get(r.seller) ?? "") ?? "—").replace(" (TEST)", "")} · direct` };
     const hubCustomers = { id: `customers:${r.hub_id}`, name: hubNameOf.get(r.hub_id ?? "") ?? "—" };
     const pair = (from: { id: string; name: string }, to: { id: string; name: string }) => ({ fromId: from.id, toId: to.id, fromName: from.name, toName: to.name });
     switch (r.kind) {

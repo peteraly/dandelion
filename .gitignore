@@ -48,3 +48,6 @@ next-env.d.ts
 # playwright
 /playwright-report
 /test-results
+
+# Prompt D §5.9: generated from fictional data; the founders decide whether to commit a set
+docs/demo-screens/

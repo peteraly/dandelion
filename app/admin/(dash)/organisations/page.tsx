@@ -1,5 +1,6 @@
 /** Buyer organisations (prompt §8.8.4): directory and the form that adds one (inactive until two admins approve). */
 import Link from "next/link";
+import { Name } from "@/components/name";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
@@ -48,7 +49,7 @@ export default async function OrganisationsPage({ searchParams }: { searchParams
                 <tr key={r.id} data-testid="organisation-row">
                   <td className="py-2">
                     <Link href={`/admin/organisations/${r.id}`} className="underline">
-                      {r.name}
+                      <Name value={r.name} />
                     </Link>
                   </td>
                   <td>{t(`kinds.${r.kind}`)}</td>

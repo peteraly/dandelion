@@ -93,7 +93,9 @@ export async function buildWorld(w: World): Promise<void> {
   w.directPaths = true;
   for (const [i, area] of w.areas.entries()) {
     for (const [j, kind] of (["SCHOOL", "NGO"] as const).entries()) {
-      const name = kind === "SCHOOL" ? `${w.names.village(i * 2 + j + 5)} Primary School (TEST)` : `${w.names.village(i * 2 + j + 7)} Health Network (TEST)`;
+      // Short enough for a map tile (≤ 18 characters before the suffix, Prompt D §5.6): the village's first word plus what it is.
+      const first = (n: number) => w.names.village(n).replace(" (TEST)", "").split(" ")[0]!;
+      const name = kind === "SCHOOL" ? `${first(i * 2 + j + 5)} School (TEST)` : `${first(i * 2 + j + 7)} Health NGO (TEST)`;
       const { organisationId } = await createOrganisation(w.adminA, { name, kind, serviceAreaId: area.id, contactName: "Coordinator (TEST)", contactPhone: w.names.fieldPhone(), notes: "Fictional buyer organisation in the demo dataset" });
       w.tick(20, 90);
       const { requestId } = await requestOrganisationActivation(w.adminA, organisationId, true);
@@ -115,7 +117,7 @@ export async function buildWorld(w: World): Promise<void> {
 }
 
 async function createHub(w: World, area: Area, index: number, minStockUnits: number): Promise<Hub> {
-  const [row] = await w.db.insert(s.hubs).values({ name: `${w.names.village(index)} Hub`, serviceAreaId: area.id, minStockUnits, active: true }).returning();
+  const [row] = await w.db.insert(s.hubs).values({ name: `${w.names.village(index).replace(" (TEST)", "")} Hub (TEST)`, serviceAreaId: area.id, minStockUnits, active: true }).returning();
   const manager = await w.createFieldPerson("HUB_MANAGER", { areaId: area.id, hubId: row!.id, payee: w.names.till("HUB", 100 + index) });
   const hub: Hub = { id: row!.id, name: row!.name, areaId: area.id, manager, champions: [], minStockUnits };
   for (let i = 0; i < w.params.championsPerHub; i++) hub.champions.push(await w.createFieldPerson("FIELD_CHAMPION", { areaId: area.id, hubId: row!.id, payee: w.names.till("CHA", 200 + index * 10 + i) }));
