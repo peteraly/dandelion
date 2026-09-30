@@ -6,7 +6,9 @@ Pilot app for a zero-cash menstrual-health product supply chain in Tanzania
 handbook deviations are in `docs/DECISIONS.md`; go-live gate status in
 `docs/GO_LIVE.md`; the final review in `docs/REVIEW.md`. The living demo and
 the ecosystem view follow `docs/PROMPT_DEMO_AND_ECOSYSTEM.md`; what each
-participant sees (and why it is not a DoorDash) is `docs/PROMPT_INTERFACES.md`.
+participant sees (and why it is not a DoorDash) is `docs/PROMPT_INTERFACES.md`;
+the investor demo script, its polish pass and the rehearsal checklist are
+`docs/PROMPT_DEMO_POLISH.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in
