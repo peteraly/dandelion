@@ -85,6 +85,15 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | Session shadowing bug | **fixed** | Field and admin actions now read their own session type (`fieldActorFromCookies`, `adminActorFromCookies`). Found by the open-demo e2e (founder then champion in one browser). |
 | Interface clean-up | **done** | Bird's-eye view per Part 3 §3.2: headline numbers, action-only chips, tabs, compact filters, map key, folded system/legend/table twin, "live in the last hour" pulses. Unit test for the pulse rule; e2e updated; screens regenerated. |
 
+## Prompt F (red team, market, AI with people in charge, DoorDash-easy) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build plan | **written** | `docs/PROMPT_F_RED_TEAM_MARKET_EXPERIENCE.md`: "fail-proof" defined as safe / visible / recoverable / bounded; 40+ scenarios across environment, money, stock, people, technology, market and good outcomes, each with today's control and the gap; market design; four AI autonomy levels; DoorDash patterns per stakeholder; incentive rules; phases F0–F5. |
+| F0.1 Separate production database | **open — first priority** | Production and Preview share the Neon `DATABASE_URL` today. |
+| F0.2 Restore window | **open** | Neon free plan keeps 6 hours of history. |
+| Phases F1–F5 | **not started** | Waiting on the founders' decisions in §7. |
+
 ## Red team (2026-09-30)
 
 An adversarial pass over the whole branch, by surface. Fixed items carry a test.

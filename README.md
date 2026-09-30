@@ -9,7 +9,9 @@ the ecosystem view follow `docs/PROMPT_DEMO_AND_ECOSYSTEM.md`; what each
 participant sees (and why it is not a DoorDash) is `docs/PROMPT_INTERFACES.md`;
 the investor demo script, its polish pass and the rehearsal checklist are
 `docs/PROMPT_DEMO_POLISH.md`; the blockchain in plain language, the open
-demo and the interface clean-up are `docs/PROMPT_E_BLOCKCHAIN_OPEN_DEMO_UX.md`.
+demo and the interface clean-up are `docs/PROMPT_E_BLOCKCHAIN_OPEN_DEMO_UX.md`;
+the red team of every scenario, the market design, AI with people in charge and
+the DoorDash-easy experience plan are `docs/PROMPT_F_RED_TEAM_MARKET_EXPERIENCE.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in
