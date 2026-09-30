@@ -687,7 +687,8 @@ export async function completeHandover(actor: Actor, orderId: string, code: stri
     receiptNo = receipt.receiptNo;
     const c = await customerContact(tx, order.customerId!);
     const link = `${appOrigin()}/verify/${order.verifyRef}?t=${receiptToken}`;
-    await getSmsProvider().send(c.phone, tr(c.locale, "sms.receipt", { name: c.name, product: product!.name, receiptNo, link }), "RECEIPT", tx);
+    // The receipt text never names the product: phones are shared (Prompt H, privacy).
+    await getSmsProvider().send(c.phone, tr(c.locale, "sms.receipt", { name: c.name, receiptNo, link }), "RECEIPT", tx);
     await notifyMargin(tx, order, product!.name);
   });
   return { receiptNo };

@@ -46,6 +46,7 @@ export const ADMIN_ACTIONS = [
   "area.sales.change",
   "data_request.create",
   "data_request.handle",
+  "demo.journey",
   "demo.reset",
   "demo.tick",
   "donor_funding.approved",

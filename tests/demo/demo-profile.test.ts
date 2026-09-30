@@ -17,6 +17,10 @@ import { simulateTick } from "@/lib/demo/tick";
 import { containsPhone, ecosystemSnapshot, SnapshotSchema } from "@/lib/services/ecosystem";
 import { layoutDistrict } from "@/lib/ecosystem/district";
 import { advanceLiveChains, parseLive } from "@/lib/demo/live";
+import { JOURNEY_STEPS, advanceJourney, journeyOrderIds, startJourney } from "@/lib/demo/journey";
+import { loadPlans } from "@/lib/demo/load";
+import { phoneBlindIndex } from "@/lib/crypto/blind-index";
+import { decryptString } from "@/lib/crypto/envelope";
 import { loadWorld } from "@/lib/demo/load";
 import { RealClock } from "@/lib/demo/clock";
 import { Rng } from "@/lib/demo/rng";
@@ -301,6 +305,38 @@ describe("simulate one hour / one day, then reset", () => {
     expect(sawOnMap).toBe(true);
     // New deliveries keep starting, so something is always on the way.
     expect((await live()).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("the walkthrough runs one sale through every stakeholder, and each phone gets the texts it should", async () => {
+    const id = await adminId();
+    let st = await startJourney(id);
+    const texts = async (phone: string) => (await db().select().from(s.smsOutbox).where(eq(s.smsOutbox.toIndex, phoneBlindIndex(phone)))).map((m) => m);
+    for (const step of JOURNEY_STEPS) {
+      st = await advanceJourney(id);
+      expect(st.error, `${step.key}: ${st.error}`).toBeUndefined();
+      if (step.key === "plan") {
+        // While the walkthrough drives the plan, the live engine leaves it alone.
+        const seed = String((await db().query.settings.findFirst({ where: eq(s.settings.key, "demoSeed") }))?.value ?? "demo");
+        const plans = await loadPlans(await loadWorld(new Rng(`${seed}:held`), new RealClock(), seed));
+        expect(plans.some((p) => p.orderId === st.planId)).toBe(false);
+        expect(journeyOrderIds(st)).toContain(st.planId);
+      }
+    }
+    expect(st.step).toBe(JOURNEY_STEPS.length);
+    expect(st.log.map((l) => l.key)).toEqual(JOURNEY_STEPS.map((x) => x.key));
+    for (const oid of [st.planId, st.restockId, st.pickupId, st.deliveryId]) expect((await db().query.orders.findFirst({ where: eq(s.orders.id, oid!) }))?.state).toBe("COMPLETED");
+    // The customer's phone: code, plan, paid in full, hand-over code, receipt — and the receipt never names the product.
+    const customer = await texts(st.customerPhone);
+    expect(customer.map((m) => m.purpose)).toEqual(expect.arrayContaining(["OTP", "CUSTOMER_PLAN", "CUSTOMER_PAID", "HANDOVER_CODE", "RECEIPT"]));
+    const product = await db().query.products.findFirst({ where: eq(s.products.id, st.productId) });
+    expect(customer.find((m) => m.purpose === "RECEIPT")!.body).not.toContain(product!.name);
+    // The delivery partner was told about the pickup.
+    const rider = await db().query.users.findFirst({ where: eq(s.users.id, st.riderId) });
+    const riderPhone = await decryptString(rider!.phoneEnc);
+    expect((await texts(riderPhone)).some((m) => m.purpose === "PICKUP")).toBe(true);
+    // Finished: nothing is held back any more, and another step changes nothing.
+    expect(journeyOrderIds(st)).toEqual([]);
+    expect((await advanceJourney(id)).step).toBe(JOURNEY_STEPS.length);
   });
 
   it("the reset needs the typed word, then leaves nothing behind", async () => {

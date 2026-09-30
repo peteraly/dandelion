@@ -344,6 +344,8 @@ describe("D/E: customer installments and handover", () => {
     await rejectsWithPg(getDb().execute(sql`update receipts set content = '{}' where id = ${receipt!.id}`), /append-only/);
     const sms = await lastSms("RECEIPT");
     expect(sms?.body).toMatch(/\/verify\/[A-Za-z0-9_-]{22}\?t=/);
+    // A shared phone must not reveal what was bought.
+    for (const p of await getDb().query.products.findMany()) expect(sms?.body).not.toContain(p.name);
     expect(await ledgerCount("HANDOVER_COMPLETED")).toBe(1);
     const champStock = await batch(o.batchId!);
     expect(champStock.quantity).toBe(1);

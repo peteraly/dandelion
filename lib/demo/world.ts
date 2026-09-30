@@ -126,6 +126,8 @@ export class World {
   allowLateBatches = false;
   /** Buyer organisations (prompt §8.8.4). */
   readonly organisations: OrgBuyer[] = [];
+  /** People someone is playing right now in the field app (lib/demo/load.ts): the live engine never acts for them. */
+  readonly busy = new Set<string>();
   /** Direct sale paths switched on in every area (the demo enables them all by dual approval). */
   directPaths = false;
   /** Working (non-Sunday) days so far; set pieces key on this, so a Sunday never silently drops one. */

@@ -10,8 +10,8 @@ import { listOrganisations } from "@/lib/services/organisations";
 import { formatTzs } from "@/lib/money";
 import { formatDay } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
-import { createOrganisationAction } from "../actions";
-import { OrganisationFields } from "./fields";
+import { createOrganisationAction } from "../../actions";
+import { OrganisationFields } from "../fields";
 
 export const dynamic = "force-dynamic";
 

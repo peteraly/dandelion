@@ -13,7 +13,9 @@ demo and the interface clean-up are `docs/PROMPT_E_BLOCKCHAIN_OPEN_DEMO_UX.md`;
 the red team of every scenario, the market design, AI with people in charge and
 the DoorDash-easy experience plan are `docs/PROMPT_F_RED_TEAM_MARKET_EXPERIENCE.md`;
 the always-live demo district, the plain admin and the new role names are
-`docs/PROMPT_G_LIVE_DISTRICT_PLAIN_ADMIN.md`.
+`docs/PROMPT_G_LIVE_DISTRICT_PLAIN_ADMIN.md`; the walkthrough of one sale
+with everyone's phone, prices and distance, demand-driven restocking and the
+phone-first pass are `docs/PROMPT_H_JOURNEY_PRICING_DEMAND_MOBILE.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in
@@ -215,6 +217,14 @@ For showing the fictional district to people without accounts (Prompt E, ADR-033
 ## Is it blockchain? (in one paragraph)
 
 Yes, narrowly: about once an hour the app publishes one fingerprint of its new records to a public blockchain (Celo), so anyone with a receipt link can check that a record has not been changed since. Payments, people and phone numbers never go on-chain, users have no wallets, and money moves by ordinary mobile money. It proves records were not altered afterwards, not that they were true; the provider's confirmations, dual hand-over checks, two-admin approvals and statement reconciliation do that. The anchoring job is built and tested but switched off in the preview until a testnet key and contract are configured. Plain-language explanation and next steps: `docs/PROMPT_E_BLOCKCHAIN_OPEN_DEMO_UX.md`.
+
+## Walkthrough: one sale, phone by phone (`/admin/demo/journey`)
+
+On the demo dataset, the walkthrough follows one sale across every stakeholder in 20 steps — a local seller signs up a customer, she pays in instalments and gets her product with a one-time code, the seller restocks from her hub, the hub gets a factory pickup sized by its sales, the delivery partner collects, pays, rides, is inspected and paid. Five phones sit beside the steps (customer, local seller, hub keeper, delivery partner, supplier): each shows the texts that person received, newest sliding in, and, for people with the app, what their home screen says to do next. Every step is the real service call by the person who would take it (`lib/demo/journey.ts`); **▶ Play** takes a step every four seconds. The walkthrough's orders are held back from the live engine. A demo test runs all 20 steps.
+
+## Restock suggestions (Stock page)
+
+Buyers pull sales; hubs are stocked ahead of demand. For every hub and product, `lib/domain/replenishment.ts` turns the last 14 days' sales, stock on hand, stock on the way and the supplier's lead time into a reorder point and a suggested pickup (packs of 10). The Stock page lists them with **Assign pickup**, which opens the pickup form filled in; the demo's live engine orders by them. A person always decides.
 
 ## Names people read
 

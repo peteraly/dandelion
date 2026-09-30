@@ -184,7 +184,7 @@ export async function runHour(w: World, plans: Plan[], customersPerDay: number):
   if (rng.chance(0.3)) await keepHubsStocked(w, { leaveInFlightChains: false });
   for (const hub of w.hubs) {
     for (const champion of hub.champions) {
-      if (!rng.chance(0.35)) continue;
+      if (!rng.chance(0.35) || w.busy.has(champion.actor.userId)) continue; // someone is playing her in the app
       await championDay(w, hub, champion, plans, 0, customersPerDay / 8);
     }
   }

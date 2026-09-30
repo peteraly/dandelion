@@ -385,6 +385,7 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
               more: (n) => tm("more", { n }),
               focus: tm("focusHint"),
               group: (count) => tm("group", { count }),
+              moving: (n) => tm("placeMoving", { n }),
             },
           }}
         />

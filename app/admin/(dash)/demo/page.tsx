@@ -29,6 +29,8 @@ export default async function DemoGuidePage({ searchParams }: { searchParams: Se
   const { session } = await requireAdmin();
   if (!(await isDemoDataset())) notFound();
   const t = await getTranslations("admin.demo");
+  const tj = await getTranslations("admin.journey");
+  const tn = await getTranslations("admin.navHints");
   const locale = (await getLocale()) as "sw" | "en";
   const { ok, error } = await flags(searchParams);
   const status = await demoStatus();
@@ -58,6 +60,17 @@ export default async function DemoGuidePage({ searchParams }: { searchParams: Se
         <p className="rounded-xl bg-green-50 p-3 text-sm text-green-900" data-testid="warm-ok">
           {t("warmDone")}
         </p>
+      ) : null}
+      {simulatorEnabled() ? (
+        <Card className="flex flex-wrap items-center justify-between gap-3 border-brand-200 bg-brand-50" data-testid="journey-card">
+          <div className="min-w-0">
+            <p className="font-semibold">{tj("title")}</p>
+            <p className="text-sm text-stone-700">{tn("journey")}</p>
+          </div>
+          <Link href="/admin/demo/journey" className="btn btn-primary w-auto px-5 text-base" data-testid="journey-link">
+            {tj("open")} →
+          </Link>
+        </Card>
       ) : null}
 
       <Card data-testid="demo-controls">

@@ -13,8 +13,8 @@ import { referenceData } from "@/lib/services/admin";
 import { listSuppliers } from "@/lib/services/suppliers";
 import { formatDay } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
-import { createSupplierAction } from "../actions";
-import { SupplierFields } from "./fields";
+import { createSupplierAction } from "../../actions";
+import { SupplierFields } from "../fields";
 
 export const dynamic = "force-dynamic";
 

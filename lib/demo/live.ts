@@ -16,12 +16,10 @@
 import { getSetting, putSetting } from "@/lib/services/core";
 import { tzDay } from "@/lib/util/time";
 import { acceptPickup, adminCreatePickup, confirmBatchReady, confirmReceipt, confirmRelease, createOrgSale, deliverOrgSale, passInspection, revealDeliveryCode, startInspection } from "@/lib/services/orders";
-import { pay } from "./supply";
+import { restockSuggestions } from "@/lib/services/replenishment";
+import { CHECKS, INSPECTION_OK, pay } from "./supply";
 import { pickProductForArea } from "./day";
 import type { Person, World } from "./world";
-
-const CHECKS = { quantityOk: true, sealOk: true };
-const INSPECTION_OK = { correctRider: true, correctProduct: true, correctCount: true, correctBatch: true, sealIntact: true, goodCondition: true, noWaterDamage: true };
 
 /** Deliveries in flight at once; a new one starts whenever fewer are moving. */
 export const LIVE_CHAINS = 4;
@@ -123,11 +121,16 @@ export async function advanceLiveChains(w: World): Promise<{ tracked: number; st
   const deliveries = next.filter((id) => !kinds.get(id)?.endsWith("_TO_ORG")).length;
   let started = 0;
   const hubs = w.hubs.filter((h) => w.areas.find((a) => a.id === h.areaId)?.suppliers.some((o) => o.users.length));
-  for (let d = deliveries; d < LIVE_CHAINS && hubs.length && w.riders.length && started < 2; d++) {
-    const hub = w.rng.pick(hubs);
+  // Demand first: hubs whose sales say they will run out before a pickup arrives (lib/domain/replenishment.ts); otherwise any hub.
+  const due = (await restockSuggestions(null)).filter((r) => r.suggested > 0 && hubs.some((h) => h.id === r.hubId));
+  // New pickups go to delivery partners nobody is playing in the app right now.
+  const riders = w.riders.filter((r) => !w.busy.has(r.actor.userId));
+  for (let d = deliveries; d < LIVE_CHAINS && hubs.length && riders.length && started < 2; d++) {
+    const want = due.shift();
+    const hub = (want && hubs.find((h) => h.id === want.hubId)) || w.rng.pick(hubs);
     const org = w.pickSupplier(w.areas.find((a) => a.id === hub.areaId)!);
     try {
-      const { orderId } = await adminCreatePickup(w.adminA, { supplierId: org.id, productId: pickProductForArea(w, hub).id, hubId: hub.id, riderId: w.rng.pick(w.riders).actor.userId, quantity: w.rng.int(40, 120), pickupDate: tzDay() });
+      const { orderId } = await adminCreatePickup(w.adminA, { supplierId: org.id, productId: want?.productId ?? pickProductForArea(w, hub).id, hubId: hub.id, riderId: w.rng.pick(riders).actor.userId, quantity: want ? Math.min(120, want.suggested) : w.rng.int(40, 120), pickupDate: tzDay() });
       next.push(orderId);
       w.manifest.count("live.started");
     } catch (e) {

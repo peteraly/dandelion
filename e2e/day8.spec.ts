@@ -486,6 +486,9 @@ test("dashboard priorities and reconciliation flag the review items", async ({ b
   await a.page.goto("/admin/approvals");
   await expect(a.page.getByTestId("page-guide")).toContainText("Approvals");
   await expect(a.page.getByTestId("page-guide")).toContainText("two admins");
+  // On a phone the menu folds behind one button that names the current page.
+  await expect(a.page.getByTestId("admin-menu-toggle")).toContainText("Approvals");
+  await a.page.getByTestId("admin-menu-toggle").click();
   await expect(a.page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Approvals" })).toHaveAttribute("aria-current", "page");
   await a.page.goto("/admin/reconciliation");
   await expect(a.page.getByText("PAYMENT IN REVIEW").first()).toBeVisible();
@@ -643,7 +646,8 @@ test("demo polish: the guide is demo-only, the presenter view drops the sidebar,
   await page.goto("/admin/ecosystem");
   expect(await page.getByTestId("demo-guide-link").count()).toBe(0);
   expect(await page.getByTestId("nav-demo-guide").count()).toBe(0);
-  // Sidebar groups and the presenter view.
+  // Sidebar groups (behind the menu button on a phone) and the presenter view.
+  await page.getByTestId("admin-menu-toggle").click();
   await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Watch");
   await page.getByTestId("present-link").click();
   await expect(page).toHaveURL(/\/admin\/present/);

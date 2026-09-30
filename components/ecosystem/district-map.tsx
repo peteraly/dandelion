@@ -38,6 +38,7 @@ export interface MapLabels {
   more: (n: number) => string;
   focus: string;
   group: (count: number) => string;
+  moving: (n: number) => string;
 }
 
 export interface MapContext {

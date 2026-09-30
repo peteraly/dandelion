@@ -119,6 +119,19 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Preview build `fd2b055` failed on Vercel (~20 s, log not reachable from the build sandbox) | **hardened** | The demo seed wiped the minimal dataset before checking what it needs. Now: credentials and the simulator are checked before any wipe; a demo that fails after the wipe puts the minimal dataset back, the deployment goes ahead, and the reason is shown on the admin home (`settings.demoSeedError`). Reproduced locally with preview settings: skip when the demo is in place, upgrade from minimal (35 s, 296 orders), fallback on a forced failure, refusal before the wipe on bad credentials. |
 | G1–G7 | **not started** | Scenario circulation, the watching founder takes part, live field apps, live without a viewer (decision), size, plain words on every page, acceptance. |
 
+## Prompt H (walkthrough with phones, prices, demand, phone-first) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_H_JOURNEY_PRICING_DEMAND_MOBILE.md`: pulled by buyers, pushed to hubs by demand (how DoorDash and Uber differ); one product price per area, distance as an open zone charge (decision); fail-proof table per group; stalled-plan rules drafted for approval. |
+| Receipt text | **fixed** | The receipt SMS no longer names the product; an integration test forbids every product name in it. |
+| Walkthrough | **done** | `/admin/demo/journey`, `lib/demo/journey.ts`, `lib/demo/journey-state.ts`, `components/phone.tsx`: 20 real steps, five phones (texts + app status), play/step/restart; its orders are held from the live engine. Demo test runs all steps and checks each phone's texts. |
+| Restock suggestions | **done** | `lib/domain/replenishment.ts` (unit-tested), `lib/services/replenishment.ts`; Stock page with prefilled **Assign pickup**; live engine orders by them. |
+| Phone-first | **done** | Loading placeholders (admin, field) only on pages that never answer "not found" (route groups `(list)`, `(home)`); folding admin menu; places list for the map on phones; phone carousel in the walkthrough, the touched people's phones first, threads opening at the newest text. |
+| Busy people | **done** | `lib/demo/load.ts`: a field session active in the last 30 minutes marks its person busy; the live engine skips their plans, their day and new pickups for them. |
+| Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
+| H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
+
 ## Red team (2026-09-30)
 
 An adversarial pass over the whole branch, by surface. Fixed items carry a test.

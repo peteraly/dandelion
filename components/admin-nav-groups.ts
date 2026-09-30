@@ -24,5 +24,6 @@ export async function adminNavGroups(): Promise<NavGroup[]> {
   const admin = groups[groups.length - 1]!;
   if (simulatorEnabled()) admin.items.push({ href: "/dev/simulator", label: demo ? t("nav.demoControls") : t("nav.devSimulator"), hint: t("navHints.demoControls") });
   if (demo) groups[0]!.items.push({ href: "/admin/demo", label: t("nav.demo"), hint: t("navHints.demo") });
+  if (demo && simulatorEnabled()) groups[0]!.items.push({ href: "/admin/demo/journey", label: t("nav.journey"), hint: t("navHints.journey") });
   return groups;
 }

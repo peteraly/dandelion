@@ -56,7 +56,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             {t("nav.demo")}
           </Link>
         ) : null}
-        <AdminNav groups={groups} label={t("nav.title")} highlight="/admin/ecosystem" />
+        <AdminNav groups={groups} label={t("nav.title")} highlight="/admin/ecosystem" menu={{ open: t("menu.open"), close: t("menu.close") }} />
       </aside>
       <main className="flex min-w-0 flex-1 flex-col gap-4">
         <DemoBanner guide />

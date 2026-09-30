@@ -154,6 +154,8 @@ export const SETTING_DEFAULTS = {
   demoSeedError: "",
   /** A setup note from the last seed, e.g. a preview's derived sign-in secret (lib/seed-identities.ts); shown on the admin home. */
   seedNotice: "",
+  /** The guided walkthrough's progress and the orders it drives (lib/demo/journey.ts). */
+  demoJourney: "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

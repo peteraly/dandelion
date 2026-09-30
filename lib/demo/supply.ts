@@ -33,9 +33,9 @@ import { runDueVerificationJobs } from "@/lib/payments/verification";
 import { closePlan, declineStockRequest } from "@/lib/services/orders";
 import type { Customer, DeferredPickup, Hub, Person, Product, SupplierOrg, World } from "./world";
 
-const CHECKS = { quantityOk: true, sealOk: true };
-const INSPECTION_OK = { correctRider: true, correctProduct: true, correctCount: true, correctBatch: true, sealIntact: true, goodCondition: true, noWaterDamage: true };
-const EDUCATION = {
+export const CHECKS = { quantityOk: true, sealOk: true };
+export const INSPECTION_OK = { correctRider: true, correctProduct: true, correctCount: true, correctBatch: true, sealIntact: true, goodCondition: true, noWaterDamage: true };
+export const EDUCATION = {
   REUSABLE: { wash: true, dry: true, store: true, whenNotToUse: true, whenToSeekCare: true },
   DISPOSABLE: { safeUse: true, disposal: true },
 };

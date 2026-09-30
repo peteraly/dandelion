@@ -7,6 +7,7 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 export interface NavItem {
   href: string;
@@ -29,11 +30,20 @@ export function activeItem(groups: NavGroup[], pathname: string): { group: NavGr
   return best;
 }
 
-export function AdminNav({ groups, label, highlight }: { groups: NavGroup[]; label: string; highlight?: string }) {
+export function AdminNav({ groups, label, highlight, menu }: { groups: NavGroup[]; label: string; highlight?: string; menu: { open: string; close: string } }) {
   const pathname = usePathname();
-  const current = activeItem(groups, pathname)?.item.href;
+  const hit = activeItem(groups, pathname);
+  const current = hit?.item.href;
+  // On a phone the menu folds away behind one button (showing where you are); it is open only on the page it was opened on, so it closes after each choice.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
   return (
-    <nav className="flex flex-wrap gap-1 md:flex-col" aria-label={label}>
+    <>
+      <button type="button" className="btn btn-secondary mb-2 w-full justify-between px-4 text-base md:hidden" aria-expanded={open} aria-controls="admin-menu" onClick={() => setOpenOn(open ? null : pathname)} data-testid="admin-menu-toggle">
+        <span>{open ? menu.close : menu.open}</span>
+        <span className="truncate text-sm font-normal text-stone-600">{hit?.item.label}</span>
+      </button>
+    <nav id="admin-menu" className={`${open ? "flex" : "hidden"} flex-col gap-1 md:flex`} aria-label={label}>
       {groups.map((g) => (
         <div key={g.heading} className="md:mt-2">
           <p className="px-3 pt-1 text-[11px] font-semibold uppercase tracking-wide text-stone-500">{g.heading}</p>
@@ -51,6 +61,7 @@ export function AdminNav({ groups, label, highlight }: { groups: NavGroup[]; lab
         </div>
       ))}
     </nav>
+    </>
   );
 }
 

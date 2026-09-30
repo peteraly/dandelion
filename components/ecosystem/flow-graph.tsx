@@ -8,7 +8,7 @@ import Link from "next/link";
 import { layoutDistrict } from "@/lib/ecosystem/district";
 import { Name, displayName } from "@/components/name";
 import type { AttentionKey, EcoEdge, EcoNode, OpenOrder, RecentPayment } from "@/lib/services/ecosystem";
-import { DistrictMap, type MapLabels } from "./district-map";
+import { DistrictMap, shortTzs, tileLines, type MapLabels } from "./district-map";
 
 /** Text colours for the edge list — classes, not inline styles: the CSP allows no style attributes. */
 const EDGE_TEXT: Record<EcoEdge["paymentState"], string> = {
@@ -73,23 +73,43 @@ export function FlowGraph({
 }) {
   const layout = layoutDistrict({ nodes, edges, areas, attention, asOf, orders, payments, focus });
   const drawable = layout.edges.map((l) => l.edge);
+  const c = { columns: labels.columns, units: labels.units, locked: labels.locked, status: labels.status, payment: labels.payment, edge: labels.edge, money: labels.money, map: labels.map, focusHref };
+  // On a phone the map is too wide to read: the same places as a list, each opening its details, busiest first.
+  const moving = new Map<string, number>();
+  for (const m of layout.markers) for (const id of [layout.edges.find((l) => l.key === m.edgeKey)?.edge.fromId, layout.edges.find((l) => l.key === m.edgeKey)?.edge.toId]) if (id) moving.set(id, (moving.get(id) ?? 0) + m.items.length);
+  const coinOf = new Map(layout.coins.map((k) => [k.tileId, k]));
+  const phoneList = [...layout.tiles].sort((a, b) => Number(b.attention) - Number(a.attention) || (moving.get(b.id) ?? 0) - (moving.get(a.id) ?? 0) || Number(b.recent) - Number(a.recent));
 
   return (
     <div className="flex flex-col gap-3">
-      <DistrictMap
-        layout={layout}
-        c={{
-          columns: labels.columns,
-          units: labels.units,
-          locked: labels.locked,
-          status: labels.status,
-          payment: labels.payment,
-          edge: labels.edge,
-          money: labels.money,
-          map: labels.map,
-          focusHref,
-        }}
-      />
+      <DistrictMap layout={layout} c={c} />
+      <ul className="flex flex-col gap-2 md:hidden" data-testid="places-list">
+        {phoneList.map((t) => {
+          const [line2, line3] = tileLines(t, c);
+          const coin = coinOf.get(t.id);
+          return (
+            <li key={t.id}>
+              <Link href={focusHref(t.id)} scroll={false} className={`flex min-h-12 items-center justify-between gap-3 rounded-xl border bg-white p-3 ${t.focused ? "border-brand-600 ring-2 ring-brand-200" : t.attention ? "border-amber-300" : "border-stone-200"}`} data-testid="place">
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">
+                    {t.kind === "CUSTOMERS" ? (t.node.hubId ? labels.columns.CUSTOMERS : labels.map.direct) : <Name value={t.node.name} />}
+                  </span>
+                  <span className="block truncate text-xs text-stone-600">
+                    {labels.columns[t.kind]} · {line2}
+                    {line3 ? ` · ${line3}` : ""}
+                  </span>
+                </span>
+                <span className="flex shrink-0 flex-col items-end gap-1 text-xs">
+                  {t.recent ? <span className="text-green-700">● {labels.map.recent}</span> : null}
+                  {moving.get(t.id) ? <span className="rounded-full bg-stone-100 px-2 py-0.5">{labels.map.moving(moving.get(t.id)!)}</span> : null}
+                  {coin ? <span className="rounded-full bg-green-700 px-2 py-0.5 font-semibold text-white">+{shortTzs(coin.amountTzs)}</span> : null}
+                  {t.locked ? <span className="text-red-700">🔒</span> : null}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
       <details className="text-sm" data-testid="flow-table-details">
         <summary className="cursor-pointer text-sm text-stone-600 underline decoration-dotted">
           {labels.tableTitle} · {nodes.length} · {drawable.length}

@@ -405,7 +405,9 @@
       "chooseProduct": "Choose the product with the customer",
       "startPlan": "Start purchase plan",
       "fullPriceNote": "The full price is shown before any payment. The customer may pay in full or in voluntary installments.",
-      "directLink": "Sell to a customer"
+      "directLink": "Sell to a customer",
+      "inStock": "{n} with you",
+      "noStock": "None with you: ask your hub before the hand-over"
     },
     "handover": {
       "title": "Handover",
@@ -603,7 +605,8 @@
       "devSimulator": "Dev simulator",
       "passkeys": "Passkeys",
       "present": "Presenter view",
-      "exitPresent": "Exit presenter view"
+      "exitPresent": "Exit presenter view",
+      "journey": "Walkthrough: one sale"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -1002,7 +1005,8 @@
       "data": "People's requests to see or delete their data, with deadlines.",
       "passkeys": "Sign in with one tap on this device instead of a code.",
       "demo": "The ten-minute investor walk-through, with the controls to run it.",
-      "demoControls": "Simulate payments and time in the demo district."
+      "demoControls": "Simulate payments and time in the demo district.",
+      "journey": "Follow one sale from the customer's first text to the factory refilling the hub, with everyone's phone on screen."
     },
     "home": {
       "title": "Your district today",
@@ -1064,6 +1068,134 @@
       "updating": "Live — moving…",
       "away": "Paused while you are away",
       "stopped": "Live updates stopped — reload the page"
+    },
+    "restock": {
+      "title": "Restock suggestions",
+      "intro": "Worked out from what each hub sold in the last {days} days, what it holds, what is already on the way, and how long a pickup takes. You decide; nothing is ordered until you assign it.",
+      "none": "No hub needs a pickup right now.",
+      "line": "{onHand} held · {onTheWay} on the way · {perDay} sold a day · pickup takes {lead} days",
+      "daysLeft": "lasts about {n} days",
+      "noSales": "no sales in this period",
+      "assign": "Assign pickup of {n}",
+      "assignUrgent": "Below minimum: assign pickup of {n}",
+      "ok": "Enough stock",
+      "lots": "Every lot, and who holds it"
+    },
+    "journey": {
+      "title": "Walk through one sale",
+      "intro": "One customer's order, from her first text message to the factory refilling the hub. Every step is the real system, with simulated mobile money and texts; watch each person's phone.",
+      "startWhat": "We pick a hub, one of its local sellers, a delivery partner and a supplier, and create a fictional customer. Then do each step, or press ▶ to play it.",
+      "start": "Start the walkthrough",
+      "progress": "Step {n} of {total}",
+      "restart": "Start over",
+      "nextBy": "Next: {who}",
+      "doStep": "Do it: {step}",
+      "done": "Done. The customer has her product and a receipt, the local seller and the hub are restocked, and every payment was confirmed by the provider.",
+      "seeMap": "See it on the live map",
+      "again": "Walk through another sale",
+      "play": "Play",
+      "stop": "Pause",
+      "phones": "Their phones",
+      "messages": "Messages",
+      "noMessages": "No messages yet",
+      "smsOnly": "Customers need no app: texts only",
+      "app": "App",
+      "appNext": "Next",
+      "justNow": "just now",
+      "waitingTitle": "Nothing to do on this sale yet",
+      "waitingFor": "Waiting for: {who}",
+      "allSteps": "Every step",
+      "customerIs": "Customer in this walkthrough:",
+      "founder": "Founder",
+      "units": "{n} units",
+      "suggested": "suggested {n}; hub stock lasts {days} days",
+      "steps": {
+        "enrol": {
+          "title": "Sign up a customer",
+          "what": "The local seller enters the customer's name and phone number, with her consent. The system texts her a 6-digit code to prove the phone is hers."
+        },
+        "verify": {
+          "title": "Customer confirms her phone",
+          "what": "She reads the code to the seller, who types it in. Nobody can be signed up without their own phone."
+        },
+        "plan": {
+          "title": "Start a payment plan",
+          "what": "The seller picks the product. The customer gets a text with the full price, where to pay and her reference. No credit, no fees, no deadline."
+        },
+        "payPart": {
+          "title": "Customer pays part",
+          "what": "She sends part of the price by mobile money. Only the mobile-money provider's confirmation counts, never a screenshot. Here the provider is simulated."
+        },
+        "payRest": {
+          "title": "Customer pays the rest",
+          "what": "The rest arrives and the provider confirms it. She gets a text: paid in full, meet your local seller."
+        },
+        "handoverStart": {
+          "title": "Seller starts the hand-over",
+          "what": "The seller sets one unit aside from her stock, and the system texts the customer a one-time code."
+        },
+        "handoverDone": {
+          "title": "Customer receives her product",
+          "what": "She reads the code to the seller at the hand-over, and the seller confirms she explained use and care. The customer gets a receipt by text that does not name the product."
+        },
+        "restockRequest": {
+          "title": "Seller asks her hub for more",
+          "what": "Her stock went down with the sale, so she asks her hub for five more. Demand travels up the chain."
+        },
+        "restockPrepare": {
+          "title": "Hub sets the units aside",
+          "what": "The hub keeper reserves the units, and the price is fixed."
+        },
+        "restockPay": {
+          "title": "Seller pays the hub",
+          "what": "She pays by mobile money and the provider confirms it."
+        },
+        "restockHandover": {
+          "title": "Hub hands over, seller counts",
+          "what": "Both confirm the count and the seal. The stock is now hers."
+        },
+        "pickupAssign": {
+          "title": "A factory pickup is assigned",
+          "what": "The hub's sales show it will run low before new stock could arrive, so the system suggests a pickup and the founder assigns it. The delivery partner gets a text."
+        },
+        "batchReady": {
+          "title": "Supplier prepares the batch",
+          "what": "The supplier counts and seals the batch and marks it ready for collection."
+        },
+        "pickupAccept": {
+          "title": "Delivery partner accepts the pickup",
+          "what": "The delivery partner accepts the job and sees what to pay."
+        },
+        "pickupPay": {
+          "title": "Delivery partner pays the supplier",
+          "what": "The provider confirms the payment. No stock leaves the factory before that."
+        },
+        "pickupHandover": {
+          "title": "The batch leaves the factory",
+          "what": "The supplier releases the batch and the delivery partner checks the count and the seal. It is now on the road to the hub."
+        },
+        "arrive": {
+          "title": "Arrival at the hub",
+          "what": "The delivery partner shows a delivery code and the hub keeper enters it to start the inspection."
+        },
+        "inspect": {
+          "title": "Hub inspects the delivery",
+          "what": "Right product, right count, seal intact, clean and dry. Anything wrong would lock the batch until two admins decide."
+        },
+        "deliveryPay": {
+          "title": "Hub pays the delivery partner",
+          "what": "The provider confirms the payment. The delivery partner earns the difference between what they paid and what the hub pays."
+        },
+        "deliveryRelease": {
+          "title": "The hub is restocked",
+          "what": "The delivery partner confirms, and the stock is at the hub, ready for the next customer."
+        }
+      },
+      "open": "Open the walkthrough"
+    },
+    "menu": {
+      "open": "Menu",
+      "close": "Close menu"
     }
   },
   "public": {
@@ -1149,7 +1281,7 @@
     "customerPlan": "Habari {name}. Your product price is {price}. Confirmed paid: {paid}. Remaining: {remaining}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. The product is handed over after full payment is confirmed.",
     "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved local seller to receive your product and use instructions. Your receipt will be available after handover.",
     "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your local seller only when you receive your product.",
-    "receipt": "Habari {name}. Receipt {receiptNo}: {product} handed over. Your record: {link}",
+    "receipt": "Habari {name}. Receipt {receiptNo}: your order has been handed over. Your record: {link}",
     "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money.",
     "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
     "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} × {quantity} follows. Record: {link}",
@@ -1263,7 +1395,12 @@
     "open_demo_fake_phone": "In the open demo, use a test number: +255 700 00x xxx.",
     "open_demo_not_allowed": "This needs a real sign-in, not the open demo.",
     "auto_play_hour_only": "Auto-play only simulates hours.",
-    "live_recently_advanced": "The district just moved; the next step comes in a minute."
+    "live_recently_advanced": "The district just moved; the next step comes in a minute.",
+    "journey_no_seller_with_stock": "No local seller has stock for the walkthrough. Let the district run a few minutes, then start again.",
+    "journey_no_supplier": "No supplier or delivery partner is available for the walkthrough.",
+    "journey_not_started": "Start a walkthrough first.",
+    "journey_people_changed": "Someone in this walkthrough is no longer active. Start a new walkthrough.",
+    "journey_hub_short": "The hub could not set aside the units. Start a new walkthrough."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
@@ -1457,7 +1594,8 @@
         "organisation_activate": "Organisation activated",
         "organisation_create": "Organisation added",
         "organisation_deactivate": "Organisation deactivated",
-        "organisation_update": "Organisation updated"
+        "organisation_update": "Organisation updated",
+        "demo_journey": "Walkthrough step"
       },
       "more": "Show {n} more"
     },
@@ -1533,7 +1671,8 @@
         "pendingIn": "{n} coming in",
         "pendingOut": "{n} going out"
       },
-      "group": "{count} orders here"
+      "group": "{count} orders here",
+      "placeMoving": "{n} moving"
     },
     "present": "Presenter view",
     "filters": "Filters",

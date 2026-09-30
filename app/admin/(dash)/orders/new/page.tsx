@@ -16,6 +16,13 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
   const { error } = await flags(searchParams);
   const ref = await referenceData(actor);
   const pairs = await pickupPairs(actor);
+  // "Assign pickup" from a restock suggestion (Stock page) arrives with the hub, product and quantity filled in.
+  const sp = await searchParams;
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+  const hubDefault = ref.hubs.find((h) => h.id === one(sp.hub));
+  const areaSuppliers = hubDefault ? new Set(ref.suppliers.filter((x) => x.serviceAreaId === hubDefault.serviceAreaId).map((x) => x.id)) : null;
+  const pairDefault = pairs.find((x) => x.productId === one(sp.product) && (!areaSuppliers || areaSuppliers.has(x.supplierId))) ?? pairs[0];
+  const qtyDefault = Math.min(10000, Math.max(1, Math.floor(Number(one(sp.qty))) || 10));
   return (
     <>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -24,7 +31,7 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
         <form action={createPickupAction} className="grid gap-3 md:grid-cols-2">
           <IdemKey />
           <Field label={t("pair")} htmlFor="pair" hint={pairs.length === 0 ? t("noPairs") : undefined}>
-            <select id="pair" name="pair" className="field md:col-span-2" required defaultValue={pairs[0] ? `${pairs[0].supplierId}|${pairs[0].productId}` : ""}>
+            <select id="pair" name="pair" className="field md:col-span-2" required defaultValue={pairDefault ? `${pairDefault.supplierId}|${pairDefault.productId}` : ""}>
               {pairs.map((x) => (
                 <option key={`${x.supplierId}|${x.productId}`} value={`${x.supplierId}|${x.productId}`}>
                   {x.supplierName} · {x.productName}
@@ -47,7 +54,7 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
             </select>
           </Field>
           <Field label={t("hubOrRiderStock")} htmlFor="hubId">
-            <select id="hubId" name="hubId" className="field" defaultValue={ref.hubs[0]?.id}>
+            <select id="hubId" name="hubId" className="field" defaultValue={hubDefault?.id ?? ref.hubs[0]?.id}>
               {ref.hubs.map((x) => (
                 <option key={x.id} value={x.id}>
                   {x.name}
@@ -57,7 +64,7 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
             </select>
           </Field>
           <Field label={tc("quantity")} htmlFor="quantity">
-            <input id="quantity" name="quantity" type="number" min={1} max={10000} defaultValue={10} className="field" required />
+            <input id="quantity" name="quantity" type="number" min={1} max={10000} defaultValue={qtyDefault} className="field" required />
           </Field>
           <Field label={t("date")} htmlFor="pickupDate">
             <input id="pickupDate" name="pickupDate" type="date" defaultValue={tzDay()} className="field" required />

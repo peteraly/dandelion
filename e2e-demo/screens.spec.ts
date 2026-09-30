@@ -24,8 +24,9 @@ const code = (body: string) => body.match(/\b(\d{6})\b/)?.[1] ?? "";
 async function shot(target: Page | Locator, name: string, fullPage = false): Promise<void> {
   const page = "page" in target ? target.page() : target;
   await page.waitForLoadState("networkidle");
-  if ("page" in target) await target.screenshot({ path: `${OUT}/${name}.png`, caret: "initial" });
-  else await target.screenshot({ path: `${OUT}/${name}.png`, fullPage, caret: "initial" });
+  // Finish entrance animations (a text arriving on a phone) so no beat is caught mid-fade.
+  if ("page" in target) await target.screenshot({ path: `${OUT}/${name}.png`, caret: "initial", animations: "disabled" });
+  else await target.screenshot({ path: `${OUT}/${name}.png`, fullPage, caret: "initial", animations: "disabled" });
 }
 
 test("the whole demo, beat by beat", async ({ browser, request }) => {
@@ -65,6 +66,23 @@ test("the whole demo, beat by beat", async ({ browser, request }) => {
   await a.locator('[data-testid="map-tile"][data-kind="HUB"]').first().click();
   await expect(a.getByTestId("focus-panel")).toBeVisible();
   await shot(a, "06c-map-focus", false);
+  // The walkthrough: one sale across every stakeholder, phones lighting up as texts arrive.
+  await a.goto("/admin/demo/journey");
+  await a.getByTestId("journey-begin").click();
+  const step = async (n: number) => {
+    await a.getByTestId("journey-step").click();
+    await expect(a.getByTestId("journey-progress")).toHaveText(new RegExp(`^Step ${n} of`));
+  };
+  for (let n = 1; n <= 7; n++) await step(n);
+  await expect(a.getByTestId("phone-customer").getByTestId("phone-sms").first()).toHaveAttribute("data-fresh", "true");
+  await shot(a, "06d-walkthrough-customer-receipt", false);
+  for (let n = 8; n <= 12; n++) await step(n);
+  await shot(a, "06e-walkthrough-pickup-text", false);
+  for (let n = 13; n <= 20; n++) await step(n);
+  await expect(a.getByTestId("journey-done")).toBeVisible();
+  await a.setViewportSize(PHONE);
+  await shot(a, "06f-walkthrough-on-a-phone", false);
+  await a.setViewportSize({ width: 1440, height: 1000 });
 
   // 7–11 — a champion's phone: consent, plan, the provider's confirmation, handover, receipt
   const champ = await fieldLogin(browser, SEED.champions[0]!.phone, SEED.champions[0]!.pin);

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { Name } from "@/components/name";
 import { getLocale, getTranslations } from "next-intl/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Card, Field, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
 import { requireField } from "@/lib/auth/current";
@@ -41,7 +41,19 @@ export default async function CustomerPage({ params, searchParams }: { params: P
         .where(and(eq(s.productAreaAvailability.serviceAreaId, areaId), eq(s.productAreaAvailability.available, true), eq(s.products.active, true)))
     : [];
   // Several suppliers' lists may be active in an area; they agree on the customer price (activePriceItem), so each product shows once.
-  const offered = [...new Map(products.filter((r) => r.p.category !== "REUSABLE" || r.avail.washConditionsConfirmed).map((r) => [r.p.id, r])).values()];
+  const unique = [...new Map(products.filter((r) => r.p.category !== "REUSABLE" || r.avail.washConditionsConfirmed).map((r) => [r.p.id, r])).values()];
+  // What the seller holds of each, shown before she commits (a plan can start without stock; the hand-over cannot), in stock first.
+  const heldState = actor.role === "BOSS_RIDER" ? "WITH_RIDER" : "WITH_CHAMPION";
+  const held = new Map(
+    (
+      await db
+        .select({ productId: s.batches.productId, n: sql<number>`coalesce(sum(${s.batches.quantity}), 0)::int` })
+        .from(s.batches)
+        .where(and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.custodyState, heldState)))
+        .groupBy(s.batches.productId)
+    ).map((r) => [r.productId, Number(r.n)]),
+  );
+  const offered = unique.sort((a, b) => (held.get(b.p.id) ?? 0) - (held.get(a.p.id) ?? 0));
 
   return (
     <>
@@ -84,6 +96,9 @@ export default async function CustomerPage({ params, searchParams }: { params: P
                   <span className="block font-semibold">{r.p.name}</span>
                   <span className="block text-sm text-stone-600">{r.p.unitDescription}</span>
                   <span className="block font-semibold">{formatTzs(r.item.customerPriceTzs, locale)}</span>
+                  <span className={`block text-sm ${held.get(r.p.id) ? "text-green-800" : "text-amber-800"}`} data-testid="product-stock">
+                    {held.get(r.p.id) ? t("inStock", { n: held.get(r.p.id)! }) : t("noStock")}
+                  </span>
                 </span>
               </label>
             ))}

@@ -406,7 +406,9 @@
       "chooseProduct": "Chagua bidhaa pamoja na mteja",
       "startPlan": "Anza mpango wa ununuzi",
       "fullPriceNote": "Bei kamili inaonyeshwa kabla ya malipo yoyote. Mteja anaweza kulipa yote au kwa awamu za hiari.",
-      "directLink": "Uza kwa mteja"
+      "directLink": "Uza kwa mteja",
+      "inStock": "{n} ulizonazo",
+      "noStock": "Huna hata moja: omba kituo chako kabla ya kukabidhi"
     },
     "handover": {
       "title": "Makabidhiano",
@@ -604,7 +606,8 @@
       "devSimulator": "Kiigaji cha wasanidi",
       "passkeys": "Funguo za kuingia",
       "present": "Mwonekano wa mtangazaji",
-      "exitPresent": "Ondoka mwonekano wa mtangazaji"
+      "exitPresent": "Ondoka mwonekano wa mtangazaji",
+      "journey": "Fuatilia mauzo moja"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -1003,7 +1006,8 @@
       "data": "Maombi ya watu kuona au kufuta data zao, pamoja na tarehe za mwisho.",
       "passkeys": "Ingia kwa mguso mmoja kwenye kifaa hiki badala ya msimbo.",
       "demo": "Maelezo ya dakika kumi kwa wawekezaji, pamoja na vidhibiti vya kuyaendesha.",
-      "demoControls": "Iga malipo na muda katika wilaya ya onyesho."
+      "demoControls": "Iga malipo na muda katika wilaya ya onyesho.",
+      "journey": "Fuatilia mauzo moja kuanzia ujumbe wa kwanza wa mteja hadi kiwanda kujaza kituo, simu ya kila mtu ikionekana."
     },
     "home": {
       "title": "Wilaya yako leo",
@@ -1065,6 +1069,134 @@
       "updating": "Moja kwa moja — inasonga…",
       "away": "Imesimama ukiwa haupo",
       "stopped": "Masasisho yamesimama — pakia ukurasa upya"
+    },
+    "restock": {
+      "title": "Mapendekezo ya kujaza akiba",
+      "intro": "Yamekokotolewa kutokana na kile kila kituo kiliuza katika siku {days} zilizopita, kilicho nacho, kilicho njiani, na muda wa uchukuaji. Wewe unaamua; hakuna kinachoagizwa hadi ukipange.",
+      "none": "Hakuna kituo kinachohitaji uchukuaji sasa hivi.",
+      "line": "{onHand} vilivyopo · {onTheWay} njiani · {perDay} vinauzwa kwa siku · uchukuaji huchukua siku {lead}",
+      "daysLeft": "vitadumu karibu siku {n}",
+      "noSales": "hakuna mauzo katika kipindi hiki",
+      "assign": "Panga uchukuaji wa {n}",
+      "assignUrgent": "Chini ya kiwango: panga uchukuaji wa {n}",
+      "ok": "Akiba inatosha",
+      "lots": "Kila kundi, na nani analo"
+    },
+    "journey": {
+      "title": "Fuatilia mauzo moja",
+      "intro": "Oda ya mteja mmoja, kuanzia ujumbe wake wa kwanza hadi kiwanda kujaza kituo. Kila hatua ni mfumo halisi, pesa za simu na jumbe zikiwa za kuigwa; tazama simu ya kila mtu.",
+      "startWhat": "Tunachagua kituo, mmoja wa wauzaji wake wa mtaani, msafirishaji na msambazaji, na kuunda mteja wa kubuni. Kisha fanya kila hatua, au bonyeza ▶ kuicheza.",
+      "start": "Anza maelezo",
+      "progress": "Hatua {n} kati ya {total}",
+      "restart": "Anza upya",
+      "nextBy": "Inayofuata: {who}",
+      "doStep": "Fanya: {step}",
+      "done": "Imekamilika. Mteja ana bidhaa yake na risiti, muuzaji wa mtaani na kituo wamejazwa akiba, na kila malipo yalithibitishwa na mtoa huduma.",
+      "seeMap": "Ione kwenye ramani hai",
+      "again": "Fuatilia mauzo mengine",
+      "play": "Cheza",
+      "stop": "Simamisha",
+      "phones": "Simu zao",
+      "messages": "Jumbe",
+      "noMessages": "Hakuna jumbe bado",
+      "smsOnly": "Wateja hawahitaji programu: jumbe tu",
+      "app": "Programu",
+      "appNext": "Inayofuata",
+      "justNow": "sasa hivi",
+      "waitingTitle": "Hakuna la kufanya kwenye mauzo haya bado",
+      "waitingFor": "Inasubiri: {who}",
+      "allSteps": "Kila hatua",
+      "customerIs": "Mteja katika maelezo haya:",
+      "founder": "Mwanzilishi",
+      "units": "vipande {n}",
+      "suggested": "vinapendekezwa {n}; akiba ya kituo itadumu siku {days}",
+      "steps": {
+        "enrol": {
+          "title": "Sajili mteja",
+          "what": "Muuzaji wa mtaani anaingiza jina na namba ya simu ya mteja, kwa ridhaa yake. Mfumo unamtumia ujumbe wenye msimbo wa tarakimu 6 kuthibitisha kwamba simu ni yake."
+        },
+        "verify": {
+          "title": "Mteja anathibitisha simu yake",
+          "what": "Anamsomea muuzaji msimbo, naye anauingiza. Hakuna anayeweza kusajiliwa bila simu yake mwenyewe."
+        },
+        "plan": {
+          "title": "Anzisha mpango wa malipo",
+          "what": "Muuzaji anachagua bidhaa. Mteja anapata ujumbe wenye bei kamili, mahali pa kulipa na kumbukumbu yake. Hakuna mkopo, ada wala tarehe ya mwisho."
+        },
+        "payPart": {
+          "title": "Mteja analipa sehemu",
+          "what": "Anatuma sehemu ya bei kwa pesa za simu. Uthibitisho wa mtoa huduma pekee ndio unaohesabika, kamwe si picha ya skrini. Hapa mtoa huduma ni wa kuigwa."
+        },
+        "payRest": {
+          "title": "Mteja analipa kilichobaki",
+          "what": "Kilichobaki kinafika na mtoa huduma anakithibitisha. Anapata ujumbe: umelipa kikamilifu, kutana na muuzaji wako wa mtaani."
+        },
+        "handoverStart": {
+          "title": "Muuzaji anaanza makabidhiano",
+          "what": "Muuzaji anatenga kipande kimoja kutoka akiba yake, na mfumo unamtumia mteja msimbo wa mara moja."
+        },
+        "handoverDone": {
+          "title": "Mteja anapokea bidhaa yake",
+          "what": "Anamsomea muuzaji msimbo wakati wa makabidhiano, na muuzaji anathibitisha kwamba ameeleza matumizi na utunzaji. Mteja anapata risiti kwa ujumbe usiotaja bidhaa."
+        },
+        "restockRequest": {
+          "title": "Muuzaji anaomba kituo zaidi",
+          "what": "Akiba yake imepungua kwa mauzo, kwa hiyo anaomba kituo chake vipande vitano zaidi. Mahitaji yanapanda juu ya mnyororo."
+        },
+        "restockPrepare": {
+          "title": "Kituo kinatenga vipande",
+          "what": "Mtunza kituo anahifadhi vipande, na bei inawekwa."
+        },
+        "restockPay": {
+          "title": "Muuzaji analipa kituo",
+          "what": "Analipa kwa pesa za simu na mtoa huduma anathibitisha."
+        },
+        "restockHandover": {
+          "title": "Kituo kinakabidhi, muuzaji anahesabu",
+          "what": "Wote wanathibitisha idadi na muhuri. Akiba sasa ni yake."
+        },
+        "pickupAssign": {
+          "title": "Uchukuaji kiwandani unapangwa",
+          "what": "Mauzo ya kituo yanaonyesha kitaishiwa kabla akiba mpya haijafika, kwa hiyo mfumo unapendekeza uchukuaji na mwanzilishi anaupanga. Msafirishaji anapata ujumbe."
+        },
+        "batchReady": {
+          "title": "Msambazaji anaandaa kundi",
+          "what": "Msambazaji anahesabu na kufunga kundi kwa muhuri na kuliweka tayari kuchukuliwa."
+        },
+        "pickupAccept": {
+          "title": "Msafirishaji anakubali uchukuaji",
+          "what": "Msafirishaji anakubali kazi na anaona kiasi cha kulipa."
+        },
+        "pickupPay": {
+          "title": "Msafirishaji analipa msambazaji",
+          "what": "Mtoa huduma anathibitisha malipo. Hakuna bidhaa inayotoka kiwandani kabla ya hapo."
+        },
+        "pickupHandover": {
+          "title": "Kundi linatoka kiwandani",
+          "what": "Msambazaji anatoa kundi na msafirishaji anakagua idadi na muhuri. Sasa liko njiani kwenda kituoni."
+        },
+        "arrive": {
+          "title": "Kufika kituoni",
+          "what": "Msafirishaji anaonyesha msimbo wa uwasilishaji na mtunza kituo anauingiza kuanza ukaguzi."
+        },
+        "inspect": {
+          "title": "Kituo kinakagua bidhaa",
+          "what": "Bidhaa sahihi, idadi sahihi, muhuri mzima, safi na kavu. Kasoro yoyote ingefunga kundi hadi wasimamizi wawili waamue."
+        },
+        "deliveryPay": {
+          "title": "Kituo kinamlipa msafirishaji",
+          "what": "Mtoa huduma anathibitisha malipo. Msafirishaji anapata tofauti kati ya alicholipa na anacholipwa na kituo."
+        },
+        "deliveryRelease": {
+          "title": "Kituo kimejazwa akiba",
+          "what": "Msafirishaji anathibitisha, na akiba iko kituoni, tayari kwa mteja anayefuata."
+        }
+      },
+      "open": "Fungua maelezo"
+    },
+    "menu": {
+      "open": "Menyu",
+      "close": "Funga menyu"
     }
   },
   "public": {
@@ -1150,7 +1282,7 @@
     "customerPlan": "Habari {name}. Bei ya bidhaa yako ni {price}. Imethibitishwa kulipwa: {paid}. Iliyobaki: {remaining}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Bidhaa inakabidhiwa baada ya malipo kamili kuthibitishwa.",
     "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na muuzaji wako wa mtaani aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
     "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee muuzaji wako wa mtaani tu unapopokea bidhaa yako.",
-    "receipt": "Habari {name}. Risiti {receiptNo}: {product} imekabidhiwa. Rekodi yako: {link}",
+    "receipt": "Habari {name}. Risiti {receiptNo}: oda yako imekabidhiwa. Rekodi yako: {link}",
     "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa.",
     "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
     "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} × {quantity} kunafuata. Rekodi: {link}",
@@ -1264,7 +1396,12 @@
     "open_demo_fake_phone": "Kwenye onyesho la wazi, tumia namba ya majaribio: +255 700 00x xxx.",
     "open_demo_not_allowed": "Hili linahitaji kuingia halisi, si onyesho la wazi.",
     "auto_play_hour_only": "Kucheza kiotomatiki huiga saa tu.",
-    "live_recently_advanced": "Wilaya imesonga sasa hivi; hatua inayofuata inakuja baada ya dakika moja."
+    "live_recently_advanced": "Wilaya imesonga sasa hivi; hatua inayofuata inakuja baada ya dakika moja.",
+    "journey_no_seller_with_stock": "Hakuna muuzaji wa mtaani mwenye akiba kwa maelezo haya. Acha wilaya iendelee dakika chache, kisha anza tena.",
+    "journey_no_supplier": "Hakuna msambazaji au msafirishaji anayepatikana kwa maelezo haya.",
+    "journey_not_started": "Anza maelezo kwanza.",
+    "journey_people_changed": "Mtu katika maelezo haya hafanyi kazi tena. Anza maelezo mapya.",
+    "journey_hub_short": "Kituo hakikuweza kutenga vipande. Anza maelezo mapya."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1458,7 +1595,8 @@
         "organisation_activate": "Shirika limewashwa",
         "organisation_create": "Shirika limeongezwa",
         "organisation_deactivate": "Shirika limezimwa",
-        "organisation_update": "Shirika limesasishwa"
+        "organisation_update": "Shirika limesasishwa",
+        "demo_journey": "Hatua ya maelezo"
       },
       "more": "Onyesha {n} zaidi"
     },
@@ -1534,7 +1672,8 @@
         "pendingIn": "{n} zinaingia",
         "pendingOut": "{n} zinatoka"
       },
-      "group": "Oda {count} hapa"
+      "group": "Oda {count} hapa",
+      "placeMoving": "{n} zinasafiri"
     },
     "present": "Mwonekano wa mtangazaji",
     "filters": "Vichujio",

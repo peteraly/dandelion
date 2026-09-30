@@ -3,7 +3,8 @@
  * controls (Prompt B §2.5). Only active people take part; phones are
  * decrypted for the SMS-code lookups the flows need.
  */
-import { and, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, eq, gt, inArray, isNotNull, isNull } from "drizzle-orm";
+import { now, nowMs } from "@/lib/clock";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { decryptString } from "@/lib/crypto/envelope";
@@ -14,7 +15,11 @@ import type { DemoClock } from "./clock";
 import type { Rng } from "./rng";
 import { SCALES, World, type Area, type Hub, type Person, type Scale, type SupplierOrg } from "./world";
 import type { Plan } from "./supply";
+import { journeyOrderIds, parseJourney } from "./journey-state";
 import { PLAN_KINDS } from "@/lib/domain/sales";
+
+/** A field session used within this long counts as someone playing that person. */
+const BUSY_MS = 30 * 60_000;
 
 type UserRow = typeof s.users.$inferSelect;
 
@@ -96,6 +101,13 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
   }
   w.directPaths = areaRows.some((a) => Array.isArray(a.allowedSales) && a.allowedSales.length > 0);
   w.names.reserveAbove(phones);
+  // Someone using a stakeholder's field app right now plays that person; the live engine leaves them to it.
+  const recent = new Date(nowMs() - BUSY_MS);
+  for (const r of await db
+    .select({ userId: s.sessions.userId })
+    .from(s.sessions)
+    .where(and(eq(s.sessions.kind, "FIELD"), isNull(s.sessions.revokedAt), gt(s.sessions.lastSeenAt, recent), gt(s.sessions.expiresAt, now()))))
+    w.busy.add(r.userId);
   return w;
 }
 
@@ -103,8 +115,11 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
 export async function loadPlans(w: World): Promise<Plan[]> {
   const db = getDb();
   const orders = await db.query.orders.findMany({ where: and(inArray(s.orders.kind, [...PLAN_KINDS]), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID"])) });
+  // The guided walkthrough drives its own customer's plan step by step (lib/demo/journey.ts); live ticks leave it alone.
+  const held = new Set(journeyOrderIds(parseJourney(await getSetting("demoJourney"))));
   const plans: Plan[] = [];
   for (const o of orders) {
+    if (held.has(o.id) || w.busy.has(o.sellerUserId)) continue;
     const customer = w.customers.find((c) => c.id === o.customerId);
     const product = w.products.find((p) => p.id === o.productId);
     if (!customer || !product) continue;
