@@ -259,7 +259,15 @@ A demo must be a **preview** deployment: in production the simulator is 404, the
 
 5. Settings → Deployment Protection: keep previews behind Vercel login (recommended) or open them for the demo — the data is fake either way.
 6. Trigger a build of the branch (push a commit, or create a deployment for the branch from the Deployments tab). The build migrates and seeds its Neon branch; the preview URL is listed under Deployments. Log in at `/admin/login` with the seed logins from Setup; `/dev/simulator` fakes payments and shows the SMS outbox.
-7. For the living demo: add `SEED_PROFILE=demo` (Preview) and the seed credentials (`SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B`, `SEED_FIELD_PIN` — generated as in Setup, kept in the password manager), reset the Neon branch to empty, redeploy. Then Settings → Git → **Deploy Hooks** → create one for the build branch and add its URL as `VERCEL_DEPLOY_HOOK_URL` (Preview): that is what "Reset to the demo dataset" on `/dev/simulator` calls after wiping the database.
+7. For the living demo: add `SEED_PROFILE=demo` (Preview) and the seed credentials (`SEED_ADMIN_PASSPHRASE_A/B`, `SEED_ADMIN_TOTP_A/B`, `SEED_FIELD_PIN` — generated as in Setup, kept in the password manager), reset the Neon branch to empty, redeploy. To empty a branch that has no parent (the project's `main`), run in the Neon SQL Editor:
+
+   ```sql
+   drop schema public cascade;
+   create schema public;
+   drop schema if exists drizzle cascade;
+   ```
+
+   The last line removes Drizzle's record of applied migrations. If it is forgotten, the next build notices the journal without the tables and re-applies every migration anyway (`lib/db/migrate.ts`). Then Settings → Git → **Deploy Hooks** → create one for the build branch and add its URL as `VERCEL_DEPLOY_HOOK_URL` (Preview): that is what "Reset to the demo dataset" on `/dev/simulator` calls after wiping the database.
 
 ### Production
 
