@@ -11,7 +11,8 @@ import { DemoBanner } from "@/components/demo-banner";
 import { FlowGraph } from "@/components/ecosystem/flow-graph";
 import { LiveRefresh } from "@/components/ecosystem/live-refresh";
 import { requireAdmin } from "@/lib/auth/current";
-import { appEnv } from "@/lib/env";
+import { appEnv, simulatorEnabled } from "@/lib/env";
+import { tickAction } from "@/app/dev/simulator/actions";
 import { ATTENTION_KEYS, ecosystemSnapshot, logEcosystemView, WINDOWS, type AttentionKey, type EcosystemSnapshot, type OpenOrder, type Window } from "@/lib/services/ecosystem";
 import { formatTzs } from "@/lib/money";
 import { formatDateTime } from "@/lib/util/time";
@@ -58,6 +59,7 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
   const intervalParam = Number(one(sp.interval));
   const intervalSeconds = appEnv() !== "production" && intervalParam >= 1 ? intervalParam : 30;
   const base: Record<string, string> = { window, area: areaId ?? "", hub: hubId ?? "", attention, sort };
+  const ticked = one(sp.ticked);
 
   await logEcosystemView(actor, session.id);
   const snap: EcosystemSnapshot = await ecosystemSnapshot(actor, { areaId, hubId, window });
@@ -109,6 +111,7 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
   const tt = await getTranslations("ecosystem.tables");
   const ta = await getTranslations("ecosystem.attention");
   const tg = await getTranslations("ecosystem.graph");
+  const tm = await getTranslations("ecosystem.map");
   const tst = await getTranslations("ecosystem.status");
   const tpay = await getTranslations("ecosystem.payment");
   const tsys = await getTranslations("ecosystem.system");
@@ -191,12 +194,37 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
         </p>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_320px]">
         <Card>
-          <h2 className="mb-2 font-semibold">{tg("title")}</h2>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-semibold">{tm("title")}</h2>
+            {snap.system.demo && simulatorEnabled() ? (
+              // The SimCity speed knob (prompt §9.1): the same admin-only, rate-limited, logged server action as /dev/simulator.
+              <div className="flex items-center gap-2 text-sm" data-testid="map-speed">
+                <span className="text-stone-500">{tm("speed")}:</span>
+                {(["hour", "day"] as const).map((k) => (
+                  <form key={k} action={tickAction}>
+                    <input type="hidden" name="kind" value={k} />
+                    <input type="hidden" name="redirectTo" value={href(base, {})} />
+                    <button type="submit" className="btn btn-secondary min-h-12 px-3 py-1 text-sm" data-testid={`map-tick-${k}`}>
+                      {tm(k)}
+                    </button>
+                  </form>
+                ))}
+              </div>
+            ) : null}
+          </div>
+          {ticked === "hour" || ticked === "day" ? (
+            <p className="mb-2 rounded-xl bg-green-50 p-2 text-sm text-green-900" data-testid="map-ticked">
+              {ticked === "hour" ? tm("tickedHour") : tm("tickedDay")}
+            </p>
+          ) : null}
           <FlowGraph
             nodes={snap.nodes}
             edges={snap.edges}
+            areas={snap.areas}
+            attention={attention}
+            asOf={snap.asOf}
             labels={{
               columns: { SUPPLIER: tg("suppliers"), RIDER: tg("riders"), HUB: tg("hubs"), CHAMPION: tg("champions"), CUSTOMERS: tg("customers"), ORGANISATION: tg("organisations") },
               units: (n) => tg("units", { n }),
@@ -204,16 +232,34 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
               status: (st) => tst(st),
               payment: (p) => tpay(p),
               edge: (e) => tg("edge", { count: e.count, units: e.units, paid: money(e.confirmedTzs), expected: money(e.expectedTzs) }),
-              legend: tg("legend"),
+              money,
               tableTitle: tg("tableTitle"),
               headers: { node: tg("node"), role: tg("role"), status: tg("status"), stock: tg("stock"), lastActivity: tg("lastActivity") },
               noEdges: tg("noEdges"),
               formatTime: fmt,
+              map: {
+                title: tm("title"),
+                legend: tm("legend"),
+                earned: (tzs) => tm("earned", { tzs }),
+                confirmed: (tzs) => tm("confirmed", { tzs }),
+                plans: (active, stalled) => tm("plans", { active, stalled }),
+                min: (n) => tm("min", { n }),
+                open: (n) => tm("open", { n }),
+                customers: (n) => tm("customers", { n }),
+                handover: (n) => tm("handover", { n }),
+                waiting: (n) => tm("waiting", { n }),
+                quality: (n) => tm("quality", { n }),
+                marker: (n) => tm("marker", { n }),
+                attention: tm("attention"),
+              },
             }}
           />
         </Card>
-        <Card className="lg:max-h-[720px] lg:overflow-y-auto">
-          <h2 className="mb-2 font-semibold">{tf("title")}</h2>
+        {/* A scrollable region must be reachable by keyboard (axe scrollable-region-focusable): focusable and labelled. */}
+        <Card className="max-h-[720px] overflow-y-auto focus:outline-2 focus:outline-brand-700" tabIndex={0} aria-labelledby="feed-title">
+          <h2 id="feed-title" className="mb-2 font-semibold">
+            {tf("title")}
+          </h2>
           <ol className="divide-y divide-stone-100 text-sm" data-testid="feed" aria-live="polite">
             {snap.feed.length === 0 ? <li className="py-2 text-stone-500">{tf("empty")}</li> : null}
             {snap.feed.map((item) => (

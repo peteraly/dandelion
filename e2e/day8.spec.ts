@@ -556,6 +556,24 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await page.reload();
   await expect(page.getByTestId("feed").getByTestId("feed-item").first()).toContainText("Daily reconciliation");
 
+  // The district map (prompt §9): one tile per hub, the same nodes as the table twin, attention outlines follow the chip,
+  // and no simulator controls on a dataset that is not the demo.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/admin/ecosystem?window=7d");
+  await expect(page.getByTestId("district-map")).toBeVisible();
+  expect(await page.locator('[data-testid="map-tile"][data-kind="HUB"]').count()).toBe(await page.getByTestId("hub-row").count());
+  expect(await page.getByTestId("map-tile").count()).toBe(await page.getByTestId("flow-table").locator("tbody tr").count());
+  expect(await page.getByTestId("map-speed").count()).toBe(0);
+  const below = Number((await page.getByTestId("attention-hubsBelowMin").locator("span").first().innerText()).trim());
+  await page.getByTestId("attention-hubsBelowMin").click();
+  await expect(page).toHaveURL(/attention=hubsBelowMin/);
+  expect(await page.locator('[data-testid="map-tile"][data-attention="true"]').count()).toBe(below);
+  const axeWide = await new AxeBuilder({ page }).analyze();
+  const seriousWide = axeWide.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(seriousWide, JSON.stringify(seriousWide.map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 3).map((n) => n.target) })), null, 1)).toEqual([]);
+  await page.setViewportSize({ width: 393, height: 851 });
+  await page.goto("/admin/ecosystem");
+
   // Clicking a hub opens its existing page.
   await page.getByTestId("hubs-table").getByRole("link", { name: "Test Hub (TEST)" }).click();
   await expect(page).toHaveURL(/\/admin\/inventory/);

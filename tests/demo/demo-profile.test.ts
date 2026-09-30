@@ -15,6 +15,7 @@ import { runDemoSeed, type DemoRunResult } from "@/scripts/demo/run";
 import type { DemoManifest } from "@/lib/demo/manifest";
 import { simulateTick } from "@/lib/demo/tick";
 import { containsPhone, ecosystemSnapshot, SnapshotSchema } from "@/lib/services/ecosystem";
+import { layoutDistrict } from "@/lib/ecosystem/district";
 import { resetToDemoDataset } from "@/lib/demo/reset";
 
 process.env.VERCEL_ENV = "";
@@ -170,6 +171,14 @@ describe("ecosystem snapshot on the demo dataset", () => {
     expect(snap.attention.waitingOnSupplier).toBeGreaterThanOrEqual(1);
     expect(snap.system.demo).toBe(true);
     expect(snap.feed.length).toBe(50);
+    // The district map (prompt §9): one tile per node, one band per area, a motorbike for the pickups left in flight.
+    const map = layoutDistrict({ nodes: snap.nodes, edges: snap.edges, areas: snap.areas, asOf: snap.asOf });
+    expect(map.unplaced).toEqual([]);
+    expect(map.tiles.length).toBe(snap.nodes.length);
+    expect(map.bands.length).toBe(snap.areas.length);
+    expect(map.tiles.filter((x) => x.kind === "HUB").length).toBe(snap.hubs.length);
+    expect(map.markers.length).toBeGreaterThanOrEqual(1);
+    expect(map.tiles.some((x) => x.locked)).toBe(true);
     const text = JSON.stringify(snap);
     expect(containsPhone(text)).toBe(false);
     for (const c of await db().select({ n: s.customers.displayName }).from(s.customers)) expect(text).not.toContain(c.n);

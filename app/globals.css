@@ -66,3 +66,13 @@ input[type="radio"] {
 .badge {
   @apply inline-block rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide;
 }
+
+/* District map (Prompt B §9): markers creep along their edge on every refresh; nothing else moves. */
+.district-marker {
+  transition: transform 900ms ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .district-marker {
+    transition: none;
+  }
+}

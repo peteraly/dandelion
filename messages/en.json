@@ -1266,6 +1266,26 @@
       "age": "Age (days)",
       "payment": "Payment",
       "none": "—"
+    },
+    "map": {
+      "title": "District map",
+      "speed": "Simulate",
+      "hour": "One hour",
+      "day": "One day",
+      "tickedHour": "One hour of activity simulated through the real services.",
+      "tickedDay": "One day of activity simulated through the real services, then reconciliation and anchoring.",
+      "legend": "Left to right: factory · riders · hubs, with their champions' kiosks and their customers underneath · organisations and customers served directly. Solid lines are the handbook ladder, dashed lines direct paths; grey pending · green confirmed · amber in review · red on hold. A motorbike is one open order on the road; a padlock a locked lot; a triangle a tile the attention chip points at. Customers are dots and counts, never names.",
+      "earned": "earned {tzs}",
+      "confirmed": "{tzs} confirmed",
+      "plans": "{active} active · {stalled} stalled",
+      "min": "min {n}",
+      "open": "{n} open",
+      "customers": "{n} customers",
+      "handover": "{n} handover pending",
+      "waiting": "{n} waiting past lead time",
+      "quality": "{n} batches with issues",
+      "marker": "{n} units on the road",
+      "attention": "needs attention"
     }
   }
 }

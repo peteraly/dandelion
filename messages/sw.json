@@ -1267,6 +1267,26 @@
       "age": "Umri (siku)",
       "payment": "Malipo",
       "none": "—"
+    },
+    "map": {
+      "title": "Ramani ya wilaya",
+      "speed": "Iga",
+      "hour": "Saa moja",
+      "day": "Siku moja",
+      "tickedHour": "Saa moja ya shughuli imeigwa kupitia huduma halisi.",
+      "tickedDay": "Siku moja ya shughuli imeigwa kupitia huduma halisi, kisha usuluhishi na uthibitisho.",
+      "legend": "Kushoto kwenda kulia: kiwanda · waendesha pikipiki · vituo, na vibanda vya mabingwa na wateja wao chini yake · mashirika na wateja wanaohudumiwa moja kwa moja. Mistari mizima ni ngazi ya mwongozo, mistari ya vitone ni njia za moja kwa moja; kijivu inasubiri · kijani imethibitishwa · kahawia inapitiwa · nyekundu imezuiwa. Pikipiki ni oda moja iliyo wazi barabarani; kufuli ni kundi lililofungwa; pembetatu ni kigae kinachohitaji umakini. Wateja ni nukta na idadi, si majina.",
+      "earned": "imepata {tzs}",
+      "confirmed": "{tzs} zimethibitishwa",
+      "plans": "{active} hai · {stalled} zimekwama",
+      "min": "chini {n}",
+      "open": "{n} wazi",
+      "customers": "wateja {n}",
+      "handover": "{n} makabidhiano yanasubiri",
+      "waiting": "{n} zimepitisha muda wa kusubiri",
+      "quality": "makundi {n} yenye matatizo",
+      "marker": "vipande {n} barabarani",
+      "attention": "inahitaji umakini"
     }
   }
 }
