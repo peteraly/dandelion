@@ -46,6 +46,7 @@ describe("ecosystem snapshot schema", () => {
       nodes: [],
       edges: [],
       openOrders: [],
+      recentPayments: [],
       money: { byKind: {}, pendingIntents: 0, reviewIntents: 0, plans: { active: 0, completedInWindow: 0, stalled: 0 } },
       attention: Object.fromEntries([...ATTENTION_KEYS.map((k) => [k, 0]), ["openExceptionsByType", {}]]),
       system: { heartbeats: [], anchoring: { configured: false, network: "celo-sepolia", lastAnchorAt: null, lastStatus: null, unanchored: 0 }, smsOutbox24h: 0, paymentProvider: "mock", smsProvider: "mock", ai: { enabled: false, model: "x", monthCalls: 0, monthCostMicroUsd: 0 }, environment: "development", version: "dev", seedProfile: "", demo: false },

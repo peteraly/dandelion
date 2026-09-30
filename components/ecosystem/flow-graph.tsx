@@ -4,9 +4,10 @@
  * same nodes and edges for keyboards, screen readers and phones. No charting
  * library, no client JavaScript.
  */
+import Link from "next/link";
 import { layoutDistrict } from "@/lib/ecosystem/district";
 import { Name, displayName } from "@/components/name";
-import type { AttentionKey, EcoEdge, EcoNode } from "@/lib/services/ecosystem";
+import type { AttentionKey, EcoEdge, EcoNode, OpenOrder, RecentPayment } from "@/lib/services/ecosystem";
 import { DistrictMap, type MapLabels } from "./district-map";
 
 /** Text colours for the edge list — classes, not inline styles: the CSP allows no style attributes. */
@@ -47,8 +48,30 @@ export interface GraphLabels {
   map: MapLabels;
 }
 
-export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { nodes: EcoNode[]; edges: EcoEdge[]; areas: { id: string; name: string }[]; attention: AttentionKey | ""; asOf: string; labels: GraphLabels }) {
-  const layout = layoutDistrict({ nodes, edges, areas, attention, asOf });
+export function FlowGraph({
+  nodes,
+  edges,
+  areas,
+  attention,
+  asOf,
+  orders,
+  payments,
+  focus,
+  focusHref,
+  labels,
+}: {
+  nodes: EcoNode[];
+  edges: EcoEdge[];
+  areas: { id: string; name: string }[];
+  attention: AttentionKey | "";
+  asOf: string;
+  orders: OpenOrder[];
+  payments: RecentPayment[];
+  focus: string | null;
+  focusHref: (nodeId: string) => string;
+  labels: GraphLabels;
+}) {
+  const layout = layoutDistrict({ nodes, edges, areas, attention, asOf, orders, payments, focus });
   const drawable = layout.edges.map((l) => l.edge);
 
   return (
@@ -64,6 +87,7 @@ export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { no
           edge: labels.edge,
           money: labels.money,
           map: labels.map,
+          focusHref,
         }}
       />
       <details className="text-sm" data-testid="flow-table-details">
@@ -84,9 +108,9 @@ export function FlowGraph({ nodes, edges, areas, attention, asOf, labels }: { no
             {nodes.map((n) => (
               <tr key={n.id}>
                 <td className="py-1">
-                  <a href={n.href} className="underline">
+                  <Link href={focusHref(n.id)} scroll={false} className="underline" data-testid="flow-focus">
                     <Name value={n.name} />
-                  </a>
+                  </Link>
                 </td>
                 <td>{labels.columns[n.kind]}</td>
                 <td>

@@ -82,8 +82,26 @@ export const OpenOrderSchema = z.object({
   ageDays: z.number(),
   paymentState: PaymentState,
   hubId: z.string().nullable(),
+  /** Map node ids of the two ends (the same ids as the edges), so the map can place and focus each order. */
+  fromId: z.string(),
+  toId: z.string(),
 });
 export type OpenOrder = z.infer<typeof OpenOrderSchema>;
+
+/** A payment the provider confirmed in the hour before the snapshot: money moving from the buyer's end (toId) to the seller's end (fromId). */
+export const RecentPaymentSchema = z.object({
+  id: z.string(),
+  at: z.string(),
+  orderId: z.string(),
+  ref: z.string(),
+  kind: z.enum(ORDER_KINDS),
+  fromId: z.string(),
+  toId: z.string(),
+  amountTzs: z.number(),
+});
+export type RecentPayment = z.infer<typeof RecentPaymentSchema>;
+/** How far back "just paid" reaches on the map. */
+export const RECENT_PAYMENT_MS = 60 * 60_000;
 
 export const AttentionSchema = z.object({
   paymentReviews: z.number(),
@@ -128,6 +146,7 @@ export const SnapshotSchema = z.object({
   nodes: z.array(NodeSchema),
   edges: z.array(EdgeSchema),
   openOrders: z.array(OpenOrderSchema),
+  recentPayments: z.array(RecentPaymentSchema),
   money: z.object({
     byKind: z.record(z.string(), z.number()),
     pendingIntents: z.number(),
@@ -441,7 +460,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     const awaiting = r.state === "PAID" && (!r.sender_confirmed_at || !r.receiver_confirmed_at) ? 1 : 0;
     const confirmedTzs = n(r.confirmed);
     const expectedTzs = n(r.total_tzs);
-    openOrders.push({ id: r.id, ref: r.ref, kind: r.kind, state: r.state, fromName: e.fromName, toName: e.toName, units: n(r.quantity), totalTzs: expectedTzs, confirmedTzs, ageDays: days(r.created_at, atMs), paymentState: paymentState({ onHold, inReview, confirmedTzs, expectedTzs }), hubId: r.hub_id });
+    openOrders.push({ id: r.id, ref: r.ref, kind: r.kind, state: r.state, fromName: e.fromName, toName: e.toName, units: n(r.quantity), totalTzs: expectedTzs, confirmedTzs, ageDays: days(r.created_at, atMs), paymentState: paymentState({ onHold, inReview, confirmedTzs, expectedTzs }), hubId: r.hub_id, fromId: e.fromId, toId: e.toId });
     const key = `${r.kind}|${e.fromId}|${e.toId}`;
     const edge = edgeMap.get(key) ?? { kind: r.kind, fromId: e.fromId, toId: e.toId, count: 0, units: 0, expectedTzs: 0, confirmedTzs: 0, oldestDays: 0, inReview: 0, onHold: 0, awaitingConfirmation: 0, paymentState: "pending" as const };
     edge.count++;
@@ -455,6 +474,20 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     edgeMap.set(key, edge);
   }
   const edges = [...edgeMap.values()].map((e) => ({ ...e, paymentState: paymentState(e) }));
+
+  // ---------- money that just moved (the map's coins) ----------
+  const paidRows = await db.execute<(typeof openRows.rows)[number] & { pi_id: string; amount: string; confirmed_at: Date }>(sql`
+    select pi.id as pi_id, pi.confirmed_amount_tzs::text as amount, pi.confirmed_at,
+      o.id, o.ref, o.kind, o.state, o.seller_user_id as seller, o.buyer_user_id as buyer, o.supplier_id, o.hub_id, o.organisation_id, o.quantity::text, o.total_tzs::text, o.created_at,
+      '0'::text as confirmed, '0'::text as in_review, o.sender_confirmed_at, o.receiver_confirmed_at
+    from payment_intents pi join orders o on o.id = pi.order_id
+    where pi.status = 'PAYMENT_CONFIRMED' and pi.confirmed_at >= ${new Date(atMs - RECENT_PAYMENT_MS)} and pi.confirmed_at <= ${at}
+    ${hubIds.length && scoped ? sql`and (o.hub_id in (${sql.join(hubIds.map((h) => sql`${h}`), sql`, `)}) or o.hub_id is null)` : sql``}
+    order by pi.confirmed_at desc limit 60`);
+  const recentPayments: RecentPayment[] = paidRows.rows.map((r) => {
+    const e = endpoints(r);
+    return { id: r.pi_id, at: new Date(r.confirmed_at).toISOString(), orderId: r.id, ref: r.ref, kind: r.kind, fromId: e.fromId, toId: e.toId, amountTzs: n(r.amount) };
+  });
 
   // ---------- money ----------
   const moneyRows = await db.execute<{ kind: string; tzs: string }>(sql`
@@ -539,6 +572,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     nodes,
     edges,
     openOrders,
+    recentPayments,
     money: { byKind, pendingIntents: intentOf.get("PAYMENT_PENDING") ?? 0, reviewIntents: intentOf.get("PAYMENT_FAILED_OR_REVIEW") ?? 0, plans: { active: n(pt.active), completedInWindow: n(pt.completed), stalled: n(pt.stalled) } },
     attention,
     system,

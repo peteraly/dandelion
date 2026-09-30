@@ -2,11 +2,17 @@
  * The district map (Prompt B §9): server-rendered inline SVG of the layout
  * `layoutDistrict` computed — flat pictograms from one <symbol> sprite, every
  * number printed inside its tile, edges only for orders in flight, a
- * motorbike per open order on the road. No canvas, no charting library, no
- * client JavaScript; the CSS transition on the markers is the only motion and
- * it honours prefers-reduced-motion. Customers are dots and counts, never names.
+ * marker per open order (a motorbike when a rider carries it, a parcel
+ * otherwise) placed by where the order is in its life and ringed in its
+ * payment colour, and a coin on every place the provider paid in the last
+ * hour. Clicking a place focuses it (the details panel opens and everyone it
+ * has no open order with goes faint); clicking a marker opens the order.
+ * No canvas, no charting library; the CSS transition on the markers is the
+ * only motion and it honours prefers-reduced-motion. Customers are dots and
+ * counts, never names.
  */
-import type { DistrictLayout, Tile } from "@/lib/ecosystem/district";
+import Link from "next/link";
+import type { DistrictLayout, Stage, Tile } from "@/lib/ecosystem/district";
 import { displayName } from "@/components/name";
 import type { EcoEdge, EcoNode } from "@/lib/services/ecosystem";
 
@@ -27,6 +33,11 @@ export interface MapLabels {
   direct: string;
   howToRead: string;
   recent: string;
+  stage: (s: Stage) => string;
+  coin: (count: number, tzs: string) => string;
+  more: (n: number) => string;
+  focus: string;
+  group: (count: number) => string;
 }
 
 export interface MapContext {
@@ -38,6 +49,15 @@ export interface MapContext {
   edge: (e: EcoEdge) => string;
   money: (n: number) => string;
   map: MapLabels;
+  /** Link that focuses a place on the map (keeps the page's filters). */
+  focusHref: (nodeId: string) => string;
+}
+
+/** 1,234,000 → "1.2M", 45,500 → "46k": coin labels must fit on a tile corner. */
+export function shortTzs(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n >= 10_000_000 ? 0 : 1)}M`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+  return String(n);
 }
 
 export const EDGE_COLOUR: Record<EcoEdge["paymentState"], string> = { pending: "#a8a29e", confirmed: "#16a34a", review: "#d97706", hold: "#dc2626" };
@@ -92,6 +112,8 @@ function Dots({ t }: { t: Tile }) {
 
 export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapContext }) {
   const nameOf = new Map(layout.tiles.map((t) => [t.id, t.node.name]));
+  const edgeOf = new Map(layout.edges.map((l) => [l.key, l.edge]));
+  const ends = (edgeKey: string) => `${displayName(nameOf.get(edgeOf.get(edgeKey)?.fromId ?? "") ?? "")} → ${displayName(nameOf.get(edgeOf.get(edgeKey)?.toId ?? "") ?? "")}`;
   return (
     <div className="hidden overflow-x-auto md:block">
       {/* No inline styles anywhere: the CSP allows none, so positions are presentation attributes and motion is a class. */}
@@ -128,6 +150,10 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
             <path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="#dc2626" strokeWidth="2.5" />
             <rect x="5" y="11" width="14" height="11" rx="2" fill="#dc2626" />
           </symbol>
+          <symbol id="d-box" viewBox="0 0 24 24">
+            <path d="M3 8l9-4 9 4v10l-9 4-9-4z" fill="#d6a86b" />
+            <path d="M3 8l9 4 9-4M12 12v10" fill="none" stroke="#7c5a2e" strokeWidth="1.5" />
+          </symbol>
           <symbol id="d-alert" viewBox="0 0 24 24">
             <path d="M12 3 2 21h20z" fill="#b45309" />
             <path d="M12 9v5M12 17v1.5" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
@@ -151,7 +177,7 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
             fill="none"
             stroke={EDGE_COLOUR[l.edge.paymentState]}
             strokeWidth={l.width}
-            strokeOpacity="0.85"
+            strokeOpacity={l.dim ? "0.15" : "0.85"}
             strokeDasharray={l.direct ? "6 4" : undefined}
             data-testid="flow-edge"
             data-payment={l.edge.paymentState}
@@ -165,7 +191,20 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
           const [line2, line3] = tileLines(t, c);
           const isBlock = t.kind === "CUSTOMERS";
           return (
-            <a key={t.id} href={t.node.href} data-testid="map-tile" data-kind={t.kind} data-attention={t.attention ? "true" : undefined} data-locked={t.locked ? "true" : undefined}>
+            <Link
+              key={t.id}
+              href={c.focusHref(t.id)}
+              scroll={false}
+              prefetch={false}
+              aria-current={t.focused ? "true" : undefined}
+              data-testid="map-tile"
+              data-kind={t.kind}
+              data-node={t.id}
+              data-attention={t.attention ? "true" : undefined}
+              data-locked={t.locked ? "true" : undefined}
+              data-focused={t.focused ? "true" : undefined}
+            >
+              <g opacity={t.dim ? 0.3 : undefined}>
               <rect
                 x={t.x}
                 y={t.y}
@@ -173,9 +212,9 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
                 height={t.h}
                 rx={8}
                 fill={TILE_FILL[t.node.status]}
-                stroke={t.locked ? "#dc2626" : t.attention ? "#b45309" : "#d6d3d1"}
-                strokeWidth={t.locked || t.attention ? 2 : 1}
-                strokeDasharray={t.attention && !t.locked ? "4 3" : undefined}
+                stroke={t.focused ? "#1d4ed8" : t.locked ? "#dc2626" : t.attention ? "#b45309" : "#d6d3d1"}
+                strokeWidth={t.focused ? 3 : t.locked || t.attention ? 2 : 1}
+                strokeDasharray={t.attention && !t.locked && !t.focused ? "4 3" : undefined}
               />
               <use href={`#d-${t.glyph}`} x={t.x + 6} y={t.y + 5} width={18} height={18} />
               <text x={t.x + 28} y={t.y + 17} fontSize="11.5" fontWeight="700" fill={INK}>
@@ -193,17 +232,64 @@ export function DistrictMap({ layout, c }: { layout: DistrictLayout; c: MapConte
               {t.locked ? <use href="#d-lock" x={t.x + t.w - 20} y={t.y + 4} width={14} height={14} /> : null}
               {t.attention && !t.locked ? <use href="#d-alert" x={t.x + t.w - 20} y={t.y + 4} width={14} height={14} /> : null}
               {t.recent ? <circle className="district-pulse" cx={t.x + t.w - (t.locked || t.attention ? 28 : 12)} cy={t.y + 11} r={4} fill="#22c55e" data-testid="tile-recent" /> : null}
-              <title>{`${t.node.name} · ${c.columns[t.kind]} · ${c.status(t.node.status)} · ${line2}${line3 ? ` · ${line3}` : ""}${t.locked ? ` · ${c.locked}` : ""}${t.attention ? ` · ${c.map.attention}` : ""}${t.recent ? ` · ${c.map.recent}` : ""}`}</title>
-            </a>
+              </g>
+              <title>{`${t.node.name} · ${c.columns[t.kind]} · ${c.status(t.node.status)} · ${line2}${line3 ? ` · ${line3}` : ""}${t.locked ? ` · ${c.locked}` : ""}${t.attention ? ` · ${c.map.attention}` : ""}${t.recent ? ` · ${c.map.recent}` : ""} · ${c.map.focus}`}</title>
+            </Link>
           );
         })}
 
-        {layout.markers.map((m) => (
-          <g key={m.key} className="district-marker" transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`} data-testid="map-marker" data-kind={m.kind}>
-            <circle r={m.r + 3} fill="#fff" stroke={INK} strokeWidth={1} />
-            <use href="#d-moto" x={-m.r} y={-m.r} width={2 * m.r} height={2 * m.r} />
-            <title>{c.map.marker(m.units)}</title>
+        {layout.coins.map((k) => (
+          <g key={`coin-${k.tileId}`} className="district-coin" transform={`translate(${k.x.toFixed(1)} ${k.y.toFixed(1)})`} opacity={k.dim ? 0.3 : undefined} data-testid="map-coin" data-node={k.tileId}>
+            <rect x={-50} y={-9} width={50} height={18} rx={9} fill="#15803d" stroke="#fff" strokeWidth={1.5} />
+            <circle cx={-41} cy={0} r={5} fill="#facc15" stroke="#a16207" strokeWidth={1} />
+            <text x={-33} y={4} fontSize="10" fontWeight="700" fill="#fff">
+              +{shortTzs(k.amountTzs)}
+            </text>
+            <title>{c.map.coin(k.count, c.money(k.amountTzs))}</title>
           </g>
+        ))}
+
+        {layout.markers.map((m) => (
+          // One order opens the order; a door holding several opens the place they wait at.
+          <Link
+            key={m.key}
+            href={m.items.length > 1 ? c.focusHref(m.at) : `/admin/orders/${m.orderId}`}
+            scroll={m.items.length > 1 ? false : undefined}
+            prefetch={false}
+            data-testid="map-marker"
+            data-kind={m.kind}
+            data-stage={m.stage}
+            data-payment={m.paymentState}
+            data-order={m.ref}
+            data-count={m.items.length}
+          >
+            <g className="district-marker" transform={`translate(${m.x.toFixed(1)} ${m.y.toFixed(1)})`} opacity={m.dim ? 0.2 : undefined}>
+              <circle r={m.r + 3} fill="#fff" stroke={EDGE_COLOUR[m.paymentState]} strokeWidth={2.5} />
+              <use href={`#d-${m.carrier}`} x={-m.r} y={-m.r} width={2 * m.r} height={2 * m.r} />
+              <text x={m.r + 5} y={3.5} fontSize="9.5" fontWeight="700" fill={INK}>
+                {m.units}
+              </text>
+              {m.items.length > 1 ? (
+                <g transform={`translate(${-m.r - 2} ${-m.r - 2})`}>
+                  <circle r={6.5} fill={INK} />
+                  <text textAnchor="middle" y={3} fontSize="8.5" fontWeight="700" fill="#fff">
+                    {m.items.length}
+                  </text>
+                </g>
+              ) : null}
+            </g>
+            <title>
+              {m.items.length > 1
+                ? `${c.map.group(m.items.length)} · ${ends(m.edgeKey)} · ${c.units(m.units)}\n${m.items.map((it) => `${it.ref} · ${c.units(it.units)} · ${c.map.stage(it.stage)} · ${c.payment(it.paymentState)}`).join("\n")}`
+                : `${m.ref} · ${c.units(m.units)} · ${ends(m.edgeKey)} · ${c.map.stage(m.stage)} · ${c.payment(m.paymentState)}`}
+            </title>
+          </Link>
+        ))}
+
+        {layout.overflow.map((o) => (
+          <text key={`more-${o.edgeKey}`} x={o.x} y={o.y} fontSize="10" fontWeight="700" fill={MUTED} data-testid="map-more">
+            {c.map.more(o.more)}
+          </text>
         ))}
       </svg>
       <details className="mt-1 text-xs text-stone-500">

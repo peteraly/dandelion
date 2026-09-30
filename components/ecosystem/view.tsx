@@ -9,10 +9,11 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card } from "@/components/ui";
 import { FlowGraph } from "./flow-graph";
 import { LiveRefresh } from "./live-refresh";
+import { orderStage, type Stage } from "@/lib/ecosystem/district";
 import { requireAdmin } from "@/lib/auth/current";
 import { appEnv, simulatorEnabled } from "@/lib/env";
 import { tickAction } from "@/app/dev/simulator/actions";
-import { ATTENTION_KEYS, ecosystemSnapshot, logEcosystemView, WINDOWS, type AttentionKey, type EcosystemSnapshot, type OpenOrder, type Window } from "@/lib/services/ecosystem";
+import { ATTENTION_KEYS, ecosystemSnapshot, logEcosystemView, WINDOWS, type AttentionKey, type EcoNode, type EcosystemSnapshot, type OpenOrder, type Window } from "@/lib/services/ecosystem";
 import { formatTzs } from "@/lib/money";
 import { isHumanRef } from "@/lib/domain/events";
 import { formatDateTime } from "@/lib/util/time";
@@ -59,7 +60,8 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
   const intervalParam = Number(one(sp.interval));
   const intervalSeconds = appEnv() !== "production" && intervalParam >= 1 ? intervalParam : 30;
   const tabParam = one(sp.tab);
-  const base: Record<string, string> = { window, area: areaId ?? "", hub: hubId ?? "", attention, sort, tab: tabParam };
+  const focus = one(sp.focus) || null;
+  const base: Record<string, string> = { window, area: areaId ?? "", hub: hubId ?? "", attention, sort, tab: tabParam, focus: focus ?? "" };
   const ticked = one(sp.ticked);
 
   await logEcosystemView(actor, session.id);
@@ -138,6 +140,22 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
   const moneyRows = Object.entries(snap.money.byKind).filter(([, v]) => v > 0);
   const jobIssues = snap.system.heartbeats.filter((h) => !h.status.startsWith("ok")).length;
   const FEED_VISIBLE = 12;
+  // What is moving right now (the line above the map): open orders by where they are, and the money that just arrived.
+  const stageCount = (...stages: Stage[]) => snap.openOrders.filter((o) => stages.includes(orderStage(o.state))).length;
+  const moving: [string, string, number][] = (
+    [
+      ["road", "🏍", stageCount("road")],
+      ["leaving", "📦", stageCount("prepare", "ready", "requested")],
+      ["paying", "💳", stageCount("paying")],
+      ["inspecting", "🔍", stageCount("inspecting")],
+      ["handover", "🤝", stageCount("handover", "handoverDue")],
+      ["hold", "⛔", stageCount("hold")],
+    ] as [string, string, number][]
+  ).filter(([, , n]) => n > 0);
+  const paidHour = snap.recentPayments.reduce((a, p) => a + p.amountTzs, 0);
+  const focusNode = focus ? (snap.nodes.find((x) => x.id === focus) ?? null) : null;
+  const tmv = await getTranslations("ecosystem.moving");
+  const tstage = await getTranslations("ecosystem.stage");
   const ORDER_ATTENTION: readonly string[] = ["paymentReviews", "paymentsPendingLong", "lockedBatches", "handoverPending", "waitingOnSupplier", "orgOrdersUnpaid"];
   const tab: "hubs" | "champions" | "orders" = tabParam === "hubs" || tabParam === "champions" || tabParam === "orders" ? tabParam : ORDER_ATTENTION.includes(attention) ? "orders" : attention === "silentNodes" ? "champions" : "hubs";
   const seg = (active: boolean) => `inline-flex min-h-10 items-center rounded-md px-3 text-sm ${active ? "bg-brand-600 font-semibold text-white" : "text-stone-700 hover:bg-stone-100"}`;
@@ -147,7 +165,8 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold">{t("title")}</h1>
-          <p className="text-sm text-stone-600">{t("subtitle")}</p>
+          {/* With the sidebar, the page guide already says this; the presenter view has no guide. */}
+          {present ? <p className="text-sm text-stone-600">{t("subtitle")}</p> : null}
         </div>
         <div className="flex flex-wrap items-center gap-3 text-xs">
           <LiveRefresh
@@ -274,7 +293,7 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
         </p>
       ) : null}
 
-      <Card>
+      <Card id="district">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-baseline gap-x-3">
             <h2 className="font-semibold">{tm("title")}</h2>
@@ -298,8 +317,24 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
             </div>
           ) : null}
         </div>
+        <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm" data-testid="moving-now">
+          <span className="font-medium text-stone-500">{tmv("title")}</span>
+          {moving.length === 0 && snap.recentPayments.length === 0 ? <span className="text-stone-500">{tmv("quiet")}</span> : null}
+          {moving.map(([k, icon, n]) => (
+            <span key={k} className="inline-flex items-center gap-1" data-testid={`moving-${k}`}>
+              <span aria-hidden="true">{icon}</span>
+              <span className="font-semibold tabular-nums">{n}</span> {tmv(k)}
+            </span>
+          ))}
+          {snap.recentPayments.length ? (
+            <span className="inline-flex items-center gap-1 text-green-900" data-testid="moving-paid">
+              <span aria-hidden="true">🪙</span>
+              {tmv("paid", { n: snap.recentPayments.length, tzs: money(paidHour) })}
+            </span>
+          ) : null}
+        </p>
         <MapKey
-          labels={{ ladder: tm("key.ladder"), direct: tm("key.direct"), pending: tpay("pending"), confirmed: tpay("confirmed"), review: tpay("review"), hold: tpay("hold"), road: tm("key.road"), locked: tm("key.locked"), recent: tm("key.recent") }}
+          labels={{ ladder: tm("key.ladder"), direct: tm("key.direct"), pending: tpay("pending"), confirmed: tpay("confirmed"), review: tpay("review"), hold: tpay("hold"), road: tm("key.road"), box: tm("key.box"), coin: tm("key.coin"), locked: tm("key.locked"), recent: tm("key.recent"), click: tm("key.click") }}
         />
         {ticked === "hour" || ticked === "day" ? (
           <p className="my-2 rounded-xl bg-green-50 p-2 text-sm text-green-900" data-testid="map-ticked">
@@ -312,6 +347,10 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
           areas={snap.areas}
           attention={attention}
           asOf={snap.asOf}
+          orders={snap.openOrders}
+          payments={snap.recentPayments}
+          focus={focus}
+          focusHref={(id) => href(base, { focus: id === focus ? null : id }, path)}
           labels={{
             columns: { SUPPLIER: tg("suppliers"), RIDER: tg("riders"), HUB: tg("hubs"), CHAMPION: tg("champions"), CUSTOMERS: tg("customers"), ORGANISATION: tg("organisations") },
             units: (n) => tg("units", { n }),
@@ -341,10 +380,47 @@ export async function EcosystemView({ searchParams, present = false }: { searchP
               attention: tm("attention"),
               direct: tm("direct"),
               recent: tm("key.recent"),
+              stage: (st) => tstage(st),
+              coin: (count, tzs) => tm("coin", { count, tzs }),
+              more: (n) => tm("more", { n }),
+              focus: tm("focusHint"),
+              group: (count) => tm("group", { count }),
             },
           }}
         />
       </Card>
+
+      {focusNode ? (
+        <FocusPanel
+          node={focusNode}
+          snap={snap}
+          closeHref={href(base, { focus: null }, path)}
+          focusHref={(id) => href(base, { focus: id }, path)}
+          t={{
+            close: tm("panel.close"),
+            profile: tm("panel.profile"),
+            incoming: tm("panel.incoming"),
+            outgoing: tm("panel.outgoing"),
+            nothingMoving: tm("panel.nothingMoving"),
+            paidHour: tm("panel.paidHour"),
+            received: (tzs: string, who: string) => tm("panel.received", { tzs, who }),
+            paid: (tzs: string, who: string) => tm("panel.paid", { tzs, who }),
+            last: tm("panel.last"),
+            live: tm("key.recent"),
+            earned: tm("panel.earned"),
+            area: tm("panel.area"),
+            more: (n: number) => tm("more", { n }),
+            role: tg(({ SUPPLIER: "suppliers", RIDER: "riders", HUB: "hubs", CHAMPION: "champions", CUSTOMERS: "customers", ORGANISATION: "organisations" } as const)[focusNode.kind]),
+            status: tst(focusNode.status),
+          }}
+          stage={(st) => tstage(st)}
+          payment={(p) => tpay(p)}
+          money={money}
+          when={fmt}
+          facts={focusFacts(focusNode, { units: (n) => tg("units", { n }), money, locked: tg("locked"), min: (n) => tm("min", { n }), plans: (a, st) => tm("plans", { active: a, stalled: st }), customers: (n) => tm("customers", { n }), handover: (n) => tm("handover", { n }), waiting: (n) => tm("waiting", { n }), open: (n) => tm("open", { n }), confirmed: (tzs) => tm("confirmed", { tzs }), pendingIn: (n) => tm("panel.pendingIn", { n }), pendingOut: (n) => tm("panel.pendingOut", { n }) })}
+          recent={!!focusNode.lastActivityAt && asOfMs - new Date(focusNode.lastActivityAt).getTime() <= 3_600_000 && asOfMs >= new Date(focusNode.lastActivityAt).getTime()}
+        />
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-1">
@@ -582,7 +658,7 @@ function FeedRow({ item, label, when }: { item: EcosystemSnapshot["feed"][number
 }
 
 /** The map's key in one line: lines, payment colours, markers (Prompt E §3 — a legend you can read at a glance). */
-function MapKey({ labels }: { labels: Record<"ladder" | "direct" | "pending" | "confirmed" | "review" | "hold" | "road" | "locked" | "recent", string> }) {
+function MapKey({ labels }: { labels: Record<"ladder" | "direct" | "pending" | "confirmed" | "review" | "hold" | "road" | "box" | "coin" | "locked" | "recent" | "click", string> }) {
   const dot = (cls: string) => <span aria-hidden="true" className={`inline-block h-2.5 w-2.5 rounded-full ${cls}`} />;
   return (
     <ul className="mb-2 hidden flex-wrap gap-x-4 gap-y-1 text-xs text-stone-600 md:flex" data-testid="map-key">
@@ -619,6 +695,14 @@ function MapKey({ labels }: { labels: Record<"ladder" | "direct" | "pending" | "
         {labels.road}
       </li>
       <li className="flex items-center gap-1.5">
+        <span aria-hidden="true">📦</span>
+        {labels.box}
+      </li>
+      <li className="flex items-center gap-1.5">
+        <span aria-hidden="true">🪙</span>
+        {labels.coin}
+      </li>
+      <li className="flex items-center gap-1.5">
         <span aria-hidden="true">🔒</span>
         {labels.locked}
       </li>
@@ -626,6 +710,196 @@ function MapKey({ labels }: { labels: Record<"ladder" | "direct" | "pending" | "
         {dot("bg-green-500")}
         {labels.recent}
       </li>
+      <li className="flex items-center gap-1.5 font-medium text-stone-700">
+        <span aria-hidden="true">👆</span>
+        {labels.click}
+      </li>
     </ul>
+  );
+}
+
+/** The numbers that matter for one place, in words (the details panel's first block). */
+function focusFacts(
+  n: EcoNode,
+  f: {
+    units: (n: number) => string;
+    money: (n: number) => string;
+    locked: string;
+    min: (n: number) => string;
+    plans: (active: number, stalled: number) => string;
+    customers: (n: number) => string;
+    handover: (n: number) => string;
+    waiting: (n: number) => string;
+    open: (n: number) => string;
+    confirmed: (tzs: string) => string;
+    pendingIn: (n: number) => string;
+    pendingOut: (n: number) => string;
+  },
+): string[] {
+  const out: string[] = [];
+  if (n.stock) out.push(`${f.units(n.stock.units)}${n.stock.lockedUnits > 0 ? ` · ${n.stock.lockedUnits} ${f.locked}` : ""}`);
+  if (n.hub) out.push(`${f.min(n.hub.minStockUnits)} · ${f.pendingIn(n.hub.pendingIn)} · ${f.pendingOut(n.hub.pendingOut)}`);
+  if (n.champion) out.push(`${f.customers(n.champion.customers)} · ${f.plans(n.champion.activePlans, n.champion.stalledPlans)}`);
+  if (n.supplier) out.push([f.confirmed(f.money(n.supplier.confirmedTzs)), n.supplier.waitingPastLeadTime > 0 ? f.waiting(n.supplier.waitingPastLeadTime) : ""].filter(Boolean).join(" · "));
+  if (n.customers) out.push([f.customers(n.customers.count), f.plans(n.customers.activePlans, 0).split(" · ")[0], n.customers.handoverPending > 0 ? f.handover(n.customers.handoverPending) : ""].filter(Boolean).join(" · "));
+  if (n.organisation) out.push(`${f.open(n.organisation.openOrders)} · ${f.confirmed(f.money(n.organisation.confirmedTzs))}`);
+  return out;
+}
+
+const PAYMENT_TONE: Record<OpenOrder["paymentState"], "green" | "amber" | "red" | "neutral"> = { confirmed: "green", review: "amber", hold: "red", pending: "neutral" };
+
+/**
+ * The details panel for the place clicked on the map (`?focus=`): what it
+ * holds, what is coming in and going out and at which step, the money that
+ * just moved, and the way to its full page. Fixed to the corner on a laptop,
+ * a bottom sheet on a phone; server-rendered, closed by a link.
+ */
+function FocusPanel({
+  node,
+  snap,
+  closeHref,
+  focusHref,
+  t,
+  stage,
+  payment,
+  money,
+  when,
+  facts,
+  recent,
+}: {
+  node: EcoNode;
+  snap: EcosystemSnapshot;
+  closeHref: string;
+  focusHref: (id: string) => string;
+  t: {
+    close: string;
+    profile: string;
+    incoming: string;
+    outgoing: string;
+    nothingMoving: string;
+    paidHour: string;
+    received: (tzs: string, who: string) => string;
+    paid: (tzs: string, who: string) => string;
+    last: string;
+    live: string;
+    earned: string;
+    area: string;
+    more: (n: number) => string;
+    role: string;
+    status: string;
+  };
+  stage: (s: Stage) => string;
+  payment: (p: OpenOrder["paymentState"]) => string;
+  money: (n: number) => string;
+  when: (iso: string | null) => string;
+  facts: string[];
+  recent: boolean;
+}) {
+  const SHOW = 6;
+  const nameOf = new Map(snap.nodes.map((x) => [x.id, x.name]));
+  const incoming = snap.openOrders.filter((o) => o.toId === node.id && orderStage(o.state) !== "plan");
+  const outgoing = snap.openOrders.filter((o) => o.fromId === node.id && orderStage(o.state) !== "plan");
+  const money1h = snap.recentPayments.filter((p) => p.fromId === node.id || p.toId === node.id);
+  const list = (orders: OpenOrder[], other: (o: OpenOrder) => { id: string; name: string }, testid: string) => (
+    <ul className="divide-y divide-stone-100" data-testid={testid}>
+      {orders.slice(0, SHOW).map((o) => {
+        const who = other(o);
+        return (
+          <li key={o.id} className="flex items-start justify-between gap-2 py-1.5">
+            <span className="min-w-0">
+              <Link href={`/admin/orders/${o.id}`} className="font-mono text-xs underline">
+                {o.ref}
+              </Link>{" "}
+              <span className="tabular-nums">{o.units}</span> ·{" "}
+              <Link href={focusHref(who.id)} scroll={false} className="underline decoration-dotted">
+                <Name value={who.name} />
+              </Link>
+              <span className="block text-xs text-stone-600">{stage(orderStage(o.state))}</span>
+            </span>
+            <span className="shrink-0 text-right text-xs">
+              <Badge tone={PAYMENT_TONE[o.paymentState]}>{payment(o.paymentState)}</Badge>
+              <span className="block tabular-nums text-stone-500">
+                {money(o.confirmedTzs)} / {money(o.totalTzs)}
+              </span>
+            </span>
+          </li>
+        );
+      })}
+      {orders.length > SHOW ? <li className="py-1 text-xs text-stone-500">{t.more(orders.length - SHOW)}</li> : null}
+    </ul>
+  );
+  return (
+    <aside
+      className="fixed inset-x-2 bottom-2 z-30 max-h-[60vh] overflow-y-auto rounded-2xl border border-stone-300 bg-white p-4 shadow-xl md:inset-x-auto md:right-4 md:bottom-4 md:w-[400px] md:max-h-[80vh]"
+      aria-label={displayName(node.name)}
+      tabIndex={0}
+      data-testid="focus-panel"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+            {t.role} · {t.status}
+            {recent ? <span className="ml-2 text-green-700">● {t.live}</span> : null}
+          </p>
+          <h2 className="text-lg font-bold">
+            <Name value={node.name} />
+          </h2>
+          <p className="text-xs text-stone-600">
+            {t.area}: {displayName(node.areaName)} · {t.last}: {when(node.lastActivityAt)}
+          </p>
+        </div>
+        <Link href={closeHref} scroll={false} className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-full text-xl text-stone-600 hover:bg-stone-100" aria-label={t.close} data-testid="focus-close">
+          ×
+        </Link>
+      </div>
+      <ul className="mt-2 text-sm" data-testid="focus-facts">
+        {facts.map((f) => (
+          <li key={f}>{f}</li>
+        ))}
+        {node.earnedTzs !== null ? (
+          <li>
+            {t.earned}: <span className={`font-semibold tabular-nums ${node.earnedTzs < 0 ? "text-red-700" : ""}`}>{money(node.earnedTzs)}</span>
+          </li>
+        ) : null}
+      </ul>
+      {incoming.length === 0 && outgoing.length === 0 ? <p className="mt-3 text-sm text-stone-500">{t.nothingMoving}</p> : null}
+      {incoming.length ? (
+        <section className="mt-3">
+          <h3 className="text-sm font-semibold">
+            {t.incoming} <span className="tabular-nums text-stone-500">{incoming.length}</span>
+          </h3>
+          {list(incoming, (o) => ({ id: o.fromId, name: nameOf.get(o.fromId) ?? o.fromName }), "focus-incoming")}
+        </section>
+      ) : null}
+      {outgoing.length ? (
+        <section className="mt-3">
+          <h3 className="text-sm font-semibold">
+            {t.outgoing} <span className="tabular-nums text-stone-500">{outgoing.length}</span>
+          </h3>
+          {list(outgoing, (o) => ({ id: o.toId, name: nameOf.get(o.toId) ?? o.toName }), "focus-outgoing")}
+        </section>
+      ) : null}
+      {money1h.length ? (
+        <section className="mt-3">
+          <h3 className="text-sm font-semibold">{t.paidHour}</h3>
+          <ul className="text-sm" data-testid="focus-money">
+            {money1h.slice(0, SHOW).map((p) => (
+              <li key={p.id} className={p.fromId === node.id ? "text-green-800" : "text-stone-700"}>
+                {p.fromId === node.id ? t.received(money(p.amountTzs), displayName(nameOf.get(p.toId) ?? "—")) : t.paid(money(p.amountTzs), displayName(nameOf.get(p.fromId) ?? "—"))}{" "}
+                <span className="font-mono text-xs text-stone-500">{p.ref}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      <div className="mt-4 flex gap-2">
+        <Link href={node.href} className="btn btn-primary w-auto min-h-10 px-4 text-sm" data-testid="focus-profile">
+          {t.profile}
+        </Link>
+        <Link href={closeHref} scroll={false} className="btn btn-secondary w-auto min-h-10 px-4 text-sm">
+          {t.close}
+        </Link>
+      </div>
+    </aside>
   );
 }

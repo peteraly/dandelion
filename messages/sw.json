@@ -57,24 +57,24 @@
   "roles": {
     "SUPER_ADMIN": "Msimamizi",
     "SUPPLIER": "Msambazaji",
-    "BOSS_RIDER": "Bosi Dereva",
-    "HUB_MANAGER": "Meneja wa Kituo",
-    "FIELD_CHAMPION": "Bingwa wa Uwandani",
+    "BOSS_RIDER": "Msafirishaji",
+    "HUB_MANAGER": "Mtunza Kituo",
+    "FIELD_CHAMPION": "Muuzaji wa Mtaani",
     "CUSTOMER": "Mteja",
     "ORGANISATION": "Shirika"
   },
   "orderKinds": {
     "SUPPLIER_TO_RIDER": "Kuchukua kiwandani",
     "RIDER_TO_HUB": "Kuwasilisha kituoni",
-    "HUB_TO_CHAMPION": "Bidhaa kwa bingwa",
+    "HUB_TO_CHAMPION": "Kituo → muuzaji wa mtaani",
     "CHAMPION_TO_CUSTOMER": "Ununuzi wa mteja",
-    "RIDER_TO_CUSTOMER": "Dereva → mteja (kijijini)",
+    "RIDER_TO_CUSTOMER": "Msafirishaji → mteja (kijijini)",
     "SUPPLIER_TO_CUSTOMER": "Msambazaji → mteja (kiwandani)",
     "SUPPLIER_TO_HUB": "Msambazaji → kituo (kiwandani)",
-    "SUPPLIER_TO_CHAMPION": "Msambazaji → bingwa (kiwandani)",
+    "SUPPLIER_TO_CHAMPION": "Msambazaji → muuzaji wa mtaani (kiwandani)",
     "SUPPLIER_TO_ORG": "Msambazaji → shirika",
     "HUB_TO_ORG": "Kituo → shirika",
-    "RIDER_TO_ORG": "Dereva → shirika"
+    "RIDER_TO_ORG": "Msafirishaji → shirika"
   },
   "orderStates": {
     "PICKUP_ASSIGNED": "Uchukuaji umepangwa",
@@ -116,7 +116,7 @@
         "explain": "Andaa idadi iliyoidhinishwa, funga kifungashio kwa muhuri, na thibitisha kuwa iko tayari."
       },
       "batch_ready": {
-        "title": "Kundi liko tayari kwa malipo na uchukuzi wa dereva",
+        "title": "Kundi liko tayari kwa malipo na uchukuzi wa msafirishaji",
         "explain": "Subiri malipo yathibitishwe. Usitoe bidhaa."
       },
       "payment_pending": {
@@ -128,8 +128,8 @@
         "explain": "Hesabu vipande na kagua namba ya kundi pamoja, kisha thibitisha kutoa."
       },
       "waiting_rider_pickup": {
-        "title": "Inasubiri uthibitisho wa dereva",
-        "explain": "Umethibitisha kutoa. Uhamisho unakamilika dereva akithibitisha."
+        "title": "Inasubiri uthibitisho wa msafirishaji",
+        "explain": "Umethibitisha kutoa. Uhamisho unakamilika msafirishaji akithibitisha."
       },
       "pickup_complete": {
         "title": "Bidhaa zimetoka kiwandani",
@@ -157,7 +157,7 @@
       },
       "in_transit": {
         "title": "Njiani",
-        "explain": "Safirisha moja kwa moja hadi kituo kilichopangwa. Onyesha msimbo wa uwasilishaji kwa meneja wa kituo."
+        "explain": "Safirisha moja kwa moja hadi kituo kilichopangwa. Onyesha msimbo wa uwasilishaji kwa mtunza kituo."
       },
       "hub_inspection_pending": {
         "title": "Kituo kinahesabu na kukagua bidhaa",
@@ -180,44 +180,44 @@
         "explain": "Tatizo limefunga kundi hili. Wasiliana na msaada."
       },
       "no_delivery": {
-        "title": "Hakuna uwasilishaji wa dereva unaotarajiwa sasa",
+        "title": "Hakuna uwasilishaji wa msafirishaji unaotarajiwa sasa",
         "explain": "Angalia bidhaa zako au subiri uwasilishaji unaofuata."
       },
       "rider_arriving": {
-        "title": "Dereva anakuja",
-        "explain": "Andaa eneo safi na kavu la ukaguzi. Ingiza msimbo wa uwasilishaji wa dereva kuanza."
+        "title": "Msafirishaji anakuja",
+        "explain": "Andaa eneo safi na kavu la ukaguzi. Ingiza msimbo wa uwasilishaji wa msafirishaji kuanza."
       },
       "inspection_required": {
         "title": "Kagua muhuri, hesabu vipande, kagua hali",
         "explain": "Kubali tu ikiwa kila ukaguzi umefaulu. Vinginevyo ripoti upungufu au uharibifu."
       },
       "stock_accepted": {
-        "title": "Thibitisha malipo kwa dereva kwa pesa za simu",
-        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya dereva ukitumia kumbukumbu iliyoonyeshwa."
+        "title": "Thibitisha malipo kwa msafirishaji kwa pesa za simu",
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya msafirishaji ukitumia kumbukumbu iliyoonyeshwa."
       },
       "rider_payment_pending": {
         "title": "Malipo yanahakikiwa na mtoa huduma",
         "explain": "Usiweke alama ya uhamisho umekamilika hadi yathibitishwe."
       },
       "waiting_rider_handover": {
-        "title": "Inasubiri uthibitisho wa dereva",
-        "explain": "Malipo yamethibitishwa. Dereva anathibitisha makabidhiano."
+        "title": "Inasubiri uthibitisho wa msafirishaji",
+        "explain": "Malipo yamethibitishwa. Msafirishaji anathibitisha makabidhiano."
       },
       "stock_recorded": {
         "title": "Bidhaa zimerekodiwa kituoni kwako",
         "explain": "Hifadhi bidhaa kwa usalama."
       },
       "champion_request": {
-        "title": "Ombi la bidhaa la bingwa",
+        "title": "Ombi la bidhaa la muuzaji wa mtaani",
         "explain": "Thibitisha una bidhaa, kisha andaa uhamisho."
       },
       "champion_payment_pending": {
-        "title": "Malipo ya bingwa yanahakikiwa",
+        "title": "Malipo ya muuzaji wa mtaani yanahakikiwa",
         "explain": "Usitoe bidhaa hadi yathibitishwe."
       },
       "champion_payment_confirmed": {
-        "title": "Toa idadi iliyoidhinishwa kwa bingwa",
-        "explain": "Hesabu bidhaa pamoja na bingwa na thibitisha."
+        "title": "Toa idadi iliyoidhinishwa kwa muuzaji wa mtaani",
+        "explain": "Hesabu bidhaa pamoja na muuzaji wa mtaani na thibitisha."
       },
       "low_stock": {
         "title": "Bidhaa chini ya kiwango cha chini",
@@ -269,7 +269,7 @@
       },
       "stock_payment_confirmed": {
         "title": "Malipo yamethibitishwa — chukua bidhaa zako",
-        "explain": "Hesabu vipande na meneja wa kituo na thibitisha kupokea."
+        "explain": "Hesabu vipande na mtunza kituo na thibitisha kupokea."
       },
       "stock_problem": {
         "title": "Tatizo la bidhaa limeripotiwa",
@@ -318,7 +318,7 @@
       "view_inventory": "Tazama bidhaa",
       "start_inspection": "Anza ukaguzi",
       "inspect_stock": "Kagua bidhaa",
-      "prepare_transfer": "Andaa uhamisho kwa bingwa",
+      "prepare_transfer": "Andaa uhamisho kwa muuzaji wa mtaani",
       "request_restock": "Omba kuongezewa bidhaa",
       "add_customer": "Ongeza mteja",
       "start_plan": "Anza mpango wa ununuzi",
@@ -373,12 +373,12 @@
   "field": {
     "orderDetails": "Maelezo ya oda",
     "deliveryCode": "Msimbo wa uwasilishaji",
-    "showCodeToHub": "Onyesha msimbo huu kwa meneja wa kituo.",
-    "enterDeliveryCode": "Ingiza msimbo wa uwasilishaji wa dereva",
+    "showCodeToHub": "Onyesha msimbo huu kwa mtunza kituo.",
+    "enterDeliveryCode": "Ingiza msimbo wa uwasilishaji wa msafirishaji",
     "sealId": "Namba ya muhuri au kifungashio",
     "inspection": {
       "title": "Orodha ya ukaguzi",
-      "correctRider": "Dereva sahihi",
+      "correctRider": "Msafirishaji sahihi",
       "correctProduct": "Aina sahihi ya bidhaa",
       "correctCount": "Idadi sahihi ya vipande",
       "correctBatch": "Namba sahihi ya kundi",
@@ -527,7 +527,7 @@
       "instruction": "Usikubali kama bidhaa za kawaida. Hii inafunga kundi."
     },
     "WRONG_HUB": {
-      "label": "Dereva yuko kituo kibaya",
+      "label": "Msafirishaji yuko kituo kibaya",
       "instruction": "Usihamishe bidhaa. Wasiliana na msimamizi."
     },
     "REFUND_REQUEST": {
@@ -579,15 +579,15 @@
     "nav": {
       "home": "Nyumbani",
       "approvals": "Idhini",
-      "stakeholders": "Wadau",
+      "stakeholders": "Watu",
       "prices": "Orodha za bei",
       "exceptions": "Matatizo",
       "inventory": "Bidhaa",
       "orders": "Oda",
-      "reconciliation": "Usuluhishi",
+      "reconciliation": "Ukaguzi wa pesa",
       "statements": "Taarifa za mtoa huduma",
-      "ledger": "Leja",
-      "logs": "Kumbukumbu",
+      "ledger": "Kumbukumbu ya umma",
+      "logs": "Kumbukumbu za usalama",
       "security": "Usalama",
       "settings": "Mipangilio",
       "exports": "Hamisha data",
@@ -595,7 +595,7 @@
       "brief": "Muhtasari wa asubuhi",
       "messages": "Jumbe",
       "suppliers": "Wasambazaji",
-      "ecosystem": "Mfumo mzima",
+      "ecosystem": "Ramani hai ya wilaya",
       "organisations": "Mashirika",
       "areas": "Maeneo na njia za mauzo",
       "title": "Usimamizi",
@@ -651,7 +651,7 @@
       "effectiveFrom": "Inaanza kutumika",
       "supplierPrice": "Bei ya msambazaji",
       "hubPrice": "Bei ya kituo",
-      "championPrice": "Bei ya bingwa",
+      "championPrice": "Bei ya muuzaji wa mtaani",
       "customerPrice": "Bei ya mteja",
       "organisationPrice": "Bei ya shirika (hiari; tupu = hakuna mauzo kwa mashirika)",
       "submitted": "Rasimu imetumwa. Msimamizi wa pili lazima aidhinishe kabla haianzi kutumika.",
@@ -665,14 +665,14 @@
     },
     "pickups": {
       "title": "Panga uchukuzi kiwandani",
-      "rider": "Dereva",
+      "rider": "Msafirishaji",
       "date": "Tarehe ya uchukuzi",
-      "created": "Uchukuzi umepangwa na dereva amearifiwa.",
+      "created": "Uchukuzi umepangwa na msafirishaji amearifiwa.",
       "pair": "Msambazaji · bidhaa",
       "noPairs": "Hakuna msambazaji anayefanya kazi anayetoa bidhaa bado. Ongeza bidhaa chini ya Wasambazaji kwanza.",
       "buyer": "Anayechukua",
-      "hubOrRiderStock": "Kituo cha kupokea (acha wazi: dereva anabaki na akiba kwa mauzo ya moja kwa moja)",
-      "riderKeeps": "— dereva anabaki na akiba —"
+      "hubOrRiderStock": "Kituo cha kupokea (acha wazi: msafirishaji anabaki na akiba kwa mauzo ya moja kwa moja)",
+      "riderKeeps": "— msafirishaji anabaki na akiba —"
     },
     "exceptions": {
       "title": "Matatizo",
@@ -806,7 +806,7 @@
       "priceLists": "Orodha za bei",
       "version": "toleo",
       "pickups": "Uchukuaji",
-      "rider": "Dereva",
+      "rider": "Msafirishaji",
       "pickupDate": "Tarehe ya uchukuaji",
       "noPickups": "Hakuna uchukuaji bado.",
       "paymentsTitle": "Malipo yaliyothibitishwa na mtoa huduma",
@@ -870,7 +870,7 @@
     },
     "areas": {
       "title": "Maeneo na njia za mauzo",
-      "intro": "Ngazi ya kitabu cha mwongozo (msambazaji → dereva → kituo → bingwa → mteja) inaruhusiwa siku zote. Njia nyingine yoyote imezimwa hadi wasimamizi wawili waiwashe kwa eneo, kwa sababu inaamua nani anapata. Seti ya data ya mfano huwasha zote.",
+      "intro": "Ngazi ya kitabu cha mwongozo (msambazaji → msafirishaji → kituo → muuzaji wa mtaani → mteja) inaruhusiwa siku zote. Njia nyingine yoyote imezimwa hadi wasimamizi wawili waiwashe kwa eneo, kwa sababu inaamua nani anapata. Seti ya data ya mfano huwasha zote.",
       "area": "Eneo",
       "region": "Mkoa",
       "allowed": "Zinazoruhusiwa zaidi ya ngazi",
@@ -879,21 +879,21 @@
       "request": "Omba mabadiliko",
       "requested": "Ombi limetumwa. Msimamizi mwingine lazima aidhinishe.",
       "paths": {
-        "RIDER_TO_CUSTOMER": "Madereva wanauza moja kwa moja kwa wateja (kijijini)",
+        "RIDER_TO_CUSTOMER": "Wasafirishaji wanauza moja kwa moja kwa wateja (kijijini)",
         "SUPPLIER_TO_CUSTOMER": "Wateja wananunua kiwandani",
         "SUPPLIER_TO_HUB": "Vituo vinachukua akiba yao kiwandani",
-        "SUPPLIER_TO_CHAMPION": "Mabingwa wanachukua akiba yao kiwandani",
+        "SUPPLIER_TO_CHAMPION": "Wauzaji wa mtaani wanachukua akiba yao kiwandani",
         "SUPPLIER_TO_ORG": "Wasambazaji wanauza kwa mashirika",
         "HUB_TO_ORG": "Vituo vinauza kwa mashirika",
-        "RIDER_TO_ORG": "Madereva wanauza kwa mashirika"
+        "RIDER_TO_ORG": "Wasafirishaji wanauza kwa mashirika"
       },
       "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
     },
     "navGroups": {
-      "overview": "Muhtasari",
-      "operate": "Uendeshaji",
+      "overview": "Tazama",
+      "operate": "Kila siku",
       "people": "Watu na maeneo",
-      "money": "Pesa na kumbukumbu",
+      "money": "Pesa na ushahidi",
       "admin": "Usimamizi"
     },
     "demo": {
@@ -927,19 +927,19 @@
         "map": {
           "where": "Ramani ya wilaya",
           "time": "dakika 2",
-          "do": "Fungua mwonekano wa mfumo; onyesha mstari wa umakini.",
-          "say": "Hii ni wilaya baada ya wiki tatu. Mstari huu ndio waanzilishi wanaona saa moja asubuhi."
+          "do": "Fungua ramani hai ya wilaya; onyesha pikipiki barabarani na sarafu pembeni; bofya kituo kuonyesha kilicho nacho na kinachoingia.",
+          "say": "Hii ni wilaya baada ya wiki tatu: kila mahali, kila usafirishaji njiani, kila malipo yanapoingia. Bofya chochote ukione."
         },
         "hour": {
           "where": "Iga saa moja",
           "time": "dakika 1",
-          "do": "Bonyeza Saa moja kwenye kichwa cha ramani; tazama barabara na mtiririko.",
+          "do": "Bonyeza ▶ Cheza (au Saa moja) juu ya ramani; tazama usafirishaji ukitoka kiwandani, ukisafiri, ukikaguliwa na kulipwa, na sarafu zikiingia.",
           "say": "Kila kilichotokea sasa hivi kilipitia huduma halisi."
         },
         "phone": {
-          "where": "Simu ya bingwa",
+          "where": "Simu ya muuzaji wa mtaani",
           "time": "dakika 2",
-          "do": "Dirisha la simu: ingia kama bingwa, sajili mteja kwa ridhaa, chagua bidhaa; onyesha SMS chini ya Ujumbe.",
+          "do": "Dirisha la simu: ingia kama muuzaji wa mtaani, sajili mteja kwa ridhaa, chagua bidhaa; onyesha SMS chini ya Ujumbe.",
           "say": "Skrini moja, kitendo kimoja. Ridhaa kwanza. Bei kamili kabla ya malipo yoyote."
         },
         "money": {
@@ -966,9 +966,9 @@
         "note": "Simu tu. Maneno ya siri, siri za kithibitishaji na PIN ziko kwenye kihifadhi nywila, kamwe si kwenye skrini.",
         "admin": "Msimamizi (mwonekano wa waanzilishi)",
         "supplier": "Msambazaji",
-        "rider": "Boss rider",
-        "hub": "Meneja wa kituo",
-        "champion": "Bingwa wa uwandani"
+        "rider": "Msafirishaji",
+        "hub": "Mtunza kituo",
+        "champion": "Muuzaji wa mtaani"
       },
       "claims": {
         "title": "Onyesho hili halidai nini",
@@ -979,7 +979,91 @@
       }
     },
     "openDemoChip": "onyesho la wazi",
-    "switchRole": "Badili jukumu"
+    "switchRole": "Badili jukumu",
+    "navHints": {
+      "home": "Kinachokuhitaji, kinachoendelea, na mahali kila kitu kilipo.",
+      "ecosystem": "Kila mahali, usafirishaji na malipo katika wilaya, vikijisasisha vyenyewe. Bofya mahali popote kwa maelezo.",
+      "brief": "Muhtasari mfupi wa siku iliyopita, tayari kila asubuhi.",
+      "approvals": "Jambo lolote muhimu linahitaji wasimamizi wawili. Idhinisha au kataa alichoomba msimamizi mwingine.",
+      "orders": "Kila oda: nani anamuuzia nani, iko hatua gani, na malipo yake.",
+      "exceptions": "Matatizo yaliyoripotiwa kutoka uwanjani au yaliyogunduliwa na mfumo, kila moja na hatua inayofuata.",
+      "inventory": "Bidhaa katika kila kituo na kwa kila muuzaji wa mtaani, na nani anaishiwa.",
+      "messages": "Kila SMS ambayo programu ilituma. Katika onyesho, hakuna kinachotoka nje.",
+      "stakeholders": "Watu wanaoendesha wilaya: wasafirishaji, watunza vituo, wauzaji wa mtaani, wasambazaji. Alika, simamisha au ondoa.",
+      "suppliers": "Viwanda na wauzaji wa jumla: bidhaa, muda wa kuandaa na ubora.",
+      "organisations": "Shule, mashirika na vikundi vinavyonunua kwa wingi.",
+      "areas": "Maeneo ya huduma, njia za mauzo zilizowashwa katika kila moja, na nani anapata nini.",
+      "prices": "Bei zinazotumiwa na kila mauzo. Mabadiliko yanahitaji wasimamizi wawili.",
+      "reconciliation": "Je, kila malipo katika programu yanalingana na anachosema mtoa huduma? Alama zinaonyesha pasipolingana.",
+      "statements": "Leta taarifa ya mtoa huduma na uilinganishe mstari kwa mstari na programu.",
+      "ledger": "Kitabu cha kumbukumbu: kila tukio, na alama za vidole zilizochapishwa kwenye leja ya umma.",
+      "exports": "Pakua data kama CSV kwa hesabu au wafadhili. Kila upakuaji unarekodiwa.",
+      "settings": "Kanuni na mipaka ya wilaya nzima.",
+      "logs": "Kuingia, tahadhari za usalama na kila kitendo cha msimamizi.",
+      "data": "Maombi ya watu kuona au kufuta data zao, pamoja na tarehe za mwisho.",
+      "passkeys": "Ingia kwa mguso mmoja kwenye kifaa hiki badala ya msimbo.",
+      "demo": "Maelezo ya dakika kumi kwa wawekezaji, pamoja na vidhibiti vya kuyaendesha.",
+      "demoControls": "Iga malipo na muda katika wilaya ya onyesho."
+    },
+    "home": {
+      "title": "Wilaya yako leo",
+      "intro": "Sehemu tatu: kinachokuhitaji, kinachoendelea sasa hivi, na mahali kila kitu kingine kilipo. Hakuna kilichofichwa; kila namba inafungua orodha kamili.",
+      "needsYou": "Kinakuhitaji sasa",
+      "allClear": "Hakuna kinachokuhitaji sasa hivi.",
+      "open": "Fungua",
+      "liveNow": "Kinachoendelea sasa hivi",
+      "openMap": "Fungua ramani hai",
+      "mapWhat": "Ona kila mahali, kilicho nacho, kila usafirishaji njiani na kila malipo yanapoingia.",
+      "everything": "Kila kitu kingine",
+      "record": "Kumbukumbu ya umma",
+      "recordLine": "Matukio {count} yanasubiri alama ya kidole kwenye leja ya umma.",
+      "wallet": "Pochi ya leja: {status}",
+      "walletOff": "haijawekwa (alama zinasubiri hadi iwekwe)",
+      "stat": {
+        "road": "barabarani",
+        "leaving": "vinasubiri kiwandani au kituoni",
+        "paying": "vinasubiri malipo",
+        "paidHour": "vimelipwa katika saa iliyopita",
+        "plans": "mipango ya wateja inayoendelea",
+        "events": "matukio katika saa iliyopita"
+      },
+      "need": {
+        "pendingApprovals": {
+          "title": "Inasubiri sahihi yako",
+          "hint": "Msimamizi mwingine ameomba jambo muhimu; wawili lazima wakubaliane."
+        },
+        "paymentsReview": {
+          "title": "Malipo ya kukagua",
+          "hint": "Jibu la mtoa huduma halikulingana na oda. Amua kilichotokea."
+        },
+        "openExceptions": {
+          "title": "Matatizo yaliyoripotiwa",
+          "hint": "Kutoka uwanjani au yaliyogunduliwa na mfumo. Kila moja lina hatua inayofuata."
+        },
+        "reconFlags": {
+          "title": "Pesa zisizolingana",
+          "hint": "Programu na mtoa huduma hawakubaliani. Angalia kabla mtu hajalipwa."
+        },
+        "lowStockHubs": {
+          "title": "Vituo vinavyoishiwa",
+          "hint": "Chini ya kiwango cha chini. Panga uchukuaji."
+        },
+        "deliveriesInspection": {
+          "title": "Usafirishaji unaowasili",
+          "hint": "Barabarani au ukaguzini. Chukua hatua tu ikiwa kimoja kimekwama."
+        },
+        "alerts24h": {
+          "title": "Tahadhari za usalama (saa 24)",
+          "hint": "Kuingia kusiko kawaida au vitendo vilivyokataliwa vinavyostahili kuangaliwa."
+        }
+      }
+    },
+    "live": {
+      "running": "Moja kwa moja — wilaya ya onyesho inasonga",
+      "updating": "Moja kwa moja — inasonga…",
+      "away": "Imesimama ukiwa haupo",
+      "stopped": "Masasisho yamesimama — pakia ukurasa upya"
+    }
   },
   "public": {
     "title": "Jaribio la Dandelion",
@@ -987,8 +1071,8 @@
     "howItWorks": "Inavyofanya kazi",
     "steps": {
       "1": "Msambazaji aliyeidhinishwa anaandaa kundi lililofungwa kwa muhuri.",
-      "2": "Dereva aliyehakikiwa analipa kwa pesa za simu na kuchukua. Malipo yanathibitishwa na mtoa huduma wa pesa za simu, kamwe si kwa picha ya skrini.",
-      "3": "Kituo kinakagua na kuhifadhi bidhaa, kisha kinauza kwa mabingwa wa uwandani waliofunzwa.",
+      "2": "Msafirishaji aliyehakikiwa analipa kwa pesa za simu na kuchukua. Malipo yanathibitishwa na mtoa huduma wa pesa za simu, kamwe si kwa picha ya skrini.",
+      "3": "Kituo kinakagua na kuhifadhi bidhaa, kisha kinauza kwa wauzaji wa mtaani waliofunzwa.",
       "4": "Wateja wanalipa yote au kwa awamu za hiari. Hakuna mkopo, hakuna faini ya kuchelewa, hakuna deni.",
       "5": "Bidhaa inakabidhiwa tu baada ya malipo kamili kuthibitishwa, pamoja na risiti."
     },
@@ -999,12 +1083,12 @@
     "statsNote": "Hesabu za jumla za wiki tu. Hesabu ndogo zinaonyeshwa kama \"chini ya 10\" kulinda faragha.",
     "statsUnavailable": "Hesabu hazipatikani kwa sasa.",
     "handovers": "Bidhaa zilizokabidhiwa",
-    "activeChampions": "Mabingwa wanaofanya kazi",
+    "activeChampions": "Wauzaji wa mtaani wanaofanya kazi",
     "privacy": "Taarifa ya faragha",
     "safety": "Usalama wa bidhaa na mwongozo wa WASH",
     "safetyDraft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
     "safetyReusable": "Bidhaa zinazotumika tena zinatolewa tu pale mteja anapoweza kupata maji safi, sabuni, faragha, mahali pa kuosha, mahali pa kukausha bidhaa kabisa, na uhifadhi salama. Vifaa vinavyotumika tena lazima vioshwe na kukaushwa baada ya kutumika.",
-    "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Mabingwa wanaeleza matumizi salama na utupaji.",
+    "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Wauzaji wa mtaani wanaeleza matumizi salama na utupaji.",
     "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi."
   },
   "verify": {
@@ -1062,8 +1146,8 @@
     "otp": "Msimbo wako wa uthibitisho ni {code}. Unaisha baada ya dakika 5. Usimpe mtu yeyote.",
     "pickup": "Habari {name}. Uchukuzi umepangwa kwako. Bidhaa: {product}. Idadi: {quantity}. Msambazaji: {supplier}. Jumla iliyoidhinishwa: {amount}. Fungua programu, kagua uchukuzi na chagua Kubali Uchukuzi. Lipa kwa pesa za simu. Usichukue bidhaa hadi programu ionyeshe MALIPO YAMETHIBITISHWA.",
     "customerPlan": "Habari {name}. Bei ya bidhaa yako ni {price}. Imethibitishwa kulipwa: {paid}. Iliyobaki: {remaining}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Bidhaa inakabidhiwa baada ya malipo kamili kuthibitishwa.",
-    "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na Bingwa wako wa Afya aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
-    "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee Bingwa wako wa Afya tu unapopokea bidhaa yako.",
+    "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na muuzaji wako wa mtaani aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
+    "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee muuzaji wako wa mtaani tu unapopokea bidhaa yako.",
     "receipt": "Habari {name}. Risiti {receiptNo}: {product} imekabidhiwa. Rekodi yako: {link}",
     "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa.",
     "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
@@ -1102,7 +1186,7 @@
     "seller_has_no_payee_account": "Muuzaji hana akaunti ya kupokea iliyosajiliwa. Wasiliana na msimamizi.",
     "supplier_not_active": "Msambazaji hafanyi kazi.",
     "hub_not_active": "Kituo hakifanyi kazi.",
-    "rider_not_active": "Dereva hafanyi kazi.",
+    "rider_not_active": "Msafirishaji hafanyi kazi.",
     "counterparty_unavailable": "Hakuna mdau anayefanya kazi kwa hatua hii.",
     "seal_id_invalid": "Ingiza namba ya muhuri au kifungashio.",
     "not_awaiting_payment": "Oda hii haisubiri malipo.",
@@ -1176,15 +1260,17 @@
     "area_sales_pending": "Ombi la njia za mauzo za eneo hili tayari linasubiri uamuzi.",
     "open_demo_disabled": "Onyesho la wazi halipatikani hapa.",
     "open_demo_fake_phone": "Kwenye onyesho la wazi, tumia namba ya majaribio: +255 700 00x xxx.",
-    "open_demo_not_allowed": "Hili linahitaji kuingia halisi, si onyesho la wazi."
+    "open_demo_not_allowed": "Hili linahitaji kuingia halisi, si onyesho la wazi.",
+    "auto_play_hour_only": "Kucheza kiotomatiki huiga saa tu.",
+    "live_recently_advanced": "Wilaya imesonga sasa hivi; hatua inayofuata inakuja baada ya dakika moja."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
     "howTo": "Jinsi ya kuonyesha"
   },
   "ecosystem": {
-    "title": "Mfumo mzima",
-    "subtitle": "Bidhaa na pesa ziko wapi, nani amekwama, na kama mfumo uko salama.",
+    "title": "Ramani hai ya wilaya",
+    "subtitle": "Kila mahali, kila usafirishaji njiani na kila malipo yanapoingia, moja kwa moja. Bofya mahali popote kuona kilicho nacho na kinachosafiri.",
     "asOf": "hadi {time}",
     "live": "Moja kwa moja",
     "paused": "Imesitishwa",
@@ -1204,21 +1290,21 @@
     "environment": "Mazingira",
     "version": "Toleo",
     "attention": {
-      "title": "Yanayohitaji umakini",
-      "paymentReviews": "Malipo yanayokaguliwa",
-      "paymentsPendingLong": "Malipo yaliyosubiri muda mrefu",
-      "lockedBatches": "Makundi yaliyofungwa",
-      "approvalsWaiting": "Idhini zinazosubiri",
-      "openExceptions": "Matatizo yaliyo wazi",
-      "reconFlags": "Alama za usuluhishi",
-      "deadJobs": "Kazi za uthibitishaji zilizokufa",
-      "silentNodes": "Kimya kwa siku 7",
-      "hubsBelowMin": "Vituo chini ya akiba ya chini",
-      "handoverPending": "Zimelipwa, makabidhiano yanasubiri",
-      "waitingOnSupplier": "Zinasubiri msambazaji",
-      "supplierQuality": "Ubora wa msambazaji",
+      "title": "Inahitaji uangalizi",
+      "paymentReviews": "Malipo ya kukagua",
+      "paymentsPendingLong": "Malipo yanayosubiri muda mrefu",
+      "lockedBatches": "Bidhaa zilizosimamishwa",
+      "approvalsWaiting": "Inasubiri msimamizi wa pili",
+      "openExceptions": "Matatizo yaliyoripotiwa",
+      "reconFlags": "Pesa zisizolingana",
+      "deadJobs": "Ukaguzi wa malipo uliosimama",
+      "silentNodes": "Kimya kwa wiki moja",
+      "hubsBelowMin": "Vituo vinavyoishiwa",
+      "handoverPending": "Imelipwa, bado kukabidhiwa",
+      "waitingOnSupplier": "Inasubiri msambazaji",
+      "supplierQuality": "Matatizo ya ubora wa msambazaji",
       "clear": "Onyesha yote",
-      "orgOrdersUnpaid": "Oda za mashirika hazijalipwa siku 3+",
+      "orgOrdersUnpaid": "Mashirika bado kulipa (siku 3+)",
       "allClear": "Yote safi",
       "clearCount": "Ukaguzi {n} uko safi"
     },
@@ -1226,9 +1312,9 @@
       "title": "Mtiririko",
       "tableTitle": "Mtiririko kama jedwali",
       "suppliers": "Wasambazaji",
-      "riders": "Madereva",
+      "riders": "Wasafirishaji",
       "hubs": "Vituo",
-      "champions": "Mabingwa",
+      "champions": "Wauzaji wa mtaani",
       "customers": "Wateja",
       "units": "vipande {n}",
       "locked": "imefungwa",
@@ -1267,15 +1353,15 @@
     },
     "system": {
       "title": "Mfumo",
-      "heartbeats": "Kazi",
-      "manual": "kwa mkono — hakikisho",
+      "heartbeats": "Kazi za nyuma",
+      "manual": "imeendeshwa na onyesho",
       "never": "haijawahi kufanya kazi",
       "ago": "sekunde {n} zilizopita",
-      "anchoring": "Nanga",
-      "notConfigured": "haijasanidiwa",
-      "unanchored": "matukio {n} bado hayajawekwa nanga",
-      "sms": "Kikasha cha SMS (saa 24)",
-      "providers": "Watoa huduma",
+      "anchoring": "Leja ya umma",
+      "notConfigured": "bado haijawekwa",
+      "unanchored": "Matukio {n} yanasubiri leja ya umma",
+      "sms": "Jumbe zilizotumwa (saa 24)",
+      "providers": "Huduma za malipo na SMS",
       "ai": "AI",
       "aiOff": "imezimwa",
       "aiOn": "imewashwa · miito {calls} · {usd} mwezi huu",
@@ -1376,14 +1462,14 @@
     },
     "tables": {
       "hubs": "Vituo",
-      "champions": "Mabingwa",
+      "champions": "Wauzaji wa mtaani",
       "openOrders": "Oda zinazoendelea",
       "name": "Jina",
       "available": "Zinazopatikana",
       "min": "Kiwango cha chini",
       "pendingIn": "Zinazoingia",
       "pendingOut": "Zinazotoka",
-      "manager": "Meneja",
+      "manager": "Mtunza kituo",
       "customers": "Wateja",
       "activePlans": "Mipango inayoendelea",
       "stalledPlans": "Mipango iliyokwama",
@@ -1403,7 +1489,7 @@
       "day": "Siku moja",
       "tickedHour": "Saa moja ya shughuli imeigwa kupitia huduma halisi.",
       "tickedDay": "Siku moja ya shughuli imeigwa kupitia huduma halisi, kisha usuluhishi na uthibitisho.",
-      "legend": "Kushoto kwenda kulia: kiwanda · waendesha pikipiki · vituo, na vibanda vya mabingwa na wateja wao chini yake · mashirika na wateja wanaohudumiwa moja kwa moja. Mistari mizima ni ngazi ya mwongozo, mistari ya vitone ni njia za moja kwa moja; kijivu inasubiri · kijani imethibitishwa · kahawia inapitiwa · nyekundu imezuiwa. Pikipiki ni oda moja iliyo wazi barabarani; kufuli ni kundi lililofungwa; pembetatu ni kigae kinachohitaji umakini. Wateja ni nukta na idadi, si majina.",
+      "legend": "Kushoto kwenda kulia: kiwanda · wasafirishaji · vituo, na vibanda vya wauzaji wao wa mtaani na wateja wao chini · mashirika na wateja wanaohudumiwa moja kwa moja. Mistari kamili ni ngazi ya mwongozo, mistari ya vistari ni njia za moja kwa moja; kijivu inasubiri · kijani imethibitishwa · njano inakaguliwa · nyekundu imesimamishwa. Kila oda iliyo wazi ni alama — pikipiki inapobebwa na msafirishaji, kifurushi vinginevyo — ikiwa mahali oda ilipo: mlangoni kwa mtumaji, barabarani, au mlangoni kwa mpokeaji; duara lake ni rangi ya malipo na namba kando yake ni idadi ya vipande. Sarafu pembeni ni pesa ambayo mtoa huduma alithibitisha kwa mahali hapo katika saa iliyopita. Kufuli ni kundi lililofungwa; pembetatu ni kigae kinachoonyeshwa na kitufe cha tahadhari. Bofya mahali popote kuona kilicho nacho, kinachoingia na kutoka, na pesa zake. Wateja ni nukta na idadi, kamwe si majina.",
       "earned": "halisi {tzs}",
       "confirmed": "{tzs} zimethibitishwa",
       "plans": "{active} hai · {stalled} zimekwama",
@@ -1421,17 +1507,39 @@
       "key": {
         "ladder": "Ngazi ya mwongozo",
         "direct": "Njia ya moja kwa moja",
-        "road": "Oda barabarani",
+        "road": "Pikipiki: oda inayobebwa na msafirishaji",
         "locked": "Kundi lililofungwa",
-        "recent": "Hai katika saa iliyopita"
-      }
+        "recent": "Hai katika saa iliyopita",
+        "box": "Kifurushi: oda inayokabidhiwa au kuletwa",
+        "coin": "Imelipwa katika saa iliyopita",
+        "click": "Bofya mahali popote kwa maelezo"
+      },
+      "coin": "{count, plural, one {Malipo #} other {Malipo #}} yamethibitishwa na mtoa huduma katika saa iliyopita: {tzs}",
+      "more": "+{n} zaidi",
+      "focusHint": "bofya kwa maelezo",
+      "panel": {
+        "close": "Funga",
+        "profile": "Fungua ukurasa kamili",
+        "incoming": "Zinazoingia",
+        "outgoing": "Zinazotoka",
+        "nothingMoving": "Hakuna kinachosafiri kuja au kutoka hapa sasa hivi.",
+        "paidHour": "Pesa katika saa iliyopita",
+        "received": "+{tzs} kutoka kwa {who}",
+        "paid": "−{tzs} kwa {who}",
+        "last": "shughuli ya mwisho",
+        "earned": "Faida halisi katika kipindi hiki",
+        "area": "Eneo",
+        "pendingIn": "{n} zinaingia",
+        "pendingOut": "{n} zinatoka"
+      },
+      "group": "Oda {count} hapa"
     },
     "present": "Mwonekano wa mtangazaji",
     "filters": "Vichujio",
     "kpi": {
       "title": "Kwa mtazamo mmoja",
       "units": "Vipande wilayani",
-      "unitsNote": "vilivyo kwa wasambazaji, waendesha pikipiki, vituo na mabingwa",
+      "unitsNote": "vilivyo kwa wasambazaji, wasafirishaji, vituo na wauzaji wa mtaani",
       "confirmed": "Malipo yaliyothibitishwa",
       "confirmedNote": "na mtoa huduma · {window}",
       "plans": "Mipango hai",
@@ -1439,6 +1547,29 @@
       "attention": "Inahitaji umakini",
       "attentionNote": "katika ukaguzi {n}",
       "allClear": "yote safi"
+    },
+    "moving": {
+      "title": "Kinachosafiri sasa:",
+      "quiet": "hakuna kinachosafiri",
+      "road": "barabarani",
+      "leaving": "vinaandaliwa au vinasubiri kuchukuliwa",
+      "paying": "vinasubiri mtoa huduma athibitishe malipo",
+      "inspecting": "vinakaguliwa",
+      "handover": "tayari kukabidhiwa",
+      "hold": "vimesimamishwa",
+      "paid": "malipo {n} yamethibitishwa katika saa iliyopita · {tzs}"
+    },
+    "stage": {
+      "prepare": "Kinaandaliwa kiwandani",
+      "ready": "Tayari kuchukuliwa",
+      "requested": "Kimeombwa, kinasubiri kituo",
+      "paying": "Kinasubiri mtoa huduma athibitishe malipo",
+      "handover": "Kimelipwa · pande zote zinathibitisha makabidhiano",
+      "road": "Barabarani",
+      "inspecting": "Kinakaguliwa kituoni",
+      "hold": "Kimesimamishwa baada ya ukaguzi",
+      "handoverDue": "Kimelipwa kikamilifu · makabidhiano yanasubiriwa",
+      "plan": "Kinalipwa kwa awamu"
     }
   },
   "openDemo": {
@@ -1464,16 +1595,16 @@
         "what": "Uchukuaji, pesa zilizothibitishwa na mtoa huduma, mauzo kwa mashirika."
       },
       "rider": {
-        "title": "Boss rider",
-        "what": "Chukua kiwandani, peleka vituoni, usambazaji vijijini."
+        "title": "Msafirishaji",
+        "what": "Chukua kiwandani, peleka vituoni na vijijini."
       },
       "hub": {
-        "title": "Meneja wa kituo",
-        "what": "Kagua bidhaa zinazofika, hifadhi, wapatie mabingwa."
+        "title": "Mtunza kituo",
+        "what": "Kagua bidhaa zinazofika, tunza akiba, wapatie wauzaji wa mtaani."
       },
       "champion": {
-        "title": "Bingwa wa uwandani",
-        "what": "Sajili wateja kwa ridhaa, mipango, makabidhiano, risiti."
+        "title": "Muuzaji wa mtaani",
+        "what": "Sajili wateja, uza kwa awamu, kabidhi, risiti."
       }
     }
   }

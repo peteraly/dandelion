@@ -40,7 +40,8 @@ export default async function CustomerPage({ params, searchParams }: { params: P
         .innerJoin(s.priceLists, and(eq(s.priceLists.id, s.priceListItems.priceListId), eq(s.priceLists.status, "ACTIVE"), eq(s.priceLists.serviceAreaId, areaId)))
         .where(and(eq(s.productAreaAvailability.serviceAreaId, areaId), eq(s.productAreaAvailability.available, true), eq(s.products.active, true)))
     : [];
-  const offered = products.filter((r) => r.p.category !== "REUSABLE" || r.avail.washConditionsConfirmed);
+  // Several suppliers' lists may be active in an area; they agree on the customer price (activePriceItem), so each product shows once.
+  const offered = [...new Map(products.filter((r) => r.p.category !== "REUSABLE" || r.avail.washConditionsConfirmed).map((r) => [r.p.id, r])).values()];
 
   return (
     <>

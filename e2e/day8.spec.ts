@@ -70,7 +70,7 @@ test("activation: admin creates a champion; SMS link + OTP + PIN activates in a 
   await p.getByRole("button", { name: "Activate my account" }).click();
   await expect(p).toHaveURL(/\/home/);
   await english(p);
-  await expect(p.getByText("Field Champion")).toBeVisible();
+  await expect(p.getByText("Local Seller")).toBeVisible();
   // One Screen Rule: exactly one primary action.
   expect(await p.locator("a.btn-primary, button.btn-primary").count()).toBe(1);
   await ctx2.close();
@@ -123,7 +123,7 @@ test("factory pickup: assigned → batch ready → accept → pending → confir
   state.pickupRef = await currentOrderRef(supplier.page);
   await supplier.page.getByLabel(/Seal/).fill("SEAL-001");
   await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
-  await expect(supplier.page.getByRole("heading", { name: "Batch ready for rider payment and pickup" })).toBeVisible();
+  await expect(supplier.page.getByRole("heading", { name: "Batch ready for delivery partner payment and pickup" })).toBeVisible();
 
   const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
   await english(rider.page);
@@ -172,7 +172,7 @@ test("factory pickup: assigned → batch ready → accept → pending → confir
   await supplier.page.getByRole("link", { name: "Confirm release" }).click();
   await supplier.page.getByLabel(/counted the units/).check();
   await supplier.page.getByRole("button", { name: "Confirm release" }).click();
-  await expect(supplier.page.getByRole("heading", { name: "Waiting for the rider's confirmation" })).toBeVisible();
+  await expect(supplier.page.getByRole("heading", { name: "Waiting for the delivery partner's confirmation" })).toBeVisible();
   await rider.page.goto("/home");
   await rider.page.getByRole("link", { name: "Confirm receipt" }).click();
   await rider.page.getByLabel(/counted the units/).check();
@@ -197,7 +197,7 @@ test("hub inspection and transfer: delivery code → checklist → pay → both 
 
   const hub = await fieldLogin(browser, SEED.hub.phone, SEED.hub.pin);
   await english(hub.page);
-  await expect(hub.page.getByRole("heading", { name: "Rider arriving" })).toBeVisible();
+  await expect(hub.page.getByRole("heading", { name: "Delivery partner arriving" })).toBeVisible();
   await hub.page.getByRole("link", { name: "Start inspection" }).click();
   await hub.page.getByLabel(/delivery code/).fill("000000");
   await hub.page.getByRole("button", { name: "Start inspection" }).click();
@@ -205,11 +205,11 @@ test("hub inspection and transfer: delivery code → checklist → pay → both 
   await hub.page.getByLabel(/delivery code/).fill(code);
   await hub.page.getByRole("button", { name: "Start inspection" }).click();
   await expect(hub.page.getByRole("heading", { name: "Check seal, count units, inspect condition" })).toBeVisible();
-  for (const label of ["Correct rider", "Correct product category", "Correct unit count", "Correct batch ID", "Package seal intact", "Product condition good", "No water damage or tampering"]) {
+  for (const label of ["Correct delivery partner", "Correct product category", "Correct unit count", "Correct batch ID", "Package seal intact", "Product condition good", "No water damage or tampering"]) {
     await hub.page.getByLabel(label).check();
   }
   await hub.page.getByRole("button", { name: "Accept stock" }).click();
-  await expect(hub.page.getByRole("heading", { name: "Confirm payment to rider via mobile money" })).toBeVisible();
+  await expect(hub.page.getByRole("heading", { name: "Confirm payment to delivery partner via mobile money" })).toBeVisible();
   await hub.page.getByRole("button", { name: "I have paid" }).click();
   const ok = (await sim(request, { op: "simulate", scenario: "success", orderRef: deliveryRef })) as { outcomes: string[] };
   expect(ok.outcomes).toContain("CONFIRMED");
@@ -243,10 +243,10 @@ test("champion stock transfer: request → hub prepares → pay → both confirm
 
   const hub = await fieldLogin(browser, SEED.hub.phone, SEED.hub.pin);
   await english(hub.page);
-  await expect(hub.page.getByRole("heading", { name: "Champion stock request" })).toBeVisible();
-  await hub.page.getByRole("link", { name: "Prepare champion transfer" }).click();
-  await hub.page.getByRole("button", { name: "Prepare champion transfer" }).click();
-  await expect(hub.page.getByRole("heading", { name: "Champion payment being verified" })).toBeVisible();
+  await expect(hub.page.getByRole("heading", { name: "Local seller stock request" })).toBeVisible();
+  await hub.page.getByRole("link", { name: "Prepare local seller transfer" }).click();
+  await hub.page.getByRole("button", { name: "Prepare local seller transfer" }).click();
+  await expect(hub.page.getByRole("heading", { name: "Local seller payment being verified" })).toBeVisible();
   await champ.page.goto("/home");
   await champ.page.getByRole("link", { name: "I have paid" }).click();
   await champ.page.getByRole("button", { name: "I have paid" }).click();
@@ -476,7 +476,17 @@ test("dashboard priorities and reconciliation flag the review items", async ({ b
   const a = await adminLogin(browser, SEED.adminA);
   await english(a.page);
   await a.page.goto("/admin");
-  await expect(a.page.getByTestId("priority-0")).not.toHaveText("0"); // payments needing review
+  await expect(a.page.getByTestId("need-paymentsReview-count")).not.toHaveText("0"); // payments needing review
+  // The home answers first: what needs you (only what is above zero), what is happening, then every page as a card with one line.
+  await expect(a.page.getByTestId("needs-you").locator('[data-testid$="-count"]').filter({ hasText: /^0$/ })).toHaveCount(0);
+  await expect(a.page.getByTestId("live-now")).toBeVisible();
+  await expect(a.page.getByTestId("open-live-map")).toHaveAttribute("href", "/admin/ecosystem");
+  expect(await a.page.getByTestId("home-card").count()).toBeGreaterThanOrEqual(18);
+  // Every other page says where you are and what it is for, and the sidebar marks it.
+  await a.page.goto("/admin/approvals");
+  await expect(a.page.getByTestId("page-guide")).toContainText("Approvals");
+  await expect(a.page.getByTestId("page-guide")).toContainText("two admins");
+  await expect(a.page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Approvals" })).toHaveAttribute("aria-current", "page");
   await a.page.goto("/admin/reconciliation");
   await expect(a.page.getByText("PAYMENT IN REVIEW").first()).toBeVisible();
   await a.ctx.close();
@@ -522,7 +532,7 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await english(admin.page);
   const { page } = admin;
   await page.goto("/admin/ecosystem?interval=1");
-  await expect(page.getByRole("heading", { name: "Ecosystem" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Live district map", level: 1 })).toBeVisible();
   await expect(page.getByTestId("hubs-table")).toContainText("Test Hub (TEST)");
   await expect(page.getByText("development", { exact: true }).first()).toBeVisible();
   await expect(page.getByTestId("attention-strip")).toBeVisible();
@@ -589,6 +599,20 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await expect(page.getByTestId("orders-table")).toBeVisible();
   expect(await page.getByTestId("hubs-table").count()).toBe(0);
   await page.goto("/admin/ecosystem?window=7d");
+  await expect(page.getByTestId("moving-now")).toBeVisible();
+  // A marker holding one order opens it; one holding several opens the place they wait at.
+  for (const [href, count] of await page.getByTestId("map-marker").evaluateAll((els) => els.map((e) => [e.getAttribute("href"), e.getAttribute("data-count")]))) expect(href).toMatch(count === "1" ? /^\/admin\/orders\/[0-9a-f-]+$/ : /focus=/);
+  // Click a place: its details open, it is outlined, everyone it has no open order with goes faint; close brings the map back.
+  await page.locator('[data-testid="map-tile"][data-kind="HUB"]').first().click();
+  await expect(page).toHaveURL(/focus=hub%3A/);
+  await expect(page.getByTestId("focus-panel")).toContainText("Test Hub");
+  await expect(page.locator('[data-testid="map-tile"][data-focused="true"]')).toHaveCount(1);
+  await expect(page.getByTestId("focus-profile")).toHaveAttribute("href", /\/admin\//);
+  const axeFocus = await new AxeBuilder({ page }).analyze();
+  const seriousFocus = axeFocus.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+  expect(seriousFocus, JSON.stringify(seriousFocus.map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 3).map((n) => n.target) })), null, 1)).toEqual([]);
+  await page.getByTestId("focus-close").click();
+  await expect(page.getByTestId("focus-panel")).toHaveCount(0);
   const axeWide = await new AxeBuilder({ page }).analyze();
   const seriousWide = axeWide.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
   expect(seriousWide, JSON.stringify(seriousWide.map((v) => ({ id: v.id, nodes: v.nodes.slice(0, 3).map((n) => n.target) })), null, 1)).toEqual([]);
@@ -620,7 +644,7 @@ test("demo polish: the guide is demo-only, the presenter view drops the sidebar,
   expect(await page.getByTestId("demo-guide-link").count()).toBe(0);
   expect(await page.getByTestId("nav-demo-guide").count()).toBe(0);
   // Sidebar groups and the presenter view.
-  await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Overview");
+  await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Watch");
   await page.getByTestId("present-link").click();
   await expect(page).toHaveURL(/\/admin\/present/);
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -662,7 +686,7 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await a.page.goto("/admin/areas");
   const area = a.page.getByTestId("area-card").first();
   await expect(area.getByTestId("area-allowed")).toContainText("Ladder only");
-  await area.getByLabel(/Riders sell directly to customers/).check();
+  await area.getByLabel(/Delivery partners sell directly to customers/).check();
   await area.getByLabel(/Suppliers sell to organisations/).check();
   await area.getByRole("button", { name: "Request change" }).click();
   await expect(a.page).toHaveURL(/ok=requested/);
@@ -676,19 +700,19 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await req.getByRole("button", { name: "Approve" }).click();
   await expect(b.page).toHaveURL(/ok=decided/);
   await b.page.goto("/admin/areas");
-  await expect(b.page.getByTestId("area-allowed").first()).toContainText("Rider → customer (village drop)");
+  await expect(b.page.getByTestId("area-allowed").first()).toContainText("Delivery partner → customer (village drop)");
 
   // A pickup with no hub behind it: the rider keeps the stock (§8.8.1).
   await b.page.goto("/admin/orders/new");
   await b.page.getByLabel("Supplier · product").selectOption({ label: `${SEED.supplier.name} · Standard kit (reusable)` });
-  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— rider keeps the stock —" });
+  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— delivery partner keeps the stock —" });
   await b.page.getByLabel("Quantity").fill("4");
   await b.page.getByRole("button", { name: "Assign a factory pickup" }).click();
   await expect(b.page).toHaveURL(/ok=created/);
   // A second pickup for the same rider, so the home screen has a "my day" list (Prompt C §5.1).
   await b.page.goto("/admin/orders/new");
   await b.page.getByLabel("Supplier · product").selectOption({ label: `${SEED.supplier.name} · Standard kit (reusable)` });
-  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— rider keeps the stock —" });
+  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— delivery partner keeps the stock —" });
   await b.page.getByLabel("Quantity").fill("3");
   await b.page.getByRole("button", { name: "Assign a factory pickup" }).click();
   await expect(b.page).toHaveURL(/ok=created/);
@@ -704,7 +728,7 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
     readyRefs.push(await currentOrderRef(supplier.page));
     await supplier.page.getByLabel(/Seal/).fill(seal);
     await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
-    await expect(supplier.page.getByRole("heading", { name: "Batch ready for rider payment and pickup" })).toBeVisible();
+    await expect(supplier.page.getByRole("heading", { name: "Batch ready for delivery partner payment and pickup" })).toBeVisible();
   }
 
   const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
@@ -724,7 +748,7 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await supplier.page.getByRole("link", { name: "Confirm release", exact: true }).click();
   await supplier.page.getByLabel(/counted the units/).check();
   await supplier.page.getByRole("button", { name: "Confirm release" }).click();
-  await expect(supplier.page.getByRole("heading", { name: "Waiting for the rider's confirmation" })).toBeVisible();
+  await expect(supplier.page.getByRole("heading", { name: "Waiting for the delivery partner's confirmation" })).toBeVisible();
   await rider.page.goto("/home");
   await rider.page.getByRole("link", { name: "Confirm receipt", exact: true }).click();
   await rider.page.getByLabel(/counted the units/).check();

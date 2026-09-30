@@ -15,6 +15,7 @@ import { DomainError, getSetting, logAdminAction, logSecurityEvent, withTx } fro
 import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
 import { DEMO_CSV_HEADER } from "@/lib/demo/label";
 import { TERMINAL_ORDER_STATES } from "@/lib/domain/orders";
+import { PLAN_KINDS } from "@/lib/domain/sales";
 
 export interface Priorities {
   paymentsReview: number;
@@ -49,6 +50,35 @@ export async function priorities(actor: Actor): Promise<Priorities> {
     db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(nowMs() - 86_400_000)))),
   );
   return { paymentsReview, deliveriesInspection, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h };
+}
+
+/** "Happening right now" on the admin home: a handful of counts, cheap enough to run on every visit (the map has the rest). */
+export interface LiveSummary {
+  road: number;
+  leaving: number;
+  paying: number;
+  paidHourCount: number;
+  paidHourTzs: number;
+  plans: number;
+  events: number;
+}
+
+export async function liveSummary(actor: Actor): Promise<LiveSummary> {
+  authorize(actor, "admin.dashboard");
+  const hourAgo = new Date(nowMs() - 3_600_000);
+  const r = (
+    await getDb().execute<Record<string, string>>(sql`
+    select
+      (select count(*) from orders where state = 'EN_ROUTE')::text as road,
+      (select count(*) from orders where state in ('PICKUP_ASSIGNED','BATCH_READY','REQUESTED'))::text as leaving,
+      (select count(*) from orders where state = 'AWAITING_PAYMENT')::text as paying,
+      (select count(*) from payment_intents where status = 'PAYMENT_CONFIRMED' and confirmed_at >= ${hourAgo})::text as paid_n,
+      (select coalesce(sum(confirmed_amount_tzs), 0) from payment_intents where status = 'PAYMENT_CONFIRMED' and confirmed_at >= ${hourAgo})::text as paid_tzs,
+      (select count(*) from orders where kind in (${sql.join(PLAN_KINDS.map((k) => sql`${k}`), sql`, `)}) and state in ('PLAN_ACTIVE','FULLY_PAID','HANDOVER_PENDING'))::text as plans,
+      (select count(*) from ledger_events where created_at >= ${hourAgo})::text as events`)
+  ).rows[0];
+  const n = (k: string) => Number(r?.[k] ?? 0);
+  return { road: n("road"), leaving: n("leaving"), paying: n("paying"), paidHourCount: n("paid_n"), paidHourTzs: n("paid_tzs"), plans: n("plans"), events: n("events") };
 }
 
 export async function listUsers(actor: Actor) {

@@ -20,7 +20,7 @@ export default defineConfig({
   webServer: process.env.DEMO_BASE_URL
     ? undefined
     : {
-        command: `npx tsx scripts/migrate.ts && SEED_RESET=1 SEED_PROFILE=demo DEMO_SCALE=small npx tsx scripts/seed.ts && npx next dev -p ${PORT}`,
+        command: `npx tsx scripts/migrate.ts && SEED_RESET=1 SEED_PROFILE=demo DEMO_SCALE=full npx tsx scripts/seed.ts && npx next dev -p ${PORT}`,
         url: `${baseURL}/api/health`,
         reuseExistingServer: false,
         timeout: 300_000,

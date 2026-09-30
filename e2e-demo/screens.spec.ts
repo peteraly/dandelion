@@ -56,6 +56,15 @@ test("the whole demo, beat by beat", async ({ browser, request }) => {
   await shot(a.getByTestId("district-map"), "05-one-hour-later");
   await a.goto("/admin/ecosystem?window=7d&attention=lockedBatches");
   await shot(a.getByTestId("district-map"), "06-attention-locked-batches");
+  // The admin home answers first; a click on any place opens its details on the map.
+  await a.goto("/admin");
+  await expect(a.getByTestId("needs-you")).toBeVisible();
+  await shot(a, "06b-admin-home", true);
+  await a.setViewportSize({ width: 1440, height: 1000 });
+  await a.goto("/admin/ecosystem?window=7d");
+  await a.locator('[data-testid="map-tile"][data-kind="HUB"]').first().click();
+  await expect(a.getByTestId("focus-panel")).toBeVisible();
+  await shot(a, "06c-map-focus", false);
 
   // 7–11 — a champion's phone: consent, plan, the provider's confirmation, handover, receipt
   const champ = await fieldLogin(browser, SEED.champions[0]!.phone, SEED.champions[0]!.pin);

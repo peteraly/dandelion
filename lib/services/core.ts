@@ -146,6 +146,10 @@ export const SETTING_DEFAULTS = {
   demoManifest: "",
   /** Number of "simulate time" ticks run on this database. */
   demoTicks: 0,
+  /** The deliveries the "one hour" tick moves one step at a time (a JSON list of order ids; lib/demo/live.ts). */
+  demoLiveOrders: "",
+  /** When the live district last took a step (ISO time; lib/demo/tick.ts). */
+  demoLastLiveAt: "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

@@ -4,14 +4,20 @@
  * attention chips point at the right tiles, and the markers move with time.
  */
 import { describe, expect, it } from "vitest";
-import { bezierAt, layoutDistrict, type Tile } from "@/lib/ecosystem/district";
-import type { EcoEdge, EcoNode } from "@/lib/services/ecosystem";
+import { bezierAt, layoutDistrict, MAX_MARKERS_PER_EDGE, orderStage, stagePosition, STAGES, type Tile } from "@/lib/ecosystem/district";
+import type { EcoEdge, EcoNode, OpenOrder, RecentPayment } from "@/lib/services/ecosystem";
 
 function node(partial: Partial<EcoNode> & Pick<EcoNode, "id" | "kind" | "name">): EcoNode {
   return { status: "active", areaId: "A", areaName: "Area A", hubId: null, lastActivityAt: "2026-09-30T06:00:00.000Z", href: "/admin", stock: null, hub: null, champion: null, supplier: null, customers: null, organisation: null, earnedTzs: null, ...partial };
 }
 function edge(partial: Partial<EcoEdge> & Pick<EcoEdge, "kind" | "fromId" | "toId">): EcoEdge {
   return { count: 1, units: 10, expectedTzs: 1000, confirmedTzs: 0, oldestDays: 0, inReview: 0, onHold: 0, awaitingConfirmation: 0, paymentState: "pending", ...partial };
+}
+let seq = 0;
+function order(partial: Partial<OpenOrder> & Pick<OpenOrder, "kind" | "state" | "fromId" | "toId">): OpenOrder {
+  seq++;
+  const id = `00000000-0000-4000-8000-${String(seq).padStart(12, "0")}`;
+  return { id, ref: `OR-${seq}`, fromName: "", toName: "", units: 20, totalTzs: 1000, confirmedTzs: 0, ageDays: 0, paymentState: "pending", hubId: null, ...partial };
 }
 const stock = (units: number, lockedUnits = 0) => ({ units, byState: {}, lockedUnits, oldestBatchDays: null });
 
@@ -47,10 +53,30 @@ const edges: EcoEdge[] = [
   edge({ kind: "HUB_TO_ORG", fromId: "hub:h1", toId: "org:missing" }),
 ];
 
+const orders: OpenOrder[] = [
+  // Two open pickups: one being prepared at the factory, one paid and being handed over there.
+  order({ kind: "SUPPLIER_TO_RIDER", state: "PICKUP_ASSIGNED", fromId: "supplier:s1", toId: "user:r1" }),
+  order({ kind: "SUPPLIER_TO_RIDER", state: "PAID", fromId: "supplier:s1", toId: "user:r1", paymentState: "confirmed" }),
+  // A delivery on the road and one at inspection.
+  order({ kind: "RIDER_TO_HUB", state: "EN_ROUTE", fromId: "user:r1", toId: "hub:h1" }),
+  order({ kind: "RIDER_TO_HUB", state: "INSPECTING", fromId: "user:r1", toId: "hub:h1" }),
+  // Hand-carried: a restock being paid for, a customer plan (no marker), a plan paid in full.
+  order({ kind: "HUB_TO_CHAMPION", state: "AWAITING_PAYMENT", fromId: "hub:h1", toId: "user:c1", paymentState: "review" }),
+  order({ kind: "CHAMPION_TO_CUSTOMER", state: "PLAN_ACTIVE", fromId: "user:c1", toId: "customers:h1" }),
+  order({ kind: "CHAMPION_TO_CUSTOMER", state: "FULLY_PAID", fromId: "user:c1", toId: "customers:h1", paymentState: "confirmed" }),
+  // An order whose edge is not on the map (organisation missing) gets no marker.
+  order({ kind: "HUB_TO_ORG", state: "AWAITING_PAYMENT", fromId: "hub:h1", toId: "org:missing" }),
+];
+const payments: RecentPayment[] = [
+  { id: "p1", at: "2026-09-30T07:40:00.000Z", orderId: "x", ref: "OR-p1", kind: "SUPPLIER_TO_RIDER", fromId: "supplier:s1", toId: "user:r1", amountTzs: 120_000 },
+  { id: "p2", at: "2026-09-30T07:50:00.000Z", orderId: "y", ref: "OR-p2", kind: "RIDER_TO_HUB", fromId: "supplier:s1", toId: "user:r1", amountTzs: 30_000 },
+  { id: "p3", at: "2026-09-30T07:55:00.000Z", orderId: "z", ref: "OR-p3", kind: "HUB_TO_ORG", fromId: "hub:h1", toId: "org:missing", amountTzs: 5_000 },
+];
+
 const overlaps = (a: Tile, b: Tile) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 describe("district layout", () => {
-  const lay = layoutDistrict({ nodes, edges, areas, asOf: AS_OF });
+  const lay = layoutDistrict({ nodes, edges, areas, asOf: AS_OF, orders, payments });
 
   it("gives every node exactly one tile, in its own area's band, with no two tiles overlapping", () => {
     expect(lay.unplaced).toEqual([]);
@@ -89,34 +115,112 @@ describe("district layout", () => {
     expect(hub.y + hub.h).toBeGreaterThan(band.roadY);
   });
 
-  it("draws an edge only between tiles that exist, dashed for direct paths, and one motorbike per open order on the road", () => {
+  it("draws an edge only between tiles that exist, dashed for direct paths, thickest where most units move", () => {
     expect(lay.edges.map((l) => l.edge.kind).sort()).toEqual(["CHAMPION_TO_CUSTOMER", "HUB_TO_CHAMPION", "RIDER_TO_CUSTOMER", "RIDER_TO_HUB", "SUPPLIER_TO_ORG", "SUPPLIER_TO_RIDER"]);
     const byKind = Object.fromEntries(lay.edges.map((l) => [l.edge.kind, l]));
     expect(byKind.SUPPLIER_TO_ORG!.direct).toBe(true);
     expect(byKind.RIDER_TO_CUSTOMER!.direct).toBe(true);
     expect(byKind.RIDER_TO_HUB!.direct).toBe(false);
-    // The thickest edge carries the most units.
     expect(byKind.SUPPLIER_TO_RIDER!.width).toBeGreaterThan(byKind.RIDER_TO_HUB!.width);
-    // Two open pickups → two markers on that edge; hub → champion is not a road leg.
-    expect(lay.markers.filter((m) => m.edgeKey === byKind.SUPPLIER_TO_RIDER!.key)).toHaveLength(2);
-    expect(lay.markers.filter((m) => m.kind === "HUB_TO_CHAMPION")).toHaveLength(0);
-    expect(lay.markers.filter((m) => m.kind === "CHAMPION_TO_CUSTOMER")).toHaveLength(0);
+  });
+
+  it("puts every moving open order on the map exactly once, a motorbike when a delivery partner carries it, ringed by the most urgent payment", () => {
+    const byRef = Object.fromEntries(orders.map((o) => [o.ref, o]));
+    // Plans being paid off are not moving; an order whose edge is off the map has nowhere to go.
+    const onMap = lay.markers.flatMap((m) => m.items.map((it) => it.ref));
+    expect(onMap.sort()).toEqual(orders.filter((_, i) => i !== 5 && i !== 7).map((o) => o.ref).sort());
     for (const m of lay.markers) {
-      const l = lay.edges.find((e) => e.key === m.edgeKey)!;
-      const minX = Math.min(l.p[0], l.p[6]) - 1;
-      const maxX = Math.max(l.p[0], l.p[6]) + 1;
-      expect(m.x).toBeGreaterThanOrEqual(minX);
-      expect(m.x).toBeLessThanOrEqual(maxX);
+      expect(m.units).toBe(m.items.reduce((a, it) => a + it.units, 0));
+      for (const it of m.items) {
+        const o = byRef[it.ref]!;
+        expect(it.orderId).toBe(o.id);
+        expect(it.stage).toBe(orderStage(o.state));
+        expect(it.paymentState).toBe(o.paymentState);
+      }
+      expect(m.carrier).toBe(m.kind.startsWith("RIDER_") || m.kind === "SUPPLIER_TO_RIDER" ? "moto" : "box");
+      expect(m.paymentState).toBe(["hold", "review", "pending", "confirmed"].find((st) => m.items.some((it) => it.paymentState === st)));
     }
   });
 
-  it("moves the markers a little as the clock advances, and keeps them still for the same moment", () => {
-    const again = layoutDistrict({ nodes, edges, areas, asOf: AS_OF });
+  it("places orders by where they are: waiting at the sender's door, on the road, or at the receiver's door; a busy door is one marker with a count", () => {
+    const mk = (i: number) => lay.markers.find((x) => x.items.some((it) => it.ref === orders[i]!.ref))!;
+    const tile = (id: string) => lay.tiles.find((t) => t.id === id)!;
+    const factory = tile("supplier:s1");
+    const rider = tile("user:r1");
+    const hub = tile("hub:h1");
+    // Both pickups wait at the factory: one marker holding both, which opens the factory.
+    expect(mk(0)).toBe(mk(1));
+    expect(mk(0).items).toHaveLength(2);
+    expect(mk(0).at).toBe("supplier:s1");
+    expect(mk(0).paymentState).toBe("pending"); // one confirmed, one pending: the pending one is what needs watching
+    expect(mk(0).x).toBeGreaterThan(factory.x + factory.w);
+    expect(mk(0).x).toBeLessThan(rider.x);
+    expect(mk(0).x - (factory.x + factory.w)).toBeLessThan(rider.x - mk(0).x);
+    // The one at inspection sits alone at the hub's door; the one on the road between the stand and the hub.
+    expect(mk(3).items).toHaveLength(1);
+    expect(mk(3).x).toBeLessThan(hub.x);
+    expect(hub.x - mk(3).x).toBeLessThan(40);
+    expect(mk(2).x).toBeGreaterThan(rider.x + rider.w);
+    expect(mk(2).x).toBeLessThan(hub.x);
+    expect(mk(2)).not.toBe(mk(3));
+    // No marker sits inside a tile, and no two markers overlap.
+    for (const x of lay.markers) for (const t of lay.tiles) expect(x.x > t.x + 2 && x.x < t.x + t.w - 2 && x.y > t.y + 2 && x.y < t.y + t.h - 2, `${x.ref} inside ${t.id}`).toBe(false);
+    for (const a of lay.markers) for (const b of lay.markers) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y), `${a.key} vs ${b.key}`).toBeGreaterThanOrEqual(a.r + b.r);
+  });
+
+  it("gives every state a place, and only plans being paid off none", () => {
+    for (const st of STAGES) expect(stagePosition("RIDER_TO_HUB", st) === null).toBe(st === "plan");
+    expect(orderStage("PLAN_ACTIVE")).toBe("plan");
+    expect(orderStage("EN_ROUTE")).toBe("road");
+    expect(stagePosition("RIDER_TO_HUB", "paying")).toBeGreaterThan(0.8); // the hub pays after inspection, at its door
+    expect(stagePosition("SUPPLIER_TO_RIDER", "paying")).toBeLessThan(0.3); // the rider pays at the factory
+  });
+
+  it("draws at most a few markers per edge and says how many more there are", () => {
+    const many = Array.from({ length: MAX_MARKERS_PER_EDGE + 3 }, () => order({ kind: "RIDER_TO_HUB", state: "EN_ROUTE", fromId: "user:r1", toId: "hub:h1" }));
+    const busy = layoutDistrict({ nodes, edges, areas, asOf: AS_OF, orders: many });
+    expect(busy.markers).toHaveLength(MAX_MARKERS_PER_EDGE);
+    expect(busy.overflow).toHaveLength(1);
+    expect(busy.overflow[0]!.more).toBe(3);
+  });
+
+  it("moves only the orders on the road as the clock advances, and keeps everything still for the same moment", () => {
+    const again = layoutDistrict({ nodes, edges, areas, asOf: AS_OF, orders, payments });
     expect(again.markers.map((m) => [m.x, m.y])).toEqual(lay.markers.map((m) => [m.x, m.y]));
-    const later = layoutDistrict({ nodes, edges, areas, asOf: "2026-09-30T08:00:30.000Z" });
-    expect(later.markers.map((m) => m.progress)).not.toEqual(lay.markers.map((m) => m.progress));
-    for (const m of later.markers) expect(m.progress).toBeGreaterThanOrEqual(0);
-    for (const m of later.markers) expect(m.progress).toBeLessThan(1);
+    const later = layoutDistrict({ nodes, edges, areas, asOf: "2026-09-30T08:00:30.000Z", orders, payments });
+    for (const m of later.markers) {
+      const before = lay.markers.find((x) => x.key === m.key)!;
+      if (m.stage === "road") expect(m.progress).not.toBe(before.progress);
+      else expect([m.x, m.y]).toEqual([before.x, before.y]);
+      expect(m.progress).toBeGreaterThanOrEqual(0);
+      expect(m.progress).toBeLessThan(1);
+    }
+  });
+
+  it("puts a coin on each place the provider paid in the last hour, summed, and none for places not on the map", () => {
+    expect(lay.coins).toHaveLength(2);
+    const factory = lay.coins.find((c) => c.tileId === "supplier:s1")!;
+    expect(factory.amountTzs).toBe(150_000);
+    expect(factory.count).toBe(2);
+    expect(factory.latestAt).toBe("2026-09-30T07:50:00.000Z");
+    expect(lay.coins.find((c) => c.tileId === "hub:h1")!.amountTzs).toBe(5_000);
+  });
+
+  it("focuses a place: it and everyone it has open orders with stay bright, the rest go faint", () => {
+    const f = layoutDistrict({ nodes, edges, areas, asOf: AS_OF, orders, payments, focus: "hub:h1" });
+    const t = (id: string) => f.tiles.find((x) => x.id === id)!;
+    expect(t("hub:h1").focused).toBe(true);
+    expect(t("hub:h1").dim).toBe(false);
+    expect(t("user:r1").dim).toBe(false); // delivering to it
+    expect(t("user:c1").dim).toBe(false); // buying from it
+    expect(t("supplier:s1").dim).toBe(true);
+    expect(t("hub:h2").dim).toBe(true);
+    for (const l of f.edges) expect(l.dim).toBe(!(l.edge.fromId === "hub:h1" || l.edge.toId === "hub:h1"));
+    for (const m of f.markers) expect(m.dim).toBe(!(m.edgeKey.includes("|hub:h1|") || m.edgeKey.endsWith("|hub:h1")));
+    expect(f.coins.find((c) => c.tileId === "supplier:s1")!.dim).toBe(true);
+    // An unknown focus (a stale link) focuses nothing.
+    const stale = layoutDistrict({ nodes, edges, areas, asOf: AS_OF, orders, focus: "user:gone" });
+    expect(stale.tiles.every((x) => !x.dim && !x.focused)).toBe(true);
   });
 
   it("points the attention outline at the right tiles for each chip", () => {

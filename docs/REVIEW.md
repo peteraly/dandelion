@@ -94,6 +94,29 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | F0.2 Restore window | **open** | Neon free plan keeps 6 hours of history. |
 | Phases F1–F5 | **not started** | Waiting on the founders' decisions in §7. |
 
+## Intuitive admin and the live district map (2026-09-30) — status
+
+Founder feedback: the role picker is clear, the admin portal is not; the map must show the whole working ecosystem live — where each stakeholder is, what is moving where and to whom, and the payments.
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Admin home | **done** | `/admin`: *Needs you now* (non-zero only, most urgent first, one sentence + one button each), *Happening right now* (six live counts + "Open the live map"), *Everything else* (every page as a card with one line). `liveSummary()` in `lib/services/admin.ts`. |
+| Finding your way | **done** | Sidebar marks the current page (`aria-current="page"`); every admin page opens with a one-line guide (section › page — what it is for); plainer labels (Live district map, Problems, Stock, Money check, Public record, Security log, People). `components/admin-nav.tsx`, `components/admin-nav-groups.ts`, `admin.navHints` in en/sw. |
+| One marker per open order | **done** | Placed by the order's real stage (`orderStage`/`stagePosition` in `lib/ecosystem/district.ts`): sender's door, road, receiver's door; motorbike or parcel; ring = that order's payment state; units beside it; links to the order; ≤ 4 per edge then "+N". Unit tests. |
+| Payments on the map | **done** | Coins on the places the provider paid in the last hour (`recentPayments` in the snapshot); "Moving now" line with counts by stage and the hour's confirmed money. |
+| Click a place | **done** | `?focus=`: details panel (holds, coming in, going out, step and payment of each, last hour's money, link to the full page); unrelated places go faint. e2e with an axe check while open. |
+| Live in the demo | **done** | Deliveries and organisation orders started by the live engine move one step per hour (`lib/demo/live.ts`, `settings.demoLiveOrders`). Demo test follows one chain from factory to hub and sees it on the map. |
+
+## Prompt G (always live, demo data everywhere, plain names) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_G_LIVE_DISTRICT_PLAIN_ADMIN.md`. |
+| Demo data on every page | **done** | Previews default to the demo profile at full scale (286 orders across all ten sale paths in a local run); a minimal preview our seed filled moves up on the next build; a demo preview is left alone (fixes a failing second build). `scripts/seed.ts`, `scripts/demo/run.ts`. |
+| Running now, no button | **done** | Seed ends with six live hours; `components/live-district.tsx` in the admin layout takes one live step a minute while watched (server-side once-a-minute guard, rate limit, admin log). ADR-034. |
+| Plain names | **done** | Delivery partner, Hub keeper, Local seller (en/sw) and plain admin labels; codes unchanged. |
+| G1–G7 | **not started** | Scenario circulation, the watching founder takes part, live field apps, live without a viewer (decision), size, plain words on every page, acceptance. |
+
 ## Red team (2026-09-30)
 
 An adversarial pass over the whole branch, by surface. Fixed items carry a test.

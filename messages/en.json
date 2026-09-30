@@ -56,24 +56,24 @@
   "roles": {
     "SUPER_ADMIN": "Administrator",
     "SUPPLIER": "Supplier",
-    "BOSS_RIDER": "Boss Rider",
-    "HUB_MANAGER": "Hub Manager",
-    "FIELD_CHAMPION": "Field Champion",
+    "BOSS_RIDER": "Delivery Partner",
+    "HUB_MANAGER": "Hub Keeper",
+    "FIELD_CHAMPION": "Local Seller",
     "CUSTOMER": "Customer",
     "ORGANISATION": "Organisation"
   },
   "orderKinds": {
     "SUPPLIER_TO_RIDER": "Factory pickup",
     "RIDER_TO_HUB": "Hub delivery",
-    "HUB_TO_CHAMPION": "Champion stock",
+    "HUB_TO_CHAMPION": "Hub → local seller",
     "CHAMPION_TO_CUSTOMER": "Customer purchase",
-    "RIDER_TO_CUSTOMER": "Rider → customer (village drop)",
+    "RIDER_TO_CUSTOMER": "Delivery partner → customer (village drop)",
     "SUPPLIER_TO_CUSTOMER": "Supplier → customer (factory gate)",
     "SUPPLIER_TO_HUB": "Supplier → hub (factory gate)",
-    "SUPPLIER_TO_CHAMPION": "Supplier → champion (factory gate)",
+    "SUPPLIER_TO_CHAMPION": "Supplier → local seller (factory gate)",
     "SUPPLIER_TO_ORG": "Supplier → organisation",
     "HUB_TO_ORG": "Hub → organisation",
-    "RIDER_TO_ORG": "Rider → organisation"
+    "RIDER_TO_ORG": "Delivery partner → organisation"
   },
   "orderStates": {
     "PICKUP_ASSIGNED": "Pickup assigned",
@@ -115,7 +115,7 @@
         "explain": "Prepare the approved quantity, seal the batch, and confirm it is ready."
       },
       "batch_ready": {
-        "title": "Batch ready for rider payment and pickup",
+        "title": "Batch ready for delivery partner payment and pickup",
         "explain": "Wait for confirmed payment. Do not release goods."
       },
       "payment_pending": {
@@ -127,8 +127,8 @@
         "explain": "Count the units and check the batch ID together, then confirm the release."
       },
       "waiting_rider_pickup": {
-        "title": "Waiting for the rider's confirmation",
-        "explain": "You confirmed the release. The transfer completes when the rider confirms."
+        "title": "Waiting for the delivery partner's confirmation",
+        "explain": "You confirmed the release. The transfer completes when the delivery partner confirms."
       },
       "pickup_complete": {
         "title": "Stock has left the factory",
@@ -156,7 +156,7 @@
       },
       "in_transit": {
         "title": "In transit",
-        "explain": "Transport directly to the assigned hub. Show the delivery code to the hub manager."
+        "explain": "Transport directly to the assigned hub. Show the delivery code to the hub keeper."
       },
       "hub_inspection_pending": {
         "title": "Hub is counting and checking stock",
@@ -179,44 +179,44 @@
         "explain": "A problem locked this batch. Contact support."
       },
       "no_delivery": {
-        "title": "No rider delivery expected now",
+        "title": "No delivery partner delivery expected now",
         "explain": "Check your inventory or wait for the next delivery."
       },
       "rider_arriving": {
-        "title": "Rider arriving",
-        "explain": "Prepare a clean, dry inspection space. Enter the rider's delivery code to start."
+        "title": "Delivery partner arriving",
+        "explain": "Prepare a clean, dry inspection space. Enter the delivery partner's delivery code to start."
       },
       "inspection_required": {
         "title": "Check seal, count units, inspect condition",
         "explain": "Accept only if every check passes. Otherwise report a shortage or damage."
       },
       "stock_accepted": {
-        "title": "Confirm payment to rider via mobile money",
-        "explain": "Pay the exact approved amount to the rider's account with the reference shown."
+        "title": "Confirm payment to delivery partner via mobile money",
+        "explain": "Pay the exact approved amount to the delivery partner's account with the reference shown."
       },
       "rider_payment_pending": {
         "title": "Payment being verified with provider",
         "explain": "Do not mark the transfer complete until it is confirmed."
       },
       "waiting_rider_handover": {
-        "title": "Waiting for the rider's confirmation",
-        "explain": "Payment is confirmed. The rider confirms the handover."
+        "title": "Waiting for the delivery partner's confirmation",
+        "explain": "Payment is confirmed. The delivery partner confirms the handover."
       },
       "stock_recorded": {
         "title": "Stock recorded at your hub",
         "explain": "Store the stock safely."
       },
       "champion_request": {
-        "title": "Champion stock request",
+        "title": "Local seller stock request",
         "explain": "Confirm you have the stock available, then prepare the transfer."
       },
       "champion_payment_pending": {
-        "title": "Champion payment being verified",
+        "title": "Local seller payment being verified",
         "explain": "Do not release stock until confirmed."
       },
       "champion_payment_confirmed": {
-        "title": "Release approved quantity to champion",
-        "explain": "Count the stock with the champion and confirm."
+        "title": "Release approved quantity to local seller",
+        "explain": "Count the stock with the local seller and confirm."
       },
       "low_stock": {
         "title": "Stock below minimum level",
@@ -268,7 +268,7 @@
       },
       "stock_payment_confirmed": {
         "title": "Payment confirmed — collect your stock",
-        "explain": "Count the units with the hub manager and confirm receipt."
+        "explain": "Count the units with the hub keeper and confirm receipt."
       },
       "stock_problem": {
         "title": "Stock problem reported",
@@ -317,7 +317,7 @@
       "view_inventory": "View inventory",
       "start_inspection": "Start inspection",
       "inspect_stock": "Inspect stock",
-      "prepare_transfer": "Prepare champion transfer",
+      "prepare_transfer": "Prepare local seller transfer",
       "request_restock": "Request restock",
       "add_customer": "Add customer",
       "start_plan": "Start purchase plan",
@@ -372,12 +372,12 @@
   "field": {
     "orderDetails": "Order details",
     "deliveryCode": "Delivery code",
-    "showCodeToHub": "Show this code to the hub manager.",
-    "enterDeliveryCode": "Enter the rider's delivery code",
+    "showCodeToHub": "Show this code to the hub keeper.",
+    "enterDeliveryCode": "Enter the delivery partner's delivery code",
     "sealId": "Seal or package ID",
     "inspection": {
       "title": "Inspection checklist",
-      "correctRider": "Correct rider",
+      "correctRider": "Correct delivery partner",
       "correctProduct": "Correct product category",
       "correctCount": "Correct unit count",
       "correctBatch": "Correct batch ID",
@@ -526,7 +526,7 @@
       "instruction": "Do not accept as normal stock. This locks the batch."
     },
     "WRONG_HUB": {
-      "label": "Rider at wrong hub",
+      "label": "Delivery partner at wrong hub",
       "instruction": "Do not transfer stock. Contact an admin."
     },
     "REFUND_REQUEST": {
@@ -578,15 +578,15 @@
     "nav": {
       "home": "Home",
       "approvals": "Approvals",
-      "stakeholders": "Stakeholders",
+      "stakeholders": "People",
       "prices": "Price lists",
-      "exceptions": "Exceptions",
-      "inventory": "Inventory",
+      "exceptions": "Problems",
+      "inventory": "Stock",
       "orders": "Orders",
-      "reconciliation": "Reconciliation",
+      "reconciliation": "Money check",
       "statements": "Statements",
-      "ledger": "Ledger",
-      "logs": "Logs",
+      "ledger": "Public record",
+      "logs": "Security log",
       "security": "Security",
       "settings": "Settings",
       "exports": "Exports",
@@ -594,7 +594,7 @@
       "brief": "Morning brief",
       "messages": "Messages",
       "suppliers": "Suppliers",
-      "ecosystem": "Ecosystem",
+      "ecosystem": "Live district map",
       "organisations": "Organisations",
       "areas": "Areas & sale paths",
       "title": "Admin",
@@ -650,7 +650,7 @@
       "effectiveFrom": "Effective from",
       "supplierPrice": "Supplier price",
       "hubPrice": "Hub price",
-      "championPrice": "Champion price",
+      "championPrice": "Local seller price",
       "customerPrice": "Customer price",
       "organisationPrice": "Organisation price (optional; blank = no organisation sales)",
       "submitted": "Draft submitted. A second admin must approve it before it takes effect.",
@@ -664,14 +664,14 @@
     },
     "pickups": {
       "title": "Assign a factory pickup",
-      "rider": "Rider",
+      "rider": "Delivery partner",
       "date": "Pickup date",
-      "created": "Pickup assigned and the rider was notified.",
+      "created": "Pickup assigned and the delivery partner was notified.",
       "pair": "Supplier · product",
       "noPairs": "No active supplier offers a product yet. Add products under Suppliers first.",
       "buyer": "Who collects",
-      "hubOrRiderStock": "Destination hub (blank: the rider keeps the stock for direct sales)",
-      "riderKeeps": "— rider keeps the stock —"
+      "hubOrRiderStock": "Destination hub (blank: the delivery partner keeps the stock for direct sales)",
+      "riderKeeps": "— delivery partner keeps the stock —"
     },
     "exceptions": {
       "title": "Exceptions",
@@ -805,7 +805,7 @@
       "priceLists": "Price lists",
       "version": "version",
       "pickups": "Pickups",
-      "rider": "Rider",
+      "rider": "Delivery partner",
       "pickupDate": "Pickup date",
       "noPickups": "No pickups yet.",
       "paymentsTitle": "Payments confirmed by the provider",
@@ -869,7 +869,7 @@
     },
     "areas": {
       "title": "Areas & sale paths",
-      "intro": "The handbook's ladder (supplier → rider → hub → champion → customer) is always allowed. Every other path is off until two admins turn it on for an area, because it decides who earns. The demo dataset turns everything on.",
+      "intro": "The handbook's ladder (supplier → delivery partner → hub → local seller → customer) is always allowed. Every other path is off until two admins turn it on for an area, because it decides who earns. The demo dataset turns everything on.",
       "area": "Area",
       "region": "Region",
       "allowed": "Allowed beyond the ladder",
@@ -878,21 +878,21 @@
       "request": "Request change",
       "requested": "Request sent. Another admin must approve it.",
       "paths": {
-        "RIDER_TO_CUSTOMER": "Riders sell directly to customers (village drops)",
+        "RIDER_TO_CUSTOMER": "Delivery partners sell directly to customers (village drops)",
         "SUPPLIER_TO_CUSTOMER": "Customers buy at the factory gate",
         "SUPPLIER_TO_HUB": "Hubs collect their own stock at the factory",
-        "SUPPLIER_TO_CHAMPION": "Champions collect their own stock at the factory",
+        "SUPPLIER_TO_CHAMPION": "Local sellers collect their own stock at the factory",
         "SUPPLIER_TO_ORG": "Suppliers sell to organisations",
         "HUB_TO_ORG": "Hubs sell to organisations",
-        "RIDER_TO_ORG": "Riders sell to organisations"
+        "RIDER_TO_ORG": "Delivery partners sell to organisations"
       },
       "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
     },
     "navGroups": {
-      "overview": "Overview",
-      "operate": "Operate",
+      "overview": "Watch",
+      "operate": "Day to day",
       "people": "People & places",
-      "money": "Money & record",
+      "money": "Money & proof",
       "admin": "Admin"
     },
     "demo": {
@@ -926,19 +926,19 @@
         "map": {
           "where": "District map",
           "time": "2 min",
-          "do": "Open the ecosystem view; point at the attention strip.",
-          "say": "This is a district after three weeks. This strip is what the founders see at seven in the morning."
+          "do": "Open the live district map; point at a motorbike on the road and a coin on a corner; click a hub to show what it holds and what is coming in.",
+          "say": "This is a district after three weeks: every place, every delivery on its way, every payment as it lands. Click anything to see it."
         },
         "hour": {
           "where": "Simulate one hour",
           "time": "1 min",
-          "do": "Press One hour in the map header; watch the road and the feed.",
+          "do": "Press ▶ Play (or One hour) in the map header; watch a delivery leave the factory, ride, get inspected and paid for, and the coins land.",
           "say": "Everything that just happened went through the real services."
         },
         "phone": {
-          "where": "A champion's phone",
+          "where": "A local seller's phone",
           "time": "2 min",
-          "do": "Phone window: sign in as the champion, enrol a customer with consent, choose the product; show the SMS under Messages.",
+          "do": "Phone window: sign in as the local seller, enrol a customer with consent, choose the product; show the SMS under Messages.",
           "say": "One screen, one action. Consent first. The full price before any payment."
         },
         "money": {
@@ -965,9 +965,9 @@
         "note": "Phones only. Passphrases, authenticator secrets and PINs live in the password manager, never on a screen.",
         "admin": "Admin (founders' view)",
         "supplier": "Supplier",
-        "rider": "Boss rider",
-        "hub": "Hub manager",
-        "champion": "Field champion"
+        "rider": "Delivery partner",
+        "hub": "Hub keeper",
+        "champion": "Local seller"
       },
       "claims": {
         "title": "What this demo does not claim",
@@ -978,7 +978,91 @@
       }
     },
     "openDemoChip": "open demo",
-    "switchRole": "Switch role"
+    "switchRole": "Switch role",
+    "navHints": {
+      "home": "What needs you, what is happening, and where everything lives.",
+      "ecosystem": "Every place, delivery and payment in the district, updating by itself. Click any place for details.",
+      "brief": "A short written summary of the last day, ready each morning.",
+      "approvals": "Anything important needs two admins. Approve or reject what another admin asked for.",
+      "orders": "Every order: who sells to whom, which step it is at, and its payments.",
+      "exceptions": "Problems reported from the field or found by the system, each with a next step.",
+      "inventory": "Stock at every hub and with every local seller, and who is running low.",
+      "messages": "Every SMS the app sent. In the demo, nothing leaves the building.",
+      "stakeholders": "The people who run the district: delivery partners, hub keepers, local sellers, suppliers. Invite, pause or remove.",
+      "suppliers": "Factories and wholesalers: products, lead times and quality.",
+      "organisations": "Schools, NGOs and groups that buy in bulk.",
+      "areas": "Service areas, which sale paths are switched on in each, and who earns what.",
+      "prices": "The prices every sale uses. Changes need two admins.",
+      "reconciliation": "Does every payment in the app match what the provider says? Flags show where it does not.",
+      "statements": "Import the provider's statement and compare it line by line with the app.",
+      "ledger": "The record book: every event, and the fingerprints published on the public ledger.",
+      "exports": "Download data as CSV for accounts or donors. Every export is logged.",
+      "settings": "Rules and limits for the whole district.",
+      "logs": "Sign-ins, security alerts and every admin action.",
+      "data": "People's requests to see or delete their data, with deadlines.",
+      "passkeys": "Sign in with one tap on this device instead of a code.",
+      "demo": "The ten-minute investor walk-through, with the controls to run it.",
+      "demoControls": "Simulate payments and time in the demo district."
+    },
+    "home": {
+      "title": "Your district today",
+      "intro": "Three parts: what needs you, what is happening right now, and where everything else lives. Nothing here is hidden; every number opens the full list.",
+      "needsYou": "Needs you now",
+      "allClear": "Nothing needs you right now.",
+      "open": "Open",
+      "liveNow": "Happening right now",
+      "openMap": "Open the live map",
+      "mapWhat": "See every place, what it holds, every delivery on its way and every payment as it lands.",
+      "everything": "Everything else",
+      "record": "Public record",
+      "recordLine": "{count} events waiting for their fingerprint on the public ledger.",
+      "wallet": "Ledger wallet: {status}",
+      "walletOff": "not set up (fingerprints wait until it is)",
+      "stat": {
+        "road": "on the road",
+        "leaving": "waiting at the factory or hub",
+        "paying": "waiting for payment",
+        "paidHour": "paid in the last hour",
+        "plans": "customer plans active",
+        "events": "events in the last hour"
+      },
+      "need": {
+        "pendingApprovals": {
+          "title": "Waiting for your signature",
+          "hint": "Another admin asked for something important; two must agree."
+        },
+        "paymentsReview": {
+          "title": "Payments to check",
+          "hint": "The provider's answer did not match the order. Decide what happened."
+        },
+        "openExceptions": {
+          "title": "Problems reported",
+          "hint": "From the field or found by the system. Each has a next step."
+        },
+        "reconFlags": {
+          "title": "Money that does not match",
+          "hint": "The app and the provider disagree. Look before anyone is paid."
+        },
+        "lowStockHubs": {
+          "title": "Hubs running low",
+          "hint": "Below their minimum stock. Arrange a pickup."
+        },
+        "deliveriesInspection": {
+          "title": "Deliveries arriving",
+          "hint": "On the road or at inspection. Act only if one is stuck."
+        },
+        "alerts24h": {
+          "title": "Security alerts (24 h)",
+          "hint": "Unusual sign-ins or refused actions worth a look."
+        }
+      }
+    },
+    "live": {
+      "running": "Live — the demo district is moving",
+      "updating": "Live — moving…",
+      "away": "Paused while you are away",
+      "stopped": "Live updates stopped — reload the page"
+    }
   },
   "public": {
     "title": "Dandelion pilot",
@@ -986,8 +1070,8 @@
     "howItWorks": "How it works",
     "steps": {
       "1": "An approved supplier prepares a sealed batch.",
-      "2": "A verified rider pays with mobile money and collects it. The payment is confirmed by the mobile-money provider, never by a screenshot.",
-      "3": "The hub inspects and stores the stock, then sells to trained field champions.",
+      "2": "A verified delivery partner pays with mobile money and collects it. The payment is confirmed by the mobile-money provider, never by a screenshot.",
+      "3": "The hub inspects and stores the stock, then sells to trained local sellers.",
       "4": "Customers pay in full or in voluntary installments. No credit, no late fees, no debt.",
       "5": "The product is handed over only after full confirmed payment, with a receipt."
     },
@@ -998,12 +1082,12 @@
     "statsNote": "Weekly aggregate counts only. Small counts are shown as \"fewer than 10\" to protect privacy.",
     "statsUnavailable": "Counts are temporarily unavailable.",
     "handovers": "Products handed over",
-    "activeChampions": "Active champions",
+    "activeChampions": "Active local sellers",
     "privacy": "Privacy notice",
     "safety": "Product safety and WASH guidance",
     "safetyDraft": "DRAFT — requires review by a qualified health advisor",
     "safetyReusable": "Reusable products are offered only where the customer has access to clean water, soap, privacy, a place to wash, a place to dry products thoroughly, and safe storage. Reusable materials must be washed and dried after use.",
-    "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Champions explain safe use and disposal.",
+    "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Local sellers explain safe use and disposal.",
     "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products."
   },
   "verify": {
@@ -1061,8 +1145,8 @@
     "otp": "Your confirmation code is {code}. It expires in 5 minutes. Never share it.",
     "pickup": "Habari {name}. A pickup has been assigned to you. Product: {product}. Quantity: {quantity}. Supplier: {supplier}. Approved total: {amount}. Open the app, review the pickup and select Accept Pickup. Pay via mobile money. Do not collect stock until the app shows PAYMENT CONFIRMED.",
     "customerPlan": "Habari {name}. Your product price is {price}. Confirmed paid: {paid}. Remaining: {remaining}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. The product is handed over after full payment is confirmed.",
-    "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved Health Champion to receive your product and use instructions. Your receipt will be available after handover.",
-    "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your Health Champion only when you receive your product.",
+    "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved local seller to receive your product and use instructions. Your receipt will be available after handover.",
+    "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your local seller only when you receive your product.",
     "receipt": "Habari {name}. Receipt {receiptNo}: {product} handed over. Your record: {link}",
     "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money.",
     "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
@@ -1101,7 +1185,7 @@
     "seller_has_no_payee_account": "The seller has no payee account registered. Contact an administrator.",
     "supplier_not_active": "The supplier is not active.",
     "hub_not_active": "The hub is not active.",
-    "rider_not_active": "The rider is not active.",
+    "rider_not_active": "The delivery partner is not active.",
     "counterparty_unavailable": "No active stakeholder is available for this step.",
     "seal_id_invalid": "Enter the seal or package ID.",
     "not_awaiting_payment": "This order is not waiting for a payment.",
@@ -1175,15 +1259,17 @@
     "area_sales_pending": "A request for this area's sale paths is already waiting for a decision.",
     "open_demo_disabled": "The open demo is not available here.",
     "open_demo_fake_phone": "In the open demo, use a test number: +255 700 00x xxx.",
-    "open_demo_not_allowed": "This needs a real sign-in, not the open demo."
+    "open_demo_not_allowed": "This needs a real sign-in, not the open demo.",
+    "auto_play_hour_only": "Auto-play only simulates hours.",
+    "live_recently_advanced": "The district just moved; the next step comes in a minute."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
     "howTo": "How to demo"
   },
   "ecosystem": {
-    "title": "Ecosystem",
-    "subtitle": "Where the stock and the money are, who is stuck, and whether the machine is healthy.",
+    "title": "Live district map",
+    "subtitle": "Every place, every delivery on its way and every payment as it lands, live. Click any place to see what it holds and what is moving.",
     "asOf": "as of {time}",
     "live": "Live",
     "paused": "Paused",
@@ -1191,7 +1277,7 @@
     "resume": "Resume",
     "idle": "Paused after an hour without activity — click to resume.",
     "hidden": "Refresh waits while this tab is hidden.",
-    "window": "Window",
+    "window": "Period",
     "windows": {
       "24h": "24 hours",
       "7d": "7 days",
@@ -1203,21 +1289,21 @@
     "environment": "Environment",
     "version": "Version",
     "attention": {
-      "title": "Attention",
-      "paymentReviews": "Payments in review",
-      "paymentsPendingLong": "Payments pending too long",
-      "lockedBatches": "Locked batches",
-      "approvalsWaiting": "Approvals waiting",
-      "openExceptions": "Open problems",
-      "reconFlags": "Reconciliation flags",
-      "deadJobs": "Dead verification jobs",
-      "silentNodes": "Silent for 7 days",
-      "hubsBelowMin": "Hubs below minimum stock",
-      "handoverPending": "Paid, handover pending",
+      "title": "Needs attention",
+      "paymentReviews": "Payments to check",
+      "paymentsPendingLong": "Payments waiting too long",
+      "lockedBatches": "Stock on hold",
+      "approvalsWaiting": "Waiting for a second admin",
+      "openExceptions": "Problems reported",
+      "reconFlags": "Money that does not match",
+      "deadJobs": "Payment checks that stopped",
+      "silentNodes": "Quiet for a week",
+      "hubsBelowMin": "Hubs running low",
+      "handoverPending": "Paid, not yet handed over",
       "waitingOnSupplier": "Waiting on a supplier",
-      "supplierQuality": "Supplier quality",
+      "supplierQuality": "Supplier quality issues",
       "clear": "Show everything",
-      "orgOrdersUnpaid": "Organisation orders unpaid 3+ days",
+      "orgOrdersUnpaid": "Organisations yet to pay (3+ days)",
       "allClear": "All clear",
       "clearCount": "{n} checks all clear"
     },
@@ -1225,9 +1311,9 @@
       "title": "Flow",
       "tableTitle": "Flow as a table",
       "suppliers": "Suppliers",
-      "riders": "Riders",
+      "riders": "Delivery partners",
       "hubs": "Hubs",
-      "champions": "Champions",
+      "champions": "Local sellers",
       "customers": "Customers",
       "units": "{n} units",
       "locked": "locked",
@@ -1266,15 +1352,15 @@
     },
     "system": {
       "title": "System",
-      "heartbeats": "Jobs",
-      "manual": "manual — preview",
+      "heartbeats": "Background jobs",
+      "manual": "run by the demo",
       "never": "never ran",
       "ago": "{n}s ago",
-      "anchoring": "Anchoring",
-      "notConfigured": "not configured",
-      "unanchored": "{n} events not yet anchored",
-      "sms": "SMS outbox (24 h)",
-      "providers": "Providers",
+      "anchoring": "Public ledger",
+      "notConfigured": "not set up yet",
+      "unanchored": "{n} events waiting for the public ledger",
+      "sms": "Text messages sent (24 h)",
+      "providers": "Payment and SMS services",
       "ai": "AI",
       "aiOff": "off",
       "aiOn": "on · {calls} calls · {usd} this month",
@@ -1375,14 +1461,14 @@
     },
     "tables": {
       "hubs": "Hubs",
-      "champions": "Champions",
+      "champions": "Local sellers",
       "openOrders": "Orders in flight",
       "name": "Name",
       "available": "Available",
       "min": "Minimum",
       "pendingIn": "Pending in",
       "pendingOut": "Pending out",
-      "manager": "Manager",
+      "manager": "Hub keeper",
       "customers": "Customers",
       "activePlans": "Active plans",
       "stalledPlans": "Stalled plans",
@@ -1402,7 +1488,7 @@
       "day": "One day",
       "tickedHour": "One hour of activity simulated through the real services.",
       "tickedDay": "One day of activity simulated through the real services, then reconciliation and anchoring.",
-      "legend": "Left to right: factory · riders · hubs, with their champions' kiosks and their customers underneath · organisations and customers served directly. Solid lines are the handbook ladder, dashed lines direct paths; grey pending · green confirmed · amber in review · red on hold. A motorbike is one open order on the road; a padlock a locked lot; a triangle a tile the attention chip points at. Customers are dots and counts, never names.",
+      "legend": "Left to right: factory · delivery partners · hubs, with their local sellers' kiosks and their customers underneath · organisations and customers served directly. Solid lines are the handbook ladder, dashed lines direct paths; grey pending · green confirmed · amber in review · red on hold. Every open order is a marker — a motorbike when a delivery partner carries it, a parcel otherwise — sitting where the order is: at the sender's door, on the road, or at the receiver's door; its ring is its payment colour and the number beside it is the units. A coin on a corner is money the provider confirmed to that place in the last hour. A padlock is a locked lot; a triangle a tile the attention chip points at. Click any place to see what it holds, what is coming and going, and its money. Customers are dots and counts, never names.",
       "earned": "net {tzs}",
       "confirmed": "{tzs} confirmed",
       "plans": "{active} active · {stalled} stalled",
@@ -1420,17 +1506,39 @@
       "key": {
         "ladder": "Handbook ladder",
         "direct": "Direct path",
-        "road": "Order on the road",
+        "road": "Motorbike: an order a delivery partner carries",
         "locked": "Locked lot",
-        "recent": "Active in the last hour"
-      }
+        "recent": "Active in the last hour",
+        "box": "Parcel: an order handed over or delivered",
+        "coin": "Paid in the last hour",
+        "click": "Click any place for details"
+      },
+      "coin": "{count, plural, one {# payment} other {# payments}} confirmed by the provider in the last hour: {tzs}",
+      "more": "+{n} more",
+      "focusHint": "click for details",
+      "panel": {
+        "close": "Close",
+        "profile": "Open full page",
+        "incoming": "Coming in",
+        "outgoing": "Going out",
+        "nothingMoving": "Nothing is moving to or from here right now.",
+        "paidHour": "Money in the last hour",
+        "received": "+{tzs} from {who}",
+        "paid": "−{tzs} to {who}",
+        "last": "last activity",
+        "earned": "Net in this window",
+        "area": "Area",
+        "pendingIn": "{n} coming in",
+        "pendingOut": "{n} going out"
+      },
+      "group": "{count} orders here"
     },
     "present": "Presenter view",
     "filters": "Filters",
     "kpi": {
       "title": "At a glance",
       "units": "Units in the district",
-      "unitsNote": "held by suppliers, riders, hubs and champions",
+      "unitsNote": "held by suppliers, delivery partners, hubs and local sellers",
       "confirmed": "Confirmed payments",
       "confirmedNote": "by the provider · {window}",
       "plans": "Active plans",
@@ -1438,6 +1546,29 @@
       "attention": "Needs attention",
       "attentionNote": "in {n} checks",
       "allClear": "all clear"
+    },
+    "moving": {
+      "title": "Moving now:",
+      "quiet": "nothing on the move",
+      "road": "on the road",
+      "leaving": "being prepared or waiting for pickup",
+      "paying": "waiting for the provider to confirm payment",
+      "inspecting": "at inspection",
+      "handover": "ready to hand over",
+      "hold": "on hold",
+      "paid": "{n} payments confirmed in the last hour · {tzs}"
+    },
+    "stage": {
+      "prepare": "Being prepared at the factory",
+      "ready": "Ready for pickup",
+      "requested": "Requested, waiting for the hub",
+      "paying": "Waiting for the provider to confirm payment",
+      "handover": "Paid · both sides confirming the handover",
+      "road": "On the road",
+      "inspecting": "Being inspected at the hub",
+      "hold": "On hold after inspection",
+      "handoverDue": "Paid in full · handover due",
+      "plan": "Paying in instalments"
     }
   },
   "openDemo": {
@@ -1463,16 +1594,16 @@
         "what": "Pickups, money confirmed by the provider, organisation sales."
       },
       "rider": {
-        "title": "Boss rider",
-        "what": "Collect at the factory, deliver to hubs, village drops."
+        "title": "Delivery partner",
+        "what": "Collect at the factory, deliver to hubs and villages."
       },
       "hub": {
-        "title": "Hub manager",
-        "what": "Inspect deliveries, stock, supply champions."
+        "title": "Hub keeper",
+        "what": "Check deliveries, keep stock, supply local sellers."
       },
       "champion": {
-        "title": "Field champion",
-        "what": "Enrol customers with consent, plans, handovers, receipts."
+        "title": "Local seller",
+        "what": "Sign up customers, sell on plans, hand over, receipts."
       }
     }
   }

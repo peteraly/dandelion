@@ -16,6 +16,10 @@ import type { DemoManifest } from "@/lib/demo/manifest";
 import { simulateTick } from "@/lib/demo/tick";
 import { containsPhone, ecosystemSnapshot, SnapshotSchema } from "@/lib/services/ecosystem";
 import { layoutDistrict } from "@/lib/ecosystem/district";
+import { advanceLiveChains, parseLive } from "@/lib/demo/live";
+import { loadWorld } from "@/lib/demo/load";
+import { RealClock } from "@/lib/demo/clock";
+import { Rng } from "@/lib/demo/rng";
 import { resetToDemoDataset } from "@/lib/demo/reset";
 
 process.env.VERCEL_ENV = "";
@@ -181,7 +185,7 @@ describe("ecosystem snapshot on the demo dataset", () => {
     expect(snap.system.demo).toBe(true);
     expect(snap.feed.length).toBe(50);
     // The district map (prompt §9): one tile per node, one band per area, a motorbike for the pickups left in flight.
-    const map = layoutDistrict({ nodes: snap.nodes, edges: snap.edges, areas: snap.areas, asOf: snap.asOf });
+    const map = layoutDistrict({ nodes: snap.nodes, edges: snap.edges, areas: snap.areas, asOf: snap.asOf, orders: snap.openOrders, payments: snap.recentPayments });
     expect(map.unplaced).toEqual([]);
     expect(map.tiles.length).toBe(snap.nodes.length);
     expect(map.bands.length).toBe(snap.areas.length);
@@ -241,6 +245,62 @@ describe("simulate one hour / one day, then reset", () => {
     // The new rows carry the real clock, not the seed's simulated past.
     const newest = await db().execute<{ at: string }>(sql`select max(created_at)::text as at from orders`);
     expect(Date.now() - new Date(newest.rows[0]!.at).getTime()).toBeLessThan(10 * 60_000);
+  });
+
+  it("an hour moves each live delivery one step, so the map catches it at the factory, on the road and at the hub", async () => {
+    // The seed ends by starting the live district: deliveries under way on the real clock, not only history.
+    expect(manifest.counts["live.started"] ?? 0).toBeGreaterThan(0);
+    const live = async () => parseLive((await db().query.settings.findFirst({ where: eq(s.settings.key, "demoLiveOrders") }))?.value);
+    const order = async (id: string) => (await db().query.orders.findFirst({ where: eq(s.orders.id, id) }))!;
+    const seed = String((await db().query.settings.findFirst({ where: eq(s.settings.key, "demoSeed") }))?.value ?? "demo");
+    // The seed left deliveries under way and the hour tick above moved them; follow one from the moment it starts.
+    expect((await live()).length).toBeGreaterThan(0);
+    const fresh = async () => {
+      for (const id of await live()) {
+        const x = await order(id);
+        if (x.kind === "SUPPLIER_TO_RIDER" && x.state === "PICKUP_ASSIGNED") return id;
+      }
+      return null;
+    };
+    let first = await fresh();
+    for (let i = 0; i < 12 && !first; i++) {
+      await advanceLiveChains(await loadWorld(new Rng(`${seed}:start:${i}`), new RealClock(), seed));
+      first = await fresh();
+    }
+    expect(first).not.toBeNull();
+    const seen: string[] = [];
+    const note = (o: { kind: string; state: string }) => {
+      const key = `${o.kind}:${o.state}`;
+      if (seen[seen.length - 1] !== key) seen.push(key);
+    };
+    const admin = { userId: await adminId(), role: "SUPER_ADMIN" as const, hubId: null, supplierId: null, mfa: true };
+    let id = first!;
+    let o = await order(id);
+    note(o);
+    let sawOnMap = false;
+    for (let i = 0; i < 20 && !(o.kind === "RIDER_TO_HUB" && o.state === "COMPLETED"); i++) {
+      await advanceLiveChains(await loadWorld(new Rng(`${seed}:live:${i}`), new RealClock(), seed));
+      o = await order(id);
+      note(o);
+      if (o.kind === "SUPPLIER_TO_RIDER" && o.state === "COMPLETED") {
+        // Collected at the factory: the chain goes on as the rider's delivery to the hub.
+        o = (await db().query.orders.findFirst({ where: (t, { and, eq }) => and(eq(t.parentOrderId, id), eq(t.kind, "RIDER_TO_HUB")) }))!;
+        id = o.id;
+        note(o);
+      }
+      if (o.state !== "COMPLETED") {
+        const snap = await ecosystemSnapshot(admin, { window: "24h" });
+        const lay = layoutDistrict({ nodes: snap.nodes, edges: snap.edges, areas: snap.areas, asOf: snap.asOf, orders: snap.openOrders, payments: snap.recentPayments });
+        if (lay.markers.some((m) => m.items.some((it) => it.orderId === id))) sawOnMap = true;
+      }
+    }
+    expect(seen.slice(0, 4)).toEqual(["SUPPLIER_TO_RIDER:PICKUP_ASSIGNED", "SUPPLIER_TO_RIDER:BATCH_READY", "SUPPLIER_TO_RIDER:AWAITING_PAYMENT", "SUPPLIER_TO_RIDER:PAID"]);
+    expect(seen).toContain("RIDER_TO_HUB:EN_ROUTE");
+    expect(seen).toContain("RIDER_TO_HUB:INSPECTING");
+    expect(seen[seen.length - 1]).toBe("RIDER_TO_HUB:COMPLETED");
+    expect(sawOnMap).toBe(true);
+    // New deliveries keep starting, so something is always on the way.
+    expect((await live()).length).toBeGreaterThanOrEqual(1);
   });
 
   it("the reset needs the typed word, then leaves nothing behind", async () => {

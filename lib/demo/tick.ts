@@ -6,7 +6,7 @@
  */
 import { getDb } from "@/lib/db/client";
 import { appEnv, simulatorEnabled } from "@/lib/env";
-import { now } from "@/lib/clock";
+import { now, nowMs } from "@/lib/clock";
 import { DomainError, getSetting, logAdminAction, putSetting } from "@/lib/services/core";
 import { hitRateLimit } from "@/lib/security/rate-limit";
 import { heartbeat } from "@/lib/security/cron";
@@ -18,6 +18,7 @@ import { RealClock } from "./clock";
 import { eatDayStart, isSunday } from "./time";
 import { loadPlans, loadWorld } from "./load";
 import { runDay, runHour, nightly } from "./day";
+import { advanceLiveChains } from "./live";
 import type { SkippedScenario } from "./manifest";
 
 export type TickKind = "hour" | "day";
@@ -35,11 +36,21 @@ export async function demoStatus(): Promise<{ profile: string; scale: string; ti
   return { profile: String(await getSetting("seedProfile")), scale: String(await getSetting("demoScale")), ticks: Number(await getSetting("demoTicks")), seed: String(await getSetting("demoSeed")) };
 }
 
-export async function simulateTick(kind: TickKind, adminId: string): Promise<TickResult> {
+/** The live district (components/live-district.tsx) steps one hour every AUTO_PLAY_SECONDS while an admin watches; its own budget, so presenters' clicks still work. */
+export const AUTO_PLAY_SECONDS = 60;
+
+export async function simulateTick(kind: TickKind, adminId: string, opts: { auto?: boolean } = {}): Promise<TickResult> {
   if (appEnv() === "production" || !simulatorEnabled()) throw new DomainError("simulator_disabled");
   const status = await demoStatus();
   if (status.profile !== "demo") throw new DomainError("demo_profile_required");
-  const limit = await hitRateLimit("demo:tick", 6, 600);
+  if (opts.auto && kind !== "hour") throw new DomainError("auto_play_hour_only");
+  if (opts.auto) {
+    // However many people watch, the district takes one live step a minute.
+    const age = nowMs() - (Date.parse(String(await getSetting("demoLastLiveAt"))) || 0);
+    if (age >= 0 && age < AUTO_PLAY_SECONDS * 800) throw new DomainError("live_recently_advanced");
+    await putSetting(getDb(), "demoLastLiveAt", now().toISOString(), adminId);
+  }
+  const limit = opts.auto ? await hitRateLimit("demo:auto", 12, 600) : await hitRateLimit("demo:tick", 6, 600);
   if (!limit.allowed) throw new DomainError("rate_limited");
 
   const started = Date.now();
@@ -51,6 +62,8 @@ export async function simulateTick(kind: TickKind, adminId: string): Promise<Tic
 
   if (kind === "hour") {
     await runHour(w, plans, customersPerDay);
+    // Deliveries move one step per hour so the map catches them on the way (lib/demo/live.ts).
+    await advanceLiveChains(w);
   } else {
     await runDay(w, plans, { day: status.ticks + 1000, totalDays: 10_000, dayStart: today, sunday: isSunday(today), customersPerDay, adminSetPieces: false, peopleLifecycle: false, holdHandovers: false, leaveInFlightChains: false });
   }
@@ -77,6 +90,6 @@ export async function simulateTick(kind: TickKind, adminId: string): Promise<Tic
 
   const tick = status.ticks + 1;
   await putSetting(getDb(), "demoTicks", tick, adminId);
-  await logAdminAction(getDb(), adminId, "demo.tick", { type: "settings", id: "demoTicks" }, { kind, tick, counts: w.manifest.counts, skipped: w.manifest.skipped.length });
+  await logAdminAction(getDb(), adminId, "demo.tick", { type: "settings", id: "demoTicks" }, { kind, tick, auto: !!opts.auto, counts: w.manifest.counts, skipped: w.manifest.skipped.length });
   return { kind, tick, seconds: Math.round((Date.now() - started) / 1000), counts: w.manifest.counts, skipped: w.manifest.skipped, jobs: { polled, verified, reconciled, anchor } };
 }

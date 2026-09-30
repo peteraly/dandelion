@@ -19,9 +19,14 @@ import { SCALES, World, type Scale } from "@/lib/demo/world";
 import { leaveInFlight, type Plan } from "@/lib/demo/supply";
 import { buildWorld, importStatementForLastWeek } from "@/lib/demo/admin";
 import { nightly, runDay, summary } from "@/lib/demo/day";
+import { advanceLiveChains } from "@/lib/demo/live";
 
+/** Live steps run once the history is in, so the first visitor finds deliveries already under way. */
+const LIVE_WARM_UP_HOURS = 6;
+
+/** DEMO_SCALE when set; a preview gets the full district (two areas, three hubs, 150 customers, six weeks, 250+ orders). */
 function scaleFromEnv(): Scale {
-  const v = process.env.DEMO_SCALE ?? "small";
+  const v = process.env.DEMO_SCALE || (appEnv() === "preview" ? "full" : "small");
   if (v !== "small" && v !== "full") throw new Error(`unknown DEMO_SCALE ${v}`);
   return v;
 }
@@ -87,6 +92,11 @@ export async function runDemoSeed(): Promise<DemoRunResult> {
     // The provider statement for the last simulated week, with deliberate differences.
     clock.advanceTo(atEat(todayStart, 6, 30));
     await importStatementForLastWeek(w, addDays(todayStart, -7), todayStart);
+
+    // The district is running when the preview opens: back on the real clock, a few hours of live steps put deliveries
+    // at the factory, on the road and at the hubs, and an organisation's order on its way (lib/demo/live.ts).
+    setClock(null);
+    for (let i = 0; i < LIVE_WARM_UP_HOURS; i++) await advanceLiveChains(w);
 
     const manifest = w.manifest.toJSON(atEat(firstDay, 7, 0), addDays(todayStart, -1), FICTIONAL_PLACES);
     await putSetting(w.db, "seedProfile", "demo", w.adminA.userId);

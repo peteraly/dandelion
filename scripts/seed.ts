@@ -27,6 +27,7 @@ import { tzDay } from "@/lib/util/time";
 import { putSetting } from "@/lib/services/core";
 import { SEED, requireSeedCredentials, type MinimalSeedResult } from "@/lib/seed-identities";
 import { assertSafeTargetDatabase, wipeDatabase } from "@/lib/seed-guards";
+import { appEnv, simulatorEnabled } from "@/lib/env";
 
 export { FAKE_PHONE_RE, SEED, buildSeed, requireSeedCredentials, type SeedIdentities, type MinimalSeedResult } from "@/lib/seed-identities";
 export { assertEmptyDatabase, assertSafeTargetDatabase, refuseIfProduction } from "@/lib/seed-guards";
@@ -168,10 +169,42 @@ export async function seed(): Promise<MinimalSeedResult | null> {
   });
 }
 
+/**
+ * SEED_PROFILE when set; otherwise a preview with the simulator on gets the full demo district (every page filled,
+ * deliveries on the road), and everything else the minimal profile.
+ */
 export function seedProfileFromEnv(): SeedProfile {
-  const v = process.env.SEED_PROFILE ?? "minimal";
+  const v = process.env.SEED_PROFILE || (appEnv() === "preview" && simulatorEnabled() ? "demo" : "minimal");
   if (v !== "minimal" && v !== "demo") throw new Error(`unknown SEED_PROFILE ${v}`);
   return v;
+}
+
+/** Which profile filled this database, if our seed did ("minimal", "demo"), else null. */
+export async function currentSeedProfile(): Promise<string | null> {
+  const db = getDb();
+  const t = await db.execute<{ n: number }>(sql`select count(*)::int as n from information_schema.tables where table_schema = 'public' and table_name = 'settings'`);
+  if (!Number(t.rows[0]?.n ?? 0)) return null;
+  const r = await db.execute<{ v: string | null }>(sql`select value #>> '{}' as v from settings where key = 'seedProfile'`);
+  return r.rows[0]?.v ?? null;
+}
+
+/**
+ * The demo profile on a build: nothing to do when the demo district is already there (every redeploy); a database
+ * our own seed filled with the minimal profile — fictional people only — is wiped and moves up to the demo district.
+ * wipeDatabase keeps its guards: never production, never a database that looks real.
+ */
+export async function seedDemoProfile(): Promise<void> {
+  const current = await currentSeedProfile();
+  if (current === "demo") {
+    console.log("[seed] the demo district is already in place; nothing to do");
+    return;
+  }
+  if (current === "minimal") {
+    console.log("[seed] replacing the minimal dataset with the demo district");
+    await resetDatabase();
+  }
+  const { runDemoSeed } = await import("./demo/run");
+  await runDemoSeed();
 }
 
 if (process.argv[1]?.endsWith("seed.ts")) {
@@ -180,8 +213,7 @@ if (process.argv[1]?.endsWith("seed.ts")) {
       const profile = seedProfileFromEnv();
       if (process.env.SEED_RESET === "1") await resetDatabase();
       if (profile === "demo") {
-        const { runDemoSeed } = await import("./demo/run");
-        await runDemoSeed();
+        await seedDemoProfile();
       } else {
         await seed();
       }

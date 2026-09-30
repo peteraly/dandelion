@@ -67,6 +67,22 @@ export async function tickAction(fd: FormData): Promise<void> {
 }
 
 /**
+ * The live district: one simulated hour, called by components/live-district.tsx
+ * every AUTO_PLAY_SECONDS while an admin page is watched. Returns instead of
+ * redirecting; the caller refreshes the page. A step another viewer just took
+ * ("live_recently_advanced", "rate_limited") means the district moved anyway.
+ */
+export async function autoTickAction(): Promise<{ ok: boolean; code?: string }> {
+  const session = await guard();
+  try {
+    await simulateTick("hour", session.user.id, { auto: true });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, code: e instanceof DomainError ? e.code : "simulator_failed" };
+  }
+}
+
+/**
  * Prompt B §2.5 — "Reset to demo dataset". On success the database is empty,
  * which ends this admin's session too, so the outcome is shown on a page that
  * needs no login (it shows nothing but the outcome).

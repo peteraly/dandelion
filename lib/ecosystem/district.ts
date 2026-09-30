@@ -9,7 +9,7 @@
  * draws what comes back, and the unit tests check the geometry.
  */
 import type { OrderKind } from "@/lib/domain/types";
-import type { AttentionKey, EcoEdge, EcoNode } from "@/lib/services/ecosystem";
+import type { AttentionKey, EcoEdge, EcoNode, OpenOrder, RecentPayment } from "@/lib/services/ecosystem";
 
 export type Glyph = "factory" | "moto" | "depot" | "kiosk" | "block" | "school";
 
@@ -29,6 +29,10 @@ export interface Tile {
   attention: boolean;
   /** Something happened here in the hour before the snapshot (a pulsing dot; Prompt E §3). */
   recent: boolean;
+  /** This is the tile the viewer clicked (`?focus=`). */
+  focused: boolean;
+  /** Something else is focused and this tile has no open order with it: drawn faint. */
+  dim: boolean;
 }
 
 export interface Band {
@@ -51,18 +55,126 @@ export interface EdgeLine {
   road: [number, number, number] | null;
   direct: boolean;
   width: number;
+  dim: boolean;
 }
 
+/**
+ * Where an open order is in its life, in words a person uses. The map places
+ * the order's marker by it: waiting at the sender's door, on the road, or at
+ * the receiver's door. Plans being paid off in instalments are not moving and
+ * get no marker (the customers block shows them).
+ */
+export type Stage = "prepare" | "ready" | "requested" | "paying" | "handover" | "road" | "inspecting" | "hold" | "handoverDue" | "plan";
+export const STAGES: readonly Stage[] = ["prepare", "ready", "requested", "paying", "handover", "road", "inspecting", "hold", "handoverDue", "plan"];
+
+export function orderStage(state: string): Stage {
+  switch (state) {
+    case "PICKUP_ASSIGNED":
+      return "prepare";
+    case "BATCH_READY":
+      return "ready";
+    case "REQUESTED":
+      return "requested";
+    case "AWAITING_PAYMENT":
+      return "paying";
+    case "PAID":
+      return "handover";
+    case "EN_ROUTE":
+      return "road";
+    case "INSPECTING":
+      return "inspecting";
+    case "ON_HOLD":
+      return "hold";
+    case "FULLY_PAID":
+    case "HANDOVER_PENDING":
+      return "handoverDue";
+    default:
+      return "plan";
+  }
+}
+
+/** 0 = at the sender, 1 = at the receiver; null = no marker. A rider's delivery is paid and handed over at the hub, a pickup at the factory. */
+export function stagePosition(kind: OrderKind, stage: Stage): number | null {
+  switch (stage) {
+    case "plan":
+      return null;
+    case "prepare":
+    case "ready":
+    case "requested":
+      return 0.1;
+    case "paying":
+      return kind === "RIDER_TO_HUB" ? 0.92 : 0.15;
+    case "handover":
+      return kind === "RIDER_TO_HUB" ? 0.95 : kind === "SUPPLIER_TO_RIDER" || kind === "HUB_TO_CHAMPION" ? 0.2 : 0.85;
+    case "road":
+      return 0.5;
+    case "inspecting":
+    case "hold":
+      return 0.92;
+    case "handoverDue":
+      return 0.85;
+  }
+}
+
+/** Riders carry these (a motorbike); everything else is a parcel handed over by hand or delivered by the supplier. */
+const RIDER_CARRIED: ReadonlySet<string> = new Set(["SUPPLIER_TO_RIDER", "RIDER_TO_HUB", "RIDER_TO_CUSTOMER", "RIDER_TO_ORG"]);
+
+/** One order inside a marker. */
+export interface MarkerItem {
+  orderId: string;
+  ref: string;
+  units: number;
+  stage: Stage;
+  paymentState: OpenOrder["paymentState"];
+}
+
+/**
+ * A marker on the map: one order on the road, or every order of one edge waiting at the same door (the sender's or
+ * the receiver's), drawn once with a count so a busy door never piles markers on top of each other.
+ */
 export interface Marker {
   key: string;
+  /** The first order (the whole marker when it holds one). */
+  orderId: string;
+  ref: string;
+  items: MarkerItem[];
   edgeKey: string;
   kind: OrderKind;
+  stage: Stage;
+  carrier: "moto" | "box";
+  /** The most urgent payment state among its orders (hold, review, pending, confirmed). */
+  paymentState: OpenOrder["paymentState"];
+  /** The place a grouped marker waits at; clicking it focuses that place. */
+  at: string;
   x: number;
   y: number;
   r: number;
+  /** Units across its orders. */
   units: number;
-  /** 0..1 along the edge; advances a little on every refresh. */
+  /** 0..1 along the edge: where the order is in its life; only "on the road" moves with the clock. */
   progress: number;
+  dim: boolean;
+}
+
+const URGENCY: OpenOrder["paymentState"][] = ["hold", "review", "pending", "confirmed"];
+
+/** More open orders on an edge than markers drawn: "+N" beside the last one. */
+export interface Overflow {
+  edgeKey: string;
+  x: number;
+  y: number;
+  more: number;
+}
+
+/** Provider-confirmed money that reached a tile in the last hour (a coin on its corner). */
+export interface Coin {
+  tileId: string;
+  x: number;
+  y: number;
+  amountTzs: number;
+  count: number;
+  latestAt: string;
+  dim: boolean;
 }
 
 export interface DistrictLayout {
@@ -72,13 +184,15 @@ export interface DistrictLayout {
   tiles: Tile[];
   edges: EdgeLine[];
   markers: Marker[];
+  overflow: Overflow[];
+  coins: Coin[];
   /** Node ids the layout could not place (should be empty; tested). */
   unplaced: string[];
 }
 
 export const DIRECT_KINDS: ReadonlySet<string> = new Set(["RIDER_TO_CUSTOMER", "SUPPLIER_TO_CUSTOMER", "SUPPLIER_TO_HUB", "SUPPLIER_TO_CHAMPION", "SUPPLIER_TO_ORG", "HUB_TO_ORG", "RIDER_TO_ORG"]);
-/** Orders that travel on the road get a motorbike marker per open order. */
-const ROAD_KINDS: ReadonlySet<string> = new Set(["SUPPLIER_TO_RIDER", "RIDER_TO_HUB", "RIDER_TO_CUSTOMER", "RIDER_TO_ORG", "SUPPLIER_TO_HUB", "SUPPLIER_TO_CHAMPION"]);
+/** Markers on the road per edge before the rest fold into "+N" (orders waiting at a door are one marker already). */
+export const MAX_MARKERS_PER_EDGE = 4;
 
 export const MAP_MIN_W = 1000;
 const PAD = 16;
@@ -164,9 +278,26 @@ function hash(s: string): number {
   return (h >>> 0) / 4294967295;
 }
 
-export function layoutDistrict(input: { nodes: EcoNode[]; edges: EcoEdge[]; areas: { id: string; name: string }[]; attention?: AttentionKey | ""; asOf: string }): DistrictLayout {
+export function layoutDistrict(input: {
+  nodes: EcoNode[];
+  edges: EcoEdge[];
+  areas: { id: string; name: string }[];
+  attention?: AttentionKey | "";
+  asOf: string;
+  /** Open orders: one marker each, placed by its stage. */
+  orders?: OpenOrder[];
+  /** Payments confirmed in the last hour: coins on the tiles that were paid. */
+  payments?: RecentPayment[];
+  /** The clicked tile: it and everyone it has open orders with stay bright, the rest go faint. */
+  focus?: string | null;
+}): DistrictLayout {
   const { nodes, edges } = input;
   const attention = input.attention ?? "";
+  const focus = input.focus && nodes.some((n) => n.id === input.focus) ? input.focus : null;
+  const orders = input.orders ?? [];
+  const related = new Set<string>(focus ? [focus] : []);
+  if (focus) for (const e of [...edges, ...orders]) if (e.fromId === focus || e.toId === focus) related.add(e.fromId).add(e.toId);
+  const touches = (e: { fromId: string; toId: string }) => !focus || e.fromId === focus || e.toId === focus;
   const asOfMs = new Date(input.asOf).getTime();
   const areaOrder = input.areas.map((a) => a.id);
   const nameOf = new Map(input.areas.map((a) => [a.id, a.name]));
@@ -209,6 +340,8 @@ export function layoutDistrict(input: { nodes: EcoNode[]; edges: EcoEdge[]; area
         locked: !!n.stock && n.stock.lockedUnits > 0,
         attention: isAttention(n, attention, asOfMs, edges),
         recent: isRecent(n, asOfMs),
+        focused: n.id === focus,
+        dim: !!focus && !related.has(n.id),
       });
 
     // Factory column: suppliers stacked.
@@ -325,57 +458,110 @@ export function layoutDistrict(input: { nodes: EcoNode[]; edges: EcoEdge[]; area
       road,
       direct,
       width: 1.5 + (e.units / maxUnits) * 6,
+      dim: !touches(e),
     });
   }
 
-  // One motorbike per open order on the road (at most three per edge); the phase turns with the clock so markers creep
-  // forward on every refresh. They ride the free stretch of road right after the sender, never across a depot.
+  // Every open order is on the map once, placed by where it is in its life (orderStage). Orders on the road ride it one
+  // marker each and move with the clock; orders waiting at the sender's or the receiver's door are one marker per edge
+  // and door, with a count. Markers ride the free stretches of road beside the tiles, never across a depot; edges
+  // sharing a stretch ride in lanes so their markers never stack.
   const markers: Marker[] = [];
+  const overflow: Overflow[] = [];
   const phase = Number.isFinite(asOfMs) ? (Math.floor(asOfMs / 30_000) % 20) / 20 : 0;
-  // Edges that share a stretch of road ride in lanes (on, above, below the centre line) so their motorbikes never stack.
   const laneOf = new Map<string, number>();
   const laneCount = new Map<string, number>();
-  const LANES = [0, -15, 15, -30, 30];
+  const LANES = [0, -22, 22, -44, 44];
   for (const l of lines) {
-    if (!ROAD_KINDS.has(l.edge.kind) || !l.road) continue;
+    if (!l.road) continue;
     const stretch = `${Math.round(l.road[2])}|${Math.round(Math.min(l.road[0], l.road[1]) / 40)}`;
-    const n = laneCount.get(stretch) ?? 0;
-    laneOf.set(l.key, LANES[n % LANES.length]!);
-    laneCount.set(stretch, n + 1);
+    const k = laneCount.get(stretch) ?? 0;
+    laneOf.set(l.key, LANES[k % LANES.length]!);
+    laneCount.set(stretch, k + 1);
   }
-  for (const l of lines) {
-    if (!ROAD_KINDS.has(l.edge.kind)) continue;
-    const lane = laneOf.get(l.key) ?? 0;
-    const count = Math.min(l.edge.count, 3);
-    const per = l.edge.units / Math.max(1, l.edge.count);
-    let track: [number, number, number] | null = l.road;
-    if (track) {
-      const [xa, xb, ry] = track;
-      const dir = xb >= xa ? 1 : -1;
+  const lineOf = new Map(lines.map((l) => [l.key, l]));
+  const byEdge = new Map<string, OpenOrder[]>();
+  for (const o of orders) {
+    const key = `${o.kind}|${o.fromId}|${o.toId}`;
+    if (!lineOf.has(key) || stagePosition(o.kind, orderStage(o.state)) === null) continue;
+    byEdge.set(key, [...(byEdge.get(key) ?? []), o]);
+  }
+  const radius = (units: number) => 6 + Math.min(3, units / 40);
+  for (const [key, list] of byEdge) {
+    const l = lineOf.get(key)!;
+    const lane = laneOf.get(key) ?? 0;
+    const placed = list.map((o) => {
+      const stage = orderStage(o.state);
+      const base = stagePosition(o.kind, stage)!;
+      const progress = stage === "road" ? 0.2 + ((phase + hash(o.id) * 0.6) % 1) * 0.6 : base;
+      return { o, stage, progress, where: progress < 0.3 ? ("sender" as const) : progress > 0.8 ? ("receiver" as const) : ("road" as const) };
+    });
+    const item = (p: (typeof placed)[number]): MarkerItem => ({ orderId: p.o.id, ref: p.o.ref, units: p.o.units, stage: p.stage, paymentState: p.o.paymentState });
+    const marker = (group: typeof placed, markerKey: string, pt: { x: number; y: number }, at: string): Marker => {
+      const units = group.reduce((a, p) => a + p.o.units, 0);
+      return {
+        key: markerKey,
+        orderId: group[0]!.o.id,
+        ref: group[0]!.o.ref,
+        items: group.map(item),
+        edgeKey: key,
+        kind: l.edge.kind,
+        stage: group[0]!.stage,
+        carrier: RIDER_CARRIED.has(l.edge.kind) ? "moto" : "box",
+        paymentState: URGENCY.find((st) => group.some((p) => p.o.paymentState === st)) ?? "pending",
+        at,
+        x: pt.x,
+        y: pt.y,
+        r: radius(units / group.length),
+        units,
+        progress: group[0]!.progress,
+        dim: !touches(l.edge),
+      };
+    };
+    const dir = l.road ? (l.road[1] >= l.road[0] ? 1 : -1) : 1;
+    // Doors: one marker each, holding every order of this edge waiting there.
+    for (const where of ["sender", "receiver"] as const) {
+      const group = placed.filter((p) => p.where === where);
+      if (!group.length) continue;
+      const pt = l.road ? { x: where === "sender" ? l.road[0] + dir * 2 : l.road[1] - dir * 2, y: l.road[2] + lane } : bezierAt(l.p, where === "sender" ? 0.12 : 0.88);
+      markers.push(marker(group, group.length === 1 ? group[0]!.o.id : `${key}#${where}`, pt, where === "sender" ? l.edge.fromId : l.edge.toId));
+    }
+    // The road: one marker per order, up to the first tile in the way.
+    const moving = placed.filter((p) => p.where === "road");
+    const shown = moving.slice(0, MAX_MARKERS_PER_EDGE);
+    let free: [number, number, number] | null = l.road;
+    if (free) {
+      const [xa, xb, ry] = free;
       const onRoad = tiles.filter((tl) => tl.areaId === (tileOf.get(l.edge.fromId)?.areaId ?? "") && tl.y <= ry && tl.y + tl.h >= ry);
       const blocking = onRoad.map((tl) => (dir > 0 ? tl.x : tl.x + tl.w)).filter((x) => (x - xa) * dir > 4 && (x - xb) * dir < 0);
       const stop = blocking.length ? blocking.reduce((a, b) => ((b - a) * dir < 0 ? b : a)) - 12 * dir : xb;
-      track = [xa, stop, ry];
+      free = [xa, stop, ry];
     }
-    for (let i = 0; i < count; i++) {
-      const progress = ((i + 0.5) / count + phase + hash(l.key) * 0.3) % 1;
+    let last = { x: 0, y: 0 };
+    shown.forEach((p, q) => {
       let pt: { x: number; y: number };
-      if (track && Math.abs(track[1] - track[0]) >= 30) pt = { x: track[0] + (track[1] - track[0]) * (0.1 + progress * 0.8), y: track[2] + lane };
-      else if (track)
-        pt = { x: (track[0] + track[1]) / 2, y: track[2] + lane - 16 * i }; // no room: a short queue above the road
-      else pt = bezierAt(l.p, 0.12 + progress * 0.76);
-      markers.push({
-        key: `${l.key}#${i}`,
-        edgeKey: l.key,
-        kind: l.edge.kind,
-        x: pt.x,
-        y: pt.y,
-        r: 5 + Math.min(4, per / 25),
-        units: Math.round(per),
-        progress,
-      });
-    }
+      // Between the doors (never on top of a door marker), or, with no room, a short queue above the road.
+      if (free && Math.abs(free[1] - free[0]) >= 80) pt = { x: free[0] + (free[1] - free[0]) * (0.2 + ((p.progress - 0.2) / 0.6) * 0.6), y: free[2] + lane - 16 * (q % 2) };
+      else if (free) pt = { x: (free[0] + free[1]) / 2, y: free[2] + lane - 22 * (q + 1) };
+      else pt = bezierAt(l.p, Math.min(0.8, Math.max(0.2, p.progress)));
+      last = pt;
+      markers.push(marker([p], p.o.id, pt, l.edge.toId));
+    });
+    if (moving.length > shown.length) overflow.push({ edgeKey: key, x: last.x + 14, y: last.y - 12, more: moving.length - shown.length });
   }
+
+  // Coins: money the provider confirmed in the last hour, on the corner of the tile it was paid to (the seller's end).
+  const coinOf = new Map<string, Coin>();
+  for (const p of input.payments ?? []) {
+    const t = tileOf.get(p.fromId);
+    if (!t) continue;
+    const c = coinOf.get(t.id) ?? { tileId: t.id, x: t.x + t.w - 6, y: t.y + t.h, amountTzs: 0, count: 0, latestAt: p.at, dim: t.dim };
+    c.amountTzs += p.amountTzs;
+    c.count += 1;
+    if (p.at > c.latestAt) c.latestAt = p.at;
+    coinOf.set(t.id, c);
+  }
+  const coins = [...coinOf.values()];
 
   return {
     width,
@@ -384,6 +570,8 @@ export function layoutDistrict(input: { nodes: EcoNode[]; edges: EcoEdge[]; area
     tiles,
     edges: lines,
     markers,
+    overflow,
+    coins,
     unplaced,
   };
 }
