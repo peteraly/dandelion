@@ -10,6 +10,7 @@ import { simulateTick, type TickKind } from "@/lib/demo/tick";
 import { resetToDemoDataset } from "@/lib/demo/reset";
 import { DomainError } from "@/lib/services/core";
 import { str } from "@/lib/actions";
+import { returnPath } from "@/lib/security/request";
 
 async function guard(): Promise<LoadedSession> {
   if (!simulatorEnabled()) notFound();
@@ -53,7 +54,7 @@ export async function tickAction(fd: FormData): Promise<void> {
   const kind: TickKind = str(fd, "kind") === "day" ? "day" : "hour";
   // The district map's speed controls (prompt §9.1) come back to the map; anything else lands on the simulator page.
   const back = String(fd.get("redirectTo") ?? "");
-  const toMap = (back.startsWith("/admin/ecosystem") || back.startsWith("/admin/demo") || back.startsWith("/admin/present")) && !back.includes("//") ? back : null;
+  const toMap = returnPath(back, ["/admin/ecosystem", "/admin/demo", "/admin/present"]);
   let result: string;
   try {
     result = JSON.stringify(await simulateTick(kind, session.user.id), null, 1);

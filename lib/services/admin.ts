@@ -153,14 +153,24 @@ export async function resolveReconFlag(actor: Actor, flagId: string): Promise<vo
 export const EXPORT_DATASETS = ["orders", "payments", "exceptions", "stakeholders", "ledger"] as const;
 export type ExportDataset = (typeof EXPORT_DATASETS)[number];
 
+/**
+ * One CSV cell. Free text that a spreadsheet would read as a formula
+ * (leading =, +, -, @, tab or CR — a customer name typed as "=HYPERLINK(…)")
+ * is prefixed with an apostrophe so it stays text; numbers and dates are
+ * written as they are.
+ */
+export function csvCell(v: unknown): string {
+  if (v instanceof Date) return v.toISOString();
+  if (v === null || v === undefined) return "";
+  let str = String(v);
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
 function csv(rows: Record<string, unknown>[]): string {
   if (rows.length === 0) return "";
   const cols = Object.keys(rows[0]!);
-  const esc = (v: unknown) => {
-    const str = v instanceof Date ? v.toISOString() : v === null || v === undefined ? "" : String(v);
-    return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-  };
-  return [cols.join(","), ...rows.map((r) => cols.map((c) => esc(r[c])).join(","))].join("\n");
+  return [cols.join(","), ...rows.map((r) => cols.map((c) => csvCell(r[c])).join(","))].join("\n");
 }
 
 async function exportRows(dataset: ExportDataset): Promise<Record<string, unknown>[]> {

@@ -86,6 +86,7 @@ export async function createApprovalRequest(tx: Tx, actor: Actor, type: Approval
 }
 
 export async function requestApproval(actor: Actor, type: ApprovalType, payload: unknown, summary: string): Promise<{ requestId: string }> {
+  authorize(actor, "admin.approval.request");
   const req = await withTx((tx) => createApprovalRequest(tx, actor, type, payload, summary));
   return { requestId: req.id };
 }

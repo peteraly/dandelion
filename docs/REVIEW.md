@@ -29,7 +29,7 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 
 | Milestone | Status | Notes |
 | --- | --- | --- |
-| 1 Vertical slice | **done** | 21 Playwright tests cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, the demo polish (guide gating, presenter view, name chip, earnings), a village drop after two admins switch the path on, and an organisation sale; 282 Vitest tests (193 unit incl. AI evals, 71 integration on Postgres, 18 demo-profile). |
+| 1 Vertical slice | **done** | 21 Playwright tests cover the Day 8 dry run (incl. statement import), the ecosystem view with an axe check, the demo polish (guide gating, presenter view, name chip, earnings), a village drop after two admins switch the path on, and an organisation sale; 285 Vitest tests (196 unit incl. AI evals, 71 integration on Postgres, 18 demo-profile). |
 | 2 Ledger | **done (testnet not yet deployed)** | Merkle leaves/proofs, `LedgerAnchor.sol` + 9 Foundry tests, anchoring cron, `/verify/[ref]` public + receipt token, `Signer` (env/KMS stub), statement import + diff. Real-chain anchoring is proven against Anvil in `tests/integration/anchor.test.ts`; Celo testnet deployment needs a funded key and the current network id (ADR-017). |
 | 3 Deploy | **not done — blocked on credentials** | `vercel.json`, crons, health check, migration runner and deploy docs are ready. `vercel link`, Neon marketplace setup, deployment protection and env vars are dashboard/CLI steps for the founders (README → Deploy; GO_LIVE.md prerequisites). |
 | 4 Public website & PWA | **done** | Landing, how it works, honest ledger copy, weekly stats (<10 suppressed), safety (DRAFT), privacy (DRAFT), manifest, service worker for offline notes. Accessibility: labelled controls, 48 px targets, server-rendered pages, minimal client JS. Performance: only the `problems` i18n namespace is shipped to the client. |
@@ -75,6 +75,26 @@ Status words: **done** (implemented and tested), **partial** (implemented, gaps 
 | 5.7 Feed subjects | **done** | `isHumanRef` (`lib/domain/events.ts`): only order, batch, exception, receipt, approval, price-list and reconciliation references are shown. Unit test. |
 | 5.8 Presenter view `/admin/present` | **done** | Same view component (`components/ecosystem/view.tsx`), no sidebar, map full width, "Exit" link; e2e. |
 | 5.9 Deck screens | **done** | `npm run demo:screens` (`playwright.demo.config.ts`, `e2e-demo/screens.spec.ts`): seeds a throwaway demo database, walks the beats, saves PNGs to `docs/demo-screens/` (git-ignored; founders decide §7.5). |
+
+## Red team (2026-09-30)
+
+An adversarial pass over the whole branch, by surface. Fixed items carry a test.
+
+| Surface | Checked | Result |
+| --- | --- | --- |
+| Redirect sinks | every `redirect()` fed by input | **Fixed.** The locale toggle accepted any string starting with "/" — including `//host` and `/\host`, which browsers treat as another origin. The demo tick's `redirectTo` used a prefix check. Both now go through `returnPath()` (`lib/security/request.ts`): same-origin path, no protocol-relative or backslash form, no control characters, optional route allowlist. Unit test. |
+| CSV exports | cell escaping | **Fixed.** Free text starting with `=`, `+`, `-`, `@`, tab or CR (a customer name typed as `=HYPERLINK(…)`) reached spreadsheets as a formula. `csvCell` now prefixes such strings with an apostrophe; numbers and dates unchanged. Unit test. |
+| Approval requests | `requestApproval` relied on its callers | **Hardened.** It now authorises `admin.approval.request` itself (defence in depth; every caller already ran as an admin). |
+| Server actions | every exported action in `app/**/actions.ts` | All admin actions call `admin()`, all field actions `me()`, the simulator's `guard()` (simulator enabled + MFA admin), the demo warm-up `requireAdmin` + demo profile; login/enrol/locale/logout are public by design and rate-limited where they take a secret. |
+| Services | every exported function taking an `actor` | Authorises through `authorize`/`actOn` with a resource where one exists (order party, customer's champion, batch custodian); internal helpers take a `ServiceActor` and are not reachable from a client. |
+| API routes | export, cron ×4, health, payment callback, simulator API | Export: MFA admin + large-export approval. Cron and simulator: `CRON_SECRET` with a constant-time compare; simulator also 404 outside allowed environments. Callback: 16 KB body limit, signature/token checks, dedupe, rate limit, security events. Health: public, reports status only (wallet address is public on chain). |
+| Sessions and secrets | cookies, timeouts, `secret()` | `httpOnly`, `secure`, `sameSite=strict`; idle timeout and absolute expiry; admin MFA-pending sessions expire early; `secret()` throws outside development when a variable is missing. No secret or code is written to the console outside the mock SMS provider in development. |
+| Codes and tokens | OTP, enrolment, receipts, verify refs | OTP: 5-minute TTL, attempt cap, burst limit with a security event; enrolment tokens stored hashed with expiry and single use; receipt tokens compared by hash with `safeEqual`; verify refs are 128-bit random. |
+| Injection | SQL, HTML, headers | No `sql.raw` outside tests; every query parameterised through Drizzle; no `dangerouslySetInnerHTML`/`eval`; CSP with nonce and `strict-dynamic`, `frame-ancestors 'none'`, `form-action 'self'`, no inline style attributes anywhere (the CSP would drop them). |
+| Privacy | snapshot, feed, exports, SMS | The ecosystem snapshot is scanned for phone numbers and customer names in tests; the feed shows roles and references, never free text; customers are dots and counts; message templates refuse phone numbers and pressure language. |
+| Dependencies | `npm audit --audit-level=high` | No high or critical. Four moderate advisories in `drizzle-kit` (a development-only dependency; not shipped). Track the upstream fix; not a runtime exposure. |
+
+Not done here: a live-model check of the AI gateway (off by default), and a third-party penetration test before go-live (GO_LIVE gate).
 
 ## Review log (Prompt B §8.7)
 

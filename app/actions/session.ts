@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { LOCALE_COOKIE } from "@/i18n/request";
 import { isLocale } from "@/lib/i18n/server-translator";
 import { clearSessionCookie } from "@/lib/auth/current";
+import { returnPath } from "@/lib/security/request";
 
 /** Same-origin referer path (with query), or null. Used to return to the page the toggle was on. */
 async function refererPath(): Promise<string | null> {
@@ -28,7 +29,7 @@ export async function setLocale(formData: FormData): Promise<void> {
     jar.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
   }
   const target = (await refererPath()) ?? back;
-  redirect(target.startsWith("/") ? target : "/");
+  redirect(returnPath(target) ?? "/");
 }
 
 export async function logoutField(): Promise<void> {

@@ -37,3 +37,16 @@ export function ipAllowed(ip: string, allowlist: readonly string[]): boolean {
     return (ipn & mask) === (toInt(base) & mask);
   });
 }
+
+/**
+ * A path this site may redirect back to: same-origin only. Rejects
+ * protocol-relative ("//host") and backslash forms ("/\\host"), control
+ * characters, and — when `within` is given — anything outside those routes.
+ * Returns null when the value is not acceptable; callers fall back to a fixed page.
+ */
+export function returnPath(candidate: unknown, within?: readonly string[]): string | null {
+  if (typeof candidate !== "string") return null;
+  if (!/^\/(?![\/\\])[^\r\n\t\0]*$/.test(candidate)) return null;
+  if (within && !within.some((prefix) => candidate === prefix || candidate.startsWith(`${prefix}?`) || candidate.startsWith(`${prefix}/`))) return null;
+  return candidate;
+}
