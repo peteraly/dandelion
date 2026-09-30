@@ -115,6 +115,7 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Demo data on every page | **done** | Previews default to the demo profile at full scale (286 orders across all ten sale paths in a local run); a minimal preview our seed filled moves up on the next build; a demo preview is left alone (fixes a failing second build). `scripts/seed.ts`, `scripts/demo/run.ts`. |
 | Running now, no button | **done** | Seed ends with six live hours; `components/live-district.tsx` in the admin layout takes one live step a minute while watched (server-side once-a-minute guard, rate limit, admin log). ADR-034. |
 | Plain names | **done** | Delivery partner, Hub keeper, Local seller (en/sw) and plain admin labels; codes unchanged. |
+| Preview build `fd2b055` failed on Vercel (~20 s, log not reachable from the build sandbox) | **hardened** | The demo seed wiped the minimal dataset before checking what it needs. Now: credentials and the simulator are checked before any wipe; a demo that fails after the wipe puts the minimal dataset back, the deployment goes ahead, and the reason is shown on the admin home (`settings.demoSeedError`). Reproduced locally with preview settings: skip when the demo is in place, upgrade from minimal (35 s, 296 orders), fallback on a forced failure, refusal before the wipe on bad credentials. |
 | G1–G7 | **not started** | Scenario circulation, the watching founder takes part, live field apps, live without a viewer (decision), size, plain words on every page, acceptance. |
 
 ## Red team (2026-09-30)

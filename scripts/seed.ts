@@ -191,7 +191,9 @@ export async function currentSeedProfile(): Promise<string | null> {
 /**
  * The demo profile on a build: nothing to do when the demo district is already there (every redeploy); a database
  * our own seed filled with the minimal profile — fictional people only — is wiped and moves up to the demo district.
- * wipeDatabase keeps its guards: never production, never a database that looks real.
+ * wipeDatabase keeps its guards: never production, never a database that looks real. What the demo needs is checked
+ * before anything is wiped, and a demo that fails half-way puts the minimal dataset back, so a preview is never left
+ * empty; the reason is kept in settings.demoSeedError and shown on the admin home.
  */
 export async function seedDemoProfile(): Promise<void> {
   const current = await currentSeedProfile();
@@ -199,12 +201,22 @@ export async function seedDemoProfile(): Promise<void> {
     console.log("[seed] the demo district is already in place; nothing to do");
     return;
   }
-  if (current === "minimal") {
-    console.log("[seed] replacing the minimal dataset with the demo district");
+  requireSeedCredentials();
+  if (!simulatorEnabled()) throw new Error("SEED_PROFILE=demo needs SIMULATOR_ENABLED=true (payments go through the mock provider's simulator)");
+  try {
+    if (current === "minimal") {
+      console.log("[seed] replacing the minimal dataset with the demo district");
+      await resetDatabase();
+    }
+    const { runDemoSeed } = await import("./demo/run");
+    await runDemoSeed();
+  } catch (e) {
+    const reason = e instanceof Error ? e.message : String(e);
+    console.error(`[seed] the demo district could not be built (${reason}); putting the minimal dataset back so the preview keeps working`);
     await resetDatabase();
+    await seed();
+    await putSetting(getDb(), "demoSeedError", `${now().toISOString().slice(0, 16).replace("T", " ")} UTC — ${reason}`.slice(0, 400), null);
   }
-  const { runDemoSeed } = await import("./demo/run");
-  await runDemoSeed();
 }
 
 if (process.argv[1]?.endsWith("seed.ts")) {

@@ -150,6 +150,8 @@ export const SETTING_DEFAULTS = {
   demoLiveOrders: "",
   /** When the live district last took a step (ISO time; lib/demo/tick.ts). */
   demoLastLiveAt: "",
+  /** Why the last build could not make the demo district (scripts/seed.ts); shown on the admin home. */
+  demoSeedError: "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

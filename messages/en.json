@@ -1055,7 +1055,8 @@
           "title": "Security alerts (24 h)",
           "hint": "Unusual sign-ins or refused actions worth a look."
         }
-      }
+      },
+      "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}"
     },
     "live": {
       "running": "Live — the demo district is moving",

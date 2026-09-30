@@ -89,6 +89,10 @@ depend on the day it is built.)
    fixed too.
 3. Sessions end with the wipe: open the preview's `/demo` page again and
    choose a role (the open demo is still on).
+4. If the demo district cannot be built, nothing is lost: the build checks
+   what it needs before wiping anything, and if it still fails half-way it
+   puts the small starter dataset back and the preview keeps working. The
+   admin home then shows one amber line with the reason, to pass on.
 
 **One caveat carried from Prompt F (finding E1):** Production and Preview
 share the same database today, so the production address will show the

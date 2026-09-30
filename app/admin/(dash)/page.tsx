@@ -13,6 +13,7 @@ import { Name } from "@/components/name";
 import { adminNavGroups } from "@/components/admin-nav-groups";
 import { requireAdmin } from "@/lib/auth/current";
 import { liveSummary, priorities } from "@/lib/services/admin";
+import { getSetting } from "@/lib/services/core";
 import { formatTzs } from "@/lib/money";
 
 /** Most urgent first: a second signature blocks another admin; money questions come before stock. */
@@ -30,7 +31,7 @@ export default async function AdminHome() {
   const { actor, session } = await requireAdmin();
   const t = await getTranslations("admin.home");
   const locale = (await getLocale()) as "sw" | "en";
-  const [p, live, groups] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups()]);
+  const [p, live, groups, seedError] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups(), getSetting("demoSeedError")]);
   const needs = NEEDS.map(([k, href]) => ({ k, href, n: p[k] })).filter((x) => x.n > 0);
   const stats: [string, string][] = [
     ["road", String(live.road)],
@@ -48,6 +49,12 @@ export default async function AdminHome() {
           <Name value={session.user.displayName} /> · {t("intro")}
         </p>
       </header>
+
+      {seedError ? (
+        <p className="rounded-2xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950" role="note" data-testid="demo-seed-error">
+          {t("seedError", { reason: String(seedError) })}
+        </p>
+      ) : null}
 
       <section aria-labelledby="needs-you" data-testid="needs-you">
         <h2 id="needs-you" className="mb-2 text-lg font-semibold">
