@@ -15,6 +15,10 @@ import { importStatement } from "@/lib/services/statements";
 import { runAnchor, confirmSubmittedAnchors } from "@/lib/ledger/anchor";
 import { approveEducationPack } from "@/lib/services/ai-gateway";
 import { createSupplier, requestSupplierActivation, setSupplierProduct, updateSupplier, type SupplierInputT } from "@/lib/services/suppliers";
+import { createOrganisation, requestOrganisationActivation, updateOrganisation, type OrganisationInputT } from "@/lib/services/organisations";
+import { requestAreaSales } from "@/lib/services/areas";
+import { DIRECT_KINDS } from "@/lib/domain/sales";
+import type { OrderKind } from "@/lib/domain/types";
 import { idempotent, DomainError } from "@/lib/services/core";
 
 async function admin(): Promise<Actor> {
@@ -79,7 +83,7 @@ export async function createPickupAction(fd: FormData): Promise<void> {
     "/admin/orders/new",
     () =>
       once(actor, fd, "createPickup", () =>
-        adminCreatePickup(actor, { supplierId, productId, hubId: str(fd, "hubId"), riderId: str(fd, "riderId"), quantity: Number(str(fd, "quantity")), pickupDate: str(fd, "pickupDate") }),
+        adminCreatePickup(actor, { supplierId, productId, hubId: str(fd, "hubId") || undefined, buyerUserId: str(fd, "buyerUserId") || str(fd, "riderId") || undefined, quantity: Number(str(fd, "quantity")), pickupDate: str(fd, "pickupDate") }),
       ),
     "/admin/orders",
     "created",
@@ -138,6 +142,7 @@ export async function draftPriceListAction(fd: FormData): Promise<void> {
     hubPriceTzs: Number(fd.getAll("hubPriceTzs")[i]),
     championPriceTzs: Number(fd.getAll("championPriceTzs")[i]),
     customerPriceTzs: Number(fd.getAll("customerPriceTzs")[i]),
+    organisationPriceTzs: String(fd.getAll("organisationPriceTzs")[i] ?? "").trim() === "" ? undefined : Number(fd.getAll("organisationPriceTzs")[i]),
   }));
   await act(
     "/admin/prices/new",
@@ -261,3 +266,34 @@ export async function approveEducationPackAction(fd: FormData): Promise<void> {
   const actor = await admin();
   await act("/admin/settings", () => once(actor, fd, "approveEducationPack", async () => (await approveEducationPack(actor), null)), "/admin/settings", "packApproved");
 }
+
+// ---------- organisations and sale paths (prompt §8.8) ----------
+
+function readOrganisation(fd: FormData): OrganisationInputT {
+  return { name: str(fd, "name"), kind: str(fd, "kind") as OrganisationInputT["kind"], serviceAreaId: str(fd, "serviceAreaId"), contactName: str(fd, "contactName") || undefined, contactPhone: str(fd, "contactPhone"), notes: str(fd, "notes") || undefined };
+}
+
+export async function createOrganisationAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  await act("/admin/organisations", () => once(actor, fd, "createOrganisation", () => createOrganisation(actor, readOrganisation(fd))), (r) => `/admin/organisations/${r.organisationId}`, "created");
+}
+
+export async function updateOrganisationAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const id = str(fd, "organisationId");
+  await act(`/admin/organisations/${id}`, () => once(actor, fd, "updateOrganisation", async () => (await updateOrganisation(actor, id, readOrganisation(fd)), null)), `/admin/organisations/${id}`, "updated");
+}
+
+export async function requestOrganisationActivationAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const id = str(fd, "organisationId");
+  await act(`/admin/organisations/${id}`, () => once(actor, fd, "requestOrganisationActivation", () => requestOrganisationActivation(actor, id, bool(fd, "active"))), `/admin/organisations/${id}`, "activationRequested");
+}
+
+export async function requestAreaSalesAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const areaId = str(fd, "serviceAreaId");
+  const kinds = DIRECT_KINDS.filter((k) => bool(fd, `path_${k}`)) as OrderKind[];
+  await act("/admin/areas", () => once(actor, fd, "requestAreaSales", () => requestAreaSales(actor, areaId, kinds)), "/admin/areas", "requested");
+}
+

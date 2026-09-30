@@ -209,3 +209,28 @@ export async function lockSelfAction(): Promise<void> {
   await revokeAllSessions(actor.userId);
   redirect("/lock?ok=locked");
 }
+
+// ---------- organisation sales (prompt §8.8.4) ----------
+
+export async function createOrgSaleAction(fd: FormData): Promise<void> {
+  const actor = await me();
+  await act(
+    "/org-sales/new",
+    () => once(actor, fd, "createOrgSale", () => orders.createOrgSale(actor, { organisationId: str(fd, "organisationId"), productId: str(fd, "productId"), quantity: Number(str(fd, "quantity")) })),
+    (r) => orderPath(r.orderId),
+    "created",
+  );
+}
+
+export async function deliverOrgAction(fd: FormData): Promise<void> {
+  const actor = await me();
+  const id = str(fd, "orderId");
+  await act(orderPath(id), () => once(actor, fd, "deliverOrg", () => orders.deliverOrgSale(actor, id)), orderPath(id), "delivered");
+}
+
+export async function cancelOrgSaleAction(fd: FormData): Promise<void> {
+  const actor = await me();
+  const id = str(fd, "orderId");
+  await act(orderPath(id), () => once(actor, fd, "cancelOrgSale", async () => (await orders.cancelOrgSale(actor, id), null)), orderPath(id));
+}
+

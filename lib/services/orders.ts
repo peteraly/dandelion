@@ -16,6 +16,8 @@ import { ORDER_MACHINES, INITIAL_ORDER_STATE, type OrderCtx, type OrderEvent } f
 import type { DualApprovalProof } from "@/lib/domain/approval";
 import { isLocked } from "@/lib/domain/custody";
 import type { OrderKind } from "@/lib/domain/types";
+import { deriveKind, FACTORY_PICKUP_KINDS, isOrgKind, isPlanKind, saleFor, SUPPLIER_SELLER_KINDS } from "@/lib/domain/sales";
+import { allowedSalesFor, assertSaleAllowed } from "./areas";
 import { authorize, type Actor, type OrderResource } from "@/lib/policy";
 import { humanCode, numericCode, randomRef128, randomToken, sha256Hex } from "@/lib/crypto/random";
 import { encryptString, decryptString } from "@/lib/crypto/envelope";
@@ -100,40 +102,54 @@ export const CreatePickupSchema = z
   .object({
     supplierId: z.string().uuid(),
     productId: z.string().uuid(),
-    hubId: z.string().uuid(),
-    riderId: z.string().uuid(),
+    /** Destination hub. Empty for a rider who keeps the stock for direct distribution (prompt §8.8); derived for hub managers and champions. */
+    hubId: z.string().uuid().optional(),
+    /** Who collects at the factory: a boss rider (ladder), or a hub manager / champion at the factory gate. `riderId` is the older name. */
+    buyerUserId: z.string().uuid().optional(),
+    riderId: z.string().uuid().optional(),
     quantity: z.coerce.number().int().min(1).max(10_000),
     pickupDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   })
-  .strict();
+  .strict()
+  .refine((v) => !!(v.buyerUserId ?? v.riderId), { message: "buyer_required" });
 
 export async function adminCreatePickup(actor: Actor, raw: z.input<typeof CreatePickupSchema>): Promise<{ orderId: string }> {
   authorize(actor, "admin.pickup.create");
   const input = CreatePickupSchema.parse(raw);
   return withTx(async (tx) => {
     const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, input.supplierId) });
-    const hub = await tx.query.hubs.findFirst({ where: eq(s.hubs.id, input.hubId) });
     if (!supplier?.active || !supplier.serviceAreaId) throw new DomainError("supplier_not_active");
-    if (!hub?.active) throw new DomainError("hub_not_active");
     // Only what the supplier actually supplies (Prompt B §8.1).
     const offered = await tx.query.supplierProducts.findFirst({ where: and(eq(s.supplierProducts.supplierId, supplier.id), eq(s.supplierProducts.productId, input.productId), eq(s.supplierProducts.active, true)) });
     if (!offered) throw new DomainError("supplier_product_not_offered");
     const supplierUser = await firstActiveUser(tx, and(eq(s.users.role, "SUPPLIER"), eq(s.users.supplierId, supplier.id)));
-    const rider = await tx.query.users.findFirst({ where: eq(s.users.id, input.riderId) });
-    if (!rider || rider.role !== "BOSS_RIDER" || rider.status !== "ACTIVE") throw new DomainError("rider_not_active");
-    const item = await activePriceItem(tx, { serviceAreaId: hub.serviceAreaId, productId: input.productId, supplierId: supplier.id });
+    const buyer = await tx.query.users.findFirst({ where: eq(s.users.id, (input.buyerUserId ?? input.riderId)!) });
+    if (!buyer || buyer.status !== "ACTIVE") throw new DomainError("buyer_not_active");
+    const kind = deriveKind("SUPPLIER", buyer.role);
+    if (!kind || !FACTORY_PICKUP_KINDS.includes(kind)) throw new DomainError("sale_not_allowed");
+    // Where the stock goes: the ladder's hub, the buyer's own hub at the factory gate, or nowhere (a rider's own stock).
+    const hubId = buyer.role === "BOSS_RIDER" ? (input.hubId ?? null) : buyer.hubId;
+    const hub = hubId ? await tx.query.hubs.findFirst({ where: eq(s.hubs.id, hubId) }) : null;
+    if (hubId && !hub?.active) throw new DomainError("hub_not_active");
+    const areaId = hub?.serviceAreaId ?? supplier.serviceAreaId;
+    await assertSaleAllowed(tx, areaId, kind);
+    if (kind === "SUPPLIER_TO_RIDER" && !hubId) {
+      const allowed = await allowedSalesFor(tx, areaId);
+      if (!allowed.includes("RIDER_TO_CUSTOMER") && !allowed.includes("RIDER_TO_ORG")) throw new DomainError("sale_not_allowed", "rider stock needs a direct rider path in the area");
+    }
+    const item = await activePriceItem(tx, { serviceAreaId: areaId, productId: input.productId, supplierId: supplier.id });
     const [order] = await tx
       .insert(s.orders)
       .values({
         ref: await uniqueRef(tx, "OR-", 6, "ref"),
         verifyRef: randomRef128(),
         paymentRef: await uniqueRef(tx, "", 8, "paymentRef"),
-        kind: "SUPPLIER_TO_RIDER",
-        state: INITIAL_ORDER_STATE.SUPPLIER_TO_RIDER,
+        kind,
+        state: INITIAL_ORDER_STATE[kind],
         sellerUserId: supplierUser.id,
-        buyerUserId: rider.id,
+        buyerUserId: buyer.id,
         supplierId: supplier.id,
-        hubId: hub.id,
+        hubId,
         productId: input.productId,
         priceListItemId: item.id,
         quantity: input.quantity,
@@ -145,7 +161,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
       })
       .returning();
     const product = await tx.query.products.findFirst({ where: eq(s.products.id, input.productId) });
-    const r = await userLocale(tx, rider.id);
+    const r = await userLocale(tx, buyer.id);
     await getSmsProvider().send(
       r.phone,
       tr(r.locale, "sms.pickup", {
@@ -158,7 +174,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
       "PICKUP",
       tx,
     );
-    await logAdminAction(tx, actor.userId, "pickup.create", { type: "order", id: order!.id }, { quantity: input.quantity });
+    await logAdminAction(tx, actor.userId, "pickup.create", { type: "order", id: order!.id }, { quantity: input.quantity, kind });
     return { orderId: order!.id };
   });
 }
@@ -167,11 +183,12 @@ export async function confirmBatchReady(actor: Actor, orderId: string, sealIdRaw
   const sealId = z.string().trim().min(1).max(40).regex(/^[A-Za-z0-9-]+$/).safeParse(sealIdRaw);
   if (!sealId.success) throw new DomainError("seal_id_invalid");
   await actOn(actor, orderId, "order.confirm_batch_ready", async (tx, order) => {
-    const hub = await tx.query.hubs.findFirst({ where: eq(s.hubs.id, order.hubId!) });
+    const hub = order.hubId ? await tx.query.hubs.findFirst({ where: eq(s.hubs.id, order.hubId) }) : null;
+    const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, order.supplierId!) });
     const batch = await registerBatch(tx, asService(actor), {
       supplierId: order.supplierId!,
       productId: order.productId,
-      serviceAreaId: hub!.serviceAreaId,
+      serviceAreaId: hub?.serviceAreaId ?? supplier!.serviceAreaId!,
       quantity: order.quantity,
       sealId: sealId.data,
       custodianUserId: order.sellerUserId,
@@ -202,7 +219,7 @@ export async function claimPaid(actor: Actor, orderId: string): Promise<{ jobId:
     if (!intent.payerClaimedAt) {
       await tx.update(s.paymentIntents).set({ payerClaimedAt: now(), updatedAt: now() }).where(eq(s.paymentIntents.id, intent.id));
     }
-    if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
+    if (FACTORY_PICKUP_KINDS.includes(order.kind) && order.batchId) {
       const batch = await lockBatch(tx, order.batchId);
       if (batch.custodyState === "RESERVED_FOR_RIDER") await applyCustody(tx, batch, "PAYMENT_CLAIMED", asService(actor), {}, { orderId: order.id });
     }
@@ -239,18 +256,32 @@ async function transferCtx(tx: Tx, order: Order) {
  */
 export async function tryCompleteTransfer(tx: Tx, orderIn: Order, actor: ServiceActor): Promise<boolean> {
   const order = await lockOrder(tx, orderIn.id);
-  if (order.state !== "PAID" || order.kind === "CHAMPION_TO_CUSTOMER") return false;
+  if (order.state !== "PAID" || isPlanKind(order.kind) || isOrgKind(order.kind)) return false;
   const c = await transferCtx(tx, order);
   if (!c.custody.orderFullyPaid || !c.custody.senderConfirmed || !c.custody.receiverConfirmed) return false;
   const batch = await lockBatch(tx, order.batchId!);
   if (isLocked(batch.custodyState)) return false; // locked batches stay put (§3.4)
   const product = await tx.query.products.findFirst({ where: eq(s.products.id, order.productId) });
 
-  if (order.kind === "SUPPLIER_TO_RIDER") {
-    const picked = await applyCustody(tx, batch, "PICKUP", actor, c.custody, { orderId: order.id, custodianUserId: order.buyerUserId, role: "BOSS_RIDER" });
-    await applyCustody(tx, picked, "START_TRANSIT", { kind: "SYSTEM", userId: null }, {}, { orderId: order.id });
-    await applyOrder(tx, order, "COMPLETE", actor, c.order);
-    await createDeliveryOrder(tx, order, picked.id);
+  if (FACTORY_PICKUP_KINDS.includes(order.kind)) {
+    const buyerRole = saleFor(order.kind).buyer;
+    const picked = await applyCustody(tx, batch, "PICKUP", actor, c.custody, { orderId: order.id, custodianUserId: order.buyerUserId, role: buyerRole });
+    const system: ServiceActor = { kind: "SYSTEM", userId: null };
+    if (order.kind === "SUPPLIER_TO_RIDER" && order.hubId) {
+      await applyCustody(tx, picked, "START_TRANSIT", system, {}, { orderId: order.id });
+      await applyOrder(tx, order, "COMPLETE", actor, c.order);
+      await createDeliveryOrder(tx, order, picked.id);
+    } else if (order.kind === "SUPPLIER_TO_RIDER") {
+      // The rider keeps the stock for village drops and organisation sales (prompt §8.8).
+      await applyCustody(tx, picked, "KEEP_WITH_RIDER", system, {}, { orderId: order.id });
+      await applyOrder(tx, order, "COMPLETE", actor, c.order);
+    } else if (order.kind === "SUPPLIER_TO_HUB") {
+      await applyCustody(tx, picked, "FACTORY_GATE_TO_HUB", system, {}, { orderId: order.id, hubId: order.hubId, role: "HUB_MANAGER" });
+      await applyOrder(tx, order, "COMPLETE", actor, c.order);
+    } else {
+      await applyCustody(tx, picked, "FACTORY_GATE_TO_CHAMPION", system, {}, { orderId: order.id, hubId: null, role: "FIELD_CHAMPION" });
+      await applyOrder(tx, order, "COMPLETE", actor, c.order);
+    }
   } else if (order.kind === "RIDER_TO_HUB") {
     const accepted = await applyCustody(tx, batch, "HUB_ACCEPT", actor, c.custody, {
       orderId: order.id,
@@ -462,29 +493,33 @@ export async function startPlan(actor: Actor, customerId: string, productId: str
       where: and(eq(s.orders.customerId, customer.id), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID", "HANDOVER_PENDING"])),
     });
     if (open) throw new DomainError("plan_already_active");
-    const champion = await tx.query.users.findFirst({ where: eq(s.users.id, actor.userId) });
-    const hub = champion?.hubId ? await tx.query.hubs.findFirst({ where: eq(s.hubs.id, champion.hubId) }) : undefined;
-    if (!hub) throw new DomainError("champion_has_no_hub");
-    await assertProductAvailable(tx, productId, hub.serviceAreaId);
-    const item = await activePriceItem(tx, { serviceAreaId: hub.serviceAreaId, productId });
+    // Who sells decides the kind (prompt §8.8): the champion on the ladder, a rider on a village drop, a supplier at the factory gate.
+    const kind = deriveKind(actor.role, "CUSTOMER");
+    if (!kind) throw new DomainError("sale_not_allowed");
+    const where = await sellerArea(tx, actor);
+    await assertSaleAllowed(tx, where.areaId, kind);
+    await assertProductAvailable(tx, productId, where.areaId);
+    const item = await activePriceItem(tx, { serviceAreaId: where.areaId, productId, supplierId: actor.role === "SUPPLIER" ? (actor.supplierId ?? undefined) : undefined });
+    // One customer price per area, whoever sells; the seller's cost is what they paid their own seller.
+    const unitCostTzs = actor.role === "FIELD_CHAMPION" ? item.championPriceTzs : actor.role === "BOSS_RIDER" ? item.supplierPriceTzs : 0;
     const [order] = await tx
       .insert(s.orders)
       .values({
         ref: await uniqueRef(tx, "OR-", 6, "ref"),
         verifyRef: randomRef128(),
         paymentRef: await uniqueRef(tx, "", 8, "paymentRef"),
-        kind: "CHAMPION_TO_CUSTOMER",
-        state: INITIAL_ORDER_STATE.CHAMPION_TO_CUSTOMER,
+        kind,
+        state: INITIAL_ORDER_STATE[kind],
         sellerUserId: actor.userId,
         customerId: customer.id,
         supplierId: item.supplierId,
-        hubId: hub.id,
+        hubId: where.hubId,
         productId,
         priceListItemId: item.id,
         quantity: 1,
         unitPriceTzs: item.customerPriceTzs,
         totalTzs: item.customerPriceTzs,
-        unitCostTzs: item.championPriceTzs,
+        unitCostTzs,
         createdBy: actor.userId,
       })
       .returning();
@@ -505,6 +540,51 @@ export async function startPlan(actor: Actor, customerId: string, productId: str
     );
     return { orderId: order!.id };
   });
+}
+
+/** The area a seller works in, and their hub when they have one. */
+async function sellerArea(tx: Tx, actor: Actor): Promise<{ areaId: string; hubId: string | null }> {
+  const user = await tx.query.users.findFirst({ where: eq(s.users.id, actor.userId) });
+  if (actor.role === "FIELD_CHAMPION" || actor.role === "HUB_MANAGER") {
+    const hub = user?.hubId ? await tx.query.hubs.findFirst({ where: eq(s.hubs.id, user.hubId) }) : undefined;
+    if (!hub) throw new DomainError(actor.role === "FIELD_CHAMPION" ? "champion_has_no_hub" : "hub_not_active");
+    return { areaId: hub.serviceAreaId, hubId: hub.id };
+  }
+  if (actor.role === "SUPPLIER") {
+    const supplier = actor.supplierId ? await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, actor.supplierId) }) : undefined;
+    if (!supplier?.serviceAreaId) throw new DomainError("seller_has_no_area");
+    return { areaId: supplier.serviceAreaId, hubId: null };
+  }
+  if (!user?.serviceAreaId) throw new DomainError("seller_has_no_area");
+  return { areaId: user.serviceAreaId, hubId: null };
+}
+
+/**
+ * A lot the seller holds for this product with at least `qty` units, locked
+ * for update: a champion's or rider's own stock, a hub's available stock. A
+ * factory does not book its inventory here, so a supplier's sale registers
+ * its batch at the moment of sale (custody stays unbroken: registered, then
+ * transferred, in one transaction).
+ */
+async function sellerLot(tx: Tx, actor: Actor, order: Order, qty: number): Promise<typeof s.batches.$inferSelect | null> {
+  if (actor.role === "SUPPLIER") {
+    const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, actor.supplierId!) });
+    return registerBatch(tx, asService(actor), { supplierId: actor.supplierId!, productId: order.productId, serviceAreaId: supplier!.serviceAreaId!, quantity: qty, sealId: null, custodianUserId: actor.userId, orderId: order.id });
+  }
+  const holding =
+    actor.role === "FIELD_CHAMPION"
+      ? and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.custodyState, "WITH_CHAMPION"))
+      : actor.role === "BOSS_RIDER"
+        ? and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.custodyState, "WITH_RIDER"))
+        : and(eq(s.batches.hubId, actor.hubId!), eq(s.batches.custodyState, "AVAILABLE_AT_HUB"));
+  const lots = await tx
+    .select()
+    .from(s.batches)
+    .where(and(holding, eq(s.batches.productId, order.productId), gte(s.batches.quantity, qty)))
+    .orderBy(s.batches.createdAt)
+    .limit(1)
+    .for("update");
+  return lots[0] ?? null;
 }
 
 export async function assertProductAvailable(tx: Tx, productId: string, serviceAreaId: string): Promise<void> {
@@ -539,15 +619,9 @@ export async function startHandover(actor: Actor, orderId: string): Promise<void
     const t = await paidTotals(tx, order);
     // Refuse early (and without side effects) unless fully paid.
     if (!t.fullyPaid) throw new DomainError("full_payment_not_confirmed");
-    const lots = await tx
-      .select()
-      .from(s.batches)
-      .where(and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.productId, order.productId), eq(s.batches.custodyState, "WITH_CHAMPION"), gte(s.batches.quantity, 1)))
-      .orderBy(s.batches.createdAt)
-      .limit(1)
-      .for("update");
-    if (!lots[0]) throw new DomainError("no_stock_for_handover");
-    const child = await splitBatch(tx, asService(actor), lots[0], "SPLIT_FOR_CUSTOMER", 1, order.id);
+    const lot = await sellerLot(tx, actor, order, 1);
+    if (!lot) throw new DomainError("no_stock_for_handover");
+    const child = await splitBatch(tx, asService(actor), lot, "SPLIT_FOR_CUSTOMER", 1, order.id);
     const code = numericCode(6);
     await applyOrder(tx, order, "START_HANDOVER", asService(actor), { fullyPaid: t.fullyPaid, stockReserved: true }, {
       batchId: child.id,
@@ -599,7 +673,7 @@ export async function completeHandover(actor: Actor, orderId: string, code: stri
       "CUSTOMER_HANDOVER",
       asService(actor),
       { orderFullyPaid: t.fullyPaid, senderConfirmed: true, customerCodeValid: true, educationConfirmed: true },
-      { orderId: order.id, custodianUserId: null },
+      { orderId: order.id, custodianUserId: null, role: actor.role },
     );
     const receiptToken = randomToken();
     await applyOrder(tx, order, "COMPLETE", asService(actor), { fullyPaid: t.fullyPaid, customerCodeValid: true, educationConfirmed: true }, {
@@ -640,6 +714,109 @@ export async function requestRefundReview(actor: Actor, orderId: string, reason:
   return { caseRef };
 }
 
+// ================= organisation sales (prompt §8.8.4) =================
+
+const OrgSaleSchema = z.object({ organisationId: z.string().uuid(), productId: z.string().uuid(), quantity: z.coerce.number().int().min(1).max(10_000) }).strict();
+
+async function organisationContact(tx: Tx, organisationId: string): Promise<{ name: string; phone: string | null }> {
+  const org = await tx.query.organisations.findFirst({ where: eq(s.organisations.id, organisationId) });
+  if (!org) throw new DomainError("organisation_not_found");
+  return { name: org.name, phone: org.contactPhoneEnc ? await decryptString(org.contactPhoneEnc) : null };
+}
+
+async function notifyOrganisation(tx: Tx, order: Order, key: "sms.orgSale" | "sms.orgPaid" | "sms.orgReceipt", extra: Record<string, string | number> = {}): Promise<void> {
+  const contact = await organisationContact(tx, order.organisationId!);
+  if (!contact.phone) return;
+  const product = await tx.query.products.findFirst({ where: eq(s.products.id, order.productId) });
+  const intent = await openIntent(tx, order.id);
+  await getSmsProvider().send(
+    contact.phone,
+    tr("sw", key, { name: contact.name, product: product?.name ?? "", quantity: order.quantity, amount: formatTzs(order.totalTzs, "sw"), payee: intent?.payeeAccount ?? "", reference: order.paymentRef, link: `${appOrigin()}/verify/${order.verifyRef}`, ...extra }),
+    key === "sms.orgReceipt" ? "RECEIPT" : "ORG_SALE",
+    tx,
+  );
+}
+
+/**
+ * A bulk sale to an organisation: one exact payment to the seller's account,
+ * then delivery. The organisation price comes from the area's price list; the
+ * path must be switched on for the area; the seller must hold the stock now.
+ */
+export async function createOrgSale(actor: Actor, raw: z.input<typeof OrgSaleSchema>): Promise<{ orderId: string }> {
+  authorize(actor, "order.org_sale.create");
+  const input = OrgSaleSchema.parse(raw);
+  return withTx(async (tx) => {
+    const org = await tx.query.organisations.findFirst({ where: eq(s.organisations.id, input.organisationId) });
+    if (!org) throw new DomainError("organisation_not_found");
+    if (!org.active) throw new DomainError("organisation_not_active");
+    const kind = deriveKind(actor.role, "ORGANISATION");
+    if (!kind) throw new DomainError("sale_not_allowed");
+    const where = await sellerArea(tx, actor);
+    if (org.serviceAreaId !== where.areaId) throw new DomainError("organisation_not_in_area");
+    await assertSaleAllowed(tx, where.areaId, kind);
+    const item = await activePriceItem(tx, { serviceAreaId: where.areaId, productId: input.productId, supplierId: actor.role === "SUPPLIER" ? (actor.supplierId ?? undefined) : undefined });
+    if (item.organisationPriceTzs === null) throw new DomainError("no_organisation_price");
+    const unitCostTzs = actor.role === "HUB_MANAGER" ? item.hubPriceTzs : actor.role === "BOSS_RIDER" ? item.supplierPriceTzs : 0;
+    // A hub or rider sells what they hold; the factory's inventory is not booked here.
+    if (actor.role !== "SUPPLIER") {
+      const probe = { productId: input.productId } as Order;
+      const lot = await sellerLot(tx, actor, { ...probe, id: "" } as Order, input.quantity);
+      if (!lot) throw new DomainError("insufficient_stock");
+    }
+    const [order] = await tx
+      .insert(s.orders)
+      .values({
+        ref: await uniqueRef(tx, "OR-", 6, "ref"),
+        verifyRef: randomRef128(),
+        paymentRef: await uniqueRef(tx, "", 8, "paymentRef"),
+        kind,
+        state: INITIAL_ORDER_STATE[kind],
+        sellerUserId: actor.userId,
+        organisationId: org.id,
+        supplierId: item.supplierId,
+        hubId: where.hubId,
+        productId: input.productId,
+        priceListItemId: item.id,
+        quantity: input.quantity,
+        unitPriceTzs: item.organisationPriceTzs,
+        totalTzs: item.organisationPriceTzs * input.quantity,
+        unitCostTzs,
+        createdBy: actor.userId,
+      })
+      .returning();
+    await ensureOpenIntent(tx, order!);
+    await notifyOrganisation(tx, order!, "sms.orgSale");
+    return { orderId: order!.id };
+  });
+}
+
+/** The provider has confirmed; the seller hands the units over and confirms. Custody: seller's lot → DELIVERED_TO_ORG. */
+export async function deliverOrgSale(actor: Actor, orderId: string): Promise<{ receiptNo: string }> {
+  let receiptNo = "";
+  await actOn(actor, orderId, "order.org_sale.deliver", async (tx, order) => {
+    const t = await paidTotals(tx, order);
+    if (!t.fullyPaid) throw new DomainError("full_payment_not_confirmed");
+    const lot = await sellerLot(tx, actor, order, order.quantity);
+    if (!lot) throw new DomainError("insufficient_stock");
+    const child = await splitBatch(tx, asService(actor), lot, "SPLIT_FOR_ORG", order.quantity, order.id);
+    await applyOrder(tx, order, "COMPLETE", asService(actor), { fullyPaid: true, senderConfirmed: true, stockAvailable: true }, { batchId: child.id, senderConfirmedAt: now(), receiverConfirmedAt: now() });
+    const product = await tx.query.products.findFirst({ where: eq(s.products.id, order.productId) });
+    const receipt = await createReceipt(tx, order, product?.name ?? "", t);
+    receiptNo = receipt.receiptNo;
+    await notifyOrganisation(tx, order, "sms.orgReceipt", { receiptNo });
+    await notifyMargin(tx, order, product?.name ?? "");
+  });
+  return { receiptNo };
+}
+
+/** Only while nothing was paid; a paid order is delivered or goes to refund review, never cancelled. */
+export async function cancelOrgSale(actor: Actor, orderId: string): Promise<void> {
+  await actOn(actor, orderId, "order.org_sale.deliver", async (tx, order) => {
+    const t = await paidTotals(tx, order);
+    await applyOrder(tx, order, "CANCEL", asService(actor), { hasConfirmedPayment: t.hasConfirmed });
+  });
+}
+
 // ================= payment-driven progression (verifier only) =================
 
 /**
@@ -650,7 +827,7 @@ export async function onPaymentConfirmed(tx: Tx, orderIn: Order, amountTzs: numb
   const verifier: ServiceActor = { kind: "SYSTEM_VERIFIER", userId: null };
   const order = await lockOrder(tx, orderIn.id);
   const t = await paidTotals(tx, order);
-  if (order.kind === "CHAMPION_TO_CUSTOMER") {
+  if (isPlanKind(order.kind)) {
     const c = await customerContact(tx, order.customerId!);
     if (t.fullyPaid) {
       await applyOrder(tx, order, "PAYMENT_CONFIRMED", verifier, { fullyPaid: true });
@@ -677,18 +854,23 @@ export async function onPaymentConfirmed(tx: Tx, orderIn: Order, amountTzs: numb
   }
   if (!t.fullyPaid) return; // B2B is exact; partial cannot happen, but never advance on partial.
   const paid = await applyOrder(tx, order, "PAYMENT_CONFIRMED", verifier, { fullyPaid: true });
-  if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
+  if (FACTORY_PICKUP_KINDS.includes(order.kind) && order.batchId) {
     const batch = await lockBatch(tx, order.batchId);
     if (batch.custodyState === "RESERVED_FOR_RIDER" || batch.custodyState === "PAYMENT_PENDING") {
       await applyCustody(tx, batch, "PAYMENT_CONFIRMED", verifier, { orderFullyPaid: true }, { orderId: order.id });
     }
+  }
+  if (isOrgKind(order.kind)) {
+    // The organisation has paid; the seller now delivers and confirms (deliverOrgSale). Tell the contact.
+    await notifyOrganisation(tx, paid, "sms.orgPaid");
+    return;
   }
   await tryCompleteTransfer(tx, paid, verifier);
 }
 
 /** Verifier: a B2B payment went to review; free the pickup reservation for a retry. */
 export async function onPaymentReview(tx: Tx, order: Order): Promise<void> {
-  if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
+  if (FACTORY_PICKUP_KINDS.includes(order.kind) && order.batchId) {
     const batch = await lockBatch(tx, order.batchId);
     if (batch.custodyState === "PAYMENT_PENDING") {
       await applyCustody(tx, batch, "PAYMENT_FAILED", { kind: "SYSTEM_VERIFIER", userId: null }, {}, { orderId: order.id });
@@ -712,7 +894,7 @@ export async function onPaymentReversed(tx: Tx, orderIn: Order): Promise<void> {
   const order = await lockOrder(tx, orderIn.id);
   const t = await paidTotals(tx, order);
   if (t.fullyPaid) return; // other confirmed payments still cover the order
-  if (order.kind === "CHAMPION_TO_CUSTOMER") {
+  if (isPlanKind(order.kind)) {
     if (order.state !== "FULLY_PAID" && order.state !== "HANDOVER_PENDING") return;
     if (order.state === "HANDOVER_PENDING" && order.batchId) {
       const child = await lockBatch(tx, order.batchId);
@@ -740,7 +922,7 @@ export async function onPaymentReversed(tx: Tx, orderIn: Order): Promise<void> {
   }
   if (order.state !== "PAID") return;
   const back = await applyOrder(tx, order, "PAYMENT_REVERSED", verifier, { fullyPaid: false });
-  if (order.kind === "SUPPLIER_TO_RIDER" && order.batchId) {
+  if (FACTORY_PICKUP_KINDS.includes(order.kind) && order.batchId) {
     const batch = await lockBatch(tx, order.batchId);
     if (batch.custodyState === "READY_FOR_PICKUP") await applyCustody(tx, batch, "PAYMENT_REVERSED", verifier, {}, { orderId: order.id });
   }
@@ -763,7 +945,7 @@ export async function recentOrdersFor(actor: Pick<Actor, "userId" | "role" | "su
   const db = getDb();
   const party =
     actor.role === "SUPPLIER" && actor.supplierId
-      ? sql`(${s.orders.kind} = 'SUPPLIER_TO_RIDER' and ${s.orders.supplierId} = ${actor.supplierId})`
+      ? sql`(${s.orders.kind} in (${sql.join(SUPPLIER_SELLER_KINDS.map((k) => sql`${k}`), sql`, `)}) and ${s.orders.supplierId} = ${actor.supplierId})`
       : sql`(${s.orders.sellerUserId} = ${actor.userId} or ${s.orders.buyerUserId} = ${actor.userId})`;
   return db.query.orders.findMany({
     where: and(party, sql`(${s.orders.completedAt} is null or ${s.orders.completedAt} > ${since})`),

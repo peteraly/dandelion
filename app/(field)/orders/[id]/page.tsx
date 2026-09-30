@@ -6,6 +6,7 @@ import { Card, Check, Field, IdemKey, KV, PrimaryButton } from "@/components/ui"
 import { Notice } from "@/components/notice";
 import { OrderSummary } from "@/components/order-bits";
 import { requireField } from "@/lib/auth/current";
+import { isOrgKind, isPlanKind } from "@/lib/domain/sales";
 import { can } from "@/lib/policy";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -50,6 +51,16 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
     </div>
   ) : null;
 
+  const cancelOrg =
+    order.organisationId && order.state === "AWAITING_PAYMENT" && !totals.hasConfirmed && can(actor, "order.org_sale.deliver", { type: "order", order: res }) ? (
+      <form action={a.cancelOrgSaleAction} className="mt-2">
+        <IdemKey />
+        <input type="hidden" name="orderId" value={order.id} />
+        <button type="submit" className="btn btn-secondary">
+          {t("field.orgSale.cancel")}
+        </button>
+      </form>
+    ) : null;
   let form: React.ReactNode = null;
   switch (action) {
     case "confirm_batch_ready":
@@ -280,6 +291,18 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       );
       break;
     }
+    case "deliver_org":
+      form = (
+        <div className="flex flex-col gap-3">
+          <form action={a.deliverOrgAction} className="flex flex-col gap-3">
+            {idem}
+            {hidden}
+            <p className="text-sm text-stone-700">{t("field.orgSale.deliverNote")}</p>
+            <PrimaryButton>{t("field.orgSale.deliver")}</PrimaryButton>
+          </form>
+        </div>
+      );
+      break;
     case "report_problem":
       form = (
         <Link href={`/problem?orderId=${order.id}`} className="btn btn-warn">
@@ -291,9 +314,9 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       form = null;
   }
 
-  const receipt = order.state === "COMPLETED" && order.kind === "CHAMPION_TO_CUSTOMER" ? await db.query.receipts.findFirst({ where: eq(s.receipts.orderId, order.id) }) : null;
+  const receipt = order.state === "COMPLETED" && (isPlanKind(order.kind) || isOrgKind(order.kind)) ? await db.query.receipts.findFirst({ where: eq(s.receipts.orderId, order.id) }) : null;
   const margin = order.state === "COMPLETED" && snap.side === "seller" ? (order.unitPriceTzs - order.unitCostTzs) * order.quantity : null;
-  const HANDLED_OK = ["checking", "refundOpened", "receiptSent", "codeSent", "done"];
+  const HANDLED_OK = ["checking", "refundOpened", "receiptSent", "codeSent", "done", "delivered"];
 
   return (
     <>
@@ -301,9 +324,9 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       {ok === "checking" ? <p className="rounded-xl bg-amber-50 p-3 text-amber-950">{t("payment.checking")}</p> : null}
       {ok === "refundOpened" ? <p className="rounded-xl bg-green-50 p-3 text-green-900">{t("field.refund.title")} ✓</p> : null}
       {ok === "codeSent" ? <p className="rounded-xl bg-green-50 p-3 text-green-900">{t("field.handover.codeSent")}</p> : null}
-      {ok === "receiptSent" && receipt ? (
+      {(ok === "receiptSent" || ok === "delivered") && receipt ? (
         <p className="rounded-xl bg-green-50 p-3 text-green-900" data-testid="receipt-sent">
-          {t("field.handover.receiptSent", { receiptNo: receipt.receiptNo })}
+          {ok === "delivered" ? t("field.orgSale.delivered", { receiptNo: receipt.receiptNo }) : t("field.handover.receiptSent", { receiptNo: receipt.receiptNo })}
         </p>
       ) : null}
       {status ? (

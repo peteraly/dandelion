@@ -78,6 +78,14 @@ export interface Area {
   hubs: Hub[];
 }
 
+/** A buyer organisation in the demo (prompt §8.8.4): a school or NGO that buys in bulk. */
+export interface OrgBuyer {
+  id: string;
+  name: string;
+  areaId: string;
+  kind: "NGO" | "NON_PROFIT" | "SCHOOL" | "COMMUNITY" | "OTHER";
+}
+
 /** A pickup whose supplier confirms the batch late; the chain continues on `dueDay` (seed only). */
 export interface DeferredPickup {
   pickupId: string;
@@ -116,6 +124,20 @@ export class World {
   readonly deferred: DeferredPickup[] = [];
   /** May a supplier confirm a batch days late? The seed says yes; a real-clock tick cannot wait, so no. */
   allowLateBatches = false;
+  /** Buyer organisations (prompt §8.8.4). */
+  readonly organisations: OrgBuyer[] = [];
+  /** Direct sale paths switched on in every area (the demo enables them all by dual approval). */
+  directPaths = false;
+  /** Working (non-Sunday) days so far; set pieces key on this, so a Sunday never silently drops one. */
+  workingDay = 0;
+  private readonly done = new Set<string>();
+
+  /** True the first time a key is seen: for set pieces that must happen once, on the first day they can. */
+  once(key: string): boolean {
+    if (this.done.has(key)) return false;
+    this.done.add(key);
+    return true;
+  }
 
   constructor(
     readonly rng: Rng,
@@ -159,8 +181,17 @@ export class World {
   }
 
   /** Advance simulated time by a random number of minutes in [min, max]. */
+  /** When set, ticks never run past this moment, so a busy simulated day cannot drift into the next one (or into the future). */
+  dayEnd: Date | null = null;
+
   tick(minMinutes: number, maxMinutes = minMinutes): Date {
-    return this.clock.advance(this.rng.int(minMinutes, maxMinutes) * MINUTE + this.rng.int(0, 59) * 1000);
+    const ms = this.rng.int(minMinutes, maxMinutes) * MINUTE + this.rng.int(0, 59) * 1000;
+    if (this.dayEnd) {
+      const room = this.dayEnd.getTime() - this.clock.now().getTime();
+      if (room <= 0) return this.clock.now();
+      return this.clock.advance(Math.min(ms, room));
+    }
+    return this.clock.advance(ms);
   }
 
   // ---------- creation of people (direct inserts, like the minimal seed) ----------
@@ -262,6 +293,17 @@ export class World {
       .select({ q: s.batches.quantity })
       .from(s.batches)
       .where(and(eq(s.batches.custodianUserId, champion.actor.userId), eq(s.batches.productId, productId), eq(s.batches.custodyState, "WITH_CHAMPION")));
+    return rows.reduce((a, r) => a + r.q, 0);
+  }
+
+  /** Units a seller holds for a product in the state they sell from; a factory books no inventory here (registers at sale). */
+  async sellerStock(seller: Person, productId: string): Promise<number> {
+    if (seller.actor.role === "SUPPLIER") return Number.POSITIVE_INFINITY;
+    const state = seller.actor.role === "BOSS_RIDER" ? "WITH_RIDER" : "WITH_CHAMPION";
+    const rows = await this.db
+      .select({ q: s.batches.quantity })
+      .from(s.batches)
+      .where(and(eq(s.batches.custodianUserId, seller.actor.userId), eq(s.batches.productId, productId), eq(s.batches.custodyState, state)));
     return rows.reduce((a, r) => a + r.q, 0);
   }
 

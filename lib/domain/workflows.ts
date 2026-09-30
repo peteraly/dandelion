@@ -68,7 +68,8 @@ export type ActionKey =
   | "confirm_customer_handover"
   | "request_stock"
   | "contact_or_close"
-  | "view_customers";
+  | "view_customers"
+  | "deliver_org";
 
 export interface WorkflowRow {
   status: string;
@@ -87,14 +88,48 @@ const locked = (o: OrderSnapshot) => active(o) && o.batchState !== null && isLoc
 const k = (kind: OrderKind, side: "seller" | "buyer") => (o: OrderSnapshot) => o.kind === kind && o.side === side;
 const recentlyDone = (o: OrderSnapshot) => o.state === "COMPLETED";
 
+/** One of several kinds, on one side. */
+const kk = (kinds: readonly OrderKind[], side: "seller" | "buyer") => (o: OrderSnapshot) => kinds.includes(o.kind) && o.side === side;
+/** Supplier selling a batch to whoever collects at the factory (ladder rider, or a hub / champion at the factory gate). */
+const supplierPickupRows = (kinds: readonly OrderKind[]): WorkflowRow[] => [
+  { status: "problem_reported", match: (o) => kk(kinds, "seller")(o) && locked(o), action: "report_problem" },
+  { status: "payment_confirmed", match: (o) => kk(kinds, "seller")(o) && o.state === "PAID" && !o.senderConfirmed, action: "confirm_release" },
+  { status: "pickup_assigned", match: (o) => kk(kinds, "seller")(o) && o.state === "PICKUP_ASSIGNED", action: "confirm_batch_ready" },
+  { status: "payment_pending", match: (o) => kk(kinds, "seller")(o) && o.state === "AWAITING_PAYMENT" && o.paymentClaimed, action: "refresh_payment" },
+  { status: "batch_ready", match: (o) => kk(kinds, "seller")(o) && (o.state === "BATCH_READY" || o.state === "AWAITING_PAYMENT"), action: "view_payment_status" },
+  { status: "waiting_rider_pickup", match: (o) => kk(kinds, "seller")(o) && o.state === "PAID", action: "refresh" },
+  { status: "pickup_complete", match: (o) => kk(kinds, "seller")(o) && recentlyDone(o), action: "view_completed" },
+];
+/** Collecting a batch at the factory, on the buyer's side. */
+const factoryBuyerRows = (kind: OrderKind): WorkflowRow[] => [
+  { status: "delivery_problem", match: (o) => k(kind, "buyer")(o) && locked(o), action: "report_problem" },
+  { status: "payment_confirmed", match: (o) => k(kind, "buyer")(o) && o.state === "PAID" && !o.receiverConfirmed, action: "confirm_receipt" },
+  { status: "pickup_available", match: (o) => k(kind, "buyer")(o) && o.state === "BATCH_READY", action: "accept_pickup" },
+  { status: "payment_pending", match: (o) => k(kind, "buyer")(o) && o.state === "AWAITING_PAYMENT" && o.paymentClaimed, action: "refresh_payment" },
+  { status: "awaiting_payment", match: (o) => k(kind, "buyer")(o) && o.state === "AWAITING_PAYMENT", action: "i_have_paid" },
+  { status: "waiting_supplier_release", match: (o) => k(kind, "buyer")(o) && o.state === "PAID", action: "refresh" },
+  { status: "pickup_complete", match: (o) => k(kind, "buyer")(o) && recentlyDone(o), action: "view_completed" },
+];
+/** Selling to a customer with installments and a handover code (the champion's rows, for whoever sells directly). */
+const planRows = (kind: OrderKind): WorkflowRow[] => [
+  { status: "handover_required", match: (o) => k(kind, "seller")(o) && o.state === "HANDOVER_PENDING", action: "confirm_customer_handover" },
+  { status: "full_payment_complete", match: (o) => k(kind, "seller")(o) && o.state === "FULLY_PAID", action: "complete_handover" },
+  { status: "payment_pending", match: (o) => k(kind, "seller")(o) && o.state === "PLAN_ACTIVE" && o.latestPaymentStatus === "PAYMENT_PENDING" && o.paymentClaimed, action: "refresh_payment" },
+  { status: "customer_paused", match: (o) => k(kind, "seller")(o) && o.state === "PLAN_ACTIVE" && (o.daysSinceLastPayment ?? 0) >= 14, action: "contact_or_close" },
+  { status: "installment_active", match: (o) => k(kind, "seller")(o) && o.state === "PLAN_ACTIVE", action: "record_payment" },
+  { status: "handover_complete", match: (o) => k(kind, "seller")(o) && recentlyDone(o), action: "view_customers" },
+];
+/** Selling in bulk to an organisation (prompt §8.8.4): paid first, then delivered by the seller. */
+const orgRows = (kind: OrderKind): WorkflowRow[] => [
+  { status: "org_paid", match: (o) => k(kind, "seller")(o) && o.state === "PAID", action: "deliver_org" },
+  { status: "org_awaiting_payment", match: (o) => k(kind, "seller")(o) && o.state === "AWAITING_PAYMENT", action: "refresh_payment" },
+  { status: "org_delivered", match: (o) => k(kind, "seller")(o) && recentlyDone(o), action: "view_completed" },
+];
+
 export const SUPPLIER_WORKFLOW: WorkflowRow[] = [
-  { status: "problem_reported", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && locked(o), action: "report_problem" },
-  { status: "payment_confirmed", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && o.state === "PAID" && !o.senderConfirmed, action: "confirm_release" },
-  { status: "pickup_assigned", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && o.state === "PICKUP_ASSIGNED", action: "confirm_batch_ready" },
-  { status: "payment_pending", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && o.state === "AWAITING_PAYMENT" && o.paymentClaimed, action: "refresh_payment" },
-  { status: "batch_ready", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && (o.state === "BATCH_READY" || o.state === "AWAITING_PAYMENT"), action: "view_payment_status" },
-  { status: "waiting_rider_pickup", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && o.state === "PAID", action: "refresh" },
-  { status: "pickup_complete", match: (o) => k("SUPPLIER_TO_RIDER", "seller")(o) && recentlyDone(o), action: "view_completed" },
+  ...supplierPickupRows(["SUPPLIER_TO_RIDER", "SUPPLIER_TO_HUB", "SUPPLIER_TO_CHAMPION"]),
+  ...planRows("SUPPLIER_TO_CUSTOMER"),
+  ...orgRows("SUPPLIER_TO_ORG"),
 ];
 
 export const RIDER_WORKFLOW: WorkflowRow[] = [
@@ -104,6 +139,8 @@ export const RIDER_WORKFLOW: WorkflowRow[] = [
   { status: "payment_pending", match: (o) => k("SUPPLIER_TO_RIDER", "buyer")(o) && o.state === "AWAITING_PAYMENT" && o.paymentClaimed, action: "refresh_payment" },
   { status: "awaiting_payment", match: (o) => k("SUPPLIER_TO_RIDER", "buyer")(o) && o.state === "AWAITING_PAYMENT", action: "i_have_paid" },
   { status: "waiting_supplier_release", match: (o) => k("SUPPLIER_TO_RIDER", "buyer")(o) && o.state === "PAID", action: "refresh" },
+  ...planRows("RIDER_TO_CUSTOMER"),
+  ...orgRows("RIDER_TO_ORG"),
   { status: "hub_accepted", match: (o) => k("RIDER_TO_HUB", "seller")(o) && (o.state === "AWAITING_PAYMENT" || o.state === "PAID") && !o.senderConfirmed, action: "confirm_handover_to_hub" },
   { status: "in_transit", match: (o) => k("RIDER_TO_HUB", "seller")(o) && o.state === "EN_ROUTE", action: "open_delivery_code" },
   { status: "hub_inspection_pending", match: (o) => k("RIDER_TO_HUB", "seller")(o) && o.state === "INSPECTING", action: "refresh_delivery" },
@@ -122,6 +159,8 @@ export const HUB_WORKFLOW: WorkflowRow[] = [
   { status: "champion_payment_confirmed", match: (o) => k("HUB_TO_CHAMPION", "seller")(o) && o.state === "PAID" && !o.senderConfirmed, action: "confirm_release" },
   { status: "champion_request", match: (o) => k("HUB_TO_CHAMPION", "seller")(o) && o.state === "REQUESTED", action: "prepare_transfer" },
   { status: "champion_payment_pending", match: (o) => k("HUB_TO_CHAMPION", "seller")(o) && (o.state === "AWAITING_PAYMENT" || o.state === "PAID"), action: "refresh_payment" },
+  ...factoryBuyerRows("SUPPLIER_TO_HUB"),
+  ...orgRows("HUB_TO_ORG"),
   { status: "stock_recorded", match: (o) => k("RIDER_TO_HUB", "buyer")(o) && recentlyDone(o), action: "view_inventory" },
 ];
 
@@ -144,6 +183,7 @@ export const CHAMPION_WORKFLOW: WorkflowRow[] = [
   },
   { status: "installment_active", match: (o) => k("CHAMPION_TO_CUSTOMER", "seller")(o) && o.state === "PLAN_ACTIVE", action: "record_payment" },
   { status: "stock_requested", match: (o) => k("HUB_TO_CHAMPION", "buyer")(o) && o.state === "REQUESTED", action: "refresh" },
+  ...factoryBuyerRows("SUPPLIER_TO_CHAMPION"),
   { status: "handover_complete", match: (o) => k("CHAMPION_TO_CUSTOMER", "seller")(o) && recentlyDone(o), action: "view_customers" },
 ];
 

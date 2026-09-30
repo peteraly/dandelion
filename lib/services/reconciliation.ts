@@ -4,6 +4,8 @@
  * the "under review" marker on /verify. It never changes an order.
  */
 import { now, nowMs } from "@/lib/clock";
+import { FACTORY_PICKUP_KINDS, isPlanKind } from "@/lib/domain/sales";
+import type { OrderKind } from "@/lib/domain/types";
 import { and, eq, isNull, lt, sql } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -39,10 +41,10 @@ export function reconcileOrder(o: OrderSnapshotForRecon, pendingAlertMinutes: nu
   if (covered > o.totalTzs) flags.push({ orderId: o.id, batchId: o.batchId, kind: "OVER_COVERED", details: { covered, total: o.totalTzs } });
   if (o.state === "COMPLETED" && covered < o.totalTzs) flags.push({ orderId: o.id, batchId: o.batchId, kind: "COMPLETED_WITHOUT_FULL_PAYMENT", details: { covered, total: o.totalTzs } });
   if (o.state === "COMPLETED" && o.transferEvents === 0) flags.push({ orderId: o.id, batchId: o.batchId, kind: "COMPLETED_WITHOUT_CUSTODY_EVENT", details: {} });
-  if (o.state !== "COMPLETED" && o.transferEvents > 0 && o.kind !== "SUPPLIER_TO_RIDER") {
+  if (o.state !== "COMPLETED" && o.transferEvents > 0 && !FACTORY_PICKUP_KINDS.includes(o.kind as OrderKind)) {
     flags.push({ orderId: o.id, batchId: o.batchId, kind: "CUSTODY_MOVED_BEFORE_COMPLETION", details: { state: o.state } });
   }
-  if (o.kind === "CHAMPION_TO_CUSTOMER" && o.state === "COMPLETED" && o.batchState !== "HANDED_TO_CUSTOMER") {
+  if (isPlanKind(o.kind as OrderKind) && o.state === "COMPLETED" && o.batchState !== "HANDED_TO_CUSTOMER") {
     flags.push({ orderId: o.id, batchId: o.batchId, kind: "HANDOVER_WITHOUT_BATCH_STATE", details: { batchState: o.batchState } });
   }
   if (o.pendingIntentAgeMinutes !== null && o.pendingIntentAgeMinutes > pendingAlertMinutes) {
@@ -61,7 +63,7 @@ export async function runDailyReconciliation(): Promise<{ checked: number; match
       coalesce((select sum(confirmed_amount_tzs) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_CONFIRMED'), 0)::int as "confirmedTzs",
       coalesce((select sum(amount_tzs) from donor_fundings d where d.order_id = o.id), 0)::int as "donorTzs",
       b.custody_state as "batchState",
-      (select count(*) from custody_events ce where ce.order_id = o.id and ce.event in ('PICKUP','HUB_ACCEPT','CHAMPION_HANDOVER','CUSTOMER_HANDOVER'))::int as "transferEvents",
+      (select count(*) from custody_events ce where ce.order_id = o.id and ce.event in ('PICKUP','HUB_ACCEPT','CHAMPION_HANDOVER','CUSTOMER_HANDOVER','KEEP_WITH_RIDER','FACTORY_GATE_TO_HUB','FACTORY_GATE_TO_CHAMPION','SPLIT_FOR_ORG'))::int as "transferEvents",
       (select extract(epoch from (${now()}::timestamptz - min(p.payer_claimed_at)))/60 from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_PENDING' and p.payer_claimed_at is not null) as "pendingIntentAgeMinutes",
       (select count(*) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_FAILED_OR_REVIEW')::int as "reviewIntents"
     from orders o left join batches b on b.id = o.batch_id

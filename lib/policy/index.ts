@@ -12,6 +12,7 @@
  *  - admins see what they need to operate — only with a second factor.
  */
 import type { OrderKind, Role } from "@/lib/domain/types";
+import { FACTORY_PICKUP_KINDS, isOrgKind, isPlanKind, saleFor } from "@/lib/domain/sales";
 
 export interface Actor {
   userId: string;
@@ -72,6 +73,9 @@ export const ACTIONS = [
   "admin.supplier.view",
   "admin.supplier.manage",
   "admin.ecosystem.view",
+  "admin.organisation.view",
+  "admin.organisation.manage",
+  "admin.area.sales",
   // shared field
   "order.view",
   "order.claim_paid",
@@ -83,6 +87,9 @@ export const ACTIONS = [
   // supplier
   "order.confirm_batch_ready",
   "supplier.home.view",
+  // sellers on direct paths (prompt §8.8): organisation sales
+  "order.org_sale.create",
+  "order.org_sale.deliver",
   // rider
   "order.accept_pickup",
   "order.view_delivery_code",
@@ -121,27 +128,29 @@ const isRole = (a: Actor, r: Role) => a.role === r;
 
 /** Is this actor a party to the order (as seen by their role)? */
 export function isOrderParty(a: Actor, o: OrderResource): boolean {
+  const sale = saleFor(o.kind);
+  const seller = o.sellerUserId === a.userId && sale.seller === a.role;
+  const buyer = o.buyerUserId === a.userId && sale.buyer === a.role;
   switch (a.role) {
     case "SUPPLIER":
-      // Organisation-wide: a colleague may prepare or release a batch a colleague was assigned.
-      return o.kind === "SUPPLIER_TO_RIDER" && a.supplierId !== null && o.supplierId === a.supplierId;
+      // Organisation-wide: any colleague of the supplier acts on what the organisation sells (ADR-029).
+      return sale.seller === "SUPPLIER" && a.supplierId !== null && o.supplierId === a.supplierId;
     case "BOSS_RIDER":
-      return (o.kind === "SUPPLIER_TO_RIDER" && o.buyerUserId === a.userId) || (o.kind === "RIDER_TO_HUB" && o.sellerUserId === a.userId);
+      return buyer || seller;
     case "HUB_MANAGER":
-      return (
-        a.hubId !== null &&
-        o.hubId === a.hubId &&
-        ((o.kind === "RIDER_TO_HUB" && o.buyerUserId === a.userId) || (o.kind === "HUB_TO_CHAMPION" && o.sellerUserId === a.userId))
-      );
+      return a.hubId !== null && o.hubId === a.hubId && (buyer || seller);
     case "FIELD_CHAMPION":
-      return (
-        (o.kind === "HUB_TO_CHAMPION" && o.buyerUserId === a.userId) ||
-        (o.kind === "CHAMPION_TO_CUSTOMER" && o.sellerUserId === a.userId && o.customerChampionId === a.userId)
-      );
+      return buyer || (seller && (!isPlanKind(o.kind) || o.customerChampionId === a.userId));
     default:
       return false;
   }
 }
+
+const sellerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).seller === a.role;
+const buyerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).buyer === a.role;
+/** Roles that may enrol customers and sell to them: on the ladder the champion; on direct paths riders and suppliers (the area switch is checked in the service). */
+const SELLS_TO_CUSTOMERS: readonly Role[] = ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER"];
+const SELLS_TO_ORGS: readonly Role[] = ["SUPPLIER", "HUB_MANAGER", "BOSS_RIDER"];
 
 const orderRule =
   (pred: (a: Actor, o: OrderResource) => boolean) =>
@@ -173,14 +182,15 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "admin.supplier.view": adminOnly,
   "admin.supplier.manage": adminOnly,
   "admin.ecosystem.view": adminOnly,
+  "admin.organisation.view": adminOnly,
+  "admin.organisation.manage": adminOnly,
+  "admin.area.sales": adminOnly,
 
   "order.view": (a, r) => isAdmin(a) || (r.type === "order" && isOrderParty(a, r.order)),
   // Only the buyer pays; "I have paid" never confirms anything, it only asks the verifier to look.
-  "order.claim_paid": orderRule((a, o) =>
-    o.kind === "CHAMPION_TO_CUSTOMER" ? false : o.buyerUserId === a.userId,
-  ),
-  "order.confirm_release": orderRule((a, o) => (o.sellerUserId === a.userId || (isRole(a, "SUPPLIER") && o.kind === "SUPPLIER_TO_RIDER")) && o.kind !== "CHAMPION_TO_CUSTOMER"),
-  "order.confirm_receipt": orderRule((a, o) => o.buyerUserId === a.userId && o.kind !== "CHAMPION_TO_CUSTOMER"),
+  "order.claim_paid": orderRule((a, o) => (isPlanKind(o.kind) || isOrgKind(o.kind) ? false : o.buyerUserId === a.userId)),
+  "order.confirm_release": orderRule((a, o) => !isPlanKind(o.kind) && !isOrgKind(o.kind) && (o.sellerUserId === a.userId || (isRole(a, "SUPPLIER") && FACTORY_PICKUP_KINDS.includes(o.kind)))),
+  "order.confirm_receipt": orderRule((a, o) => !isPlanKind(o.kind) && !isOrgKind(o.kind) && o.buyerUserId === a.userId),
   "exception.report": (a, r) => {
     if (a.role === "SUPER_ADMIN") return isAdmin(a);
     if (r.type === "none") return true;
@@ -191,9 +201,11 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "note.create": (a) => a.role !== "SUPER_ADMIN",
   "account.lock_self": () => true,
 
-  "order.confirm_batch_ready": orderRule((a, o) => isRole(a, "SUPPLIER") && o.kind === "SUPPLIER_TO_RIDER"),
+  "order.confirm_batch_ready": orderRule((a, o) => isRole(a, "SUPPLIER") && FACTORY_PICKUP_KINDS.includes(o.kind)),
   "supplier.home.view": (a) => isRole(a, "SUPPLIER") && a.supplierId !== null,
-  "order.accept_pickup": orderRule((a, o) => isRole(a, "BOSS_RIDER") && o.kind === "SUPPLIER_TO_RIDER"),
+  "order.org_sale.create": (a) => SELLS_TO_ORGS.includes(a.role),
+  "order.org_sale.deliver": orderRule((a, o) => isOrgKind(o.kind) && sellerRole(a, o)),
+  "order.accept_pickup": orderRule((a, o) => FACTORY_PICKUP_KINDS.includes(o.kind) && buyerRole(a, o)),
   "order.view_delivery_code": orderRule((a, o) => isRole(a, "BOSS_RIDER") && o.kind === "RIDER_TO_HUB"),
 
   "order.start_inspection": orderRule((a, o) => isRole(a, "HUB_MANAGER") && o.kind === "RIDER_TO_HUB"),
@@ -204,14 +216,14 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "hub.request_restock": (a) => isRole(a, "HUB_MANAGER"),
 
   "order.request_stock": (a) => isRole(a, "FIELD_CHAMPION"),
-  "customer.create": (a) => isRole(a, "FIELD_CHAMPION"),
-  "customer.view": (a, r) => isAdmin(a) || (isRole(a, "FIELD_CHAMPION") && r.type === "customer" && r.customer.championId === a.userId),
-  "order.start_plan": (a, r) => isRole(a, "FIELD_CHAMPION") && r.type === "customer" && r.customer.championId === a.userId,
-  "order.expect_payment": orderRule((a, o) => isRole(a, "FIELD_CHAMPION") && o.kind === "CHAMPION_TO_CUSTOMER"),
-  "order.start_handover": orderRule((a, o) => isRole(a, "FIELD_CHAMPION") && o.kind === "CHAMPION_TO_CUSTOMER"),
-  "order.complete_handover": orderRule((a, o) => isRole(a, "FIELD_CHAMPION") && o.kind === "CHAMPION_TO_CUSTOMER"),
-  "order.close_plan": orderRule((a, o) => isRole(a, "FIELD_CHAMPION") && o.kind === "CHAMPION_TO_CUSTOMER"),
-  "refund.request": orderRule((a, o) => isRole(a, "FIELD_CHAMPION") && o.kind === "CHAMPION_TO_CUSTOMER"),
+  "customer.create": (a) => SELLS_TO_CUSTOMERS.includes(a.role),
+  "customer.view": (a, r) => isAdmin(a) || (SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId),
+  "order.start_plan": (a, r) => SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId,
+  "order.expect_payment": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
+  "order.start_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
+  "order.complete_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
+  "order.close_plan": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
+  "refund.request": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
 };
 
 export function can(actor: Actor, action: Action, resource: Resource = { type: "none" }): boolean {

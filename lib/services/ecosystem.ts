@@ -13,6 +13,8 @@ import { authorize, type Actor } from "@/lib/policy";
 import { LOCKED_CUSTODY_STATES, ORDER_KINDS, type OrderKind } from "@/lib/domain/types";
 import { securityLabelKey, ADMIN_ACTIONS } from "@/lib/domain/events";
 import { SUPPLIER_QUALITY_TYPES } from "@/lib/domain/suppliers";
+import { PLAN_KINDS } from "@/lib/domain/sales";
+import { paidByUserSince, receivedByUserSince } from "./earnings";
 import { aiEnabled, aiModel, appEnv, chainNetwork, paymentProviderId, smsProviderId } from "@/lib/env";
 import { tzMonthStart } from "@/lib/util/time";
 import { unanchoredCount } from "@/lib/ledger/anchor";
@@ -32,7 +34,7 @@ const PaymentState = z.enum(["pending", "confirmed", "review", "hold"]);
 
 export const NodeSchema = z.object({
   id: z.string(),
-  kind: z.enum(["SUPPLIER", "RIDER", "HUB", "CHAMPION", "CUSTOMERS"]),
+  kind: z.enum(["SUPPLIER", "RIDER", "HUB", "CHAMPION", "CUSTOMERS", "ORGANISATION"]),
   name: z.string(),
   status: NodeStatus,
   areaId: z.string().nullable(),
@@ -45,6 +47,9 @@ export const NodeSchema = z.object({
   champion: z.object({ customers: z.number(), activePlans: z.number(), stalledPlans: z.number(), lastSaleAt: z.string().nullable() }).nullable(),
   supplier: z.object({ waitingPastLeadTime: z.number(), qualityShare: z.number(), qualityBatches: z.number(), confirmedTzs: z.number() }).nullable(),
   customers: z.object({ count: z.number(), activePlans: z.number(), handoverPending: z.number() }).nullable(),
+  organisation: z.object({ kind: z.string(), openOrders: z.number(), confirmedTzs: z.number() }).nullable(),
+  /** Provider-confirmed money received minus paid in the window (prompt §8.8.1); null for nodes that do not earn. */
+  earnedTzs: z.number().nullable(),
 });
 export type EcoNode = z.infer<typeof NodeSchema>;
 
@@ -94,9 +99,10 @@ export const AttentionSchema = z.object({
   handoverPending: z.number(),
   waitingOnSupplier: z.number(),
   supplierQuality: z.number(),
+  orgOrdersUnpaid: z.number(),
 });
 export type Attention = z.infer<typeof AttentionSchema>;
-export const ATTENTION_KEYS = ["paymentReviews", "paymentsPendingLong", "lockedBatches", "approvalsWaiting", "openExceptions", "reconFlags", "deadJobs", "silentNodes", "hubsBelowMin", "handoverPending", "waitingOnSupplier", "supplierQuality"] as const satisfies readonly (keyof Attention)[];
+export const ATTENTION_KEYS = ["paymentReviews", "paymentsPendingLong", "lockedBatches", "approvalsWaiting", "openExceptions", "reconFlags", "deadJobs", "silentNodes", "hubsBelowMin", "handoverPending", "waitingOnSupplier", "supplierQuality", "orgOrdersUnpaid"] as const satisfies readonly (keyof Attention)[];
 export type AttentionKey = (typeof ATTENTION_KEYS)[number];
 
 export const FeedItemSchema = z.object({
@@ -255,7 +261,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
       count(*) filter (where o.state = 'PLAN_ACTIVE' and coalesce((select max(pi.confirmed_at) from payment_intents pi where pi.order_id = o.id and pi.status = 'PAYMENT_CONFIRMED'), o.created_at) < ${stalledCutoff})::text as stalled,
       count(*) filter (where o.state in ('FULLY_PAID','HANDOVER_PENDING'))::text as handover,
       max(o.completed_at) as last_sale
-    from orders o where o.kind = 'CHAMPION_TO_CUSTOMER' group by o.seller_user_id`);
+    from orders o where o.kind in (${sql.join(PLAN_KINDS.map((k) => sql`${k}`), sql`, `)}) group by o.seller_user_id`);
   const plansOf = new Map(plansPerChampion.rows.map((r) => [r.seller, { active: n(r.active), stalled: n(r.stalled), handover: n(r.handover), lastSale: r.last_sale ? new Date(r.last_sale) : null }]));
 
   // ---------- supplier signals ----------
@@ -274,6 +280,9 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     from payment_intents pi join users u on u.id = pi.payee_user_id
     where pi.status = 'PAYMENT_CONFIRMED' and pi.confirmed_at >= ${since} and u.supplier_id is not null group by u.supplier_id`);
   const supplierTzs = new Map(supplierMoney.rows.map((r) => [r.supplier_id, n(r.tzs)]));
+  const receivedBy = await receivedByUserSince(db, since);
+  const paidBy = await paidByUserSince(db, since);
+  const earnedOf = (userIds: string[]) => userIds.reduce((a, id) => a + (receivedBy.get(id) ?? 0) - (paidBy.get(id) ?? 0), 0);
 
   // ---------- pending in/out per hub ----------
   const hubPending = await db.execute<{ hub_id: string; pending_in: string; pending_out: string }>(sql`
@@ -312,10 +321,12 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
       champion: null,
       supplier: { waitingPastLeadTime: waitingOf.get(sup.id) ?? 0, qualityShare: qual.batches ? qual.withIssue / qual.batches : 0, qualityBatches: qual.batches, confirmedTzs: supplierTzs.get(sup.id) ?? 0 },
       customers: null,
+      organisation: null,
+      earnedTzs: earnedOf(orgUsers.map((u) => u.id)),
     });
   }
   for (const u of users.filter((x) => x.role === "BOSS_RIDER" && inScopeUser(x))) {
-    nodes.push({ id: `user:${u.id}`, kind: "RIDER", name: u.displayName, status: userStatus(u.status), areaId: u.serviceAreaId, areaName: areaName.get(u.serviceAreaId ?? "") ?? "—", hubId: null, lastActivityAt: iso(lastActivity.get(u.id)), href: `/admin/stakeholders/${u.id}`, stock: stockOut(stockOfUser.get(u.id)), hub: null, champion: null, supplier: null, customers: null });
+    nodes.push({ id: `user:${u.id}`, kind: "RIDER", name: u.displayName, status: userStatus(u.status), areaId: u.serviceAreaId, areaName: areaName.get(u.serviceAreaId ?? "") ?? "—", hubId: null, lastActivityAt: iso(lastActivity.get(u.id)), href: `/admin/stakeholders/${u.id}`, stock: stockOut(stockOfUser.get(u.id)), hub: null, champion: null, supplier: null, customers: null, organisation: null, earnedTzs: earnedOf([u.id]) });
   }
   for (const h of hubFilter) {
     const manager = users.find((u) => u.role === "HUB_MANAGER" && u.hubId === h.id);
@@ -338,11 +349,13 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
       champion: null,
       supplier: null,
       customers: null,
+      organisation: null,
+      earnedTzs: manager ? earnedOf([manager.id]) : null,
     });
   }
   for (const u of users.filter((x) => x.role === "FIELD_CHAMPION" && inScopeUser(x))) {
     const p = plansOf.get(u.id) ?? { active: 0, stalled: 0, handover: 0, lastSale: null };
-    nodes.push({ id: `user:${u.id}`, kind: "CHAMPION", name: u.displayName, status: userStatus(u.status), areaId: u.serviceAreaId, areaName: areaName.get(u.serviceAreaId ?? "") ?? "—", hubId: u.hubId, lastActivityAt: iso(lastActivity.get(u.id)), href: `/admin/stakeholders/${u.id}`, stock: stockOut(stockOfUser.get(u.id)), hub: null, champion: { customers: customersOf.get(u.id) ?? 0, activePlans: p.active, stalledPlans: p.stalled, lastSaleAt: iso(p.lastSale) }, supplier: null, customers: null });
+    nodes.push({ id: `user:${u.id}`, kind: "CHAMPION", name: u.displayName, status: userStatus(u.status), areaId: u.serviceAreaId, areaName: areaName.get(u.serviceAreaId ?? "") ?? "—", hubId: u.hubId, lastActivityAt: iso(lastActivity.get(u.id)), href: `/admin/stakeholders/${u.id}`, stock: stockOut(stockOfUser.get(u.id)), hub: null, champion: { customers: customersOf.get(u.id) ?? 0, activePlans: p.active, stalledPlans: p.stalled, lastSaleAt: iso(p.lastSale) }, supplier: null, customers: null, organisation: null, earnedTzs: earnedOf([u.id]) });
   }
   // Customers appear as one box per hub — counts only, never names (§3.5).
   for (const h of hubFilter) {
@@ -350,12 +363,33 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     const count = champs.reduce((a, c) => a + (customersOf.get(c.id) ?? 0), 0);
     const activePlans = champs.reduce((a, c) => a + (plansOf.get(c.id)?.active ?? 0), 0);
     const handoverPending = champs.reduce((a, c) => a + (plansOf.get(c.id)?.handover ?? 0), 0);
-    nodes.push({ id: `customers:${h.id}`, kind: "CUSTOMERS", name: `${h.name}`, status: "active", areaId: h.serviceAreaId, areaName: areaName.get(h.serviceAreaId) ?? "—", hubId: h.id, lastActivityAt: null, href: `/admin/orders`, stock: null, hub: null, champion: null, supplier: null, customers: { count, activePlans, handoverPending } });
+    nodes.push({ id: `customers:${h.id}`, kind: "CUSTOMERS", name: `${h.name}`, status: "active", areaId: h.serviceAreaId, areaName: areaName.get(h.serviceAreaId) ?? "—", hubId: h.id, lastActivityAt: null, href: `/admin/orders`, stock: null, hub: null, champion: null, supplier: null, customers: { count, activePlans, handoverPending }, organisation: null, earnedTzs: null });
+  }
+  // Customers served directly by riders or suppliers (village drops, factory gate — prompt §8.8): one box per area, counts only.
+  for (const areaId of areaIds) {
+    const direct = users.filter((u) => (u.role === "BOSS_RIDER" || u.role === "SUPPLIER") && inScopeUser(u) && (u.serviceAreaId === areaId || (u.role === "SUPPLIER" && suppliers.find((x) => x.id === u.supplierId)?.serviceAreaId === areaId)));
+    const count = direct.reduce((a, u) => a + (customersOf.get(u.id) ?? 0), 0);
+    const activePlans = direct.reduce((a, u) => a + (plansOf.get(u.id)?.active ?? 0), 0);
+    const handoverPending = direct.reduce((a, u) => a + (plansOf.get(u.id)?.handover ?? 0), 0);
+    if (count === 0 && activePlans === 0) continue;
+    nodes.push({ id: `customers:area:${areaId}`, kind: "CUSTOMERS", name: `${areaName.get(areaId) ?? "—"} · direct`, status: "active", areaId, areaName: areaName.get(areaId) ?? "—", hubId: null, lastActivityAt: null, href: `/admin/orders`, stock: null, hub: null, champion: null, supplier: null, customers: { count, activePlans, handoverPending }, organisation: null, earnedTzs: null });
+  }
+  // Buyer organisations (prompt §8.8.4).
+  const orgs = await db.query.organisations.findMany({ orderBy: s.organisations.name });
+  const orgStats = await db.execute<{ organisation_id: string; open: string; tzs: string }>(sql`
+    select o.organisation_id, count(*) filter (where o.state not in ('COMPLETED','CANCELLED','CLOSED'))::text as open,
+      coalesce(sum((select sum(pi.confirmed_amount_tzs) from payment_intents pi where pi.order_id = o.id and pi.status = 'PAYMENT_CONFIRMED' and pi.confirmed_at >= ${since})), 0)::text as tzs
+    from orders o where o.organisation_id is not null group by o.organisation_id`);
+  const orgStatOf = new Map(orgStats.rows.map((r) => [r.organisation_id, { open: n(r.open), tzs: n(r.tzs) }]));
+  const orgName = new Map(orgs.map((o) => [o.id, o.name]));
+  for (const o of orgs.filter((x) => !scoped || (x.serviceAreaId !== null && areaIds.includes(x.serviceAreaId)))) {
+    const st = orgStatOf.get(o.id) ?? { open: 0, tzs: 0 };
+    nodes.push({ id: `org:${o.id}`, kind: "ORGANISATION", name: o.name, status: o.active ? "active" : "inactive", areaId: o.serviceAreaId, areaName: areaName.get(o.serviceAreaId ?? "") ?? "—", hubId: null, lastActivityAt: null, href: `/admin/organisations/${o.id}`, stock: null, hub: null, champion: null, supplier: null, customers: null, organisation: { kind: o.kind, openOrders: st.open, confirmedTzs: st.tzs }, earnedTzs: null });
   }
 
   // ---------- edges and open orders ----------
-  const openRows = await db.execute<{ id: string; ref: string; kind: OrderKind; state: string; seller: string; buyer: string | null; supplier_id: string | null; hub_id: string | null; quantity: string; total_tzs: string; created_at: Date; confirmed: string; in_review: string; sender_confirmed_at: Date | null; receiver_confirmed_at: Date | null }>(sql`
-    select o.id, o.ref, o.kind, o.state, o.seller_user_id as seller, o.buyer_user_id as buyer, o.supplier_id, o.hub_id, o.quantity::text, o.total_tzs::text, o.created_at,
+  const openRows = await db.execute<{ id: string; ref: string; kind: OrderKind; state: string; seller: string; buyer: string | null; supplier_id: string | null; hub_id: string | null; organisation_id: string | null; quantity: string; total_tzs: string; created_at: Date; confirmed: string; in_review: string; sender_confirmed_at: Date | null; receiver_confirmed_at: Date | null }>(sql`
+    select o.id, o.ref, o.kind, o.state, o.seller_user_id as seller, o.buyer_user_id as buyer, o.supplier_id, o.hub_id, o.organisation_id, o.quantity::text, o.total_tzs::text, o.created_at,
       coalesce((select sum(pi.confirmed_amount_tzs) from payment_intents pi where pi.order_id = o.id and pi.status = 'PAYMENT_CONFIRMED'), 0)::text as confirmed,
       (select count(*) from payment_intents pi where pi.order_id = o.id and pi.status = 'PAYMENT_FAILED_OR_REVIEW')::text as in_review,
       o.sender_confirmed_at, o.receiver_confirmed_at
@@ -363,16 +397,39 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     ${hubIds.length && scoped ? sql`and (o.hub_id in (${sql.join(hubIds.map((h) => sql`${h}`), sql`, `)}) or o.hub_id is null)` : sql``}
     order by o.created_at asc limit 500`);
   const hubNameOf = new Map(allHubs.map((h) => [h.id, h.name]));
+  const areaOfUser = new Map(users.map((u) => [u.id, u.serviceAreaId ?? (u.supplierId ? suppliers.find((x) => x.id === u.supplierId)?.serviceAreaId ?? null : null)]));
   const endpoints = (r: (typeof openRows.rows)[number]): { fromId: string; toId: string; fromName: string; toName: string } => {
+    const supplierEnd = { id: `supplier:${r.supplier_id}`, name: supplierName.get(r.supplier_id ?? "") ?? "—" };
+    const sellerEnd = { id: `user:${r.seller}`, name: userName.get(r.seller) ?? "—" };
+    const buyerEnd = { id: `user:${r.buyer}`, name: userName.get(r.buyer ?? "") ?? "—" };
+    const hubEnd = { id: `hub:${r.hub_id}`, name: hubNameOf.get(r.hub_id ?? "") ?? "—" };
+    const orgEnd = { id: `org:${r.organisation_id}`, name: orgName.get(r.organisation_id ?? "") ?? "—" };
+    // Direct customer sales point at the area's "direct" customers box; ladder sales at the hub's.
+    const directCustomers = { id: `customers:area:${areaOfUser.get(r.seller) ?? ""}`, name: `${areaName.get(areaOfUser.get(r.seller) ?? "") ?? "—"} · direct` };
+    const hubCustomers = { id: `customers:${r.hub_id}`, name: hubNameOf.get(r.hub_id ?? "") ?? "—" };
+    const pair = (from: { id: string; name: string }, to: { id: string; name: string }) => ({ fromId: from.id, toId: to.id, fromName: from.name, toName: to.name });
     switch (r.kind) {
       case "SUPPLIER_TO_RIDER":
-        return { fromId: `supplier:${r.supplier_id}`, toId: `user:${r.buyer}`, fromName: supplierName.get(r.supplier_id ?? "") ?? "—", toName: userName.get(r.buyer ?? "") ?? "—" };
+      case "SUPPLIER_TO_CHAMPION":
+        return pair(supplierEnd, buyerEnd);
+      case "SUPPLIER_TO_HUB":
+        return pair(supplierEnd, hubEnd);
       case "RIDER_TO_HUB":
-        return { fromId: `user:${r.seller}`, toId: `hub:${r.hub_id}`, fromName: userName.get(r.seller) ?? "—", toName: hubNameOf.get(r.hub_id ?? "") ?? "—" };
+        return pair(sellerEnd, hubEnd);
       case "HUB_TO_CHAMPION":
-        return { fromId: `hub:${r.hub_id}`, toId: `user:${r.buyer}`, fromName: hubNameOf.get(r.hub_id ?? "") ?? "—", toName: userName.get(r.buyer ?? "") ?? "—" };
+        return pair(hubEnd, buyerEnd);
       case "CHAMPION_TO_CUSTOMER":
-        return { fromId: `user:${r.seller}`, toId: `customers:${r.hub_id}`, fromName: userName.get(r.seller) ?? "—", toName: `${hubNameOf.get(r.hub_id ?? "") ?? "—"}` };
+        return pair(sellerEnd, hubCustomers);
+      case "RIDER_TO_CUSTOMER":
+        return pair(sellerEnd, directCustomers);
+      case "SUPPLIER_TO_CUSTOMER":
+        return pair(supplierEnd, directCustomers);
+      case "SUPPLIER_TO_ORG":
+        return pair(supplierEnd, orgEnd);
+      case "HUB_TO_ORG":
+        return pair(hubEnd, orgEnd);
+      case "RIDER_TO_ORG":
+        return pair(sellerEnd, orgEnd);
     }
   };
   const edgeMap = new Map<string, EcoEdge>();
@@ -411,7 +468,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     select count(*) filter (where state in ('PLAN_ACTIVE','FULLY_PAID','HANDOVER_PENDING'))::text as active,
       count(*) filter (where state = 'COMPLETED' and completed_at >= ${since})::text as completed,
       count(*) filter (where state = 'PLAN_ACTIVE' and coalesce((select max(pi.confirmed_at) from payment_intents pi where pi.order_id = o.id and pi.status = 'PAYMENT_CONFIRMED'), o.created_at) < ${stalledCutoff})::text as stalled
-    from orders o where kind = 'CHAMPION_TO_CUSTOMER'`);
+    from orders o where kind in (${sql.join(PLAN_KINDS.map((k) => sql`${k}`), sql`, `)})`);
   const pt = planTotals.rows[0]!;
 
   // ---------- attention ----------
@@ -425,7 +482,8 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
       (select count(*) from approval_requests where status = 'PENDING')::text as approvals_waiting,
       (select count(*) from reconciliation_flags where resolved_at is null)::text as recon_flags,
       (select count(*) from verification_jobs where status = 'DEAD')::text as dead_jobs,
-      (select count(*) from orders where kind = 'CHAMPION_TO_CUSTOMER' and state in ('FULLY_PAID','HANDOVER_PENDING'))::text as handover_pending,
+      (select count(*) from orders where kind in (${sql.join(PLAN_KINDS.map((k) => sql`${k}`), sql`, `)}) and state in ('FULLY_PAID','HANDOVER_PENDING'))::text as handover_pending,
+      (select count(*) from orders where organisation_id is not null and state = 'AWAITING_PAYMENT' and created_at < ${new Date(atMs - 3 * 86_400_000)})::text as org_orders_unpaid,
       (select count(*) from orders o join suppliers sp on sp.id = o.supplier_id where o.kind = 'SUPPLIER_TO_RIDER' and o.state = 'PICKUP_ASSIGNED' and o.created_at < ${at}::timestamptz - make_interval(days => sp.lead_time_days))::text as waiting_on_supplier`)
   ).rows;
   const exceptionsByType = await db.execute<{ type: string; n: string }>(sql`select type, count(*)::text as n from exceptions where status <> 'RESOLVED' group by type`);
@@ -448,6 +506,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
     handoverPending: n(att?.handover_pending),
     waitingOnSupplier: n(att?.waiting_on_supplier),
     supplierQuality: supplierQualityCount,
+    orgOrdersUnpaid: n(att?.org_orders_unpaid),
   };
 
   // ---------- system ----------

@@ -11,6 +11,7 @@ import { atEat } from "./time";
 import type { Hub, Person, Product, World } from "./world";
 import { claimWithoutPaying, deadJob, delayedPayment, enrolCustomer, handover, overpaymentWithRefund, payInstallment, pickupChain, restock, resumeLatePickups, reviewPayment, reversedPayment, startCustomerPlan, type Plan } from "./supply";
 import { adminDay, ensureExceptionCoverage, peopleLifecycle, reportFieldProblems, resolveOpenExceptions, supplierSetPieces, syncNotes } from "./admin";
+import { directDay } from "./direct";
 
 export interface DayOptions {
   /** Index of the day within the run (drives the set-piece admin scenarios). */
@@ -114,7 +115,7 @@ export async function installmentsAndHandovers(w: World, plans: Plan[], opts: Pi
     if (p.nextPaymentDay !== null && p.nextPaymentDay <= opts.day) {
       w.clock.advanceTo(atEat(opts.dayStart, rng.int(9, 19), rng.int(0, 59)));
       try {
-        await payInstallment(w, p, opts.day);
+        await payInstallment(w, p, opts.day, opts.holdHandovers);
       } catch (e) {
         w.manifest.skip("payInstallment", e);
         p.nextPaymentDay = opts.day + 3;
@@ -134,9 +135,13 @@ export async function installmentsAndHandovers(w: World, plans: Plan[], opts: Pi
 export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise<void> {
   const rng = w.rng;
   const { dayStart, sunday, day } = opts;
+  const lastDay = day === opts.totalDays - 1;
   w.clock.advanceTo(atEat(dayStart, 7, rng.int(0, 30)));
+  w.dayEnd = atEat(dayStart, 19, 30); // waits between steps stay inside the day; reconciliation runs at 20:00
   if (!sunday) {
-    if (opts.adminSetPieces) await adminDay(w, plans, day);
+    w.workingDay += 1;
+    // Set pieces key on the working day, so a Sunday never silently drops one.
+    if (opts.adminSetPieces) await adminDay(w, plans, w.workingDay);
     if (opts.adminSetPieces) await supplierSetPieces(w, day, opts.totalDays);
     await resumeLatePickups(w, day);
     await keepHubsStocked(w, { ...opts, day });
@@ -148,11 +153,13 @@ export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise
       await championDay(w, hub, champion, plans, day, opts.customersPerDay);
     }
   }
+  if (w.directPaths && !sunday) await directDay(w, plans, day, opts.totalDays);
   await installmentsAndHandovers(w, plans, opts);
-  if (!sunday) {
+  // The afternoon block runs on working days, and always on the last day (coverage must not depend on the calendar).
+  if (!sunday || lastDay) {
     w.clock.advanceTo(atEat(dayStart, 15, rng.int(0, 50)));
     await reportFieldProblems(w, plans, day);
-    if (opts.adminSetPieces && (day === opts.totalDays - 6 || day === opts.totalDays - 1)) await ensureExceptionCoverage(w, plans);
+    if (opts.adminSetPieces && ((day >= opts.totalDays - 6 && w.once("coverage.first")) || lastDay)) await ensureExceptionCoverage(w, plans);
     await syncNotes(w, day);
     if (opts.peopleLifecycle) await peopleLifecycle(w, day, opts.totalDays);
     w.clock.advanceTo(atEat(dayStart, 17, rng.int(0, 40)));
@@ -182,6 +189,7 @@ export async function runHour(w: World, plans: Plan[], customersPerDay: number):
     }
   }
   for (const p of plans) if (!p.handedOver && p.nextPaymentDay !== null) p.nextPaymentDay = rng.chance(0.25) ? 0 : 1;
+  if (w.directPaths && rng.chance(0.3)) await directDay(w, plans, 0, 10_000);
   await installmentsAndHandovers(w, plans, { day: 0, dayStart: now(), holdHandovers: false });
   if (rng.chance(0.4)) await reportFieldProblems(w, plans, 0);
   if (rng.chance(0.5)) await resolveOpenExceptions(w, 0, 100);

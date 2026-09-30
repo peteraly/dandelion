@@ -1,4 +1,4 @@
-# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.3)
+# Dandelion — Build Prompt B: living demo dataset + ecosystem view (v1.4)
 
 v1.1 amends v1 after an external review; the review log is in §7. Changes:
 fail-closed environment detection, a clock override that cannot be imported by
@@ -732,3 +732,63 @@ is exact-payment and ends the lot; a supplier user cannot see an
 organisation order it did not sell. e2e: a rider records a village drop
 from the field app and the customer's verify link shows it; the ecosystem
 view shows an organisation node and a dashed direct edge.
+
+## 9. Amendment (v1.4): the district map — "clean SimCity", data-rich
+
+Founder direction (2026-09-29): the bird's-eye view should feel like a clean,
+simple SimCity — a picture of the district you can read at a glance, dense
+with numbers, nothing decorative. The column graph of §3.3 becomes a
+**schematic district map**; everything else on the page stays.
+
+### 9.1 What the map is
+
+- One schematic per service area, laid out by the system, **never a real
+  map**: no coordinates, no addresses, no GPS (privacy, §3.5). Left to
+  right: the factory (supplier tiles), a road, the hubs as depots along the
+  road, each hub's champions as kiosks under it, each hub's customers as a
+  neighbourhood block whose dot density is the customer count, and on the
+  right the organisations (school / office tiles) and the "direct" customers
+  of riders and factory-gate sales.
+- Riders are motorbike markers on the road segments that carry orders in
+  flight; a marker per open pickup/delivery, sized by units.
+- Every tile carries its numbers inside it: units on hand (small crate
+  stack + number), open orders, plans active / stalled, TZS confirmed in
+  the window, earned in the window (§8.8.1). A padlock on any tile with a
+  locked lot. An attention outline (with an icon, never colour alone) on
+  tiles the attention strip points at; clicking a chip highlights them.
+- Edges: solid for ladder legs, dashed for direct paths (village drops,
+  factory gate, organisations); grey pending, green confirmed, amber
+  review, red on hold; thickness by units. Hover or focus shows the full
+  breakdown; click opens the existing page (§3.3 rule unchanged).
+- Movement: markers advance a little along their edge on every refresh
+  (a CSS transition, honoured `prefers-reduced-motion`); nothing animates
+  when nothing is in flight. No canvas, no WebGL, no charting library;
+  server-rendered inline SVG with a `<symbol>` sprite for the pictograms;
+  CSP unchanged (§3.3).
+- On a demo dataset the map header carries the simulator's "one hour / one
+  day" controls (the SimCity speed knob) — the same server actions as
+  `/dev/simulator`, admin-only, non-production only, with the same rate
+  limit and log.
+
+### 9.2 Simple beats clever
+
+- Flat pictograms, two neutral colours plus the four payment-state accents
+  already in use; icon **and** text for every status.
+- One legend line. Numbers over glyphs: if a value matters it is printed,
+  not encoded in size alone.
+- The table twin and the mobile stacking of §3.3 stay; the map is
+  `hidden md:block`, the table is the map on a phone and for screen readers.
+- Nothing on the map is a customer name or a phone; customers are dots
+  and counts.
+
+### 9.3 Tests and docs
+
+- Unit: layout function is pure — given a snapshot it returns tile and
+  marker positions; every node gets exactly one tile; edges reference
+  existing tiles; two areas never overlap.
+- e2e: the map renders for the demo dataset with one tile per hub and a
+  marker per in-flight pickup; the attention chip highlights the right
+  tiles; axe stays clean; the table twin lists the same nodes.
+- README "Ecosystem view" describes the map; the review log gains a row.
+- Order of work: after step 3c ("Step 7 — district map"), then a report.
+

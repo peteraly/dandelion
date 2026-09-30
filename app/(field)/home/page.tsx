@@ -6,6 +6,8 @@ import { OrderSummary } from "@/components/order-bits";
 import { requireField } from "@/lib/auth/current";
 import { homeFor } from "@/lib/services/home";
 import { supplierHome, type SupplierHome } from "@/lib/services/suppliers";
+import { directSalesFor, sellerAreaId } from "@/lib/services/areas";
+import { earningsFor, type Earnings } from "@/lib/services/earnings";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import type { ActionKey } from "@/lib/domain/workflows";
@@ -43,6 +45,8 @@ export default async function HomePage() {
   const others = view.snapshots.filter((o) => o.id !== view.order?.id && !["COMPLETED", "CANCELLED", "CLOSED"].includes(o.state));
   const margin = view.order && view.order.state === "COMPLETED" && view.order.side === "seller" ? await marginFor(view.order.id) : null;
   const supplier = actor.role === "SUPPLIER" ? await supplierHome(actor) : null;
+  const direct = await directSalesFor(getDb(), actor, await sellerAreaId(actor));
+  const earnings = await earningsFor(getDb(), actor.userId);
 
   return (
     <>
@@ -66,6 +70,7 @@ export default async function HomePage() {
         <p className="mb-1 text-xs uppercase tracking-wide text-stone-500">{t("common.nextAction")}</p>
         <LinkButton href={actionHref(view.action, view.order?.id ?? null)}>{t(`home.action.${view.action}`)}</LinkButton>
       </div>
+      <EarningsCard earnings={earnings} locale={locale} />
       {supplier ? <SupplierCards data={supplier} locale={locale} /> : null}
       {others.length > 0 ? (
         <Card>
@@ -89,9 +94,14 @@ export default async function HomePage() {
         </Card>
       ) : null}
       <nav className="grid grid-cols-2 gap-2 text-sm">
-        {actor.role === "FIELD_CHAMPION" ? (
-          <Link href="/customers" className="btn btn-secondary">
-            {t("field.customer.list")}
+        {actor.role === "FIELD_CHAMPION" || direct.toCustomers ? (
+          <Link href="/customers" className="btn btn-secondary" data-testid="customers-link">
+            {actor.role === "FIELD_CHAMPION" ? t("field.customer.list") : t("field.customer.directLink")}
+          </Link>
+        ) : null}
+        {direct.toOrganisations ? (
+          <Link href="/org-sales/new" className="btn btn-secondary" data-testid="org-sale-link">
+            {t("field.orgSale.link")}
           </Link>
         ) : null}
         {actor.role === "FIELD_CHAMPION" ? (
@@ -183,6 +193,29 @@ async function SupplierCards({ data, locale }: { data: SupplierHome; locale: "sw
         </ul>
       </Card>
     </>
+  );
+}
+
+/** Earned = received − paid, provider-confirmed only (prompt §8.8.1). Every field role sees their own. */
+async function EarningsCard({ earnings, locale }: { earnings: Earnings; locale: "sw" | "en" }) {
+  const t = await getTranslations("field.earnings");
+  return (
+    <Card data-testid="earnings">
+      <h2 className="mb-2 font-semibold">{t("title")}</h2>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl bg-green-50 p-3">
+          <p className="text-xs uppercase text-green-800">{t("thisWeek")}</p>
+          <p className="text-xl font-bold text-green-900" data-testid="earned-week">
+            {formatTzs(earnings.weekTzs, locale)}
+          </p>
+        </div>
+        <div className="rounded-xl bg-green-50 p-3">
+          <p className="text-xs uppercase text-green-800">{t("thisMonth")}</p>
+          <p className="text-xl font-bold text-green-900">{formatTzs(earnings.monthTzs, locale)}</p>
+        </div>
+      </div>
+      <p className="mt-2 text-xs text-stone-500">{t("note")}</p>
+    </Card>
   );
 }
 

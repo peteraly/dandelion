@@ -2,7 +2,8 @@
  * Public aggregate statistics: weekly only, counts under 10 suppressed
  * (returned as null → "fewer than 10").
  */
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, sql } from "drizzle-orm";
+import { PLAN_KINDS } from "@/lib/domain/sales";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { tzWeekStart } from "@/lib/util/time";
@@ -15,7 +16,7 @@ export async function publicWeeklyStats(): Promise<{ handovers: number | null; a
   const [h] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(s.orders)
-    .where(and(eq(s.orders.kind, "CHAMPION_TO_CUSTOMER"), eq(s.orders.state, "COMPLETED"), gte(s.orders.completedAt, weekStart)));
+    .where(and(inArray(s.orders.kind, [...PLAN_KINDS]), eq(s.orders.state, "COMPLETED"), gte(s.orders.completedAt, weekStart)));
   const [c] = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(s.users)

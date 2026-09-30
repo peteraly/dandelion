@@ -12,6 +12,7 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
   const { actor } = await requireAdmin();
   const t = await getTranslations("admin.pickups");
   const tc = await getTranslations("common");
+  const tr = await getTranslations("roles");
   const { error } = await flags(searchParams);
   const ref = await referenceData(actor);
   const pairs = await pickupPairs(actor);
@@ -31,22 +32,28 @@ export default async function NewPickupPage({ searchParams }: { searchParams: Se
               ))}
             </select>
           </Field>
-          <Field label={(await getTranslations("admin.users"))("hub")} htmlFor="hubId">
-            <select id="hubId" name="hubId" className="field" required defaultValue={ref.hubs[0]?.id}>
+          <Field label={t("buyer")} htmlFor="buyerUserId">
+            <select id="buyerUserId" name="buyerUserId" className="field" required defaultValue={ref.riders[0]?.id}>
+              {ref.riders.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.displayName} · {tr("BOSS_RIDER")}
+                </option>
+              ))}
+              {ref.collectors.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {x.displayName} · {tr(x.role)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t("hubOrRiderStock")} htmlFor="hubId">
+            <select id="hubId" name="hubId" className="field" defaultValue={ref.hubs[0]?.id}>
               {ref.hubs.map((x) => (
                 <option key={x.id} value={x.id}>
                   {x.name}
                 </option>
               ))}
-            </select>
-          </Field>
-          <Field label={t("rider")} htmlFor="riderId">
-            <select id="riderId" name="riderId" className="field" required defaultValue={ref.riders[0]?.id}>
-              {ref.riders.map((x) => (
-                <option key={x.id} value={x.id}>
-                  {x.displayName}
-                </option>
-              ))}
+              <option value="">{t("riderKeeps")}</option>
             </select>
           </Field>
           <Field label={tc("quantity")} htmlFor="quantity">

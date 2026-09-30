@@ -16,6 +16,10 @@ export type ActorKind = Role | SystemActor;
 /** Handbook §10 custody states. */
 export const CUSTODY_STATES = [
   "AVAILABLE_AT_SUPPLIER",
+  /** A rider's own stock for direct distribution (village drops, organisation sales) — prompt §8.8. */
+  "WITH_RIDER",
+  /** Sold to an organisation (NGO, school …); nothing is tracked past this. */
+  "DELIVERED_TO_ORG",
   "RESERVED_FOR_RIDER",
   "PAYMENT_PENDING",
   "READY_FOR_PICKUP",
@@ -40,7 +44,24 @@ export const LOCKED_CUSTODY_STATES = ["INSPECTION_ISSUE", "DAMAGED_OR_QUARANTINE
 export const PAYMENT_STATUSES = ["PAYMENT_PENDING", "PAYMENT_CONFIRMED", "PAYMENT_FAILED_OR_REVIEW"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export const ORDER_KINDS = ["SUPPLIER_TO_RIDER", "RIDER_TO_HUB", "HUB_TO_CHAMPION", "CHAMPION_TO_CUSTOMER"] as const;
+/**
+ * Order kinds: the handbook's ladder (first four) plus the direct paths of
+ * prompt §8.8 — village drops, factory-gate sales and organisation buyers.
+ * Which paths an area allows is a per-area, dual-approved setting (lib/domain/sales.ts).
+ */
+export const ORDER_KINDS = [
+  "SUPPLIER_TO_RIDER",
+  "RIDER_TO_HUB",
+  "HUB_TO_CHAMPION",
+  "CHAMPION_TO_CUSTOMER",
+  "RIDER_TO_CUSTOMER",
+  "SUPPLIER_TO_CUSTOMER",
+  "SUPPLIER_TO_HUB",
+  "SUPPLIER_TO_CHAMPION",
+  "SUPPLIER_TO_ORG",
+  "HUB_TO_ORG",
+  "RIDER_TO_ORG",
+] as const;
 export type OrderKind = (typeof ORDER_KINDS)[number];
 
 export const ORDER_STATES = [
@@ -61,7 +82,7 @@ export const ORDER_STATES = [
 ] as const;
 export type OrderState = (typeof ORDER_STATES)[number];
 
-export const PAYMENT_PURPOSES = ["SUPPLIER_SALE", "HUB_SALE", "CHAMPION_SALE", "CUSTOMER_SALE"] as const;
+export const PAYMENT_PURPOSES = ["SUPPLIER_SALE", "HUB_SALE", "CHAMPION_SALE", "CUSTOMER_SALE", "ORGANISATION_SALE"] as const;
 export type PaymentPurpose = (typeof PAYMENT_PURPOSES)[number];
 
 export const PURPOSE_BY_ORDER_KIND: Record<OrderKind, PaymentPurpose> = {
@@ -69,7 +90,18 @@ export const PURPOSE_BY_ORDER_KIND: Record<OrderKind, PaymentPurpose> = {
   RIDER_TO_HUB: "HUB_SALE",
   HUB_TO_CHAMPION: "CHAMPION_SALE",
   CHAMPION_TO_CUSTOMER: "CUSTOMER_SALE",
+  RIDER_TO_CUSTOMER: "CUSTOMER_SALE",
+  SUPPLIER_TO_CUSTOMER: "CUSTOMER_SALE",
+  SUPPLIER_TO_HUB: "SUPPLIER_SALE",
+  SUPPLIER_TO_CHAMPION: "SUPPLIER_SALE",
+  SUPPLIER_TO_ORG: "ORGANISATION_SALE",
+  HUB_TO_ORG: "ORGANISATION_SALE",
+  RIDER_TO_ORG: "ORGANISATION_SALE",
 };
+
+/** Buyer organisations (prompt §8.8.4): a record, not a login. */
+export const ORGANISATION_KINDS = ["NGO", "NON_PROFIT", "SCHOOL", "COMMUNITY", "OTHER"] as const;
+export type OrganisationKind = (typeof ORGANISATION_KINDS)[number];
 
 /** Handbook §12 problem list (plus WASH concern from §11). */
 export const EXCEPTION_TYPES = [
@@ -125,6 +157,8 @@ export const APPROVAL_TYPES = [
   "SETTING_CHANGE",
   "PRODUCT_AVAILABILITY",
   "STAKEHOLDER_ACTIVATE",
+  /** Which sale paths an area allows (prompt §8.8.2) — it decides who earns, so two admins decide. */
+  "AREA_SALES_CHANGE",
 ] as const;
 export type ApprovalType = (typeof APPROVAL_TYPES)[number];
 

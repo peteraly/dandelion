@@ -11,7 +11,8 @@ import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { canDecide, evaluateApproval, type DualApprovalProof } from "@/lib/domain/approval";
-import type { ApprovalType } from "@/lib/domain/types";
+import type { ApprovalType, OrderKind } from "@/lib/domain/types";
+import { DIRECT_KINDS, isPlanKind } from "@/lib/domain/sales";
 import { authorize, type Actor } from "@/lib/policy";
 import { TzsSchema } from "@/lib/money";
 import { sha256Hex } from "@/lib/crypto/random";
@@ -48,8 +49,16 @@ export const SettingChangePayload = z.object({ key: z.string(), value: z.union([
 
 export const LargeExportPayload = z.object({ dataset: z.string().max(40), rows: z.number().int().nonnegative() }).strict();
 
-/** Activate or deactivate a stakeholder organisation — today a supplier (ADR-029). Money flows to suppliers; two admins decide who is one. */
-export const StakeholderActivatePayload = z.object({ supplierId: z.string().uuid(), active: z.boolean() }).strict();
+/** Activate or deactivate a stakeholder organisation — a supplier (ADR-029) or a buyer organisation (prompt §8.8.4). Money flows to and from them; two admins decide who is one. */
+export const StakeholderActivatePayload = z.union([
+  z.object({ supplierId: z.string().uuid(), active: z.boolean() }).strict(),
+  z.object({ organisationId: z.string().uuid(), active: z.boolean() }).strict(),
+]);
+
+/** Which sale paths beyond the ladder an area allows (prompt §8.8.2): it decides who earns, so two admins decide. */
+export const AreaSalesPayload = z
+  .object({ serviceAreaId: z.string().uuid(), allowedSales: z.array(z.enum(DIRECT_KINDS as [OrderKind, ...OrderKind[]])).max(DIRECT_KINDS.length) })
+  .strict();
 
 const PAYLOADS: Record<ApprovalType, z.ZodTypeAny> = {
   PRICE_LIST_ACTIVATE: z.object({ priceListId: z.string().uuid() }).strict(),
@@ -59,6 +68,7 @@ const PAYLOADS: Record<ApprovalType, z.ZodTypeAny> = {
   SETTING_CHANGE: SettingChangePayload,
   PRODUCT_AVAILABILITY: ProductAvailabilityPayload,
   STAKEHOLDER_ACTIVATE: StakeholderActivatePayload,
+  AREA_SALES_CHANGE: AreaSalesPayload,
 };
 
 /** Create a request inside an existing transaction (used by services). */
@@ -90,7 +100,7 @@ async function validateDonorRequest(tx: Tx, p: z.infer<typeof DonorFundingPayloa
   });
   if (bound) throw new DomainError("donor_evidence_required");
   const order = await tx.query.orders.findFirst({ where: eq(s.orders.id, p.orderId) });
-  if (!order || order.kind !== "CHAMPION_TO_CUSTOMER" || order.state !== "PLAN_ACTIVE") throw new DomainError("donor_order_invalid");
+  if (!order || !isPlanKind(order.kind) || order.state !== "PLAN_ACTIVE") throw new DomainError("donor_order_invalid");
   const { paidTotals } = await import("./payments");
   const t = await paidTotals(tx, order);
   if (p.amountTzs > t.remainingTzs) throw new DomainError("donor_amount_exceeds_remaining");
@@ -228,12 +238,29 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       return;
     case "STAKEHOLDER_ACTIVATE": {
       const p = StakeholderActivatePayload.parse(req.payload);
-      const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, p.supplierId) });
-      if (!supplier) throw new DomainError("supplier_not_found");
-      await tx.update(s.suppliers).set({ active: p.active, updatedAt: now() }).where(eq(s.suppliers.id, p.supplierId));
-      if (p.active) await recordLedgerEvent(tx, { type: "STAKEHOLDER_ACTIVATED", subjectRef: `S-${sha256Hex(p.supplierId).slice(0, 10)}`, role: "SUPPLIER" });
-      await logAdminAction(tx, approverId, p.active ? "supplier.activate" : "supplier.deactivate", { type: "supplier", id: p.supplierId }, { requestId: req.id });
-      await logSecurityEvent(tx, p.active ? "SUPPLIER_ACTIVATED" : "SUPPLIER_DEACTIVATED", "INFO", { userId: approverId, details: { supplierId: p.supplierId } });
+      if ("supplierId" in p) {
+        const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, p.supplierId) });
+        if (!supplier) throw new DomainError("supplier_not_found");
+        await tx.update(s.suppliers).set({ active: p.active, updatedAt: now() }).where(eq(s.suppliers.id, p.supplierId));
+        if (p.active) await recordLedgerEvent(tx, { type: "STAKEHOLDER_ACTIVATED", subjectRef: `S-${sha256Hex(p.supplierId).slice(0, 10)}`, role: "SUPPLIER" });
+        await logAdminAction(tx, approverId, p.active ? "supplier.activate" : "supplier.deactivate", { type: "supplier", id: p.supplierId }, { requestId: req.id });
+        await logSecurityEvent(tx, p.active ? "SUPPLIER_ACTIVATED" : "SUPPLIER_DEACTIVATED", "INFO", { userId: approverId, details: { supplierId: p.supplierId } });
+        return;
+      }
+      const org = await tx.query.organisations.findFirst({ where: eq(s.organisations.id, p.organisationId) });
+      if (!org) throw new DomainError("organisation_not_found");
+      await tx.update(s.organisations).set({ active: p.active, updatedAt: now() }).where(eq(s.organisations.id, p.organisationId));
+      if (p.active) await recordLedgerEvent(tx, { type: "STAKEHOLDER_ACTIVATED", subjectRef: `O-${sha256Hex(p.organisationId).slice(0, 10)}`, role: "ORGANISATION" });
+      await logAdminAction(tx, approverId, p.active ? "organisation.activate" : "organisation.deactivate", { type: "organisation", id: p.organisationId }, { requestId: req.id });
+      await logSecurityEvent(tx, p.active ? "ORGANISATION_ACTIVATED" : "ORGANISATION_DEACTIVATED", "INFO", { userId: approverId, details: { organisationId: p.organisationId } });
+      return;
+    }
+    case "AREA_SALES_CHANGE": {
+      const p = AreaSalesPayload.parse(req.payload);
+      const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, p.serviceAreaId) });
+      if (!area) throw new DomainError("not_found");
+      await tx.update(s.serviceAreas).set({ allowedSales: [...new Set(p.allowedSales)] }).where(eq(s.serviceAreas.id, p.serviceAreaId));
+      await logAdminAction(tx, approverId, "area.sales.change", { type: "service_area", id: p.serviceAreaId }, { allowedSales: p.allowedSales, requestId: req.id });
       return;
     }
   }

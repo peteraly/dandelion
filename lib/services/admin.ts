@@ -4,7 +4,7 @@
  * need an executed dual approval.
  */
 import { now, nowMs } from "@/lib/clock";
-import { and, desc, eq, gte, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNull, lt, ne, notInArray, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -14,6 +14,7 @@ import { maskPhone } from "@/lib/phone";
 import { DomainError, getSetting, logAdminAction, logSecurityEvent, withTx } from "./core";
 import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
 import { DEMO_CSV_HEADER } from "@/lib/demo/label";
+import { TERMINAL_ORDER_STATES } from "@/lib/domain/orders";
 
 export interface Priorities {
   paymentsReview: number;
@@ -65,6 +66,8 @@ export async function referenceData(actor: Actor) {
     suppliers: await db.query.suppliers.findMany(),
     products: await db.query.products.findMany(),
     riders: await db.query.users.findMany({ where: and(eq(s.users.role, "BOSS_RIDER"), eq(s.users.status, "ACTIVE")) }),
+    /** Hub managers and champions may collect their own stock at the factory gate where the area allows it (prompt §8.8). */
+    collectors: await db.query.users.findMany({ where: and(inArray(s.users.role, ["HUB_MANAGER", "FIELD_CHAMPION"]), eq(s.users.status, "ACTIVE")), orderBy: [s.users.role, s.users.displayName] }),
   };
 }
 
@@ -248,6 +251,11 @@ export async function handleDataRequest(actor: Actor, requestId: string, outcome
     const req = await tx.query.dataRequests.findFirst({ where: eq(s.dataRequests.id, requestId) });
     if (!req || req.status !== "OPEN") throw new DomainError("not_found");
     if (outcome === "DONE" && req.kind === "DELETION") {
+      // A deletion tombstones the phone, and open orders still need to reach that phone (receipts, codes, reminders).
+      // Finish or cancel them first; a declined request stays possible at any time.
+      const party = req.subjectType === "CUSTOMER" ? eq(s.orders.customerId, req.subjectId) : or(eq(s.orders.buyerUserId, req.subjectId), eq(s.orders.sellerUserId, req.subjectId));
+      const open = await tx.query.orders.findFirst({ where: and(party, notInArray(s.orders.state, [...TERMINAL_ORDER_STATES])), columns: { id: true } });
+      if (open) throw new DomainError("subject_has_open_orders");
       const tomb = `deleted-${crypto.randomUUID()}`;
       if (req.subjectType === "CUSTOMER") {
         await tx.update(s.customers).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "DELETED", updatedAt: now() }).where(eq(s.customers.id, req.subjectId));

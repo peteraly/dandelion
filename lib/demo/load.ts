@@ -14,6 +14,7 @@ import type { DemoClock } from "./clock";
 import type { Rng } from "./rng";
 import { SCALES, World, type Area, type Hub, type Person, type Scale, type SupplierOrg } from "./world";
 import type { Plan } from "./supply";
+import { PLAN_KINDS } from "@/lib/domain/sales";
 
 type UserRow = typeof s.users.$inferSelect;
 
@@ -81,14 +82,19 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
     w.riders.push(rider);
   }
   if (!w.riders.length) throw new Error("no active rider");
-  const champions = new Map(w.champions.map((c) => [c.actor.userId, c]));
+  // Whoever serves the customer: a champion on the ladder, a rider or supplier user on a direct path (prompt §8.8).
+  const sellers = new Map([...w.champions, ...w.riders, ...w.supplierOrgs.flatMap((o) => o.users)].map((c) => [c.actor.userId, c]));
   for (const c of await db.query.customers.findMany({ where: and(eq(s.customers.status, "ACTIVE"), isNotNull(s.customers.phoneVerifiedAt)) })) {
-    const champion = champions.get(c.championId);
+    const champion = sellers.get(c.championId);
     if (!champion) continue;
     const phone = await decryptString(c.phoneEnc);
     phones.push(phone);
     w.customers.push({ id: c.id, name: c.displayName, phone, champion });
   }
+  for (const o of await db.query.organisations.findMany({ where: eq(s.organisations.active, true) })) {
+    if (o.serviceAreaId) w.organisations.push({ id: o.id, name: o.name, areaId: o.serviceAreaId, kind: o.kind });
+  }
+  w.directPaths = areaRows.some((a) => Array.isArray(a.allowedSales) && a.allowedSales.length > 0);
   w.names.reserveAbove(phones);
   return w;
 }
@@ -96,7 +102,7 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
 /** Open customer plans as the generator sees them: what is still owed, split into one or two installments. */
 export async function loadPlans(w: World): Promise<Plan[]> {
   const db = getDb();
-  const orders = await db.query.orders.findMany({ where: and(eq(s.orders.kind, "CHAMPION_TO_CUSTOMER"), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID"])) });
+  const orders = await db.query.orders.findMany({ where: and(inArray(s.orders.kind, [...PLAN_KINDS]), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID"])) });
   const plans: Plan[] = [];
   for (const o of orders) {
     const customer = w.customers.find((c) => c.id === o.customerId);

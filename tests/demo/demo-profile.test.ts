@@ -52,6 +52,13 @@ describe("demo profile", () => {
     expect(manifest.anomalies.length).toBeGreaterThan(5);
   });
 
+  it("never writes a timestamp in the future: waits between steps stay inside their simulated day", async () => {
+    for (const table of ["orders", "ledger_events", "payment_intents", "exceptions"]) {
+      const r = await db().execute<{ n: string }>(sql.raw(`select count(*)::text as n from ${table} where created_at > now()`));
+      expect(Number(r.rows[0]!.n), table).toBe(0);
+    }
+  });
+
   it("finishes within budget (warning only in CI, where the runner is slow)", () => {
     const budget = process.env.DEMO_SCALE === "full" ? 300 : 90;
     if (process.env.CI && result.seconds > budget) console.warn(`[demo] ${result.seconds}s exceeds the ${budget}s budget on this runner`);
@@ -104,6 +111,19 @@ describe("demo profile", () => {
     expect(manifest.counts["suppliers.second_user_enrolled"]).toBe(1);
   });
 
+  it("walks every direct sale path of prompt §8.8: village drops, factory gate, organisations", async () => {
+    for (const key of ["orders.RIDER_TO_CUSTOMER", "orders.SUPPLIER_TO_CUSTOMER", "orders.SUPPLIER_TO_CHAMPION", "orders.SUPPLIER_TO_ORG", "orders.HUB_TO_ORG", "paths.rider_stock_pickups", "paths.organisation_deliveries"]) {
+      expect(manifest.counts[key] ?? 0, key).toBeGreaterThanOrEqual(1);
+    }
+    expect(manifest.counts["approvals.AREA_SALES_CHANGE"]).toBeGreaterThanOrEqual(1);
+    const orgs = await db().execute<{ n: string }>(sql`select count(*)::text as n from organisations where active group by service_area_id`);
+    for (const r of orgs.rows) expect(Number(r.n)).toBeGreaterThanOrEqual(2);
+    for (const kind of ["ORG_ORDER_UNPAID", "VILLAGE_DROP_CODE_UNCONFIRMED"]) expect(manifest.anomalies.some((a) => a.kind === kind), kind).toBe(true);
+    const states = await distinct("batches", "custody_state");
+    expect(states.has("WITH_RIDER")).toBe(true);
+    expect(states.has("DELIVERED_TO_ORG")).toBe(true);
+  });
+
   it("shows every user status", async () => {
     const statuses = await distinct("users", "status");
     for (const st of ["ACTIVE", "INVITED", "LOCKED", "SUSPENDED"]) expect(statuses.has(st), `user status ${st}`).toBe(true);
@@ -118,7 +138,8 @@ describe("demo profile", () => {
   it("keeps every person fictional and marked", async () => {
     const users = await db().select({ n: s.users.displayName }).from(s.users);
     const customers = await db().select({ n: s.customers.displayName }).from(s.customers);
-    for (const r of [...users, ...customers]) expect(r.n).toContain("(TEST)");
+    // "[deleted]" is the pseudonym a handled deletion request leaves behind (§4.12).
+    for (const r of [...users, ...customers]) expect(r.n === "[deleted]" || r.n.includes("(TEST)"), r.n).toBe(true);
     expect(customers.length).toBeGreaterThanOrEqual(30);
   });
 

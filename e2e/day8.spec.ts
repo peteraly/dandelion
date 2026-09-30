@@ -568,3 +568,184 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await admin.ctx.close();
 });
 
+
+const KIT_EDUCATION = ["Wash with water and soap after use", "Dry fully before reuse", "Store safely", "When not to use it", "When to seek medical care"];
+
+test("sale paths: two admins switch on village drops; a rider keeps factory stock and sells it in a village", async ({ browser, request }) => {
+  // Ladder-only until two admins decide otherwise (prompt §8.8.2).
+  const a = await adminLogin(browser, SEED.adminA);
+  await english(a.page);
+  await a.page.goto("/admin/areas");
+  const area = a.page.getByTestId("area-card").first();
+  await expect(area.getByTestId("area-allowed")).toContainText("Ladder only");
+  await area.getByLabel(/Riders sell directly to customers/).check();
+  await area.getByLabel(/Suppliers sell to organisations/).check();
+  await area.getByRole("button", { name: "Request change" }).click();
+  await expect(a.page).toHaveURL(/ok=requested/);
+  await expect(a.page.getByTestId("area-card").first().getByText("Change pending")).toBeVisible();
+  await a.ctx.close();
+
+  const b = await adminLogin(browser, SEED.adminB);
+  await english(b.page);
+  await b.page.goto("/admin/approvals");
+  const req = b.page.getByTestId("approval").filter({ hasText: "AREA SALES CHANGE" }).first();
+  await req.getByRole("button", { name: "Approve" }).click();
+  await expect(b.page).toHaveURL(/ok=decided/);
+  await b.page.goto("/admin/areas");
+  await expect(b.page.getByTestId("area-allowed").first()).toContainText("Rider → customer (village drop)");
+
+  // A pickup with no hub behind it: the rider keeps the stock (§8.8.1).
+  await b.page.goto("/admin/orders/new");
+  await b.page.getByLabel("Supplier · product").selectOption({ label: `${SEED.supplier.name} · Standard kit (reusable)` });
+  await b.page.getByLabel(/Destination hub/).selectOption({ label: "— rider keeps the stock —" });
+  await b.page.getByLabel("Quantity").fill("4");
+  await b.page.getByRole("button", { name: "Assign a factory pickup" }).click();
+  await expect(b.page).toHaveURL(/ok=created/);
+  await b.ctx.close();
+
+  const supplier = await fieldLogin(browser, SEED.supplier.phone, SEED.supplier.pin);
+  await english(supplier.page);
+  await expect(supplier.page.getByRole("heading", { name: "Pickup assigned" })).toBeVisible();
+  await supplier.page.getByRole("link", { name: "Confirm batch ready" }).click();
+  const pickupRef = await currentOrderRef(supplier.page);
+  await supplier.page.getByLabel(/Seal/).fill("SEAL-VD1");
+  await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
+
+  const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
+  await english(rider.page);
+  await rider.page.getByRole("link", { name: "Accept pickup" }).click();
+  await rider.page.getByRole("button", { name: "Accept pickup" }).click();
+  await expect(rider.page.getByRole("heading", { name: "Pay the supplier via mobile money" })).toBeVisible();
+  const paid = (await sim(request, { op: "simulate", scenario: "success", orderRef: pickupRef })) as { outcomes: string[] };
+  expect(paid.outcomes).toContain("CONFIRMED");
+  await supplier.page.goto("/home");
+  await supplier.page.getByRole("link", { name: "Confirm release" }).click();
+  await supplier.page.getByLabel(/counted the units/).check();
+  await supplier.page.getByRole("button", { name: "Confirm release" }).click();
+  await rider.page.goto("/home");
+  await rider.page.getByRole("link", { name: "Confirm receipt" }).click();
+  await rider.page.getByLabel(/counted the units/).check();
+  await rider.page.getByLabel(/seal and batch ID/).check();
+  await rider.page.getByRole("button", { name: "Confirm receipt" }).click();
+  await expect(rider.page.getByRole("heading", { name: "Stock has left the factory" })).toBeVisible();
+  await supplier.ctx.close();
+
+  // The village drop: the rider enrols the customer and sells like a champion would.
+  await rider.page.goto("/home");
+  await expect(rider.page.getByTestId("customers-link")).toBeVisible();
+  await rider.page.goto("/customers/new");
+  await rider.page.getByLabel("Name or preferred name").fill("Village customer (TEST)");
+  await rider.page.getByLabel(/Phone number/).fill("+255700000057");
+  await rider.page.getByLabel(/consents to transaction messages/).check();
+  await rider.page.getByRole("button", { name: "Continue" }).click();
+  await expect(rider.page).toHaveURL(/\/customers\/[0-9a-f-]+\?challenge=/);
+  await rider.page.getByLabel("Enter the code").fill(digits(await lastSms(request, "OTP"), 6));
+  await rider.page.getByRole("button", { name: "Confirm" }).click();
+  await rider.page.getByRole("radio").first().check();
+  await rider.page.getByRole("button", { name: "Start purchase plan" }).click();
+  await expect(rider.page.getByRole("heading", { name: "Installment plan active" })).toBeVisible();
+  const saleRef = await currentOrderRef(rider.page);
+  const saleId = rider.page.url().match(/orders\/([0-9a-f-]+)/)![1]!;
+  const full = (await sim(request, { op: "simulate", scenario: "success", orderRef: saleRef })) as { outcomes: string[] };
+  expect(full.outcomes).toContain("CONFIRMED");
+  await rider.page.goto(`/orders/${saleId}`);
+  await rider.page.getByRole("button", { name: "Start handover" }).click();
+  await expect(rider.page.getByRole("heading", { name: "Handover required" })).toBeVisible();
+  const code = digits(await lastSms(request, "HANDOVER_CODE"), 6);
+  for (const label of KIT_EDUCATION) await rider.page.getByLabel(label).check();
+  await rider.page.getByLabel("Customer's code").fill(code);
+  await rider.page.getByRole("button", { name: "Confirm handover" }).click();
+  await expect(rider.page.getByText(/Receipt RC-/)).toBeVisible();
+  // What the rider earned, confirmed by the provider, sits on the home screen.
+  await rider.page.goto("/home");
+  await expect(rider.page.getByTestId("earnings")).toBeVisible();
+  // The customer's verify link shows the village drop like any other purchase (§8.8.7).
+  const receiptLink = (await lastSms(request, "RECEIPT")).match(/https?:\/\/\S+\/verify\/[A-Za-z0-9_-]+\?t=[A-Za-z0-9_-]+/)![0];
+  await rider.page.goto(receiptLink);
+  await english(rider.page);
+  await expect(rider.page.getByText("Handover completed")).toBeVisible();
+  await expect(rider.page.getByTestId("receipt")).toContainText("11,400 TZS");
+  await rider.ctx.close();
+});
+
+test("organisation sale: added and activated by two admins; the supplier sells, the organisation pays in full, delivery sends the receipt; the ecosystem view shows it", async ({ browser, request }) => {
+  const a = await adminLogin(browser, SEED.adminA);
+  await english(a.page);
+  await a.page.goto("/admin/organisations");
+  await a.page.getByLabel("Name", { exact: true }).fill("Tumaini Primary School (TEST)");
+  await a.page.getByLabel("Type").selectOption("SCHOOL");
+  await a.page.getByLabel("Contact name").fill("Head teacher (TEST)");
+  await a.page.getByLabel(/Contact phone/).fill("+255700000058");
+  await a.page.getByRole("button", { name: "Add organisation" }).click();
+  await expect(a.page).toHaveURL(/\/admin\/organisations\/[0-9a-f-]+\?ok=created/);
+  await a.page.getByTestId("request-activation").click();
+  await expect(a.page.getByTestId("activation-pending")).toBeVisible();
+  await a.ctx.close();
+
+  const b = await adminLogin(browser, SEED.adminB);
+  await english(b.page);
+  await b.page.goto("/admin/approvals");
+  const req = b.page.getByTestId("approval").filter({ hasText: "STAKEHOLDER ACTIVATE" }).filter({ hasText: "Tumaini" }).first();
+  await req.getByRole("button", { name: "Approve" }).click();
+  await expect(b.page).toHaveURL(/ok=decided/);
+  await b.page.goto("/admin/organisations");
+  await expect(b.page.getByTestId("organisation-row").filter({ hasText: "Tumaini" })).toContainText("Active");
+  // What an organisation pays is a price-list decision (§8.8.6): a new list with an organisation price, dual-approved.
+  await b.page.setViewportSize({ width: 1280, height: 900 }); // price lists are laptop work
+  await b.page.goto("/admin/prices/new");
+  const prices: Record<string, [number, number, number, number, number]> = { "Standard kit (reusable)": [7500, 8000, 9000, 11400, 9500], "Disposable pack": [3000, 3300, 3800, 4500, 4000] };
+  for (const [name, row] of Object.entries(prices)) {
+    const cols = ["supplierPriceTzs", "hubPriceTzs", "championPriceTzs", "customerPriceTzs", "organisationPriceTzs"] as const;
+    for (let i = 0; i < cols.length; i++) await b.page.getByLabel(`${name} ${cols[i]}`).fill(String(row[i]));
+  }
+  await b.page.getByRole("button", { name: "Draft a new price list" }).click();
+  await expect(b.page).toHaveURL(/\/admin\/prices\?ok=submitted/);
+  await b.ctx.close();
+  const a2 = await adminLogin(browser, SEED.adminA);
+  await english(a2.page);
+  await a2.page.goto("/admin/approvals");
+  await a2.page.getByTestId("approval").filter({ hasText: "PRICE LIST ACTIVATE" }).first().getByRole("button", { name: "Approve" }).click();
+  await expect(a2.page).toHaveURL(/ok=decided/);
+  await a2.page.goto("/admin/prices");
+  await expect(a2.page.getByText("9,500 TZS").first()).toBeVisible();
+  await a2.ctx.close();
+
+  // The supplier sells; nothing moves before the provider confirms the full amount (§8.8.3).
+  const supplier = await fieldLogin(browser, SEED.supplier.phone, SEED.supplier.pin);
+  await english(supplier.page);
+  await supplier.page.getByTestId("org-sale-link").click();
+  await supplier.page.getByLabel("Organisation").selectOption({ label: "Tumaini Primary School (TEST) · School" });
+  await supplier.page.getByLabel("Product").selectOption({ label: "Standard kit (reusable)" });
+  await supplier.page.getByLabel("Units").fill("10");
+  await supplier.page.getByRole("button", { name: "Create order" }).click();
+  await expect(supplier.page).toHaveURL(/\/orders\/[0-9a-f-]+\?ok=created/);
+  const ref = await currentOrderRef(supplier.page);
+  // The organisation gets the payee, a payment reference and the record's link — and the organisation price, never the customer price.
+  const orgSms = await lastSms(request, "ORG_SALE");
+  expect(orgSms).toContain("95,000 TZS");
+  expect(orgSms).toContain("TILL-SUP-001");
+  expect(orgSms).toMatch(/\/verify\//);
+  void ref;
+  expect(await supplier.page.getByRole("button", { name: "Confirm delivery" }).count()).toBe(0);
+  // While it is in flight, the ecosystem graph draws the direct path as a dashed edge (§8.8.7).
+  const g = await adminLogin(browser, SEED.adminB);
+  await g.page.setViewportSize({ width: 1280, height: 900 });
+  await g.page.goto("/admin/ecosystem");
+  await expect(g.page.locator('[data-testid="flow-edge"][data-kind="SUPPLIER_TO_ORG"]').first()).toHaveAttribute("stroke-dasharray", "6 4");
+  await g.ctx.close();
+  const paid = (await sim(request, { op: "simulate", scenario: "success", orderRef: ref })) as { outcomes: string[] };
+  expect(paid.outcomes).toContain("CONFIRMED");
+  await supplier.page.reload();
+  await supplier.page.getByRole("button", { name: "Confirm delivery" }).click();
+  await expect(supplier.page.getByTestId("receipt-sent")).toBeVisible();
+  expect(await lastSms(request, "RECEIPT")).toMatch(/RC-\d{8}-[A-Z0-9]+/); // the receipt number, whatever the language
+  await supplier.ctx.close();
+
+  // The organisation is a node of the ecosystem, listed by name and never by the people it serves.
+  const c = await adminLogin(browser, SEED.adminA);
+  await english(c.page);
+  await c.page.goto("/admin/ecosystem?window=7d");
+  await expect(c.page.getByTestId("flow-table")).toContainText("Tumaini Primary School (TEST)");
+  await expect(c.page.getByTestId("money-SUPPLIER_TO_ORG")).toBeVisible();
+  await c.ctx.close();
+});

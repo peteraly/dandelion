@@ -6,6 +6,7 @@ import { Notice } from "@/components/notice";
 import { requireField } from "@/lib/auth/current";
 import { can } from "@/lib/policy";
 import { getDb } from "@/lib/db/client";
+import { sellerAreaId } from "@/lib/services/areas";
 import * as s from "@/lib/db/schema";
 import { maskPhone } from "@/lib/phone";
 import { decryptString } from "@/lib/crypto/envelope";
@@ -27,16 +28,16 @@ export default async function CustomerPage({ params, searchParams }: { params: P
   const sp = await searchParams;
   const { error, ok } = await flags(searchParams);
   const challenge = typeof sp.challenge === "string" ? sp.challenge : "";
-  const champion = await db.query.users.findFirst({ where: eq(s.users.id, actor.userId) });
-  const hub = champion?.hubId ? await db.query.hubs.findFirst({ where: eq(s.hubs.id, champion.hubId) }) : null;
-  const products = hub
+  // Whoever sells — a champion at her hub, a rider with village stock, a supplier at the gate — offers the area's products at the area's customer price.
+  const areaId = await sellerAreaId(actor);
+  const products = areaId
     ? await db
         .select({ p: s.products, avail: s.productAreaAvailability, item: s.priceListItems })
         .from(s.productAreaAvailability)
         .innerJoin(s.products, eq(s.products.id, s.productAreaAvailability.productId))
         .innerJoin(s.priceListItems, eq(s.priceListItems.productId, s.products.id))
-        .innerJoin(s.priceLists, and(eq(s.priceLists.id, s.priceListItems.priceListId), eq(s.priceLists.status, "ACTIVE"), eq(s.priceLists.serviceAreaId, hub.serviceAreaId)))
-        .where(and(eq(s.productAreaAvailability.serviceAreaId, hub.serviceAreaId), eq(s.productAreaAvailability.available, true), eq(s.products.active, true)))
+        .innerJoin(s.priceLists, and(eq(s.priceLists.id, s.priceListItems.priceListId), eq(s.priceLists.status, "ACTIVE"), eq(s.priceLists.serviceAreaId, areaId)))
+        .where(and(eq(s.productAreaAvailability.serviceAreaId, areaId), eq(s.productAreaAvailability.available, true), eq(s.products.active, true)))
     : [];
   const offered = products.filter((r) => r.p.category !== "REUSABLE" || r.avail.washConditionsConfirmed);
 

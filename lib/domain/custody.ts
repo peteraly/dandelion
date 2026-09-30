@@ -23,6 +23,9 @@ export type CustodyEvent =
   | "CANCEL_CHAMPION_RESERVATION"
   | "CUSTOMER_HANDOVER"
   | "CANCEL_CUSTOMER_RESERVATION"
+  | "KEEP_WITH_RIDER"
+  | "FACTORY_GATE_TO_HUB"
+  | "FACTORY_GATE_TO_CHAMPION"
   | "QUARANTINE"
   | "RESOLVE_RESUME"
   | "RESOLVE_RETURN";
@@ -55,6 +58,7 @@ const ALL_FIELD: readonly ActorKind[] = ["SUPPLIER", "BOSS_RIDER", "HUB_MANAGER"
 /** States from which a locked batch may be resumed after a dual-approved resolution. */
 export const RESUMABLE_STATES = [
   "AVAILABLE_AT_SUPPLIER",
+  "WITH_RIDER",
   "READY_FOR_PICKUP",
   "IN_TRANSIT",
   "AT_HUB_INSPECTION",
@@ -64,6 +68,7 @@ export const RESUMABLE_STATES = [
 
 const UNLOCKED_ACTIVE: readonly CustodyState[] = [
   "AVAILABLE_AT_SUPPLIER",
+  "WITH_RIDER",
   "RESERVED_FOR_RIDER",
   "PAYMENT_PENDING",
   "READY_FOR_PICKUP",
@@ -95,8 +100,9 @@ function resumeTarget(c: CustodyCtx, from: CustodyState): CustodyState {
 }
 
 export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyCtx>("custody", CUSTODY_STATES, [
-  { event: "RESERVE_FOR_RIDER", from: ["AVAILABLE_AT_SUPPLIER"], to: "RESERVED_FOR_RIDER", actors: ["BOSS_RIDER"] },
-  { event: "PAYMENT_CLAIMED", from: ["RESERVED_FOR_RIDER"], to: "PAYMENT_PENDING", actors: ["BOSS_RIDER"] },
+  // Whoever collects at the factory reserves and pays: the ladder's rider, or a hub manager / champion at the factory gate (prompt §8.8).
+  { event: "RESERVE_FOR_RIDER", from: ["AVAILABLE_AT_SUPPLIER"], to: "RESERVED_FOR_RIDER", actors: ["BOSS_RIDER", "HUB_MANAGER", "FIELD_CHAMPION"] },
+  { event: "PAYMENT_CLAIMED", from: ["RESERVED_FOR_RIDER"], to: "PAYMENT_PENDING", actors: ["BOSS_RIDER", "HUB_MANAGER", "FIELD_CHAMPION"] },
   {
     event: "PAYMENT_CONFIRMED",
     from: ["RESERVED_FOR_RIDER", "PAYMENT_PENDING"],
@@ -110,10 +116,14 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
     event: "PICKUP",
     from: ["READY_FOR_PICKUP"],
     to: "PICKED_UP",
-    actors: ["SUPPLIER", "BOSS_RIDER", "SYSTEM_VERIFIER"],
+    actors: ["SUPPLIER", "BOSS_RIDER", "HUB_MANAGER", "FIELD_CHAMPION", "SYSTEM_VERIFIER"],
     guards: [fullyPaid, sender, receiver],
   },
   { event: "START_TRANSIT", from: ["PICKED_UP"], to: "IN_TRANSIT", actors: ["BOSS_RIDER", "SYSTEM"] },
+  // Prompt §8.8: a pickup with no hub behind it is the rider's own stock; factory-gate buyers take stock straight home.
+  { event: "KEEP_WITH_RIDER", from: ["PICKED_UP"], to: "WITH_RIDER", actors: ["BOSS_RIDER", "SYSTEM", "SYSTEM_VERIFIER"] },
+  { event: "FACTORY_GATE_TO_HUB", from: ["PICKED_UP"], to: "AVAILABLE_AT_HUB", actors: ["HUB_MANAGER", "SUPPLIER", "SYSTEM", "SYSTEM_VERIFIER"] },
+  { event: "FACTORY_GATE_TO_CHAMPION", from: ["PICKED_UP"], to: "WITH_CHAMPION", actors: ["FIELD_CHAMPION", "SUPPLIER", "SYSTEM", "SYSTEM_VERIFIER"] },
   {
     event: "START_INSPECTION",
     from: ["IN_TRANSIT"],
@@ -148,7 +158,7 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
     event: "CUSTOMER_HANDOVER",
     from: ["RESERVED_FOR_CUSTOMER"],
     to: "HANDED_TO_CUSTOMER",
-    actors: ["FIELD_CHAMPION"],
+    actors: ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER"],
     guards: [
       fullyPaid,
       sender,
@@ -156,7 +166,7 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
       requireTrue((c) => c.educationConfirmed, "education_not_confirmed"),
     ],
   },
-  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "SUPER_ADMIN", "SYSTEM_VERIFIER"] },
+  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER", "SUPER_ADMIN", "SYSTEM_VERIFIER"] },
   { event: "QUARANTINE", from: UNLOCKED_ACTIVE, to: "DAMAGED_OR_QUARANTINED", actors: ALL_FIELD },
   {
     event: "RESOLVE_RESUME",
@@ -183,25 +193,27 @@ export const INITIAL_CUSTODY_STATES = {
   REGISTER: "AVAILABLE_AT_SUPPLIER",
   SPLIT_FOR_CHAMPION: "RESERVED_FOR_CHAMPION",
   SPLIT_FOR_CUSTOMER: "RESERVED_FOR_CUSTOMER",
+  /** Delivery to an organisation ends the lot's life in the system (prompt §8.8.4). */
+  SPLIT_FOR_ORG: "DELIVERED_TO_ORG",
 } as const satisfies Record<string, CustodyState>;
 
-export const SPLIT_PARENT_STATE: Record<"SPLIT_FOR_CHAMPION" | "SPLIT_FOR_CUSTOMER", CustodyState> = {
-  SPLIT_FOR_CHAMPION: "AVAILABLE_AT_HUB",
-  SPLIT_FOR_CUSTOMER: "WITH_CHAMPION",
+export type SplitKind = "SPLIT_FOR_CHAMPION" | "SPLIT_FOR_CUSTOMER" | "SPLIT_FOR_ORG";
+
+/** Which parent states each split may take units from: a seller's own holding, whoever the seller is. */
+export const SPLIT_PARENT_STATES: Record<SplitKind, readonly CustodyState[]> = {
+  SPLIT_FOR_CHAMPION: ["AVAILABLE_AT_HUB"],
+  SPLIT_FOR_CUSTOMER: ["WITH_CHAMPION", "WITH_RIDER", "AVAILABLE_AT_SUPPLIER"],
+  SPLIT_FOR_ORG: ["AVAILABLE_AT_SUPPLIER", "AVAILABLE_AT_HUB", "WITH_RIDER"],
 };
 
 /** A split may only take units from an unlocked parent in the right state with enough quantity. */
-export function canSplit(
-  kind: "SPLIT_FOR_CHAMPION" | "SPLIT_FOR_CUSTOMER",
-  parent: { state: CustodyState; quantity: number },
-  qty: number,
-): string | null {
+export function canSplit(kind: SplitKind, parent: { state: CustodyState; quantity: number }, qty: number): string | null {
   if (isLocked(parent.state)) return "batch_locked";
-  if (parent.state !== SPLIT_PARENT_STATE[kind]) return "parent_wrong_state";
+  if (!SPLIT_PARENT_STATES[kind].includes(parent.state)) return "parent_wrong_state";
   if (!Number.isSafeInteger(qty) || qty <= 0) return "invalid_quantity";
   if (qty > parent.quantity) return "insufficient_stock";
   return null;
 }
 
 /** Custody transitions that move stock to a new custodian (ledger: CUSTODY_TRANSFERRED). */
-export const CUSTODY_TRANSFER_EVENTS: readonly CustodyEvent[] = ["PICKUP", "HUB_ACCEPT", "CHAMPION_HANDOVER"];
+export const CUSTODY_TRANSFER_EVENTS: readonly CustodyEvent[] = ["PICKUP", "HUB_ACCEPT", "CHAMPION_HANDOVER", "KEEP_WITH_RIDER", "FACTORY_GATE_TO_HUB", "FACTORY_GATE_TO_CHAMPION"];

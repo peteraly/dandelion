@@ -59,13 +59,21 @@
     "BOSS_RIDER": "Bosi Dereva",
     "HUB_MANAGER": "Meneja wa Kituo",
     "FIELD_CHAMPION": "Bingwa wa Uwandani",
-    "CUSTOMER": "Mteja"
+    "CUSTOMER": "Mteja",
+    "ORGANISATION": "Shirika"
   },
   "orderKinds": {
     "SUPPLIER_TO_RIDER": "Kuchukua kiwandani",
     "RIDER_TO_HUB": "Kuwasilisha kituoni",
     "HUB_TO_CHAMPION": "Bidhaa kwa bingwa",
-    "CHAMPION_TO_CUSTOMER": "Ununuzi wa mteja"
+    "CHAMPION_TO_CUSTOMER": "Ununuzi wa mteja",
+    "RIDER_TO_CUSTOMER": "Dereva → mteja (kijijini)",
+    "SUPPLIER_TO_CUSTOMER": "Msambazaji → mteja (kiwandani)",
+    "SUPPLIER_TO_HUB": "Msambazaji → kituo (kiwandani)",
+    "SUPPLIER_TO_CHAMPION": "Msambazaji → bingwa (kiwandani)",
+    "SUPPLIER_TO_ORG": "Msambazaji → shirika",
+    "HUB_TO_ORG": "Kituo → shirika",
+    "RIDER_TO_ORG": "Dereva → shirika"
   },
   "orderStates": {
     "PICKUP_ASSIGNED": "Uchukuaji umepangwa",
@@ -277,6 +285,18 @@
       "order_closed": {
         "title": "Mpango umefungwa",
         "explain": "Mpango huu ulifungwa bila malipo."
+      },
+      "org_awaiting_payment": {
+        "title": "Oda ya shirika inasubiri malipo",
+        "explain": "Shirika hulipa kwa pesa za simu kwenye akaunti yako, kiasi kamili mara moja. Peleka bidhaa tu baada ya mtoa huduma kuthibitisha."
+      },
+      "org_paid": {
+        "title": "Malipo yamethibitishwa — peleka kwa shirika",
+        "explain": "Mtoa huduma amethibitisha malipo ya shirika. Kabidhi bidhaa na uthibitishe kupeleka; shirika hupata risiti kwa SMS."
+      },
+      "org_delivered": {
+        "title": "Imepelekwa kwa shirika",
+        "explain": "Kupeleka kumethibitishwa na kurekodiwa. Hakuna kingine cha kufanya kwa oda hii."
       }
     },
     "action": {
@@ -306,7 +326,8 @@
       "confirm_customer_handover": "Thibitisha makabidhiano",
       "request_stock": "Omba bidhaa",
       "contact_or_close": "Wasiliana na mteja au funga mpango",
-      "view_customers": "Tazama wateja"
+      "view_customers": "Tazama wateja",
+      "deliver_org": "Thibitisha kupeleka kwa shirika"
     }
   },
   "auth": {
@@ -377,7 +398,8 @@
       "noPlan": "Hakuna mpango unaoendelea",
       "chooseProduct": "Chagua bidhaa pamoja na mteja",
       "startPlan": "Anza mpango wa ununuzi",
-      "fullPriceNote": "Bei kamili inaonyeshwa kabla ya malipo yoyote. Mteja anaweza kulipa yote au kwa awamu za hiari."
+      "fullPriceNote": "Bei kamili inaonyeshwa kabla ya malipo yoyote. Mteja anaweza kulipa yote au kwa awamu za hiari.",
+      "directLink": "Uza kwa mteja"
     },
     "handover": {
       "title": "Makabidhiano",
@@ -438,6 +460,27 @@
       "confirmedOnly": "Kile tu ambacho mtoa huduma alithibitisha. Malipo yanayosubiri hayahesabiwi.",
       "quality": "Maoni ya ubora kuhusu makundi yako",
       "noQuality": "Hakuna tatizo la ubora lililoripotiwa kwenye makundi yako katika siku 30 zilizopita."
+    },
+    "orgSale": {
+      "title": "Uza kwa shirika",
+      "link": "Uza kwa shirika",
+      "organisation": "Shirika",
+      "product": "Bidhaa",
+      "quantity": "Vipande",
+      "create": "Tengeneza oda",
+      "note": "Bei ya kipande ni bei ya shirika kutoka kwenye orodha ya bei ya eneo lako. Shirika hulipa kiasi kamili kwa pesa za simu kabla ya kupeleka.",
+      "none": "Hakuna shirika linalofanya kazi katika eneo lako bado. Omba msimamizi aliongeze.",
+      "created": "Oda imetengenezwa. Shirika limetumiwa maelezo ya malipo.",
+      "deliver": "Thibitisha kupeleka",
+      "deliverNote": "Thibitisha tu baada ya vipande kufika kwa shirika. Hii huchukua vipande kutoka akiba yako na kutuma risiti.",
+      "delivered": "Imepelekwa. Risiti {receiptNo} imetumwa kwa shirika.",
+      "cancel": "Ghairi oda (hakuna kilicholipwa)"
+    },
+    "earnings": {
+      "title": "Umepata (imethibitishwa na mtoa huduma)",
+      "thisWeek": "Wiki hii",
+      "thisMonth": "Mwezi huu",
+      "note": "Ulichopokea ukitoa ulicholipa wauzaji wako. Malipo yanayosubiri hayahesabiwi hadi mtoa huduma athibitishe."
     }
   },
   "problems": {
@@ -535,7 +578,9 @@
       "brief": "Muhtasari wa asubuhi",
       "messages": "Jumbe",
       "suppliers": "Wasambazaji",
-      "ecosystem": "Mfumo mzima"
+      "ecosystem": "Mfumo mzima",
+      "organisations": "Mashirika",
+      "areas": "Maeneo na njia za mauzo"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -584,6 +629,7 @@
       "hubPrice": "Bei ya kituo",
       "championPrice": "Bei ya bingwa",
       "customerPrice": "Bei ya mteja",
+      "organisationPrice": "Bei ya shirika (hiari; tupu = hakuna mauzo kwa mashirika)",
       "submitted": "Rasimu imetumwa. Msimamizi wa pili lazima aidhinishe kabla haianzi kutumika.",
       "status": {
         "DRAFT": "Rasimu",
@@ -599,7 +645,10 @@
       "date": "Tarehe ya uchukuzi",
       "created": "Uchukuzi umepangwa na dereva amearifiwa.",
       "pair": "Msambazaji · bidhaa",
-      "noPairs": "Hakuna msambazaji anayefanya kazi anayetoa bidhaa bado. Ongeza bidhaa chini ya Wasambazaji kwanza."
+      "noPairs": "Hakuna msambazaji anayefanya kazi anayetoa bidhaa bado. Ongeza bidhaa chini ya Wasambazaji kwanza.",
+      "buyer": "Anayechukua",
+      "hubOrRiderStock": "Kituo cha kupokea (acha wazi: dereva anabaki na akiba kwa mauzo ya moja kwa moja)",
+      "riderKeeps": "— dereva anabaki na akiba —"
     },
     "exceptions": {
       "title": "Matatizo",
@@ -752,6 +801,69 @@
       "requestedBy": "imeombwa na",
       "activate": "Washa",
       "deactivate": "Zima"
+    },
+    "organisations": {
+      "title": "Mashirika",
+      "intro": "NGOs, mashirika yasiyo ya faida, shule na vikundi vya jamii vinavyonunua kwa wingi. Ni rekodi, si akaunti ya kuingia: hulipa kwa pesa za simu na kupata risiti na kiungo cha kuthibitisha kwa SMS. Kuwasha kunahitaji wasimamizi wawili.",
+      "create": "Ongeza shirika",
+      "createNote": "Shirika jipya huanza likiwa halifanyi kazi. Omba kuwashwa baada ya kukagua maelezo yake.",
+      "name": "Jina",
+      "kind": "Aina",
+      "kinds": {
+        "NGO": "NGO",
+        "NON_PROFIT": "Shirika lisilo la faida",
+        "SCHOOL": "Shule",
+        "COMMUNITY": "Kikundi cha jamii",
+        "OTHER": "Nyingine"
+      },
+      "area": "Eneo la huduma",
+      "contactName": "Jina la mtu wa mawasiliano",
+      "contactPhone": "Simu ya mawasiliano (inapokea maelezo ya malipo na risiti)",
+      "notes": "Maelezo",
+      "active": "Linafanya kazi",
+      "inactive": "Halifanyi kazi",
+      "pending": "Inasubiri idhini",
+      "orders": "Oda",
+      "openOrders": "Wazi",
+      "confirmed": "Zilizothibitishwa kwa wauzaji",
+      "lastOrder": "Oda ya mwisho",
+      "none": "Hakuna mashirika bado.",
+      "save": "Hifadhi",
+      "edit": "Hariri",
+      "created": "Shirika limeongezwa. Linabaki halifanyi kazi hadi wasimamizi wawili waidhinishe.",
+      "updated": "Shirika limesasishwa.",
+      "activationRequested": "Ombi limetumwa. Msimamizi mwingine lazima aidhinishe.",
+      "requestActivation": "Omba kuwashwa",
+      "requestDeactivation": "Omba kuzimwa",
+      "pendingNote": "Ombi linasubiri msimamizi wa pili kwenye kikasha cha idhini.",
+      "ordersTitle": "Oda",
+      "seller": "Muuzaji",
+      "history": "Historia ya kuwashwa",
+      "requestedBy": "imeombwa na",
+      "activate": "Washa",
+      "deactivate": "Zima",
+      "privacy": "Hakuna kitu kuhusu watu wanaohudumiwa na shirika kinachorekodiwa hapa."
+    },
+    "areas": {
+      "title": "Maeneo na njia za mauzo",
+      "intro": "Ngazi ya kitabu cha mwongozo (msambazaji → dereva → kituo → bingwa → mteja) inaruhusiwa siku zote. Njia nyingine yoyote imezimwa hadi wasimamizi wawili waiwashe kwa eneo, kwa sababu inaamua nani anapata. Seti ya data ya mfano huwasha zote.",
+      "area": "Eneo",
+      "region": "Mkoa",
+      "allowed": "Zinazoruhusiwa zaidi ya ngazi",
+      "ladderOnly": "Ngazi pekee",
+      "pending": "Mabadiliko yanasubiri",
+      "request": "Omba mabadiliko",
+      "requested": "Ombi limetumwa. Msimamizi mwingine lazima aidhinishe.",
+      "paths": {
+        "RIDER_TO_CUSTOMER": "Madereva wanauza moja kwa moja kwa wateja (kijijini)",
+        "SUPPLIER_TO_CUSTOMER": "Wateja wananunua kiwandani",
+        "SUPPLIER_TO_HUB": "Vituo vinachukua akiba yao kiwandani",
+        "SUPPLIER_TO_CHAMPION": "Mabingwa wanachukua akiba yao kiwandani",
+        "SUPPLIER_TO_ORG": "Wasambazaji wanauza kwa mashirika",
+        "HUB_TO_ORG": "Vituo vinauza kwa mashirika",
+        "RIDER_TO_ORG": "Madereva wanauza kwa mashirika"
+      },
+      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
     }
   },
   "public": {
@@ -838,7 +950,10 @@
     "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na Bingwa wako wa Afya aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
     "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee Bingwa wako wa Afya tu unapopokea bidhaa yako.",
     "receipt": "Habari {name}. Risiti {receiptNo}: {product} imekabidhiwa. Rekodi yako: {link}",
-    "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa."
+    "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa.",
+    "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
+    "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} × {quantity} kunafuata. Rekodi: {link}",
+    "orgReceipt": "{name}: {product} × {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}"
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -927,11 +1042,23 @@
     "rate_limited": "Maombi mengi mno. Subiri dakika chache.",
     "large_export_needs_approval": "Uhamishaji huu unahitaji ombi lililoidhinishwa na wawili kwanza.",
     "cannot_delete_admin": "Akaunti za wasimamizi haziwezi kufutwa kwa njia hii.",
+    "subject_has_open_orders": "Mtu huyu bado ana oda zilizo wazi. Zimalize au zighairi kabla ya kufuta rekodi zake.",
     "supplier_product_not_offered": "Msambazaji huyu hatoi bidhaa hiyo. Iongeze chini ya Wasambazaji kwanza.",
     "supplier_not_found": "Msambazaji hajapatikana.",
     "supplier_already_in_state": "Msambazaji tayari yuko katika hali hiyo.",
     "supplier_activation_pending": "Ombi la kuwasha msambazaji huyu tayari linasubiri uamuzi.",
-    "ecosystem_window_invalid": "Kipindi hakijulikani."
+    "ecosystem_window_invalid": "Kipindi hakijulikani.",
+    "sale_not_allowed": "Njia hii ya mauzo haijawashwa katika eneo hili. Wasimamizi wawili wanaweza kuiwasha chini ya Maeneo.",
+    "organisation_not_active": "Shirika hili halifanyi kazi bado.",
+    "organisation_not_found": "Shirika halijapatikana.",
+    "organisation_not_in_area": "Shirika hili ni la eneo jingine.",
+    "no_organisation_price": "Orodha ya bei ya eneo haina bei ya shirika kwa bidhaa hii.",
+    "seller_has_no_area": "Akaunti yako haina eneo la huduma; omba msimamizi.",
+    "buyer_not_active": "Mnunuzi si mdau anayefanya kazi.",
+    "buyer_required": "Chagua anayechukua bidhaa.",
+    "organisation_already_in_state": "Shirika tayari liko katika hali hiyo.",
+    "organisation_activation_pending": "Ombi la kuwasha shirika hili tayari linasubiri uamuzi.",
+    "area_sales_pending": "Ombi la njia za mauzo za eneo hili tayari linasubiri uamuzi."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi."
@@ -971,7 +1098,8 @@
       "handoverPending": "Zimelipwa, makabidhiano yanasubiri",
       "waitingOnSupplier": "Zinasubiri msambazaji",
       "supplierQuality": "Ubora wa msambazaji",
-      "clear": "Onyesha yote"
+      "clear": "Onyesha yote",
+      "orgOrdersUnpaid": "Oda za mashirika hazijalipwa siku 3+"
     },
     "graph": {
       "title": "Mtiririko",
@@ -990,7 +1118,10 @@
       "lastActivity": "Shughuli ya mwisho",
       "edge": "oda {count} · vipande {units} · {paid} zimethibitishwa kati ya {expected}",
       "legend": "Rangi ya mstari: kijivu inasubiri · kijani imethibitishwa · kahawia inakaguliwa · nyekundu imesitishwa. Unene unafuata vipande.",
-      "noEdges": "Hakuna kinachoendelea."
+      "noEdges": "Hakuna kinachoendelea.",
+      "organisations": "Mashirika",
+      "earned": "imepata {tzs}",
+      "direct": "Mistari ya vitone ni njia za moja kwa moja (kijijini, kiwandani, mashirika)."
     },
     "status": {
       "active": "anafanya kazi",
@@ -1072,7 +1203,9 @@
         "SUPPLIER_ACTIVATED": "Msambazaji amewashwa",
         "SUPPLIER_DEACTIVATED": "Msambazaji amezimwa",
         "PROBLEM": "Tatizo limeripotiwa: {type}",
-        "UNKNOWN": "Tukio la usalama"
+        "UNKNOWN": "Tukio la usalama",
+        "ORGANISATION_ACTIVATED": "Shirika limewashwa",
+        "ORGANISATION_DEACTIVATED": "Shirika limezimwa"
       },
       "admin": {
         "admin_enrolled": "Msimamizi amejiandikisha",
@@ -1103,7 +1236,15 @@
         "user_reenroll": "Mdau amejiandikisha upya",
         "user_suspend": "Mdau amesimamishwa",
         "user_unsuspend": "Kusimamishwa kumeondolewa",
-        "UNKNOWN": "Hatua ya msimamizi"
+        "UNKNOWN": "Hatua ya msimamizi",
+        "area_sales_change": "Njia za mauzo za eneo zimebadilishwa",
+        "org_sale_cancel": "Oda ya shirika imeghairiwa",
+        "org_sale_create": "Oda ya shirika imetengenezwa",
+        "org_sale_deliver": "Imepelekwa kwa shirika",
+        "organisation_activate": "Shirika limewashwa",
+        "organisation_create": "Shirika limeongezwa",
+        "organisation_deactivate": "Shirika limezimwa",
+        "organisation_update": "Shirika limesasishwa"
       }
     },
     "tables": {

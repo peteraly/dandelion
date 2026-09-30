@@ -90,6 +90,8 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
         return o.state === "FULLY_PAID" || o.state === "HANDOVER_PENDING";
       case "waitingOnSupplier":
         return o.state === "PICKUP_ASSIGNED";
+      case "orgOrdersUnpaid":
+        return o.kind.endsWith("_TO_ORG") && o.state === "AWAITING_PAYMENT";
       default:
         return true;
     }
@@ -196,7 +198,7 @@ export default async function EcosystemPage({ searchParams }: { searchParams: Se
             nodes={snap.nodes}
             edges={snap.edges}
             labels={{
-              columns: { SUPPLIER: tg("suppliers"), RIDER: tg("riders"), HUB: tg("hubs"), CHAMPION: tg("champions"), CUSTOMERS: tg("customers") },
+              columns: { SUPPLIER: tg("suppliers"), RIDER: tg("riders"), HUB: tg("hubs"), CHAMPION: tg("champions"), CUSTOMERS: tg("customers"), ORGANISATION: tg("organisations") },
               units: (n) => tg("units", { n }),
               locked: tg("locked"),
               status: (st) => tst(st),

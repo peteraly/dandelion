@@ -67,7 +67,42 @@ describe("policy: rider", () => {
     expect(can(otherRider, "order.view", o(pickup))).toBe(false);
     expect(can(otherRider, "order.view_delivery_code", o(delivery))).toBe(false);
     expect(can(rider, "order.view", o(transfer))).toBe(false);
-    expect(can(rider, "customer.create")).toBe(false);
+    // Riders may enrol customers for village drops (prompt §8.8); hub managers never sell to customers.
+    expect(can(rider, "customer.create")).toBe(true);
+    expect(can(hub, "customer.create")).toBe(false);
+  });
+});
+
+describe("policy: direct sale paths (prompt §8.8)", () => {
+  const villageDrop: OrderResource = { kind: "RIDER_TO_CUSTOMER", sellerUserId: "rid", buyerUserId: null, supplierId: "S1", hubId: null, customerChampionId: "rid" };
+  const factoryGate: OrderResource = { kind: "SUPPLIER_TO_HUB", sellerUserId: "sup", buyerUserId: "hub", supplierId: "S1", hubId: "H1" };
+  const orgSale: OrderResource = { kind: "HUB_TO_ORG", sellerUserId: "hub", buyerUserId: null, supplierId: "S1", hubId: "H1" };
+  it("a rider sells and hands over on a village drop; nobody else touches it", () => {
+    expect(can(rider, "order.view", o(villageDrop))).toBe(true);
+    expect(can(rider, "order.start_handover", o(villageDrop))).toBe(true);
+    expect(can(rider, "order.complete_handover", o(villageDrop))).toBe(true);
+    expect(can(otherRider, "order.view", o(villageDrop))).toBe(false);
+    expect(can(champ, "order.view", o(villageDrop))).toBe(false);
+    expect(can(rider, "order.claim_paid", o(villageDrop))).toBe(false);
+  });
+  it("a hub manager collects at the factory gate as the buyer; the supplier prepares", () => {
+    expect(can(hub, "order.accept_pickup", o(factoryGate))).toBe(true);
+    expect(can(hub, "order.claim_paid", o(factoryGate))).toBe(true);
+    expect(can(hub, "order.confirm_receipt", o(factoryGate))).toBe(true);
+    expect(can(supplier, "order.confirm_batch_ready", o(factoryGate))).toBe(true);
+    expect(can(supplier, "order.confirm_release", o(factoryGate))).toBe(true);
+    expect(can(rider, "order.accept_pickup", o(factoryGate))).toBe(false);
+    expect(can(otherHub, "order.view", o(factoryGate))).toBe(false);
+  });
+  it("organisation sales: sellers create and deliver; there is no buyer login", () => {
+    expect(can(hub, "order.org_sale.create")).toBe(true);
+    expect(can(supplier, "order.org_sale.create")).toBe(true);
+    expect(can(rider, "order.org_sale.create")).toBe(true);
+    expect(can(champ, "order.org_sale.create")).toBe(false);
+    expect(can(hub, "order.org_sale.deliver", o(orgSale))).toBe(true);
+    expect(can(otherHub, "order.org_sale.deliver", o(orgSale))).toBe(false);
+    expect(can(hub, "order.confirm_release", o(orgSale))).toBe(false);
+    expect(can(admin, "order.view", o(orgSale))).toBe(true);
   });
 });
 

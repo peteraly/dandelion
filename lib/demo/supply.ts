@@ -27,7 +27,7 @@ import {
 } from "@/lib/services/orders";
 import { createCustomer, verifyCustomerPhone } from "@/lib/services/customers";
 import { reportProblem } from "@/lib/services/exceptions";
-import { latestIntent, enqueuePoll } from "@/lib/services/payments";
+import { latestIntent, enqueuePoll, paidTotals } from "@/lib/services/payments";
 import { simulate, seedProviderTx, setProviderTxStatus, type Scenario } from "@/lib/payments/simulator";
 import { runDueVerificationJobs } from "@/lib/payments/verification";
 import { closePlan, declineStockRequest } from "@/lib/services/orders";
@@ -190,7 +190,7 @@ export interface Plan {
 export async function startCustomerPlan(w: World, c: Customer, product: Product, today: number): Promise<Plan> {
   const { orderId } = await startPlan(c.champion.actor, c.id, product.id);
   const o = await w.order(orderId);
-  w.manifest.count("orders.CHAMPION_TO_CUSTOMER");
+  w.manifest.count(`orders.${o.kind}`);
   const total = o.totalTzs;
   const n = w.rng.weighted([
     [1, 3],
@@ -219,15 +219,22 @@ export async function claimWithoutPaying(w: World, p: Plan): Promise<void> {
 }
 
 /** Pay the next installment; when the plan is fully paid, hand the product over (needs champion stock). */
-export async function payInstallment(w: World, p: Plan, today: number): Promise<void> {
+export async function payInstallment(w: World, p: Plan, today: number, holdHandover = false): Promise<void> {
   const amount = p.installments.shift();
   if (amount === undefined) return;
   await pay(w, p.orderId, "success", amount);
   p.paidTzs += amount;
   w.manifest.count("payments.customer_installments");
   if (p.installments.length === 0) {
+    // The database decides whether the plan is paid up: a reversal or a payment left in review can leave more owed than the plan tracked.
+    const owed = await resyncPlan(w, p);
+    if (owed > 0) {
+      p.nextPaymentDay = today + w.rng.int(1, 3);
+      return;
+    }
     p.nextPaymentDay = null;
-    await handover(w, p);
+    // The seed's last day holds handovers so some plans stay FULLY_PAID (Prompt B §2.3).
+    if (!holdHandover) await handover(w, p);
   } else {
     const gap = w.rng.chance(w.params.stallRate) ? w.rng.int(10, 16) : w.rng.int(2, 9);
     if (gap >= 10) p.stalled = true;
@@ -235,8 +242,16 @@ export async function payInstallment(w: World, p: Plan, today: number): Promise<
   }
 }
 
+/** Re-read what the order still owes and rebuild the plan's installments from it. Returns the remaining amount. */
+export async function resyncPlan(w: World, p: Plan): Promise<number> {
+  const t = await paidTotals(w.db, await w.order(p.orderId));
+  p.paidTzs = p.totalTzs - t.remainingTzs;
+  p.installments = t.remainingTzs > 0 ? [t.remainingTzs] : [];
+  return t.remainingTzs;
+}
+
 export async function handover(w: World, p: Plan): Promise<void> {
-  const stock = await w.championStock(p.customer.champion, p.product.id);
+  const stock = await w.sellerStock(p.customer.champion, p.product.id);
   if (stock < 1) {
     // Realistic: the champion must restock first. Leave the order FULLY_PAID; the orchestrator restocks and retries.
     return;
@@ -391,6 +406,17 @@ export async function leaveInFlight(w: World, plans: Plan[]): Promise<void> {
     const { orderId } = await requestStock(champion.actor, { productId: product.id, quantity: 4 });
     w.tick(20, 60);
     await prepareTransfer(hub.manager.actor, orderId);
+  });
+  await attempt("FULLY_PAID.awaiting_handover", async () => {
+    // Paid in full this afternoon; the champion meets her tomorrow — nothing reserved yet.
+    const target = plans.find((p) => !p.handedOver && p.installments.length > 0 && p.customer.champion.actor.role === "FIELD_CHAMPION");
+    if (!target) throw new Error("no open champion plan");
+    target.installments = [];
+    await pay(w, target.orderId, "success");
+    target.paidTzs = target.totalTzs;
+    target.nextPaymentDay = null;
+    target.handedOver = true; // frozen for the rest of the run
+    w.manifest.anomaly("HANDOVER_PENDING", "fully paid on the last day; handover not started yet", { orderRef: target.ref });
   });
   await attempt("HANDOVER_PENDING", async () => {
     // A customer settles her remaining balance in one go; the champion sends the code but they only meet tomorrow.

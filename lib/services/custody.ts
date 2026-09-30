@@ -7,7 +7,7 @@ import { now } from "@/lib/clock";
 import { eq, sql } from "drizzle-orm";
 import type { Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
-import { custodyMachine, canSplit, isLocked, INITIAL_CUSTODY_STATES, CUSTODY_TRANSFER_EVENTS, type CustodyCtx, type CustodyEvent } from "@/lib/domain/custody";
+import { custodyMachine, canSplit, isLocked, INITIAL_CUSTODY_STATES, CUSTODY_TRANSFER_EVENTS, type CustodyCtx, type CustodyEvent, type SplitKind } from "@/lib/domain/custody";
 import type { CustodyState } from "@/lib/domain/types";
 import { humanCode, randomRef128 } from "@/lib/crypto/random";
 import { tzDay } from "@/lib/util/time";
@@ -72,7 +72,7 @@ export async function applyCustody(tx: Tx, batch: Batch, event: CustodyEvent, ac
   if (CUSTODY_TRANSFER_EVENTS.includes(event)) {
     await recordLedgerEvent(tx, { type: "CUSTODY_TRANSFERRED", subjectRef: batch.code, batchId: batch.id, orderId: change.orderId ?? null, role: change.role ?? null });
   } else if (event === "CUSTOMER_HANDOVER") {
-    await recordLedgerEvent(tx, { type: "HANDOVER_COMPLETED", subjectRef: batch.code, batchId: batch.id, orderId: change.orderId ?? null, role: "FIELD_CHAMPION" });
+    await recordLedgerEvent(tx, { type: "HANDOVER_COMPLETED", subjectRef: batch.code, batchId: batch.id, orderId: change.orderId ?? null, role: change.role ?? actor.kind });
   }
   return updated!;
 }
@@ -81,7 +81,7 @@ export async function applyCustody(tx: Tx, batch: Batch, event: CustodyEvent, ac
 export async function registerBatch(
   tx: Tx,
   actor: ServiceActor,
-  input: { supplierId: string; productId: string; serviceAreaId: string; quantity: number; sealId: string | null; custodianUserId: string; orderId: string },
+  input: { supplierId: string; productId: string; serviceAreaId: string; quantity: number; sealId: string | null; custodianUserId: string; orderId: string | null },
 ): Promise<Batch> {
   const [b] = await tx
     .insert(s.batches)
@@ -114,14 +114,7 @@ export async function registerBatch(
 }
 
 /** Split `qty` units off an unlocked parent into a new reserved child lot. */
-export async function splitBatch(
-  tx: Tx,
-  actor: ServiceActor,
-  parent: Batch,
-  kind: "SPLIT_FOR_CHAMPION" | "SPLIT_FOR_CUSTOMER",
-  qty: number,
-  orderId: string,
-): Promise<Batch> {
+export async function splitBatch(tx: Tx, actor: ServiceActor, parent: Batch, kind: SplitKind, qty: number, orderId: string): Promise<Batch> {
   const refused = canSplit(kind, { state: parent.custodyState, quantity: parent.quantity }, qty);
   if (refused) throw new DomainError(refused);
   await tx.update(s.batches).set({ quantity: sql`${s.batches.quantity} - ${qty}`, updatedAt: now() }).where(eq(s.batches.id, parent.id));
@@ -139,10 +132,12 @@ export async function splitBatch(
       sealId: parent.sealId,
       preparedOn: parent.preparedOn,
       custodyState: state,
-      custodianUserId: parent.custodianUserId,
-      hubId: parent.hubId,
+      // A lot delivered to an organisation leaves every custodian; nothing is tracked past it.
+      custodianUserId: kind === "SPLIT_FOR_ORG" ? null : parent.custodianUserId,
+      hubId: kind === "SPLIT_FOR_ORG" ? null : parent.hubId,
     })
     .returning();
+  if (kind === "SPLIT_FOR_ORG") await recordLedgerEvent(tx, { type: "CUSTODY_TRANSFERRED", subjectRef: child!.code, batchId: child!.id, orderId, role: actor.kind });
   await tx.insert(s.custodyEvents).values({
     batchId: child!.id,
     event: kind,

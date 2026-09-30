@@ -58,13 +58,21 @@
     "BOSS_RIDER": "Boss Rider",
     "HUB_MANAGER": "Hub Manager",
     "FIELD_CHAMPION": "Field Champion",
-    "CUSTOMER": "Customer"
+    "CUSTOMER": "Customer",
+    "ORGANISATION": "Organisation"
   },
   "orderKinds": {
     "SUPPLIER_TO_RIDER": "Factory pickup",
     "RIDER_TO_HUB": "Hub delivery",
     "HUB_TO_CHAMPION": "Champion stock",
-    "CHAMPION_TO_CUSTOMER": "Customer purchase"
+    "CHAMPION_TO_CUSTOMER": "Customer purchase",
+    "RIDER_TO_CUSTOMER": "Rider → customer (village drop)",
+    "SUPPLIER_TO_CUSTOMER": "Supplier → customer (factory gate)",
+    "SUPPLIER_TO_HUB": "Supplier → hub (factory gate)",
+    "SUPPLIER_TO_CHAMPION": "Supplier → champion (factory gate)",
+    "SUPPLIER_TO_ORG": "Supplier → organisation",
+    "HUB_TO_ORG": "Hub → organisation",
+    "RIDER_TO_ORG": "Rider → organisation"
   },
   "orderStates": {
     "PICKUP_ASSIGNED": "Pickup assigned",
@@ -276,6 +284,18 @@
       "order_closed": {
         "title": "Plan closed",
         "explain": "This plan was closed without payments."
+      },
+      "org_awaiting_payment": {
+        "title": "Organisation order awaiting payment",
+        "explain": "The organisation pays by mobile money to your account, the full amount at once. Deliver only after the provider confirms."
+      },
+      "org_paid": {
+        "title": "Payment confirmed — deliver to the organisation",
+        "explain": "The provider confirmed the organisation's payment. Hand over the units and confirm delivery; the organisation gets a receipt by SMS."
+      },
+      "org_delivered": {
+        "title": "Delivered to the organisation",
+        "explain": "Delivery confirmed and recorded. Nothing more to do for this order."
       }
     },
     "action": {
@@ -305,7 +325,8 @@
       "confirm_customer_handover": "Confirm handover",
       "request_stock": "Request stock",
       "contact_or_close": "Contact customer or close plan",
-      "view_customers": "View customers"
+      "view_customers": "View customers",
+      "deliver_org": "Confirm delivery to organisation"
     }
   },
   "auth": {
@@ -376,7 +397,8 @@
       "noPlan": "No active plan",
       "chooseProduct": "Choose the product with the customer",
       "startPlan": "Start purchase plan",
-      "fullPriceNote": "The full price is shown before any payment. The customer may pay in full or in voluntary installments."
+      "fullPriceNote": "The full price is shown before any payment. The customer may pay in full or in voluntary installments.",
+      "directLink": "Sell to a customer"
     },
     "handover": {
       "title": "Handover",
@@ -437,6 +459,27 @@
       "confirmedOnly": "Only what the provider confirmed. Pending payments are not counted.",
       "quality": "Quality feedback on your batches",
       "noQuality": "No quality issue reported on your batches in the last 30 days."
+    },
+    "orgSale": {
+      "title": "Sell to an organisation",
+      "link": "Sell to an organisation",
+      "organisation": "Organisation",
+      "product": "Product",
+      "quantity": "Units",
+      "create": "Create order",
+      "note": "The unit price is the organisation price from your area's price list. The organisation pays the full amount by mobile money before you deliver.",
+      "none": "No active organisation in your area yet. Ask an admin to add one.",
+      "created": "Order created. The organisation was sent the payment details.",
+      "deliver": "Confirm delivery",
+      "deliverNote": "Confirm only once the units are with the organisation. This takes the units from your stock and sends the receipt.",
+      "delivered": "Delivered. Receipt {receiptNo} was sent to the organisation.",
+      "cancel": "Cancel order (nothing paid)"
+    },
+    "earnings": {
+      "title": "Earned (confirmed by the provider)",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "note": "Received minus what you paid your own sellers. Pending payments count for nothing until the provider confirms them."
     }
   },
   "problems": {
@@ -534,7 +577,9 @@
       "brief": "Morning brief",
       "messages": "Messages",
       "suppliers": "Suppliers",
-      "ecosystem": "Ecosystem"
+      "ecosystem": "Ecosystem",
+      "organisations": "Organisations",
+      "areas": "Areas & sale paths"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -583,6 +628,7 @@
       "hubPrice": "Hub price",
       "championPrice": "Champion price",
       "customerPrice": "Customer price",
+      "organisationPrice": "Organisation price (optional; blank = no organisation sales)",
       "submitted": "Draft submitted. A second admin must approve it before it takes effect.",
       "status": {
         "DRAFT": "Draft",
@@ -598,7 +644,10 @@
       "date": "Pickup date",
       "created": "Pickup assigned and the rider was notified.",
       "pair": "Supplier · product",
-      "noPairs": "No active supplier offers a product yet. Add products under Suppliers first."
+      "noPairs": "No active supplier offers a product yet. Add products under Suppliers first.",
+      "buyer": "Who collects",
+      "hubOrRiderStock": "Destination hub (blank: the rider keeps the stock for direct sales)",
+      "riderKeeps": "— rider keeps the stock —"
     },
     "exceptions": {
       "title": "Exceptions",
@@ -751,6 +800,69 @@
       "requestedBy": "requested by",
       "activate": "Activate",
       "deactivate": "Deactivate"
+    },
+    "organisations": {
+      "title": "Organisations",
+      "intro": "NGOs, non-profits, schools and community groups that buy in bulk. A record, not a login: they pay by mobile money and get the receipt and verify link by SMS. Activation needs two admins.",
+      "create": "Add organisation",
+      "createNote": "A new organisation starts inactive. Request activation once its details are checked.",
+      "name": "Name",
+      "kind": "Type",
+      "kinds": {
+        "NGO": "NGO",
+        "NON_PROFIT": "Non-profit",
+        "SCHOOL": "School",
+        "COMMUNITY": "Community group",
+        "OTHER": "Other"
+      },
+      "area": "Service area",
+      "contactName": "Contact name",
+      "contactPhone": "Contact phone (receives payment details and receipts)",
+      "notes": "Notes",
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Approval pending",
+      "orders": "Orders",
+      "openOrders": "Open",
+      "confirmed": "Confirmed to sellers",
+      "lastOrder": "Last order",
+      "none": "No organisations yet.",
+      "save": "Save",
+      "edit": "Edit",
+      "created": "Organisation added. It stays inactive until two admins approve activation.",
+      "updated": "Organisation updated.",
+      "activationRequested": "Request sent. Another admin must approve it.",
+      "requestActivation": "Request activation",
+      "requestDeactivation": "Request deactivation",
+      "pendingNote": "A request is waiting for a second admin in the approvals inbox.",
+      "ordersTitle": "Orders",
+      "seller": "Seller",
+      "history": "Activation history",
+      "requestedBy": "requested by",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "privacy": "Nothing about the people an organisation serves is recorded here."
+    },
+    "areas": {
+      "title": "Areas & sale paths",
+      "intro": "The handbook's ladder (supplier → rider → hub → champion → customer) is always allowed. Every other path is off until two admins turn it on for an area, because it decides who earns. The demo dataset turns everything on.",
+      "area": "Area",
+      "region": "Region",
+      "allowed": "Allowed beyond the ladder",
+      "ladderOnly": "Ladder only",
+      "pending": "Change pending",
+      "request": "Request change",
+      "requested": "Request sent. Another admin must approve it.",
+      "paths": {
+        "RIDER_TO_CUSTOMER": "Riders sell directly to customers (village drops)",
+        "SUPPLIER_TO_CUSTOMER": "Customers buy at the factory gate",
+        "SUPPLIER_TO_HUB": "Hubs collect their own stock at the factory",
+        "SUPPLIER_TO_CHAMPION": "Champions collect their own stock at the factory",
+        "SUPPLIER_TO_ORG": "Suppliers sell to organisations",
+        "HUB_TO_ORG": "Hubs sell to organisations",
+        "RIDER_TO_ORG": "Riders sell to organisations"
+      },
+      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
     }
   },
   "public": {
@@ -837,7 +949,10 @@
     "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved Health Champion to receive your product and use instructions. Your receipt will be available after handover.",
     "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your Health Champion only when you receive your product.",
     "receipt": "Habari {name}. Receipt {receiptNo}: {product} handed over. Your record: {link}",
-    "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money."
+    "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money.",
+    "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
+    "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} × {quantity} follows. Record: {link}",
+    "orgReceipt": "{name}: {product} × {quantity} delivered. Receipt {receiptNo}. Record: {link}"
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
@@ -926,11 +1041,23 @@
     "rate_limited": "Too many requests. Wait a few minutes.",
     "large_export_needs_approval": "This export needs a dual-approved request first.",
     "cannot_delete_admin": "Administrator accounts cannot be deleted this way.",
+    "subject_has_open_orders": "This person still has open orders. Finish or cancel them before deleting their records.",
     "supplier_product_not_offered": "This supplier does not supply that product. Add it under Suppliers first.",
     "supplier_not_found": "Supplier not found.",
     "supplier_already_in_state": "The supplier is already in that state.",
     "supplier_activation_pending": "An activation request for this supplier is already waiting for a decision.",
-    "ecosystem_window_invalid": "Unknown window."
+    "ecosystem_window_invalid": "Unknown window.",
+    "sale_not_allowed": "This sale path is not enabled in this area. Two admins can enable it under Areas.",
+    "organisation_not_active": "This organisation is not active yet.",
+    "organisation_not_found": "Organisation not found.",
+    "organisation_not_in_area": "This organisation belongs to another area.",
+    "no_organisation_price": "The area's price list has no organisation price for this product.",
+    "seller_has_no_area": "Your account has no service area; ask an admin.",
+    "buyer_not_active": "The buyer is not an active stakeholder.",
+    "buyer_required": "Choose who collects the pickup.",
+    "organisation_already_in_state": "The organisation is already in that state.",
+    "organisation_activation_pending": "An activation request for this organisation is already waiting for a decision.",
+    "area_sales_pending": "A request for this area's sale paths is already waiting for a decision."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running."
@@ -970,7 +1097,8 @@
       "handoverPending": "Paid, handover pending",
       "waitingOnSupplier": "Waiting on a supplier",
       "supplierQuality": "Supplier quality",
-      "clear": "Show everything"
+      "clear": "Show everything",
+      "orgOrdersUnpaid": "Organisation orders unpaid 3+ days"
     },
     "graph": {
       "title": "Flow",
@@ -989,7 +1117,10 @@
       "lastActivity": "Last activity",
       "edge": "{count} orders · {units} units · {paid} confirmed of {expected}",
       "legend": "Edge colour: grey pending · green confirmed · amber in review · red on hold. Thickness follows units.",
-      "noEdges": "Nothing in flight."
+      "noEdges": "Nothing in flight.",
+      "organisations": "Organisations",
+      "earned": "earned {tzs}",
+      "direct": "Dashed edges are direct paths (village drops, factory gate, organisations)."
     },
     "status": {
       "active": "active",
@@ -1071,7 +1202,9 @@
         "SUPPLIER_ACTIVATED": "Supplier activated",
         "SUPPLIER_DEACTIVATED": "Supplier deactivated",
         "PROBLEM": "Problem reported: {type}",
-        "UNKNOWN": "Security event"
+        "UNKNOWN": "Security event",
+        "ORGANISATION_ACTIVATED": "Organisation activated",
+        "ORGANISATION_DEACTIVATED": "Organisation deactivated"
       },
       "admin": {
         "admin_enrolled": "Admin enrolled",
@@ -1102,7 +1235,15 @@
         "user_reenroll": "Stakeholder re-enrolled",
         "user_suspend": "Stakeholder suspended",
         "user_unsuspend": "Suspension lifted",
-        "UNKNOWN": "Admin action"
+        "UNKNOWN": "Admin action",
+        "area_sales_change": "Area sale paths changed",
+        "org_sale_cancel": "Organisation order cancelled",
+        "org_sale_create": "Organisation order created",
+        "org_sale_deliver": "Delivered to organisation",
+        "organisation_activate": "Organisation activated",
+        "organisation_create": "Organisation added",
+        "organisation_deactivate": "Organisation deactivated",
+        "organisation_update": "Organisation updated"
       }
     },
     "tables": {

@@ -60,6 +60,8 @@ export const PriceListDraftSchema = z
             hubPriceTzs: TzsSchema,
             championPriceTzs: TzsSchema,
             customerPriceTzs: TzsSchema,
+            /** What an organisation pays per unit (prompt §8.8.3); omitted = not offered to organisations. */
+            organisationPriceTzs: TzsSchema.optional(),
           })
           .strict(),
       )

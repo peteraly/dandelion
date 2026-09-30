@@ -14,12 +14,15 @@ import { adminLockUser, adminReenrollUser, adminSuspendUser, completeFieldEnroll
 import { proposeResolution, reportProblem } from "@/lib/services/exceptions";
 import { createDataRequest, handleDataRequest, openDataRequests } from "@/lib/services/admin";
 import { createSupplier, requestSupplierActivation, setSupplierProduct } from "@/lib/services/suppliers";
-import { adminCreatePickup } from "@/lib/services/orders";
+import { createOrganisation, requestOrganisationActivation } from "@/lib/services/organisations";
+import { requestAreaSales } from "@/lib/services/areas";
+import { DIRECT_KINDS } from "@/lib/domain/sales";
+import { adminCreatePickup, expectCustomerPayment } from "@/lib/services/orders";
 import { syncOfflineNotes } from "@/lib/services/notes";
 import { importStatement } from "@/lib/services/statements";
 import { isLocked } from "@/lib/domain/custody";
 import { SEED } from "@/lib/seed-identities";
-import { reversedPayment, reviewPayment, strayProviderTransaction, type Plan } from "./supply";
+import { resyncPlan, reversedPayment, reviewPayment, strayProviderTransaction, type Plan } from "./supply";
 import type { Area, Hub, Person, SupplierOrg, World } from "./world";
 
 // ---------- world ----------
@@ -80,6 +83,28 @@ export async function buildWorld(w: World): Promise<void> {
   // Every area has a second, occasional supplier (Prompt B §8.5): longer lead time, activated by dual approval, own price list.
   for (const [i, area] of w.areas.entries()) await addOccasionalSupplier(w, area, i);
 
+  // Prompt §8.8: the demo switches every direct path on in every area (dual approval) and adds two buyer organisations per area.
+  for (const area of w.areas) {
+    const { requestId } = await requestAreaSales(w.adminA, area.id, [...DIRECT_KINDS]);
+    w.tick(30, 120);
+    await decideApproval(w.adminB, requestId, "APPROVE", "Pilot demo: every path on");
+    w.manifest.count("approvals.AREA_SALES_CHANGE");
+  }
+  w.directPaths = true;
+  for (const [i, area] of w.areas.entries()) {
+    for (const [j, kind] of (["SCHOOL", "NGO"] as const).entries()) {
+      const name = kind === "SCHOOL" ? `${w.names.village(i * 2 + j + 5)} Primary School (TEST)` : `${w.names.village(i * 2 + j + 7)} Health Network (TEST)`;
+      const { organisationId } = await createOrganisation(w.adminA, { name, kind, serviceAreaId: area.id, contactName: "Coordinator (TEST)", contactPhone: w.names.fieldPhone(), notes: "Fictional buyer organisation in the demo dataset" });
+      w.tick(20, 90);
+      const { requestId } = await requestOrganisationActivation(w.adminA, organisationId, true);
+      w.tick(30, 240);
+      await decideApproval(w.adminB, requestId, "APPROVE", "Organisation verified (test data)");
+      w.manifest.count("approvals.STAKEHOLDER_ACTIVATE");
+      w.organisations.push({ id: organisationId, name, areaId: area.id, kind });
+      w.manifest.count("organisations");
+    }
+  }
+
   // The minimal seed's customers, so their plans count too.
   for (const c of await db.query.customers.findMany()) {
     const champion = w.champions.find((p) => p.actor.userId === c.championId);
@@ -129,7 +154,7 @@ export async function supplierSetPieces(w: World, day: number, totalDays: number
   const area = w.areas[0]!;
   const primary = area.suppliers.find((o) => o.quality === "good");
   const occasional = area.suppliers.find((o) => o.quality === "poor");
-  if (day === 4 && primary) {
+  if (day >= 4 && primary && w.once("supplier.secondUser")) {
     try {
       const name = w.names.person();
       const phone = w.names.fieldPhone();
@@ -148,7 +173,7 @@ export async function supplierSetPieces(w: World, day: number, totalDays: number
       w.manifest.skip("enrol second supplier user via SMS link", e);
     }
   }
-  if (day === totalDays - 6 && occasional) {
+  if (day >= totalDays - 6 && occasional && w.once("supplier.waitingPickup")) {
     try {
       const hub = w.hubs[0]!;
       const product = w.product("DISPOSABLE");
@@ -167,7 +192,8 @@ async function activatePrices(w: World, area: Area, factor: [number, number], su
     const baseRow = p.category === "REUSABLE" ? { supplier: 7500, hub: 8000, champion: 9000, customer: 11400 } : p.name.includes("large") ? { supplier: 5000, hub: 5500, champion: 6200, customer: 7500 } : { supplier: 3000, hub: 3300, champion: 3800, customer: 4500 };
     const r = (n: number) => Math.round((n * f) / 100) * 100;
     // Upstream prices may differ per supplier; champion and customer prices are one per area (handbook §7, pricing.ts).
-    return { productId: p.id, supplierPriceTzs: r(baseRow.supplier), hubPriceTzs: Math.min(r(baseRow.hub), baseRow.champion), championPriceTzs: baseRow.champion, customerPriceTzs: baseRow.customer };
+    // Organisations pay the champion price (between hub and customer) — a demo default; the founders decide the real one (§8.8.6).
+    return { productId: p.id, supplierPriceTzs: r(baseRow.supplier), hubPriceTzs: Math.min(r(baseRow.hub), baseRow.champion), championPriceTzs: baseRow.champion, customerPriceTzs: baseRow.customer, organisationPriceTzs: baseRow.champion };
   });
   const { approvalRequestId } = await draftPriceList(w.adminA, { serviceAreaId: area.id, supplierId, effectiveFrom: tzDay(), items });
   w.tick(30, 180);
@@ -284,13 +310,17 @@ export async function adminDay(w: World, plans: Plan[], day: number): Promise<vo
     case 10:
     case 12:
       await run("data request", async () => {
-        const c = rng.pick(w.customers);
         const kind = day === 10 ? "CORRECTION" : "DELETION";
+        // A deletion is refused while the customer still has an open plan (the phone is tombstoned), so choose someone whose plans are all done.
+        const eligible = kind === "DELETION" ? w.customers.filter((c) => plans.every((p) => p.customer.id !== c.id || p.handedOver)) : w.customers;
+        if (!eligible.length) throw new Error("no customer without an open plan");
+        const c = rng.pick(eligible);
         await createDataRequest(w.adminA, { kind, subjectType: "CUSTOMER", subjectId: c.id, details: kind === "CORRECTION" ? "Customer asked to correct the spelling of her name (TEST)" : "Customer asked for deletion after moving away (TEST)" });
         w.tick(120, 600);
         const open = await openDataRequests(w.adminA);
         const mine = open.find((r) => r.subjectId === c.id);
         if (mine) await handleDataRequest(w.adminA, mine.id, "DONE", kind === "CORRECTION" ? "Name corrected" : "Records anonymised per policy");
+        if (kind === "DELETION") w.customers.splice(w.customers.indexOf(c), 1);
         w.manifest.count(`data_requests.${kind}`);
       });
       break;
@@ -428,11 +458,16 @@ export async function ensureExceptionCoverage(w: World, plans: Plan[]): Promise<
     // (OVERPAYMENT is an exception type the verifier never raises — an over-payment becomes an intent in review
     // plus a reconciliation flag; recorded as a finding in docs/REVIEW.md rather than faked here.)
     PAYEE_MISMATCH: async () => withOpenPlan((p) => reviewPayment(w, p.orderId, "wrong_payee", p.installments[0])),
-    UNMATCHED_PAYMENT: async () => withOpenPlan((p) => reviewPayment(w, p.orderId, "spoofed", p.installments[0])),
+    // A callback the provider then reports FAILED is what the verifier files as UNMATCHED_PAYMENT (a spoofed callback is a security event, not an exception).
+    // The verifier only files it when the customer had said she was paying (an unclaimed FAILED is provider noise).
+    UNMATCHED_PAYMENT: async () => withOpenPlan(async (p) => {
+      await expectCustomerPayment(p.customer.champion.actor, p.orderId);
+      await reviewPayment(w, p.orderId, "failure", p.installments[0]);
+    }),
     PAYMENT_REVERSED: async () => withOpenPlan(async (p) => {
-      await reversedPayment(w, p.orderId);
-      p.paidTzs += p.installments.shift() ?? 0; // the reversed amount was one installment; the plan will need it again
-      p.installments.push(p.installments[p.installments.length - 1] ?? 500);
+      await reversedPayment(w, p.orderId); // pays what is left, then the provider reverses it
+      await resyncPlan(w, p); // the plan owes the same again; let the database say how much
+      if (p.installments.length) p.nextPaymentDay = (p.nextPaymentDay ?? 0) + w.rng.int(2, 5);
     }),
   };
   // Each system scenario gets its own open plan so no single customer collects every anomaly.

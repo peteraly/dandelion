@@ -44,6 +44,7 @@ export default async function PricesPage({ searchParams }: { searchParams: Searc
                     <th>{t("hubPrice")}</th>
                     <th>{t("championPrice")}</th>
                     <th>{t("customerPrice")}</th>
+                    <th>{t("organisationPrice")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -54,6 +55,7 @@ export default async function PricesPage({ searchParams }: { searchParams: Searc
                       <td>{formatTzs(i.hubPriceTzs, locale)}</td>
                       <td>{formatTzs(i.championPriceTzs, locale)}</td>
                       <td>{formatTzs(i.customerPriceTzs, locale)}</td>
+                      <td>{i.organisationPriceTzs === null || i.organisationPriceTzs === undefined ? "—" : formatTzs(i.organisationPriceTzs, locale)}</td>
                     </tr>
                   ))}
                 </tbody>

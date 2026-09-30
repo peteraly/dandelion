@@ -9,6 +9,7 @@ import * as s from "@/lib/db/schema";
 import { homeView, type HomeView, type OrderSnapshot, type RoleExtras } from "@/lib/domain/workflows";
 import type { FieldRole } from "@/lib/domain/types";
 import type { Actor } from "@/lib/policy";
+import { isPlanKind, SUPPLIER_SELLER_KINDS } from "@/lib/domain/sales";
 import { getSetting } from "./core";
 import { paidTotals, latestIntent, type Order } from "./payments";
 import { recentOrdersFor } from "./orders";
@@ -19,7 +20,7 @@ export async function snapshotFor(actor: Actor, o: Order): Promise<OrderSnapshot
   const intent = await latestIntent(db, o.id);
   const b = o.batchId ? await db.query.batches.findFirst({ where: eq(s.batches.id, o.batchId), columns: { custodyState: true } }) : null;
   let daysSinceLastPayment: number | undefined;
-  if (o.kind === "CHAMPION_TO_CUSTOMER") {
+  if (isPlanKind(o.kind)) {
     const last = await db.query.paymentIntents.findFirst({
       where: and(eq(s.paymentIntents.orderId, o.id), eq(s.paymentIntents.status, "PAYMENT_CONFIRMED")),
       orderBy: desc(s.paymentIntents.confirmedAt),
@@ -33,7 +34,7 @@ export async function snapshotFor(actor: Actor, o: Order): Promise<OrderSnapshot
     verifyRef: o.verifyRef,
     kind: o.kind,
     state: o.state,
-    side: o.sellerUserId === actor.userId || (actor.role === "SUPPLIER" && o.kind === "SUPPLIER_TO_RIDER" && o.supplierId === actor.supplierId) ? "seller" : "buyer",
+    side: o.sellerUserId === actor.userId || (actor.role === "SUPPLIER" && SUPPLIER_SELLER_KINDS.includes(o.kind) && o.supplierId === actor.supplierId) ? "seller" : "buyer",
     totalTzs: o.totalTzs,
     confirmedPaidTzs: t.confirmedTzs,
     donorFundedTzs: t.donorTzs,

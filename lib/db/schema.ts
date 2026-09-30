@@ -38,6 +38,8 @@ import {
   PAYMENT_PURPOSES,
   PAYMENT_STATUSES,
   PRODUCT_CATEGORIES,
+  ORGANISATION_KINDS,
+  type OrderKind,
 } from "@/lib/domain/types";
 
 const bytea = customType<{ data: Buffer; driverData: Buffer }>({
@@ -58,6 +60,7 @@ export const userStatusEnum = pgEnum("user_status", ["INVITED", "ACTIVE", "SUSPE
 export const custodyStateEnum = pgEnum("custody_state", CUSTODY_STATES);
 export const paymentStatusEnum = pgEnum("payment_status", PAYMENT_STATUSES);
 export const orderKindEnum = pgEnum("order_kind", ORDER_KINDS);
+export const organisationKindEnum = pgEnum("organisation_kind", ORGANISATION_KINDS);
 export const orderStateEnum = pgEnum("order_state", ORDER_STATES);
 export const paymentPurposeEnum = pgEnum("payment_purpose", PAYMENT_PURPOSES);
 export const exceptionTypeEnum = pgEnum("exception_type", EXCEPTION_TYPES);
@@ -78,6 +81,11 @@ export const serviceAreas = pgTable("service_areas", {
   name: text("name").notNull(),
   region: text("region").notNull(),
   active: boolean("active").notNull().default(true),
+  /**
+   * Sale paths beyond the handbook ladder that this area allows (prompt §8.8.2).
+   * Changed only through the AREA_SALES_CHANGE dual approval. The ladder is always allowed.
+   */
+  allowedSales: jsonb("allowed_sales").$type<OrderKind[]>().notNull().default(sql`'[]'::jsonb`),
   createdAt: createdAt(),
 });
 
@@ -100,6 +108,26 @@ export const suppliers = pgTable("suppliers", {
   leadTimeDays: integer("lead_time_days").notNull().default(2),
   /** Display only — e.g. "paid on pickup, mobile money"; never a contract. */
   paymentTermsNote: text("payment_terms_note"),
+  notes: text("notes"),
+  createdAt: createdAt(),
+  updatedAt: updatedAt(),
+});
+
+/**
+ * A buyer organisation — NGO, non-profit, school, community group (prompt
+ * §8.8.4). A record, not a login: it pays by mobile money and gets the same
+ * SMS receipt and verify link a customer gets. Nothing about the people it
+ * serves is recorded. Activation is the STAKEHOLDER_ACTIVATE dual approval.
+ */
+export const organisations = pgTable("organisations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  kind: organisationKindEnum("kind").notNull(),
+  serviceAreaId: uuid("service_area_id").references(() => serviceAreas.id),
+  active: boolean("active").notNull().default(false),
+  contactName: text("contact_name"),
+  contactPhoneEnc: text("contact_phone_enc"),
+  contactPhoneIndex: text("contact_phone_index"),
   notes: text("notes"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
@@ -266,6 +294,7 @@ export const customers = pgTable(
   "customers",
   {
     id: uuid("id").primaryKey().defaultRandom(),
+    /** The stakeholder who enrolled and serves this customer: a champion on the ladder, a rider or supplier user on a direct path (prompt §8.8). */
     championId: uuid("champion_id").notNull().references(() => users.id),
     displayName: text("display_name").notNull(), // name or preferred name only
     phoneEnc: text("phone_enc").notNull(),
@@ -321,6 +350,8 @@ export const priceListItems = pgTable(
     hubPriceTzs: integer("hub_price_tzs").notNull(),
     championPriceTzs: integer("champion_price_tzs").notNull(),
     customerPriceTzs: integer("customer_price_tzs").notNull(),
+    /** What an organisation pays per unit when it buys from this supplier's chain; null = not offered to organisations. */
+    organisationPriceTzs: integer("organisation_price_tzs"),
   },
   (t) => [
     uniqueIndex("price_list_items_uq").on(t.priceListId, t.productId),
@@ -398,6 +429,8 @@ export const orders = pgTable(
     customerId: uuid("customer_id").references(() => customers.id),
     supplierId: uuid("supplier_id").references(() => suppliers.id),
     hubId: uuid("hub_id").references(() => hubs.id),
+    /** Buyer organisation for the *_TO_ORG kinds (prompt §8.8). */
+    organisationId: uuid("organisation_id").references(() => organisations.id),
     productId: uuid("product_id").notNull().references(() => products.id),
     priceListItemId: uuid("price_list_item_id").notNull().references(() => priceListItems.id),
     quantity: integer("quantity").notNull(),
@@ -422,8 +455,8 @@ export const orders = pgTable(
   },
   (t) => [
     check("order_amounts", sql`${t.quantity} > 0 AND ${t.unitPriceTzs} >= 0 AND ${t.totalTzs} = ${t.unitPriceTzs} * ${t.quantity} AND ${t.unitCostTzs} >= 0`),
-    check("customer_order_has_customer", sql`${t.kind} <> 'CHAMPION_TO_CUSTOMER' OR ${t.customerId} IS NOT NULL`),
-    check("b2b_order_has_buyer", sql`${t.kind} = 'CHAMPION_TO_CUSTOMER' OR ${t.buyerUserId} IS NOT NULL`),
+    // Every order has exactly one kind of buyer: a stakeholder, a customer or an organisation (the services pick which per kind).
+    check("order_has_buyer", sql`(${t.buyerUserId} IS NOT NULL)::int + (${t.customerId} IS NOT NULL)::int + (${t.organisationId} IS NOT NULL)::int = 1`),
     index("orders_seller_idx").on(t.sellerUserId, t.state),
     index("orders_buyer_idx").on(t.buyerUserId, t.state),
     index("orders_customer_idx").on(t.customerId),

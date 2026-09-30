@@ -7,11 +7,14 @@
 import type { EcoEdge, EcoNode } from "@/lib/services/ecosystem";
 
 const COLUMNS = ["SUPPLIER", "RIDER", "HUB", "CHAMPION", "CUSTOMERS"] as const;
+/** Organisations sit in the customers column: they are buyers at the end of a path (prompt §8.8). */
+const COLUMN_OF: Record<EcoNode["kind"], (typeof COLUMNS)[number]> = { SUPPLIER: "SUPPLIER", RIDER: "RIDER", HUB: "HUB", CHAMPION: "CHAMPION", CUSTOMERS: "CUSTOMERS", ORGANISATION: "CUSTOMERS" };
+const DIRECT_KINDS = new Set(["RIDER_TO_CUSTOMER", "SUPPLIER_TO_CUSTOMER", "SUPPLIER_TO_HUB", "SUPPLIER_TO_CHAMPION", "SUPPLIER_TO_ORG", "HUB_TO_ORG", "RIDER_TO_ORG"]);
 const COLOUR: Record<EcoEdge["paymentState"], string> = { pending: "#a8a29e", confirmed: "#16a34a", review: "#d97706", hold: "#dc2626" };
 const STATUS_ICON: Record<EcoNode["status"], string> = { active: "●", inactive: "○", locked: "⛔", suspended: "⏸", pending: "…", invited: "✉" };
 
 export interface GraphLabels {
-  columns: Record<(typeof COLUMNS)[number], string>;
+  columns: Record<EcoNode["kind"], string>;
   units: (n: number) => string;
   locked: string;
   status: (s: EcoNode["status"]) => string;
@@ -31,7 +34,7 @@ const NODE_H = 46;
 const GAP = 12;
 
 export function FlowGraph({ nodes, edges, labels }: { nodes: EcoNode[]; edges: EcoEdge[]; labels: GraphLabels }) {
-  const byColumn = COLUMNS.map((kind) => nodes.filter((n) => n.kind === kind));
+  const byColumn = COLUMNS.map((col) => nodes.filter((n) => COLUMN_OF[n.kind] === col));
   const rows = Math.max(1, ...byColumn.map((c) => c.length));
   const H = 40 + rows * (NODE_H + GAP) + 20;
   const pos = new Map<string, { x: number; y: number }>();
@@ -58,7 +61,7 @@ export function FlowGraph({ nodes, edges, labels }: { nodes: EcoNode[]; edges: E
             const mx = (x1 + x2) / 2;
             const width = 1.5 + (e.units / maxUnits) * 6;
             return (
-              <path key={`${e.kind}-${e.fromId}-${e.toId}`} d={`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`} fill="none" stroke={COLOUR[e.paymentState]} strokeWidth={width} strokeOpacity="0.85" data-testid="flow-edge" data-payment={e.paymentState}>
+              <path key={`${e.kind}-${e.fromId}-${e.toId}`} d={`M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`} fill="none" stroke={COLOUR[e.paymentState]} strokeWidth={width} strokeOpacity="0.85" strokeDasharray={DIRECT_KINDS.has(e.kind) ? "6 4" : undefined} data-testid="flow-edge" data-payment={e.paymentState} data-kind={e.kind}>
                 <title>{labels.edge(e)}</title>
               </path>
             );
@@ -66,7 +69,7 @@ export function FlowGraph({ nodes, edges, labels }: { nodes: EcoNode[]; edges: E
           {nodes.map((n) => {
             const p = pos.get(n.id);
             if (!p) return null;
-            const stockText = n.stock ? labels.units(n.stock.units) : n.customers ? labels.units(n.customers.count) : "";
+            const stockText = n.stock ? labels.units(n.stock.units) : n.customers ? labels.units(n.customers.count) : n.organisation ? `${n.organisation.openOrders} open` : "";
             const locked = n.stock && n.stock.lockedUnits > 0;
             return (
               <a key={n.id} href={n.href} data-testid="flow-node" data-kind={n.kind}>
@@ -114,7 +117,7 @@ export function FlowGraph({ nodes, edges, labels }: { nodes: EcoNode[]; edges: E
                   <span aria-hidden="true">{STATUS_ICON[n.status]}</span> {labels.status(n.status)}
                 </td>
                 <td>
-                  {n.stock ? labels.units(n.stock.units) : n.customers ? labels.units(n.customers.count) : "—"}
+                  {n.stock ? labels.units(n.stock.units) : n.customers ? labels.units(n.customers.count) : n.organisation ? `${n.organisation.openOrders} open` : "—"}
                   {n.stock && n.stock.lockedUnits > 0 ? <span className="ml-1 text-red-700">({n.stock.lockedUnits} {labels.locked})</span> : null}
                 </td>
                 <td>{labels.formatTime(n.lastActivityAt)}</td>
