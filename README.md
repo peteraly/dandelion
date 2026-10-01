@@ -18,7 +18,10 @@ with everyone's phone, prices and distance, demand-driven restocking and the
 phone-first pass are `docs/PROMPT_H_JOURNEY_PRICING_DEMAND_MOBILE.md`; the red
 team for rural roads, the rains, trip pay "like Uber and DoorDash, but fair to
 far villages" and generalising beyond pads are
-`docs/PROMPT_I_ROADS_RAINS_TRIP_PAY.md`.
+`docs/PROMPT_I_ROADS_RAINS_TRIP_PAY.md`; whether the model is sustainable in
+Tanzania, every stakeholder and their incentives, the problem worked backward
+to the build, and the field test before more features are
+`docs/PROMPT_J_PROBLEM_FIRST_STAKEHOLDERS.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in

@@ -132,6 +132,14 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt J (problem first, stakeholders, sustainability) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_J_PROBLEM_FIRST_STAKEHOLDERS.md`: outcome → conditions → what fails and why (each claim labelled Known / Reported / Assumed, with sources); 14 stakeholders; 7 misalignments (M1–M7); illustrative arithmetic; every built feature checked against a condition (blockchain anchor parked); assumptions A1–A9; field plan; verdict. |
+| Feature freeze | **recommended** | 6–8 weeks of field discovery and pilot; only J1 (pilot measures) built meanwhile. Founders' decision §3.6. |
+| J1–J7 | **not started** | J1 pilot measures (no decision needed); J2 confidential reporting (§3.5); J3 vouchers (§3.2); J4 basket (§3.4); J5 fee tracking; J6 reusable follow-up (§3.3); J7 funder reports. |
+
 ## Prompt I (roads, rains, trip pay, beyond pads) — status
 
 | Item | Status | Notes |
