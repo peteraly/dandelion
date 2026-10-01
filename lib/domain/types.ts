@@ -128,6 +128,12 @@ export const EXCEPTION_TYPES = [
 ] as const;
 export type ExceptionType = (typeof EXCEPTION_TYPES)[number];
 
+/**
+ * Problems about money (Prompt M §2): the admin home counts them once, as "payments to check"; every other open
+ * problem is "problems reported". A problem waiting for a second admin's signature counts only under approvals.
+ */
+export const PAYMENT_PROBLEM_TYPES = ["PAYMENT_PENDING_TOO_LONG", "PAYMENT_REVERSED", "WRONG_AMOUNT", "OVERPAYMENT", "PAYEE_MISMATCH", "UNMATCHED_PAYMENT"] as const satisfies readonly ExceptionType[];
+
 /** Problems a field user may report from REPORT A PROBLEM. */
 export const REPORTABLE_PROBLEMS = [
   "PAYMENT_PENDING_TOO_LONG",

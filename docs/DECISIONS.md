@@ -284,3 +284,10 @@ behind an interface with a mock and must be checked before go-live.
 - **Consequences.** Dandelion's income per pack roughly doubles; suppliers carry 50 TZS per pack (≈ 1.7 % of a 3,000 TZS wholesale price). SMS per shop sale falls by about 3 parts. The leads receive a customer's phone number by SMS, within the purpose she reported for. The bonus and any money paid to non-members wait for data and the G1 legal opinion.
 - **Status.** accepted (founders, 2026-10-01); leads and helplines to be set by two admins.
 
+## ADR-042 — The admin list counts each issue once, and closing a problem closes its payment
+
+- **Context.** Founders (2026-10-01, Prompt M): the admin home showed 9 payments to check, 14 problems, 10 money mismatches and 3 deliveries; build so that such items do not pile up, with people for edge cases. Measured on a full demo district: 8 of 9 payments to check belonged to problems already closed; all 9 open money-mismatch flags were the same payments; deliveries listed were normal traffic, while two held deliveries had waited weeks after their problem was closed.
+- **Decision.** A payment in review stays in review for the record but carries `review_closed_at`, set when the last problem about it is closed by two admins (set once, only while in review — database guard; earlier ones backfilled). The lists have one definition each: money problems (`PAYMENT_PROBLEM_TYPES`, status OPEN) are "payments to check"; other OPEN problems are "problems reported"; a problem awaiting a second admin's signature counts only under approvals; reconciliation no longer flags payments in review; only stuck deliveries are listed (3 days on the road, 1 day at inspection). When two admins let a held delivery continue, the hub keepers are texted. The live map, the brief and the admin home share the definitions.
+- **Consequences.** Demo district: 34 items → 11. The next steps (Prompt M Part 2: payment claims that heal, field settlements, owners and due times, a demo that tidies up, abuse caps) aim at about 5 items that need a person by design.
+- **Status.** accepted (founders' direction, 2026-10-01).
+

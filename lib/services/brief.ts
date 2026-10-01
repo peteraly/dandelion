@@ -22,7 +22,7 @@ export async function buildBriefItems(actor: Actor): Promise<BriefItem[]> {
     .select({ i: s.paymentIntents, ref: s.orders.ref })
     .from(s.paymentIntents)
     .innerJoin(s.orders, eq(s.orders.id, s.paymentIntents.orderId))
-    .where(eq(s.paymentIntents.status, "PAYMENT_FAILED_OR_REVIEW"))
+    .where(and(eq(s.paymentIntents.status, "PAYMENT_FAILED_OR_REVIEW"), isNull(s.paymentIntents.reviewClosedAt)))
     .orderBy(desc(s.paymentIntents.updatedAt))
     .limit(20);
   for (const { i, ref } of review) {

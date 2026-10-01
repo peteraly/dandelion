@@ -183,10 +183,12 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     const before = await smsCount("REMINDER");
     await sendRestockReminders();
     expect(await smsCount("REMINDER")).toBe(before); // too soon
-    setClock(new Date(Date.now() + 26 * 86_400_000));
+    const later = Date.now() + 26 * 86_400_000;
+    setClock(new Date(later));
     await setShopReminders({ id: customerId }, false);
     await sendRestockReminders();
     expect(await smsCount("REMINDER")).toBe(before); // she switched them off
+    setClock(new Date(later + 60_000)); // a minute later she switches them back on
     await setShopReminders({ id: customerId }, true);
     expect((await sendRestockReminders()).sent).toBeGreaterThanOrEqual(1);
     const sms = (await lastSms("REMINDER"))!.body;

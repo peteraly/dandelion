@@ -132,6 +132,13 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt M (red team of all work; an admin list that stays short) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| M1 — count once, close loops | **built** | Closing a problem closes its payment; one definition per list; no re-flagging in reconciliation; only stuck deliveries; hub keeper texted when a held delivery may continue. Demo district 34 → 11 items. |
+| M2–M8 | **not started** | Payment claims that heal, push payments (after G1), field settlements, owners and due times, a demo that tidies up, shop SMS cap and cleanup, confirmed women sellers. `docs/PROMPT_M_RED_TEAM_SELF_HEALING.md`. |
+
 ## Prompt L (money, the shop, a marketplace where every side wins) — status
 
 | Item | Status | Notes |

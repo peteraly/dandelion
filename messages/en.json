@@ -1172,10 +1172,6 @@
           "title": "Hubs running low",
           "hint": "Below their minimum stock. Arrange a pickup."
         },
-        "deliveriesInspection": {
-          "title": "Deliveries arriving",
-          "hint": "On the road or at inspection. Act only if one is stuck."
-        },
         "alerts24h": {
           "title": "Security alerts (24 h)",
           "hint": "Unusual sign-ins or refused actions worth a look."
@@ -1195,6 +1191,10 @@
         "customersWaiting": {
           "title": "Customers waiting more than 12 hours",
           "hint": "Nobody has taken their order. Call a seller with stock nearby."
+        },
+        "deliveriesStuck": {
+          "title": "Deliveries stuck",
+          "hint": "On the road for more than 3 days, or at inspection for more than a day. Call the hub keeper or the delivery partner."
         }
       },
       "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}",
@@ -1562,7 +1562,8 @@
     "shopAlert": "Habari {name}. A customer is waiting at {place} (order {ref}). Open the app to accept it if you can bring it.",
     "shopPlan": "Habari {name}. Order {ref}: {seller} will meet you at {place}. Price {price}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. Read your hand-over code only when you have received your order.",
     "reminder": "Habari {name}. About a month has passed. Need more? Order at {link} or ask your local seller. Turn reminders off in the shop.",
-    "safeguarding": "Dandelion safety report {ref}: a customer felt unsafe ({area}, {place}). Please call her today: {name} {phone}. Details in Admin > Problems."
+    "safeguarding": "Dandelion safety report {ref}: a customer felt unsafe ({area}, {place}). Please call her today: {name} {phone}. Details in Admin > Problems.",
+    "inspectionResume": "Habari {name}. The problem with delivery {ref} is resolved. Please finish the inspection in the app today."
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",

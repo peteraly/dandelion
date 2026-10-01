@@ -17,10 +17,16 @@ import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
 import { DEMO_CSV_HEADER } from "@/lib/demo/label";
 import { TERMINAL_ORDER_STATES } from "@/lib/domain/orders";
 import { PLAN_KINDS } from "@/lib/domain/sales";
+import { PAYMENT_PROBLEM_TYPES } from "@/lib/domain/types";
+
+/** A delivery is stuck when it has been on the road this long, or at inspection this long, without a step. */
+export const STUCK_ON_ROAD_MS = 3 * 86_400_000;
+export const STUCK_AT_INSPECTION_MS = 86_400_000;
 
 export interface Priorities {
   paymentsReview: number;
-  deliveriesInspection: number;
+  /** Deliveries stuck: on the road over 3 days, or at inspection over a day (Prompt M §2). */
+  deliveriesStuck: number;
   lowStockHubs: number;
   pendingApprovals: number;
   openExceptions: number;
@@ -37,9 +43,25 @@ export async function priorities(actor: Actor): Promise<Priorities> {
   authorize(actor, "admin.dashboard");
   const db = getDb();
   const count = async (q: Promise<{ n: number }[]>) => Number((await q)[0]?.n ?? 0);
-  const paymentsReview = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.paymentIntents).where(eq(s.paymentIntents.status, "PAYMENT_FAILED_OR_REVIEW")));
-  const deliveriesInspection = await count(
-    db.select({ n: sql<number>`count(*)::int` }).from(s.orders).where(and(eq(s.orders.kind, "RIDER_TO_HUB"), inArray(s.orders.state, ["EN_ROUTE", "INSPECTING"]))),
+  // Each issue is counted once (Prompt M §2): a money problem under "payments to check", any other open problem under
+  // "problems reported", a problem waiting for a second admin only under approvals.
+  const paymentsReview = await count(
+    db.select({ n: sql<number>`count(*)::int` }).from(s.exceptions).where(and(eq(s.exceptions.status, "OPEN"), inArray(s.exceptions.type, [...PAYMENT_PROBLEM_TYPES]))),
+  );
+  // Only deliveries that are stuck: on the road for more than 3 days, or at inspection for more than a day.
+  const deliveriesStuck = await count(
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(s.orders)
+      .where(
+        and(
+          eq(s.orders.kind, "RIDER_TO_HUB"),
+          or(
+            and(eq(s.orders.state, "EN_ROUTE"), lt(s.orders.updatedAt, new Date(nowMs() - STUCK_ON_ROAD_MS))),
+            and(eq(s.orders.state, "INSPECTING"), lt(s.orders.updatedAt, new Date(nowMs() - STUCK_AT_INSPECTION_MS))),
+          ),
+        ),
+      ),
   );
   const hubs = await db.query.hubs.findMany({ where: eq(s.hubs.active, true) });
   let lowStockHubs = 0;
@@ -48,13 +70,15 @@ export async function priorities(actor: Actor): Promise<Priorities> {
     if (n < h.minStockUnits) lowStockHubs++;
   }
   const pendingApprovals = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.approvalRequests).where(eq(s.approvalRequests.status, "PENDING")));
-  const openExceptions = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.exceptions).where(ne(s.exceptions.status, "RESOLVED")));
+  const openExceptions = await count(
+    db.select({ n: sql<number>`count(*)::int` }).from(s.exceptions).where(and(eq(s.exceptions.status, "OPEN"), notInArray(s.exceptions.type, [...PAYMENT_PROBLEM_TYPES]))),
+  );
   const reconFlags = await count(db.select({ n: sql<number>`count(*)::int` }).from(s.reconciliationFlags).where(isNull(s.reconciliationFlags.resolvedAt)));
   const alerts24h = await count(
     db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(nowMs() - 86_400_000)))),
   );
   const payouts = await payoutsWaiting(db);
-  return { paymentsReview, deliveriesInspection, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h, payoutsToApprove: payouts.toApprove, payoutsToSend: payouts.toSend };
+  return { paymentsReview, deliveriesStuck, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h, payoutsToApprove: payouts.toApprove, payoutsToSend: payouts.toSend };
 }
 
 /** "Happening right now" on the admin home: a handful of counts, cheap enough to run on every visit (the map has the rest). */

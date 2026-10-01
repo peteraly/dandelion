@@ -12,6 +12,7 @@ import * as s from "@/lib/db/schema";
 import { authorize, type Actor } from "@/lib/policy";
 import { LOCKED_CUSTODY_STATES, ORDER_KINDS, type OrderKind } from "@/lib/domain/types";
 import { securityLabelKey, ADMIN_ACTIONS } from "@/lib/domain/events";
+import { PAYMENT_PROBLEM_TYPES } from "@/lib/domain/types";
 import { SUPPLIER_QUALITY_TYPES } from "@/lib/domain/suppliers";
 import { PLAN_KINDS } from "@/lib/domain/sales";
 import { paidByUserSince, receivedByUserSince } from "./earnings";
@@ -509,7 +510,7 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
   const [att] = (
     await db.execute<Record<string, string>>(sql`
     select
-      (select count(*) from payment_intents where status = 'PAYMENT_FAILED_OR_REVIEW')::text as payment_reviews,
+      (select count(*) from exceptions where status = 'OPEN' and type in (${sql.join(PAYMENT_PROBLEM_TYPES.map((k) => sql`${k}`), sql`, `)}))::text as payment_reviews,
       (select count(*) from payment_intents where status = 'PAYMENT_PENDING' and created_at < ${new Date(atMs - pendingMinutes * 60_000)})::text as payments_pending_long,
       (select count(*) from batches where custody_state in ('INSPECTION_ISSUE','DAMAGED_OR_QUARANTINED') and quantity > 0)::text as locked_batches,
       (select count(*) from approval_requests where status = 'PENDING')::text as approvals_waiting,
@@ -519,7 +520,9 @@ export async function ecosystemSnapshot(actor: Actor, q: SnapshotQuery): Promise
       (select count(*) from orders where organisation_id is not null and state = 'AWAITING_PAYMENT' and created_at < ${new Date(atMs - 3 * 86_400_000)})::text as org_orders_unpaid,
       (select count(*) from orders o join suppliers sp on sp.id = o.supplier_id where o.kind = 'SUPPLIER_TO_RIDER' and o.state = 'PICKUP_ASSIGNED' and o.created_at < ${at}::timestamptz - make_interval(days => sp.lead_time_days))::text as waiting_on_supplier`)
   ).rows;
-  const exceptionsByType = await db.execute<{ type: string; n: string }>(sql`select type, count(*)::text as n from exceptions where status <> 'RESOLVED' group by type`);
+  const exceptionsByType = await db.execute<{ type: string; n: string }>(
+    sql`select type, count(*)::text as n from exceptions where status = 'OPEN' and type not in (${sql.join(PAYMENT_PROBLEM_TYPES.map((k) => sql`${k}`), sql`, `)}) group by type`,
+  );
   const openExceptionsByType = Object.fromEntries(exceptionsByType.rows.map((r) => [r.type, n(r.n)]));
   const silentCutoff = atMs - SILENT_NODE_DAYS * 86_400_000;
   const silentNodes = users.filter((u) => u.status === "ACTIVE" && inScopeUser(u) && (lastActivity.get(u.id)?.getTime() ?? 0) < silentCutoff).length;

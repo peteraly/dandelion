@@ -1173,10 +1173,6 @@
           "title": "Vituo vinavyoishiwa",
           "hint": "Chini ya kiwango cha chini. Panga uchukuaji."
         },
-        "deliveriesInspection": {
-          "title": "Usafirishaji unaowasili",
-          "hint": "Barabarani au ukaguzini. Chukua hatua tu ikiwa kimoja kimekwama."
-        },
         "alerts24h": {
           "title": "Tahadhari za usalama (saa 24)",
           "hint": "Kuingia kusiko kawaida au vitendo vilivyokataliwa vinavyostahili kuangaliwa."
@@ -1196,6 +1192,10 @@
         "customersWaiting": {
           "title": "Wateja wanaosubiri zaidi ya saa 12",
           "hint": "Hakuna aliyechukua oda yao. Mpigie muuzaji mwenye mzigo karibu."
+        },
+        "deliveriesStuck": {
+          "title": "Mizigo iliyokwama",
+          "hint": "Barabarani zaidi ya siku 3, au kwenye ukaguzi zaidi ya siku moja. Mpigie mtunza hub au msambazaji."
         }
       },
       "seedError": "Wilaya kamili ya onyesho haikuweza kujengwa kwenye usambazaji uliopita, kwa hiyo data ndogo ya mwanzo inaonyeshwa badala yake. Tuma mstari huu kwa anayetunza programu: {reason}",
@@ -1563,7 +1563,8 @@
     "shopAlert": "Habari {name}. Mteja anasubiri {place} (oda {ref}). Fungua programu uikubali kama unaweza kuifikisha.",
     "shopPlan": "Habari {name}. Oda {ref}: {seller} atakutana nawe {place}. Bei {price}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
     "reminder": "Habari {name}. Mwezi umepita. Unahitaji zaidi? Agiza {link} au muulize muuzaji wako. Zima vikumbusho dukani.",
-    "safeguarding": "Ripoti ya usalama ya Dandelion {ref}: mteja alihisi si salama ({area}, {place}). Tafadhali mpigie leo: {name} {phone}. Maelezo: Admin > Matatizo."
+    "safeguarding": "Ripoti ya usalama ya Dandelion {ref}: mteja alihisi si salama ({area}, {place}). Tafadhali mpigie leo: {name} {phone}. Maelezo: Admin > Matatizo.",
+    "inspectionResume": "Habari {name}. Tatizo la mzigo {ref} limetatuliwa. Tafadhali maliza ukaguzi kwenye programu leo."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",

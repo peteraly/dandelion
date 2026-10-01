@@ -491,8 +491,9 @@ test("dashboard priorities and reconciliation flag the review items", async ({ b
   await expect(a.page.getByTestId("admin-menu-toggle")).toContainText("Approvals");
   await a.page.getByTestId("admin-menu-toggle").click();
   await expect(a.page.getByRole("navigation", { name: "Admin" }).getByRole("link", { name: "Approvals" })).toHaveAttribute("aria-current", "page");
+  // Counted once (Prompt M §2): the payments in review are not flagged again as "money that does not match".
   await a.page.goto("/admin/reconciliation");
-  await expect(a.page.getByText("PAYMENT IN REVIEW").first()).toBeVisible();
+  expect(await a.page.getByText("PAYMENT IN REVIEW").count()).toBe(0);
   await a.ctx.close();
 });
 

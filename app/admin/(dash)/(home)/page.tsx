@@ -28,7 +28,7 @@ const NEEDS = [
   ["reconFlags", "/admin/reconciliation"],
   ["customersWaiting", "/admin/shop"],
   ["lowStockHubs", "/admin/inventory"],
-  ["deliveriesInspection", "/admin/orders"],
+  ["deliveriesStuck", "/admin/orders"],
   ["alerts24h", "/admin/logs"],
 ] as const;
 

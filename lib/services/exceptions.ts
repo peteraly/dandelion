@@ -5,7 +5,7 @@
  * approvals executor.
  */
 import { now } from "@/lib/clock";
-import { and, desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, isNull, ne } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -14,6 +14,9 @@ import type { DualApprovalProof } from "@/lib/domain/approval";
 import { isLocked } from "@/lib/domain/custody";
 import { authorize, type Actor } from "@/lib/policy";
 import { humanCode } from "@/lib/crypto/random";
+import { decryptString } from "@/lib/crypto/envelope";
+import { getSmsProvider } from "@/lib/sms";
+import { tr } from "@/lib/i18n/server-translator";
 import { DomainError, logAdminAction, logSecurityEvent, recordLedgerEvent, withTx, APPROVALS } from "./core";
 import { applyCustody, lockBatch } from "./custody";
 import { applyOrder, lockOrder, orderResource, asService } from "./orders";
@@ -108,6 +111,22 @@ export async function executeExceptionResolution(tx: Tx, p: z.infer<typeof Excep
     }
   }
   await tx.update(s.exceptions).set({ status: "RESOLVED", resolution: `${p.outcome}: ${p.note}`, resolvedAt: now() }).where(eq(s.exceptions.id, ex.id));
+  // Close the loop (Prompt M §2): the payment this problem was about stops asking for attention, once no other open
+  // problem is about it; it stays "in review" in the record.
+  if (ex.paymentIntentId) {
+    const other = await tx.query.exceptions.findFirst({ where: and(eq(s.exceptions.paymentIntentId, ex.paymentIntentId), ne(s.exceptions.id, ex.id), ne(s.exceptions.status, "RESOLVED")) });
+    if (!other) {
+      await tx
+        .update(s.paymentIntents)
+        .set({ reviewClosedAt: now() })
+        .where(and(eq(s.paymentIntents.id, ex.paymentIntentId), eq(s.paymentIntents.status, "PAYMENT_FAILED_OR_REVIEW"), isNull(s.paymentIntents.reviewClosedAt)));
+    }
+  }
+  // A delivery held at inspection can continue: tell the hub keeper, so it does not wait unseen.
+  if (ex.orderId && p.outcome === "RESUME") {
+    const order = await tx.query.orders.findFirst({ where: eq(s.orders.id, ex.orderId) });
+    if (order?.kind === "RIDER_TO_HUB" && order.state === "INSPECTING" && order.hubId) await nudgeHubKeepers(tx, order.hubId, order.ref);
+  }
   await recordLedgerEvent(tx, { type: "EXCEPTION_RESOLVED", subjectRef: ex.ref, batchId: ex.batchId, orderId: ex.orderId, role: "SUPER_ADMIN" });
   await logAdminAction(tx, approverId, "exception.resolved", { type: "exception", id: ex.id }, { outcome: p.outcome });
 }
@@ -118,3 +137,10 @@ export async function openExceptions(actor: Actor) {
 }
 
 export const EXCEPTION_TYPE_LIST = EXCEPTION_TYPES;
+
+async function nudgeHubKeepers(tx: Tx, hubId: string, ref: string): Promise<void> {
+  const keepers = await tx.query.users.findMany({ where: and(eq(s.users.hubId, hubId), eq(s.users.role, "HUB_MANAGER"), eq(s.users.status, "ACTIVE")) });
+  for (const k of keepers) {
+    await getSmsProvider().send(await decryptString(k.phoneEnc), tr(k.preferredLocale, "sms.inspectionResume", { name: k.displayName.split(" ")[0] ?? "", ref }), "NOTICE", tx);
+  }
+}

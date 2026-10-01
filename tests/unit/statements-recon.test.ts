@@ -58,7 +58,8 @@ describe("reconciliation rules", () => {
   it("flags over-coverage, stuck pending, reviews, handover without batch state", () => {
     expect(reconcileOrder({ ...base, donorTzs: 1 }, 60).map((f) => f.kind)).toContain("OVER_COVERED");
     expect(reconcileOrder({ ...base, state: "AWAITING_PAYMENT", transferEvents: 0, pendingIntentAgeMinutes: 90 }, 60).map((f) => f.kind)).toContain("PAYMENT_PENDING_TOO_LONG");
-    expect(reconcileOrder({ ...base, reviewIntents: 1 }, 60).map((f) => f.kind)).toContain("PAYMENT_IN_REVIEW");
+    // Counted once (Prompt M §2): a payment in review is already on the admins' list, so reconciliation does not flag it again.
+    expect(reconcileOrder({ ...base, reviewIntents: 1 }, 60).map((f) => f.kind)).not.toContain("PAYMENT_IN_REVIEW");
     expect(reconcileOrder({ ...base, kind: "CHAMPION_TO_CUSTOMER", batchState: "WITH_CHAMPION" }, 60).map((f) => f.kind)).toContain("HANDOVER_WITHOUT_BATCH_STATE");
   });
 });

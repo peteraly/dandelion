@@ -622,6 +622,11 @@ export const paymentIntents = pgTable(
     confirmedAt: ts("confirmed_at"),
     /** Paid into Dandelion's collection account and credited to the payee's balance (Prompt L §2.1). Immutable. */
     collectedByPlatform: boolean("collected_by_platform").notNull().default(false),
+    /**
+     * When the problem about this payment was closed by two admins (Prompt M §2): a payment in review stays in review
+     * for the record, but it no longer asks anyone to look at it.
+     */
+    reviewClosedAt: ts("review_closed_at"),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

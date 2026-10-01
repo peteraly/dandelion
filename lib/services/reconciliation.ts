@@ -50,7 +50,8 @@ export function reconcileOrder(o: OrderSnapshotForRecon, pendingAlertMinutes: nu
   if (o.pendingIntentAgeMinutes !== null && o.pendingIntentAgeMinutes > pendingAlertMinutes) {
     flags.push({ orderId: o.id, batchId: o.batchId, kind: "PAYMENT_PENDING_TOO_LONG", details: { minutes: Math.round(o.pendingIntentAgeMinutes) } });
   }
-  if (o.reviewIntents > 0) flags.push({ orderId: o.id, batchId: o.batchId, kind: "PAYMENT_IN_REVIEW", details: { count: o.reviewIntents } });
+  // A payment in review is not flagged here: it is already a problem on the admins' list ("payments to check"), and
+  // one issue is counted once (Prompt M §2). Flags left from before clear themselves on the next run.
   return flags;
 }
 
