@@ -132,6 +132,13 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt K (access and governance) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_K_ACCESS_AND_GOVERNANCE.md`: closed to act, open to see, with a front door; tiers (public, requester, viewer, member, business buyer, customer, admin); why people stay; rulebook, sanctions and signals; cash; privacy guardrails. |
+| K1–K8 | **not started** | Waits on founders' decisions §3.1–3.7: public page, front door, a second admin for people, viewers, rulebook, sanctions, leakage signals, cash sales. |
+
 ## Prompt J (problem first, stakeholders, sustainability) — status
 
 | Item | Status | Notes |

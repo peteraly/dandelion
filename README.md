@@ -21,7 +21,9 @@ far villages" and generalising beyond pads are
 `docs/PROMPT_I_ROADS_RAINS_TRIP_PAY.md`; whether the model is sustainable in
 Tanzania, every stakeholder and their incentives, the problem worked backward
 to the build, and the field test before more features are
-`docs/PROMPT_J_PROBLEM_FIRST_STAKEHOLDERS.md`.
+`docs/PROMPT_J_PROBLEM_FIRST_STAKEHOLDERS.md` (with the founders' decisions);
+who is in, who can see what, the front door for requests to join, and how
+the rules hold are `docs/PROMPT_K_ACCESS_AND_GOVERNANCE.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in
