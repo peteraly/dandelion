@@ -4,7 +4,7 @@
  * reorder point, sized to cover the lead time, a safety margin and two weeks.
  */
 import { describe, expect, it } from "vitest";
-import { COVER_DAYS, SAFETY_DAYS, replenishment } from "@/lib/domain/replenishment";
+import { COVER_DAYS, MIN_SELLING_DAYS, SAFETY_DAYS, replenishment } from "@/lib/domain/replenishment";
 
 const base = { onHand: 100, onTheWay: 0, soldInWindow: 70, windowDays: 14, leadTimeDays: 3, minStock: 20 };
 
@@ -44,10 +44,31 @@ describe("replenishment", () => {
     expect(low.suggested).toBeGreaterThanOrEqual(10);
   });
 
+  it("reads demand from the days the hub had stock, not from days its shelf was empty (Prompt I §2.3)", () => {
+    // 28 sold in 14 days looks like 2 a day; but the shelf was empty for 7 of them, so it was 4 a day.
+    const naive = replenishment({ ...base, soldInWindow: 28, onHand: 0 });
+    const honest = replenishment({ ...base, soldInWindow: 28, onHand: 0, daysOutOfStock: 7 });
+    expect(naive.dailyDemand).toBe(2);
+    expect(honest.dailyDemand).toBe(4);
+    expect(honest.suggested).toBeGreaterThan(naive.suggested);
+    // Never from fewer than MIN_SELLING_DAYS days, and never more than the window.
+    expect(replenishment({ ...base, soldInWindow: 30, daysOutOfStock: 14 }).dailyDemand).toBe(30 / MIN_SELLING_DAYS);
+    expect(replenishment({ ...base, daysOutOfStock: -3 }).dailyDemand).toBe(5);
+  });
+
+  it("counts what local sellers are waiting for as already owed (Prompt I §2.3)", () => {
+    const r = replenishment({ ...base, onHand: 100, waiting: 0 });
+    expect(r.suggested).toBe(0);
+    const owed = replenishment({ ...base, onHand: 100, waiting: 80 });
+    expect(owed.reason).toBe("below_reorder_point");
+    expect(owed.suggested).toBeGreaterThanOrEqual(owed.orderUpTo - 20);
+    expect(owed.daysOfCover).toBe(20); // what is on the shelf still lasts as long; it is just promised
+  });
+
   it("never suggests a negative or fractional pickup, whatever the inputs", () => {
     for (const onHand of [-5, 0, 3, 17, 40])
       for (const sold of [0, 1, 13, 500]) {
-        const r = replenishment({ ...base, onHand, soldInWindow: sold });
+        const r = replenishment({ ...base, onHand, soldInWindow: sold, daysOutOfStock: sold % 15, waiting: sold % 7 });
         expect(r.suggested).toBeGreaterThanOrEqual(0);
         expect(Number.isInteger(r.suggested)).toBe(true);
       }

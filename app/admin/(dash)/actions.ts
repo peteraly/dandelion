@@ -16,9 +16,9 @@ import { runAnchor, confirmSubmittedAnchors } from "@/lib/ledger/anchor";
 import { approveEducationPack } from "@/lib/services/ai-gateway";
 import { createSupplier, requestSupplierActivation, setSupplierProduct, updateSupplier, type SupplierInputT } from "@/lib/services/suppliers";
 import { createOrganisation, requestOrganisationActivation, updateOrganisation, type OrganisationInputT } from "@/lib/services/organisations";
-import { requestAreaSales } from "@/lib/services/areas";
+import { requestAreaSales, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
-import type { OrderKind } from "@/lib/domain/types";
+import { ROAD_TYPES, type OrderKind, type RoadType } from "@/lib/domain/types";
 import { idempotent, DomainError } from "@/lib/services/core";
 
 async function admin(): Promise<Actor> {
@@ -295,5 +295,27 @@ export async function requestAreaSalesAction(fd: FormData): Promise<void> {
   const areaId = str(fd, "serviceAreaId");
   const kinds = DIRECT_KINDS.filter((k) => bool(fd, `path_${k}`)) as OrderKind[];
   await act("/admin/areas", () => once(actor, fd, "requestAreaSales", () => requestAreaSales(actor, areaId, kinds)), "/admin/areas", "requested");
+}
+
+/** The road to one hub (Prompt I §2.1): blank distance or road means "not recorded yet". */
+export async function updateHubRoadAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const hubId = str(fd, "hubId");
+  const km = str(fd, "distanceKm");
+  const road = str(fd, "road");
+  const input = {
+    distanceKm: km === "" ? null : Number(km),
+    road: (ROAD_TYPES as readonly string[]).includes(road) ? (road as RoadType) : null,
+    slowInRains: bool(fd, "slowInRains"),
+  };
+  await act("/admin/areas", () => once(actor, fd, "updateHubRoad", () => updateHubRoad(actor, hubId, input).then(() => ({}))), "/admin/areas", "roadSaved");
+}
+
+/** The rainy months of one area, from twelve checkboxes. */
+export async function updateAreaRainsAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  const areaId = str(fd, "serviceAreaId");
+  const months = Array.from({ length: 12 }, (_, i) => i + 1).filter((m) => bool(fd, `month_${m}`));
+  await act("/admin/areas", () => once(actor, fd, "updateAreaRains", () => updateAreaRains(actor, areaId, months).then(() => ({}))), "/admin/areas", "rainsSaved");
 }
 

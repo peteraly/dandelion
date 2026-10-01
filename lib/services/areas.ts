@@ -4,13 +4,14 @@
  * because it decides who earns. The demo profile turns everything on.
  */
 import { and, eq, sql } from "drizzle-orm";
+import { z } from "zod";
 import type { DbOrTx } from "@/lib/db/client";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { authorize, type Actor } from "@/lib/policy";
 import { DIRECT_KINDS, LADDER_KINDS, saleAllowed, saleFor } from "@/lib/domain/sales";
-import type { OrderKind } from "@/lib/domain/types";
-import { DomainError } from "./core";
+import { ROAD_TYPES, type OrderKind } from "@/lib/domain/types";
+import { DomainError, logAdminAction, withTx } from "./core";
 import { requestApproval } from "./approvals";
 
 /** The area a seller sells in: the hub's for hub staff and champions, the organisation's for supplier users, the user's own otherwise (riders). */
@@ -70,4 +71,39 @@ export async function requestAreaSales(actor: Actor, serviceAreaId: string, allo
   const rows = await listAreasWithSales(actor);
   if (rows.find((r) => r.id === serviceAreaId)?.pendingRequest) throw new DomainError("area_sales_pending");
   return requestApproval(actor, "AREA_SALES_CHANGE", { serviceAreaId, allowedSales: kinds }, `Sale paths for ${area.name}: ${kinds.length ? kinds.join(", ") : "ladder only"}`);
+}
+
+/**
+ * The road to a hub and the rains in its area (Prompt I §2.1). Planning data for restocking only — it changes how
+ * much stock a hub is told to hold, never what anyone is paid — so one admin records it, and every change is logged.
+ * When trip pay is built from it (Prompt I §3), changes must move under the two-admin rule.
+ */
+export const HubRoadInput = z.object({
+  distanceKm: z.number().int().min(0).max(2000).nullable(),
+  road: z.enum(ROAD_TYPES).nullable(),
+  slowInRains: z.boolean(),
+});
+export type HubRoadInputT = z.infer<typeof HubRoadInput>;
+
+export async function updateHubRoad(actor: Actor, hubId: string, raw: HubRoadInputT): Promise<void> {
+  authorize(actor, "admin.area.roads");
+  const input = HubRoadInput.parse(raw);
+  await withTx(async (tx) => {
+    const hub = await tx.query.hubs.findFirst({ where: eq(s.hubs.id, hubId) });
+    if (!hub) throw new DomainError("not_found");
+    await tx.update(s.hubs).set(input).where(eq(s.hubs.id, hubId));
+    await logAdminAction(tx, actor.userId, "hub.road.update", { type: "hub", id: hubId }, { before: { distanceKm: hub.distanceKm, road: hub.road, slowInRains: hub.slowInRains }, after: input });
+  });
+}
+
+/** The months (1–12) the rains slow the roads in an area; any order, duplicates dropped. */
+export async function updateAreaRains(actor: Actor, serviceAreaId: string, months: number[]): Promise<void> {
+  authorize(actor, "admin.area.roads");
+  const rainyMonths = [...new Set(z.array(z.number().int().min(1).max(12)).max(12).parse(months))].sort((a, b) => a - b);
+  await withTx(async (tx) => {
+    const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, serviceAreaId) });
+    if (!area) throw new DomainError("not_found");
+    await tx.update(s.serviceAreas).set({ rainyMonths }).where(eq(s.serviceAreas.id, serviceAreaId));
+    await logAdminAction(tx, actor.userId, "area.rains.update", { type: "service_area", id: serviceAreaId }, { before: area.rainyMonths, after: rainyMonths });
+  });
 }

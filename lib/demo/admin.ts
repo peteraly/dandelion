@@ -15,7 +15,7 @@ import { proposeResolution, reportProblem } from "@/lib/services/exceptions";
 import { createDataRequest, handleDataRequest, openDataRequests } from "@/lib/services/admin";
 import { createSupplier, requestSupplierActivation, setSupplierProduct } from "@/lib/services/suppliers";
 import { createOrganisation, requestOrganisationActivation } from "@/lib/services/organisations";
-import { requestAreaSales } from "@/lib/services/areas";
+import { requestAreaSales, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { adminCreatePickup, expectCustomerPayment } from "@/lib/services/orders";
 import { syncOfflineNotes } from "@/lib/services/notes";
@@ -114,6 +114,32 @@ export async function buildWorld(w: World): Promise<void> {
     if (champion && fixed) w.customers.push({ id: c.id, name: c.displayName, phone: fixed.phone, champion });
   }
   w.manifest.count("hubs", w.hubs.length);
+  await recordRoads(w);
+}
+
+/**
+ * Roads and rains (Prompt I §2.1), recorded through the admin service like a founder would. Area 1 is the district:
+ * its first hub is in town on tarmac, the next is far out on a dirt road the rains slow, any more are out on gravel.
+ * Area 2 is peri-urban, on gravel the rains do not stop. Area 1 has two rainy seasons (March–May and
+ * October–December), area 2 one long one (November–April).
+ */
+async function recordRoads(w: World): Promise<void> {
+  const DISTRICT = [
+    { road: "PAVED", distanceKm: 4, slowInRains: false },
+    { road: "DIRT", distanceKm: 95, slowInRains: true },
+    { road: "GRAVEL", distanceKm: 35, slowInRains: true },
+  ] as const;
+  const PERI_URBAN = { road: "GRAVEL", distanceKm: 18, slowInRains: false } as const;
+  for (const [i, area] of w.areas.entries()) {
+    await updateAreaRains(w.adminA, area.id, i === 0 ? [3, 4, 5, 10, 11, 12] : [1, 2, 3, 4, 11, 12]);
+    for (const [h, hub] of area.hubs.entries()) {
+      // Hubs beyond the third are further out still along gravel roads.
+      const r = i === 0 ? DISTRICT[Math.min(h, DISTRICT.length - 1)]! : PERI_URBAN;
+      await updateHubRoad(w.adminA, hub.id, { ...r, distanceKm: r.distanceKm + Math.max(0, h - DISTRICT.length + 1) * 12 });
+      w.tick(1, 5);
+    }
+  }
+  w.manifest.count("roads.recorded", w.hubs.length);
 }
 
 async function createHub(w: World, area: Area, index: number, minStockUnits: number): Promise<Hub> {

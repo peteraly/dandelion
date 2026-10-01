@@ -39,6 +39,7 @@ import {
   PAYMENT_STATUSES,
   PRODUCT_CATEGORIES,
   ORGANISATION_KINDS,
+  ROAD_TYPES,
   type OrderKind,
 } from "@/lib/domain/types";
 
@@ -73,6 +74,7 @@ export const ledgerEventTypeEnum = pgEnum("ledger_event_type", LEDGER_EVENT_TYPE
 export const anchorStatusEnum = pgEnum("anchor_status", ["BUILT", "SUBMITTED", "CONFIRMED", "FAILED"]);
 export const jobStatusEnum = pgEnum("job_status", ["QUEUED", "RUNNING", "DONE", "RETRY", "DEAD"]);
 export const localeEnum = pgEnum("locale", ["sw", "en"]);
+export const roadTypeEnum = pgEnum("road_type", ROAD_TYPES);
 
 // ---------- reference data ----------
 export const serviceAreas = pgTable("service_areas", {
@@ -86,6 +88,8 @@ export const serviceAreas = pgTable("service_areas", {
    * Changed only through the AREA_SALES_CHANGE dual approval. The ladder is always allowed.
    */
   allowedSales: jsonb("allowed_sales").$type<OrderKind[]>().notNull().default(sql`'[]'::jsonb`),
+  /** Months (1–12) when the rains slow the roads here (Prompt I §2.1); restock plans for longer trips then. */
+  rainyMonths: jsonb("rainy_months").$type<number[]>().notNull().default(sql`'[]'::jsonb`),
   createdAt: createdAt(),
 });
 
@@ -146,14 +150,25 @@ export const supplierProducts = pgTable(
   (t) => [primaryKey({ columns: [t.supplierId, t.productId] })],
 );
 
-export const hubs = pgTable("hubs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
-  minStockUnits: integer("min_stock_units").notNull().default(10),
-  active: boolean("active").notNull().default(false),
-  createdAt: createdAt(),
-});
+export const hubs = pgTable(
+  "hubs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
+    minStockUnits: integer("min_stock_units").notNull().default(10),
+    active: boolean("active").notNull().default(false),
+    /**
+     * The road to the hub (Prompt I §2.1): kilometres from the district town and the worst stretch on the way,
+     * and whether the rains slow it. Planning data for restocking, never a location; null = not yet recorded.
+     */
+    distanceKm: integer("distance_km"),
+    road: roadTypeEnum("road"),
+    slowInRains: boolean("slow_in_rains").notNull().default(false),
+    createdAt: createdAt(),
+  },
+  (t) => [check("hub_distance_range", sql`${t.distanceKm} IS NULL OR (${t.distanceKm} >= 0 AND ${t.distanceKm} <= 2000)`)],
+);
 
 export const products = pgTable("products", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -411,6 +426,23 @@ export const custodyEvents = pgTable(
     createdAt: createdAt(),
   },
   (t) => [index("custody_events_batch_idx").on(t.batchId)],
+);
+
+/**
+ * What each hub held of each product at the end of each day (Prompt I §2.3), written by the nightly job.
+ * A day with nothing on the shelf is a day the hub could not sell, so restock planning does not read it
+ * as a day nobody wanted to buy.
+ */
+export const hubStockDays = pgTable(
+  "hub_stock_days",
+  {
+    hubId: uuid("hub_id").notNull().references(() => hubs.id),
+    productId: uuid("product_id").notNull().references(() => products.id),
+    day: date("day", { mode: "string" }).notNull(),
+    onHand: integer("on_hand").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [primaryKey({ columns: [t.hubId, t.productId, t.day] }), check("hub_stock_days_nonnegative", sql`${t.onHand} >= 0`)],
 );
 
 // ---------- orders & payments ----------

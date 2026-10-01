@@ -881,6 +881,8 @@
       "pending": "Mabadiliko yanasubiri",
       "request": "Omba mabadiliko",
       "requested": "Ombi limetumwa. Msimamizi mwingine lazima aidhinishe.",
+      "roadSaved": "Barabara imehifadhiwa. Mapendekezo ya kujaza stoo yanaitumia sasa.",
+      "rainsSaved": "Miezi ya mvua imehifadhiwa.",
       "paths": {
         "RIDER_TO_CUSTOMER": "Wasafirishaji wanauza moja kwa moja kwa wateja (kijijini)",
         "SUPPLIER_TO_CUSTOMER": "Wateja wananunua kiwandani",
@@ -1072,7 +1074,7 @@
     },
     "restock": {
       "title": "Mapendekezo ya kujaza akiba",
-      "intro": "Yamekokotolewa kutokana na kile kila kituo kiliuza katika siku {days} zilizopita, kilicho nacho, kilicho njiani, na muda wa uchukuaji. Wewe unaamua; hakuna kinachoagizwa hadi ukipange.",
+      "intro": "Imehesabiwa kutoka kile kila kituo kiliuza katika siku {days} zilizopita kwa siku kilizokuwa na stoo, kile kilichonacho, kilicho njiani, kile wauzaji wa mtaani wanachosubiri, na muda halisi wa mzigo kufika. Wewe ndiye unaamua; hakuna kinachoagizwa hadi upange.",
       "none": "Hakuna kituo kinachohitaji uchukuaji sasa hivi.",
       "line": "{onHand} vilivyopo · {onTheWay} njiani · {perDay} vinauzwa kwa siku · uchukuaji huchukua siku {lead}",
       "daysLeft": "vitadumu karibu siku {n}",
@@ -1080,7 +1082,36 @@
       "assign": "Panga uchukuaji wa {n}",
       "assignUrgent": "Chini ya kiwango: panga uchukuaji wa {n}",
       "ok": "Akiba inatosha",
-      "lots": "Kila kundi, na nani analo"
+      "lots": "Kila kundi, na nani analo",
+      "outOfStock": "Hakikuwa na stoo siku {n} kati ya {window} zilizopita: siku hizo hazihesabiwi kama mahitaji madogo",
+      "waiting": "{n} zimeombwa na wauzaji wa mtaani na bado zinasubiriwa",
+      "km": "km {n}",
+      "rainsNow": "mvua sasa",
+      "measuredLead": "muda wa kuchukua mzigo kutoka safari halisi"
+    },
+    "roads": {
+      "title": "Barabara na mvua",
+      "intro": "Umbali wa kila kituo kutoka mji wa wilaya, sehemu mbaya zaidi ya barabara, na miezi ambayo mvua hupunguza mwendo. Ujazaji wa stoo hupanga safari ndefu zaidi kwenye barabara mbaya na wakati wa mvua, na hujifunza kutoka safari halisi. Hii hubadilisha kiasi cha stoo kituo kinachoshauriwa kuwa nacho, si malipo ya mtu yeyote.",
+      "rainyMonths": "Miezi ambayo mvua hupunguza mwendo barabarani katika eneo hili",
+      "saveRains": "Hifadhi miezi ya mvua",
+      "plansFor": "Ujazaji wa stoo unapanga siku {n} kutoka kuchukua mzigo hadi kufika rafuni.",
+      "rainsNow": "Mvua sasa",
+      "tooFewTrips": "{n, plural, =0 {Bado hakuna safari halisi} other {Safari halisi # tu hadi sasa}}: tunatumia mpango.",
+      "measured": "Safari halisi ({trips} katika siku 90 zilizopita): 4 kati ya 5 zilifika rafuni ndani ya {span}",
+      "onTheRoad": "kwa kawaida {span} barabarani",
+      "slowerThanPlan": "polepole kuliko mpango wa siku {n}, hivyo ujazaji unatumia muda halisi",
+      "distance": "Km kutoka mjini",
+      "road": "Sehemu mbaya zaidi ya barabara",
+      "roadUnknown": "Haijarekodiwa",
+      "roadTypes": {
+        "PAVED": "Lami",
+        "GRAVEL": "Changarawe",
+        "DIRT": "Udongo"
+      },
+      "slowInRains": "Mvua hupunguza mwendo kwenye barabara hii",
+      "save": "Hifadhi barabara",
+      "hours": "saa {n}",
+      "days": "siku {n}"
     },
     "journey": {
       "title": "Fuatilia mauzo moja",
@@ -1589,6 +1620,8 @@
         "user_unsuspend": "Kusimamishwa kumeondolewa",
         "UNKNOWN": "Hatua ya msimamizi",
         "area_sales_change": "Njia za mauzo za eneo zimebadilishwa",
+        "area_rains_update": "Miezi ya mvua imebadilishwa",
+        "hub_road_update": "Barabara ya kituo imerekodiwa",
         "org_sale_cancel": "Oda ya shirika imeghairiwa",
         "org_sale_create": "Oda ya shirika imetengenezwa",
         "org_sale_deliver": "Imepelekwa kwa shirika",

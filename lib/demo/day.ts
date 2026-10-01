@@ -7,6 +7,7 @@ import { eq, sql } from "drizzle-orm";
 import * as s from "@/lib/db/schema";
 import { now } from "@/lib/clock";
 import { runDailyReconciliation } from "@/lib/services/reconciliation";
+import { recordHubStock, restockSuggestions } from "@/lib/services/replenishment";
 import { atEat } from "./time";
 import type { Hub, Person, Product, World } from "./world";
 import { claimWithoutPaying, deadJob, delayedPayment, enrolCustomer, handover, overpaymentWithRefund, payInstallment, pickupChain, restock, resumeLatePickups, reviewPayment, reversedPayment, startCustomerPlan, type Plan } from "./supply";
@@ -34,21 +35,20 @@ export interface DayOptions {
 /** Pickups per product so every hub can serve every product; a few chains are left mid-way when asked. */
 export async function keepHubsStocked(w: World, opts: Pick<DayOptions, "leaveInFlightChains"> & { day?: number }): Promise<void> {
   const rng = w.rng;
-  for (const hub of w.hubs) {
-    for (const product of w.products) {
-      const stock = await w.hubStock(hub, product.id);
-      const low = stock < hub.minStockUnits * 2;
-      if (!low && !rng.chance(0.05)) continue;
-      const rider = rng.pick(w.riders);
-      const qty = rng.int(40, 120);
-      const outcome = opts.leaveInFlightChains && rng.chance(0.3) ? "in_transit" : rng.chance(w.params.inspectionIssueRate) ? (rng.chance(0.5) ? "inspection_issue" : "damaged") : "complete";
-      try {
-        await pickupChain(w, hub, rider, product, qty, outcome, opts.day ?? 0);
-      } catch (e) {
-        w.manifest.skip(`pickupChain(${outcome})`, e);
-      }
-      w.tick(10, 40);
+  // Demand first (Prompt I §2.3): only what each hub's own sales, shelf, road and waiting sellers say it needs.
+  for (const r of (await restockSuggestions(null)).filter((x) => x.suggested > 0)) {
+    const hub = w.hubs.find((h) => h.id === r.hubId);
+    const product = w.products.find((p) => p.id === r.productId);
+    if (!hub || !product) continue;
+    const rider = rng.pick(w.riders);
+    const qty = Math.min(120, Math.max(20, r.suggested));
+    const outcome = opts.leaveInFlightChains && rng.chance(0.3) ? "in_transit" : rng.chance(w.params.inspectionIssueRate) ? (rng.chance(0.5) ? "inspection_issue" : "damaged") : "complete";
+    try {
+      await pickupChain(w, hub, rider, product, qty, outcome, opts.day ?? 0);
+    } catch (e) {
+      w.manifest.skip(`pickupChain(${outcome})`, e);
     }
+    w.tick(10, 40);
   }
 }
 
@@ -167,21 +167,24 @@ export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise
   }
 }
 
-/** The nightly reconciliation at 20:00 EAT (the seed) or right now (a tick). */
+/** The nightly reconciliation and stock record at 20:00 EAT (the seed) or right now (a tick). */
 export async function nightly(w: World, dayStart: Date): Promise<void> {
   w.clock.advanceTo(atEat(dayStart, 20, 0));
   await runDailyReconciliation();
   w.manifest.count("reconciliation.runs");
+  await recordHubStock();
+  w.manifest.count("stock.nights");
 }
 
 /**
- * A slice of a day for the "simulate one hour" control: some hubs restock,
- * a third of the champions sell, a quarter of the open plans pay, a few
- * problems get reported.
+ * A slice of a day for the "simulate one hour" control: a third of the
+ * champions sell, a quarter of the open plans pay, a few problems get
+ * reported. Hubs are restocked by the live deliveries that follow every hour
+ * (lib/demo/live.ts), demand first and one step at a time, so the map shows
+ * them on the road rather than arriving in one go.
  */
 export async function runHour(w: World, plans: Plan[], customersPerDay: number): Promise<void> {
   const rng = w.rng;
-  if (rng.chance(0.3)) await keepHubsStocked(w, { leaveInFlightChains: false });
   for (const hub of w.hubs) {
     for (const champion of hub.champions) {
       if (!rng.chance(0.35) || w.busy.has(champion.actor.userId)) continue; // someone is playing her in the app

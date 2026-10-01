@@ -148,5 +148,9 @@ test("the whole demo, beat by beat", async ({ browser, request }) => {
   await shot(a, "15-approvals", false);
   await a.goto("/admin/areas");
   await shot(a, "16-sale-paths", false);
+  // 16b–c — the road to each hub and the rains (Prompt I): what restocking plans for, and what it suggests
+  await shot(a.getByTestId("area-roads").filter({ has: a.getByTestId("hub-road").nth(1) }).first(), "16b-roads-and-rains");
+  await a.goto("/admin/inventory");
+  await shot(a.getByTestId("restock"), "16c-restock-suggestions");
   await admin.ctx.close();
 });

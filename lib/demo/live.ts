@@ -18,13 +18,14 @@ import { tzDay } from "@/lib/util/time";
 import { acceptPickup, adminCreatePickup, confirmBatchReady, confirmReceipt, confirmRelease, createOrgSale, deliverOrgSale, passInspection, revealDeliveryCode, startInspection } from "@/lib/services/orders";
 import { restockSuggestions } from "@/lib/services/replenishment";
 import { CHECKS, INSPECTION_OK, pay } from "./supply";
-import { pickProductForArea } from "./day";
 import type { Person, World } from "./world";
 
 /** Deliveries in flight at once; a new one starts whenever fewer are moving. */
 export const LIVE_CHAINS = 4;
-/** Chance per hour that an organisation places a bulk order, when none is in flight. */
+/** Chance per hour that an organisation places a bulk order, when none is in flight (certain when no hub needs stock). */
 const ORG_ORDER_CHANCE = 0.35;
+/** Without demand, a hub is topped up to at most this many times its order-up-to level. */
+const TOP_UP_CAP = 2;
 /** Never track more than this, whatever the setting holds (it lives in a shared table). */
 const MAX_TRACKED = 12;
 
@@ -121,16 +122,23 @@ export async function advanceLiveChains(w: World): Promise<{ tracked: number; st
   const deliveries = next.filter((id) => !kinds.get(id)?.endsWith("_TO_ORG")).length;
   let started = 0;
   const hubs = w.hubs.filter((h) => w.areas.find((a) => a.id === h.areaId)?.suppliers.some((o) => o.users.length));
-  // Demand first: hubs whose sales say they will run out before a pickup arrives (lib/domain/replenishment.ts); otherwise any hub.
-  const due = (await restockSuggestions(null)).filter((r) => r.suggested > 0 && hubs.some((h) => h.id === r.hubId));
+  const rows = (await restockSuggestions(null)).filter((r) => hubs.some((h) => h.id === r.hubId));
+  // Demand first: hubs whose sales say they will run out before a pickup arrives (lib/domain/replenishment.ts).
+  const due = rows.filter((r) => r.suggested > 0);
+  // Otherwise top up a hub with room below twice its order-up-to level, never beyond: the map keeps moving without
+  // piling months of stock on a shelf (Prompt I §2.3). When no hub has room, an organisation's order keeps it moving.
+  const roomOf = (r: (typeof rows)[number]) => TOP_UP_CAP * r.orderUpTo - (r.onHand + r.onTheWay - r.waiting);
+  const room = rows.filter((r) => r.suggested === 0 && roomOf(r) >= 10);
   // New pickups go to delivery partners nobody is playing in the app right now.
   const riders = w.riders.filter((r) => !w.busy.has(r.actor.userId));
-  for (let d = deliveries; d < LIVE_CHAINS && hubs.length && riders.length && started < 2; d++) {
-    const want = due.shift();
-    const hub = (want && hubs.find((h) => h.id === want.hubId)) || w.rng.pick(hubs);
+  for (let d = deliveries; d < LIVE_CHAINS && riders.length && started < 2; d++) {
+    const want = due.shift() ?? (room.length ? room.splice(w.rng.int(0, room.length - 1), 1)[0] : undefined);
+    if (!want) break;
+    const hub = hubs.find((h) => h.id === want.hubId)!;
+    const quantity = want.suggested > 0 ? Math.min(120, want.suggested) : Math.min(120, Math.floor(roomOf(want) / 10) * 10);
     const org = w.pickSupplier(w.areas.find((a) => a.id === hub.areaId)!);
     try {
-      const { orderId } = await adminCreatePickup(w.adminA, { supplierId: org.id, productId: want?.productId ?? pickProductForArea(w, hub).id, hubId: hub.id, riderId: w.rng.pick(riders).actor.userId, quantity: want ? Math.min(120, want.suggested) : w.rng.int(40, 120), pickupDate: tzDay() });
+      const { orderId } = await adminCreatePickup(w.adminA, { supplierId: org.id, productId: want.productId, hubId: hub.id, riderId: w.rng.pick(riders).actor.userId, quantity, pickupDate: tzDay() });
       next.push(orderId);
       w.manifest.count("live.started");
     } catch (e) {
@@ -142,7 +150,8 @@ export async function advanceLiveChains(w: World): Promise<{ tracked: number; st
   const orgInFlight = next.some((id) => kinds.get(id)?.endsWith("_TO_ORG"));
   const buyer = w.organisations.length ? w.rng.pick(w.organisations) : null;
   const seller = buyer ? w.areas.find((a) => a.id === buyer.areaId)?.suppliers.find((o) => o.users.length)?.users[0] : undefined;
-  if (!orgInFlight && buyer && seller && w.rng.chance(ORG_ORDER_CHANCE)) {
+  const hubsFull = started === 0 && deliveries < LIVE_CHAINS; // room for a delivery, but no hub needs or has room for stock
+  if (!orgInFlight && buyer && seller && (hubsFull || w.rng.chance(ORG_ORDER_CHANCE))) {
     try {
       const { orderId } = await createOrgSale(seller.actor, { organisationId: buyer.id, productId: w.product().id, quantity: w.rng.int(20, 60) });
       next.push(orderId);

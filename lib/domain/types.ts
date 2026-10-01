@@ -163,6 +163,10 @@ export const APPROVAL_TYPES = [
 export type ApprovalType = (typeof APPROVAL_TYPES)[number];
 
 export const PRODUCT_CATEGORIES = ["REUSABLE", "DISPOSABLE"] as const;
+
+/** The worst stretch of road between the district town and a hub (Prompt I §2.1). Not a location. */
+export const ROAD_TYPES = ["PAVED", "GRAVEL", "DIRT"] as const;
+export type RoadType = (typeof ROAD_TYPES)[number];
 export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 
 /** Ledger event types (handbook §3.2 adapted to the anchored-Merkle design). */

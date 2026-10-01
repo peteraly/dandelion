@@ -881,3 +881,27 @@ test("organisation sale: added and activated by two admins; the supplier sells, 
   await expect(c.page.getByTestId("money-SUPPLIER_TO_ORG")).toBeVisible();
   await c.ctx.close();
 });
+
+test("roads and rains: an admin records a far dirt road; restocking plans for it and the Stock page says so", async ({ browser }) => {
+  // Prompt I §2.1: planning data, one admin, logged — never pay.
+  const a = await adminLogin(browser, SEED.adminA);
+  await english(a.page);
+  await a.page.goto("/admin/areas");
+  const area = a.page.getByTestId("area-card").first();
+  const roads = area.getByTestId("area-roads");
+  await expect(roads).toContainText("Roads and rains");
+  const hub = roads.getByTestId("hub-road").first();
+  await expect(hub.getByTestId("hub-lead")).toContainText(/Restocking plans for \d+ days? from pickup to shelf/);
+  const before = Number((await hub.getByTestId("hub-lead").innerText()).match(/plans for (\d+)/)![1]);
+  await hub.getByLabel("Km from town").fill("95");
+  await hub.getByLabel("Worst stretch of road").selectOption("DIRT");
+  await hub.getByLabel("The rains slow this road").check();
+  await hub.getByRole("button", { name: "Save road" }).click();
+  await expect(a.page).toHaveURL(/ok=roadSaved/);
+  const after = a.page.getByTestId("area-card").first().getByTestId("hub-road").first().getByTestId("hub-lead");
+  // Dirt (2 days) + far (1 day) instead of a day on an unknown road: two days more.
+  await expect(after).toContainText(`Restocking plans for ${before + 2} days`);
+  await a.page.goto("/admin/inventory");
+  await expect(a.page.getByTestId("restock-road").first()).toContainText("Dirt · 95 km");
+  await a.ctx.close();
+});

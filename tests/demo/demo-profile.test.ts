@@ -17,6 +17,8 @@ import { simulateTick } from "@/lib/demo/tick";
 import { containsPhone, ecosystemSnapshot, SnapshotSchema } from "@/lib/services/ecosystem";
 import { layoutDistrict } from "@/lib/ecosystem/district";
 import { advanceLiveChains, parseLive } from "@/lib/demo/live";
+import { restockSuggestions } from "@/lib/services/replenishment";
+import { requestStock } from "@/lib/services/orders";
 import { JOURNEY_STEPS, advanceJourney, journeyOrderIds, startJourney } from "@/lib/demo/journey";
 import { loadPlans } from "@/lib/demo/load";
 import { phoneBlindIndex } from "@/lib/crypto/blind-index";
@@ -267,6 +269,12 @@ describe("simulate one hour / one day, then reset", () => {
       return null;
     };
     let first = await fresh();
+    if (!first) {
+      // Deliveries start from demand (Prompt I): a local seller asks her hub for more than it holds and has coming.
+      const [want] = await restockSuggestions(null);
+      const seller = (await db().query.users.findFirst({ where: (t, { and, eq }) => and(eq(t.hubId, want!.hubId), eq(t.role, "FIELD_CHAMPION"), eq(t.status, "ACTIVE")) }))!;
+      await requestStock({ userId: seller.id, role: seller.role, hubId: seller.hubId, supplierId: null, mfa: false }, { productId: want!.productId, quantity: Math.min(500, want!.onHand + want!.onTheWay + 10) });
+    }
     for (let i = 0; i < 12 && !first; i++) {
       await advanceLiveChains(await loadWorld(new Rng(`${seed}:start:${i}`), new RealClock(), seed));
       first = await fresh();

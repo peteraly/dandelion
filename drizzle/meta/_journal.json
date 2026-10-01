@@ -43,6 +43,13 @@
       "when": 1790788123303,
       "tag": "0005_open_demo_sessions",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790814710817,
+      "tag": "0006_roads_and_seasons",
+      "breakpoints": true
     }
   ]
 }

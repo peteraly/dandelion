@@ -15,7 +15,10 @@ the DoorDash-easy experience plan are `docs/PROMPT_F_RED_TEAM_MARKET_EXPERIENCE.
 the always-live demo district, the plain admin and the new role names are
 `docs/PROMPT_G_LIVE_DISTRICT_PLAIN_ADMIN.md`; the walkthrough of one sale
 with everyone's phone, prices and distance, demand-driven restocking and the
-phone-first pass are `docs/PROMPT_H_JOURNEY_PRICING_DEMAND_MOBILE.md`.
+phone-first pass are `docs/PROMPT_H_JOURNEY_PRICING_DEMAND_MOBILE.md`; the red
+team for rural roads, the rains, trip pay "like Uber and DoorDash, but fair to
+far villages" and generalising beyond pads are
+`docs/PROMPT_I_ROADS_RAINS_TRIP_PAY.md`.
 
 **Everything in this repository runs on mocks and testnet.** Real money,
 real SMS and mainnet anchoring are gated by the founders' sign-offs in
@@ -224,7 +227,16 @@ On the demo dataset, the walkthrough follows one sale across every stakeholder i
 
 ## Restock suggestions (Stock page)
 
-Buyers pull sales; hubs are stocked ahead of demand. For every hub and product, `lib/domain/replenishment.ts` turns the last 14 days' sales, stock on hand, stock on the way and the supplier's lead time into a reorder point and a suggested pickup (packs of 10). The Stock page lists them with **Assign pickup**, which opens the pickup form filled in; the demo's live engine orders by them. A person always decides.
+Buyers pull sales; hubs are stocked ahead of demand. For every hub and product, `lib/domain/replenishment.ts` turns the last 14 days' sales, stock on hand, stock on the way and the lead time into a reorder point and a suggested pickup (packs of 10). The Stock page lists them with **Assign pickup**, which opens the pickup form filled in; the demo's live engine orders by them. A person always decides.
+
+Since Prompt I the suggestions also:
+
+- **Read the road.** **Areas & sale paths → Roads and rains** records each hub's km from town, worst stretch of road and whether the rains slow it, plus each area's rainy months. The lead time is the supplier's days plus road days (dirt 2, far +1, doubled in the rains on a rain-slowed road), or what real trips took (4 in 5 within it, 90 days, at least 3 trips), whichever is slower (`lib/domain/routes.ts`).
+- **Don't read an empty shelf as low demand.** A nightly record (`hub_stock_days`, written with the nightly reconciliation) excludes empty days from the demand rate.
+- **Count what local sellers are waiting for** as already owed.
+- **Ignore a locked delivery as "on the way".**
+
+Road data changes stock advice only, never pay, so one admin records it and every change is logged.
 
 ## Names people read
 

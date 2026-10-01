@@ -132,6 +132,18 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt I (roads, rains, trip pay, beyond pads) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_I_ROADS_RAINS_TRIP_PAY.md`: red team for rural roads, what to copy from Uber and DoorDash (pay, not pricing), who pays for far villages, beyond pads and Tanzania, decisions §3.1–3.6. |
+| Roads and rains | **done** | Migration `0006_roads_and_seasons`; `lib/services/areas.ts` (`updateHubRoad`, `updateAreaRains`, permission `admin.area.roads`, logged before/after); Areas page form. Planning data only, never pay. |
+| Lead time from plan and record | **done** | `lib/domain/routes.ts` (unit-tested): road days, far, rains; 80th percentile of real trips (≥ 3 in 90 days); the slower of plan and record. Shown on Areas and Stock pages. |
+| Demand the shelf could not show | **done** | Nightly `recordHubStock()` with the reconcile cron (heartbeat `hub-stock`) and the demo's nightly; empty days excluded (≥ 3 selling days); waiting seller requests counted as owed; locked deliveries not on the way. |
+| Demo restocking | **done** | Seed and live engine restock by the suggestions; in live hours only the visible deliveries restock hubs (`runHour` no longer tops up in one go); idle top-ups bounded at twice a hub's order-up-to level, otherwise an organisation order keeps the map moving. Area 1 has a far dirt-road hub slowed by the rains. |
+| Tests | **done** | Unit (`routes`, `replenishment`), integration (`roads`: roads, rains, real 5-day trips, nightly record, empty days, waiting, locked delivery), end-to-end (record a road; Stock page shows it), screenshots 16b–16c. |
+| I4–I11 | **not started** | Trip pay (after §3.1–3.2), village routes, platform collection (G1, legal opinion), stock on trust (§3.3), offline hand-over, stock up before the rains, product types and country pack, demo trips at real speed. |
+
 ## Red team (2026-09-30)
 
 An adversarial pass over the whole branch, by surface. Fixed items carry a test.

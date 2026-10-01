@@ -11,6 +11,7 @@ export default async function AdminInventoryPage() {
   const { actor } = await requireAdmin();
   const t = await getTranslations();
   const tr = await getTranslations("admin.restock");
+  const troads = await getTranslations("admin.roads");
   const rows = await inventoryByCustodian(actor);
   const restock = await restockSuggestions(actor);
   const due = restock.filter((r) => r.suggested > 0);
@@ -36,6 +37,23 @@ export default async function AdminInventoryPage() {
                   {tr("line", { onHand: r.onHand, onTheWay: r.onTheWay, perDay: r.dailyDemand.toFixed(1), lead: r.leadTimeDays })} ·{" "}
                   {r.daysOfCover === null ? tr("noSales") : tr("daysLeft", { n: r.daysOfCover })}
                 </p>
+                {r.road.road || r.road.distanceKm !== null || r.road.lead.source === "measured" ? (
+                  <p className="text-xs text-stone-500" data-testid="restock-road">
+                    {[r.road.road ? troads(`roadTypes.${r.road.road}`) : null, r.road.distanceKm !== null ? tr("km", { n: r.road.distanceKm }) : null, r.road.rainyNow && r.road.slowInRains ? tr("rainsNow") : null, r.road.lead.source === "measured" ? tr("measuredLead") : null]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                ) : null}
+                {r.daysOutOfStock > 0 ? (
+                  <p className="text-xs text-amber-800" data-testid="restock-empty-days">
+                    {tr("outOfStock", { n: r.daysOutOfStock, window: WINDOW_DAYS })}
+                  </p>
+                ) : null}
+                {r.waiting > 0 ? (
+                  <p className="text-xs text-amber-800" data-testid="restock-waiting">
+                    {tr("waiting", { n: r.waiting })}
+                  </p>
+                ) : null}
               </div>
               {r.suggested > 0 ? (
                 <Link href={`/admin/orders/new?hub=${r.hubId}&product=${r.productId}&qty=${r.suggested}`} className="btn btn-primary w-auto px-4 text-sm" data-testid="restock-assign">

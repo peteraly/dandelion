@@ -2,15 +2,27 @@
  * Areas and their sale paths (prompt §8.8.2). The ladder is always allowed;
  * anything else is a per-area switch that two admins turn on, because it
  * decides who earns. The request goes to the approvals inbox.
+ *
+ * Roads and rains (Prompt I §2.1): per area, the months the rains slow the
+ * roads; per hub, its distance from the district town, the worst stretch of
+ * road and whether the rains slow it — with the lead time restocking now plans
+ * for, and what real trips took.
  */
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
+import { Name } from "@/components/name";
 import { requireAdmin } from "@/lib/auth/current";
+import { getDb } from "@/lib/db/client";
 import { listAreasWithSales } from "@/lib/services/areas";
+import { hubRoads } from "@/lib/services/replenishment";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
+import { ROAD_TYPES } from "@/lib/domain/types";
 import { flags, type SearchParams } from "@/lib/actions";
-import { requestAreaSalesAction } from "../actions";
+import { requestAreaSalesAction, updateAreaRainsAction, updateHubRoadAction } from "../actions";
+
+const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+const monthName = (m: number, locale: string) => new Intl.DateTimeFormat(locale === "sw" ? "sw-TZ" : "en-GB", { month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, m - 1, 15)));
 
 export const dynamic = "force-dynamic";
 
@@ -18,8 +30,14 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
   const { actor } = await requireAdmin();
   const t = await getTranslations("admin.areas");
   const tk = await getTranslations("orderKinds");
+  const tr = await getTranslations("admin.roads");
+  const locale = await getLocale();
   const { error, ok } = await flags(searchParams);
   const rows = await listAreasWithSales(actor);
+  const areas = await getDb().query.serviceAreas.findMany();
+  const roads = [...(await hubRoads()).values()];
+  // Days to whole days or hours, in plain words.
+  const span = (days: number) => (days < 1 ? tr("hours", { n: Math.max(1, Math.round(days * 24)) }) : tr("days", { n: Math.round(days * 10) / 10 }));
   return (
     <>
       <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -51,6 +69,74 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
               <PrimaryButton disabled={a.pendingRequest}>{t("request")}</PrimaryButton>
             </div>
           </form>
+
+          <div className="mt-4 border-t border-stone-200 pt-3" data-testid="area-roads">
+            <h3 className="font-semibold">{tr("title")}</h3>
+            <p className="mb-2 text-sm text-stone-600">{tr("intro")}</p>
+            <form action={updateAreaRainsAction} className="flex flex-col gap-2" data-testid="rains-form">
+              <IdemKey />
+              <input type="hidden" name="serviceAreaId" value={a.id} />
+              <fieldset>
+                <legend className="label">{tr("rainyMonths")}</legend>
+                <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 md:grid-cols-12">
+                  {MONTHS.map((m) => (
+                    <label key={m} className="check text-sm">
+                      <input type="checkbox" name={`month_${m}`} value="true" defaultChecked={(areas.find((x) => x.id === a.id)?.rainyMonths ?? []).includes(m)} className="mt-0.5" />
+                      <span>{monthName(m, locale)}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="md:w-64">
+                <PrimaryButton>{tr("saveRains")}</PrimaryButton>
+              </div>
+            </form>
+            <ul className="mt-3 flex flex-col gap-3">
+              {roads
+                .filter((h) => h.areaId === a.id)
+                .map((h) => (
+                  <li key={h.hubId} className="rounded-xl border border-stone-200 p-3" data-testid="hub-road" data-source={h.lead.source}>
+                    <p className="font-medium">
+                      <Name value={h.hubName} />
+                    </p>
+                    <p className="text-sm text-stone-700" data-testid="hub-lead">
+                      {tr("plansFor", { n: h.lead.days })} {h.rainyNow && h.slowInRains ? <Badge tone="amber">{tr("rainsNow")}</Badge> : null}
+                    </p>
+                    <p className="text-xs text-stone-600">
+                      {h.lead.measuredDays === null ? tr("tooFewTrips", { n: h.lead.trips }) : tr("measured", { trips: h.lead.trips, span: span(h.lead.measuredDays) })}
+                      {h.roadDaysTypical !== null ? ` · ${tr("onTheRoad", { span: span(h.roadDaysTypical) })}` : ""}
+                      {h.lead.source === "measured" ? ` · ${tr("slowerThanPlan", { n: h.lead.plannedDays })}` : ""}
+                    </p>
+                    <form action={updateHubRoadAction} className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[8rem_10rem_1fr_auto] sm:items-end">
+                      <IdemKey />
+                      <input type="hidden" name="hubId" value={h.hubId} />
+                      <label className="text-sm">
+                        <span className="label">{tr("distance")}</span>
+                        <input type="number" name="distanceKm" min={0} max={2000} step={1} inputMode="numeric" defaultValue={h.distanceKm ?? ""} className="field" />
+                      </label>
+                      <label className="text-sm">
+                        <span className="label">{tr("road")}</span>
+                        <select name="road" defaultValue={h.road ?? ""} className="field">
+                          <option value="">{tr("roadUnknown")}</option>
+                          {ROAD_TYPES.map((r) => (
+                            <option key={r} value={r}>
+                              {tr(`roadTypes.${r}`)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="check text-sm sm:pb-2">
+                        <input type="checkbox" name="slowInRains" value="true" defaultChecked={h.slowInRains} className="mt-0.5" />
+                        <span>{tr("slowInRains")}</span>
+                      </label>
+                      <button type="submit" className="btn btn-secondary w-auto px-4 text-sm">
+                        {tr("save")}
+                      </button>
+                    </form>
+                  </li>
+                ))}
+            </ul>
+          </div>
         </Card>
       ))}
     </>

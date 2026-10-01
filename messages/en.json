@@ -880,6 +880,8 @@
       "pending": "Change pending",
       "request": "Request change",
       "requested": "Request sent. Another admin must approve it.",
+      "roadSaved": "Road saved. Restock suggestions use it now.",
+      "rainsSaved": "Rainy months saved.",
       "paths": {
         "RIDER_TO_CUSTOMER": "Delivery partners sell directly to customers (village drops)",
         "SUPPLIER_TO_CUSTOMER": "Customers buy at the factory gate",
@@ -1071,7 +1073,7 @@
     },
     "restock": {
       "title": "Restock suggestions",
-      "intro": "Worked out from what each hub sold in the last {days} days, what it holds, what is already on the way, and how long a pickup takes. You decide; nothing is ordered until you assign it.",
+      "intro": "Worked out from what each hub sold in the last {days} days on the days it had stock, what it holds, what is on the way, what local sellers are waiting for, and how long a pickup really takes to reach it. You decide; nothing is ordered until you assign it.",
       "none": "No hub needs a pickup right now.",
       "line": "{onHand} held · {onTheWay} on the way · {perDay} sold a day · pickup takes {lead} days",
       "daysLeft": "lasts about {n} days",
@@ -1079,7 +1081,36 @@
       "assign": "Assign pickup of {n}",
       "assignUrgent": "Below minimum: assign pickup of {n}",
       "ok": "Enough stock",
-      "lots": "Every lot, and who holds it"
+      "lots": "Every lot, and who holds it",
+      "outOfStock": "Empty {n, plural, one {# day} other {# days}} of the last {window}: those days are not read as low demand",
+      "waiting": "{n} asked for by local sellers and still waiting",
+      "km": "{n} km",
+      "rainsNow": "rains now",
+      "measuredLead": "pickup time from real trips"
+    },
+    "roads": {
+      "title": "Roads and rains",
+      "intro": "How far each hub is from the district town, the worst stretch of road, and the months the rains slow it. Restocking plans for longer trips on bad roads and in the rains, and learns from real trips. This changes how much stock a hub is told to hold, never what anyone is paid.",
+      "rainyMonths": "Months the rains slow the roads in this area",
+      "saveRains": "Save rainy months",
+      "plansFor": "Restocking plans for {n, plural, one {# day} other {# days}} from pickup to shelf.",
+      "rainsNow": "Rains now",
+      "tooFewTrips": "{n, plural, =0 {No real trips yet} one {Only # real trip so far} other {Only # real trips so far}}: using the plan.",
+      "measured": "Real trips ({trips} in the last 90 days): 4 in 5 reached the shelf within {span}",
+      "onTheRoad": "usually {span} on the road",
+      "slowerThanPlan": "slower than the plan of {n, plural, one {# day} other {# days}}, so restocking uses the real time",
+      "distance": "Km from town",
+      "road": "Worst stretch of road",
+      "roadUnknown": "Not recorded",
+      "roadTypes": {
+        "PAVED": "Paved",
+        "GRAVEL": "Gravel",
+        "DIRT": "Dirt"
+      },
+      "slowInRains": "The rains slow this road",
+      "save": "Save road",
+      "hours": "{n, plural, one {# hour} other {# hours}}",
+      "days": "{n, plural, one {# day} other {# days}}"
     },
     "journey": {
       "title": "Walk through one sale",
@@ -1588,6 +1619,8 @@
         "user_unsuspend": "Suspension lifted",
         "UNKNOWN": "Admin action",
         "area_sales_change": "Area sale paths changed",
+        "area_rains_update": "Rainy months changed",
+        "hub_road_update": "Hub road recorded",
         "org_sale_cancel": "Organisation order cancelled",
         "org_sale_create": "Organisation order created",
         "org_sale_deliver": "Delivered to organisation",
