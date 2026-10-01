@@ -52,7 +52,9 @@ export default async function OrganisationsPage({ searchParams }: { searchParams
                       <Name value={r.name} />
                     </Link>
                   </td>
-                  <td>{t(`kinds.${r.kind}`)}</td>
+                  <td>
+                    {t(`kinds.${r.kind}`)} {r.womenOwned ? <Badge tone="purple">{t("womenOwnedBadge")}</Badge> : null}
+                  </td>
                   <td>{r.areaName}</td>
                   <td className="space-x-1">
                     <Badge tone={r.active ? "green" : "amber"}>{r.active ? t("active") : t("inactive")}</Badge>

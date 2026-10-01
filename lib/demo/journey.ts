@@ -13,7 +13,7 @@
  * receive. Demo dataset only, outside production; its orders are held back
  * from the live engine (settings.demoJourney) so nobody else moves them.
  */
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { decryptString } from "@/lib/crypto/envelope";
@@ -54,15 +54,32 @@ async function world(st: JourneyState | null): Promise<World> {
   return loadWorld(new Rng(`${seed}:journey:${st?.startedAt ?? Date.now()}:${st?.step ?? 0}`), new RealClock(), seed);
 }
 
-/** Pick the people for a new walkthrough: a hub with a local seller who has stock, its reliable supplier, a delivery partner. */
+/** Units the local seller asks her hub for in the walkthrough (step "restockRequest"). */
+const RESTOCK_UNITS = 5;
+
+/**
+ * Pick the people for a new walkthrough: a hub that can fill the seller's restock, a local seller there who has
+ * stock for the first sale, its reliable supplier, a delivery partner. Hubs are stocked by demand, so not every hub
+ * holds spare units; one that does is preferred, and any hub with a stocked seller is the fallback.
+ */
 export async function startJourney(adminId: string): Promise<JourneyState> {
   await guard();
   const w = await world(null);
-  let chosen: { hub: Hub; seller: Person; productId: string } | null = null;
+  type Pick = { hub: Hub; seller: Person; productId: string };
+  let chosen: Pick | null = null;
+  let fallback: Pick | null = null;
   for (const hub of w.hubs) {
     const productId = pickProductForArea(w, hub).id;
-    for (const seller of hub.champions) if (!chosen && (await w.sellerStock(seller, productId)) >= 1) chosen = { hub, seller, productId };
+    // The hub fills a request from one lot (prepareTransfer), so it needs a single lot that large, not just the total.
+    const lot = await w.db.query.batches.findFirst({ where: and(eq(s.batches.hubId, hub.id), eq(s.batches.productId, productId), eq(s.batches.custodyState, "AVAILABLE_AT_HUB"), gte(s.batches.quantity, RESTOCK_UNITS)) });
+    const hubCanRestock = !!lot;
+    for (const seller of hub.champions) {
+      if (chosen || w.busy.has(seller.actor.userId) || (await w.sellerStock(seller, productId)) < 1) continue;
+      if (hubCanRestock) chosen = { hub, seller, productId };
+      else fallback ??= { hub, seller, productId };
+    }
   }
+  chosen ??= fallback;
   if (!chosen) throw new DomainError("journey_no_seller_with_stock");
   const area = w.areas.find((a) => a.id === chosen!.hub.areaId)!;
   const org = area.suppliers.find((o) => o.quality === "good" && o.users.length) ?? area.suppliers.find((o) => o.users.length);
@@ -142,9 +159,9 @@ export async function advanceJourney(adminId: string): Promise<JourneyState> {
         facts.ref = await ref(st.planId);
         break;
       case "restockRequest":
-        st.restockId = (await requestStock(seller.actor, { productId: product.id, quantity: 5 })).orderId;
+        st.restockId = (await requestStock(seller.actor, { productId: product.id, quantity: RESTOCK_UNITS })).orderId;
         facts.ref = await ref(st.restockId);
-        facts.units = 5;
+        facts.units = RESTOCK_UNITS;
         break;
       case "restockPrepare":
         await prepareTransfer(hub.manager.actor, st.restockId!);

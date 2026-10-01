@@ -92,11 +92,12 @@ export async function buildWorld(w: World): Promise<void> {
   }
   w.directPaths = true;
   for (const [i, area] of w.areas.entries()) {
-    for (const [j, kind] of (["SCHOOL", "NGO"] as const).entries()) {
+    // A school, an NGO and a women-owned pharmacy (business buyers, founders' decision of 2026-10-01) per area.
+    for (const [j, kind] of (["SCHOOL", "NGO", "PHARMACY"] as const).entries()) {
       // Short enough for a map tile (≤ 18 characters before the suffix, Prompt D §5.6): the village's first word plus what it is.
       const first = (n: number) => w.names.village(n).replace(" (TEST)", "").split(" ")[0]!;
-      const name = kind === "SCHOOL" ? `${first(i * 2 + j + 5)} School (TEST)` : `${first(i * 2 + j + 7)} Health NGO (TEST)`;
-      const { organisationId } = await createOrganisation(w.adminA, { name, kind, serviceAreaId: area.id, contactName: "Coordinator (TEST)", contactPhone: w.names.fieldPhone(), notes: "Fictional buyer organisation in the demo dataset" });
+      const name = kind === "SCHOOL" ? `${first(i * 2 + j + 5)} School (TEST)` : kind === "NGO" ? `${first(i * 2 + j + 7)} Health NGO (TEST)` : `${first(i * 2 + j + 9)} Pharmacy (TEST)`;
+      const { organisationId } = await createOrganisation(w.adminA, { name, kind, serviceAreaId: area.id, contactName: "Coordinator (TEST)", contactPhone: w.names.fieldPhone(), womenOwned: kind === "PHARMACY", notes: "Fictional buyer organisation in the demo dataset" });
       w.tick(20, 90);
       const { requestId } = await requestOrganisationActivation(w.adminA, organisationId, true);
       w.tick(30, 240);
@@ -294,7 +295,15 @@ export async function adminDay(w: World, plans: Plan[], day: number): Promise<vo
       break;
     case 9:
       await run("donor funding approved", async () => {
-        const plan = plans.find((p) => !p.handedOver && p.paidTzs < p.totalTzs && p.installments.length > 0);
+        // The demo's notes can lag the database (a plan paid off or handed over elsewhere): ask the order itself.
+        let plan: Plan | undefined;
+        for (const p of plans) {
+          if (p.handedOver || p.paidTzs >= p.totalTzs || !p.installments.length) continue;
+          if ((await w.order(p.orderId)).state === "PLAN_ACTIVE") {
+            plan = p;
+            break;
+          }
+        }
         if (!plan) throw new Error("no open plan for donor funding");
         const ev = await uploadEvidence(w.adminA, { filename: "donor-transfer.pdf", contentType: "application/pdf", data: Buffer.from("%PDF-1.4 demo donor transfer confirmation (TEST)") });
         const amount = Math.min(plan.installments[plan.installments.length - 1]!, plan.totalTzs - plan.paidTzs);

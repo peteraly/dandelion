@@ -50,6 +50,13 @@
       "when": 1790814710817,
       "tag": "0006_roads_and_seasons",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790817878593,
+      "tag": "0007_business_buyers",
+      "breakpoints": true
     }
   ]
 }

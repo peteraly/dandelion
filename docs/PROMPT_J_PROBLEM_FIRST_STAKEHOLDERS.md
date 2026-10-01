@@ -10,7 +10,11 @@ Founder direction (2026-10-01), in the founders' words:
   building the solution.*
 
 As in Prompts B–I: the response first (Part 1), the build prompt after
-(Part 2), then the decisions (Part 3), with sources at the end.
+(Part 2), then the decisions (Part 3), with sources at the end. Where the
+founders' decisions (Part 3, 2026-10-01) differ from the recommendations in
+Parts 1–2 — a small operating fee instead of business-to-business payment,
+no vouchers — the decisions stand; what was built and proposed after them
+is Part 4.
 
 Every claim carries one of three labels, so nobody mistakes a belief for a
 fact:
@@ -646,7 +650,7 @@ never shows a person's name or phone. It is admin-only.
 - **Overlap:** this shares its mechanics with Prompt C §5.3 (customer
   keywords), which is still waiting on a decision.
 
-### J3 — Vouchers (after §3.2)
+### J3 — Vouchers — dropped (founders: no vouchers, §3.1)
 
 - **Buying:** a donor or organisation buys vouchers for an area.
 - **Giving:** a voucher code is sent by text to a girl enrolled through a
@@ -668,7 +672,7 @@ never shows a person's name or phone. It is admin-only.
   use a provider tariff table otherwise.
 - Fees show in J1.
 
-### J6 — Follow-up visits after a reusable sale (after §3.3)
+### J6 — Follow-up visits after a reusable sale — dropped (founders: sellers earn the same ladder margin, §3.1)
 
 - A task for the seller at 1 and 3 months after selling a reusable kit
   ("is it working, any problems?"), paid from a donor budget.
@@ -684,18 +688,139 @@ never shows a person's name or phone. It is admin-only.
 
 ## Part 3 — Founders' decisions
 
-| # | Decision | Recommendation |
-| --- | --- | --- |
-| 3.1 | **Who pays Dandelion** | Business-to-business. Organisations and donors pay per verified delivery or girl-month; manufacturers pay a distribution fee. **Never** a platform fee on the consumer. |
-| 3.2 | **Vouchers or giveaways** | Vouchers redeemed at local sellers. When a funder insists on free distribution, route it through sellers with a handling fee, so the market survives the grant. |
-| 3.3 | **Disposables and reusables** | Offer both where water allows. Pay sellers fairly for reusables: a one-off margin that reflects the lost repeat sales, plus paid follow-up visits. Let the pilot show what girls choose. |
-| 3.4 | **The seller's basket** | Pick 3–5 products the community already buys (soap, underwear, other hygiene items). Avoid medicines unless licensed. |
-| 3.5 | **Safeguarding** | Name two safeguarding leads. Build the confidential reporting channel (J2). Keep **village drops** (a delivery partner selling directly to customers) **off** in any area where girls under 18 are served; hand-overs to girls go through women sellers or schools. Write a code of conduct for sellers, riders and staff. |
-| 3.6 | **Feature freeze** | Yes: 6–8 weeks of field discovery and pilot; build only J1 meanwhile. |
-| 3.7 | **First segment** | Both in one district, measured separately: schools and NGOs (business-to-business, predictable volume that pays for the bundled run) and women buying from sellers. The organisations' volume is what makes the far run affordable for the individual buyers. |
-| 3.8 | **Thresholds to change course** | Set them now. For example: repeat purchase below about a third in month 3; far-route delivery cost per pack above an agreed share of the price after bundling; seller net earnings below an agreed floor; no paying organisation by week 8. |
+The founders answered on 2026-10-01. Their words are in *italics*.
+
+### 3.1 What was decided
+
+| # | Question | Founders' answer | What it means | In the app |
+| --- | --- | --- | --- | --- |
+| 3.1 | Who pays Dandelion | *Dandelion collects a small fee for operating costs but is a non-profit.* | Dandelion is a non-profit; a small operating fee covers running costs (texts, hosting, field support). How it is charged is proposed in §4.1. | Not built: waits on the amount and who pays (§4.1). |
+| 3.2 | Vouchers or giveaways | *No vouchers.* | No voucher system. Donor money, where it exists, buys through the marketplace like any organisation order: proven, paid in full before delivery. | J3 dropped. Donor-funded parts of a plan still need evidence and two admins (already built). |
+| 3.3 | Paying sellers fairly for reusables | *Sellers are paid the wholesale price.* | Read as: reusables follow the same price ladder as everything else. The local seller buys at the wholesale price and sells at the customer price, with no extra follow-up payment. **Founders: correct this if it meant something else.** | Already how the price list works; J6 dropped. |
+| 3.4 | The products | *Eco-friendly pads, normal pads and reusable menstrual cups.* | Three products. Cups need water and boiling, so they keep the water check per area and need cup-specific instructions at hand-over. **Open: are the eco-friendly pads washable (reusable) or biodegradable (disposable)?** The answer decides the water check and the instructions (§4.4). | Next build, after that answer: the catalogue and cup instructions in the seed and demo. |
+| 3.5 | Safeguarding | *Keep riders from selling directly to customers wherever girls under 18 are served; hand-overs to girls go through women sellers or schools.* | The app stores no ages (a privacy choice), so it cannot tell where girls under 18 are served. The rule therefore applies **everywhere**: delivery partners and supplier staff never enrol, see or sell to a customer. Customers belong to women local sellers alone. | **Built** (§4.3). **Open:** the two named safeguarding leads (§4.5). |
+| 3.6 | Feature freeze | Not answered. | — | **Open.** Only changes that carry out these decisions were made. |
+| 3.7 | First customers | *A direct-to-consumer marketplace, although pharmacies or other women-owned businesses can also purchase; we add them manually and confirm their status, as with all stakeholders.* | Girls and women buy from local sellers. Pharmacies and businesses buy in bulk as verified buyers. A women-owned status is confirmed by two admins. | **Built** (§4.3). |
+| 3.8 | Thresholds to change course | Not set. | — | **Proposed** (§4.2), for the founders to confirm before the pilot. |
+| — | Context | *We partner with many organisations on education and training, and alongside that run this marketplace: efficient logistics, a sustainable economy.* | Dandelion has two arms: education and training with partners, and the marketplace. Partners on education can also be buyers. | Organisations are records in the app; training of field staff is recorded per person already. |
 
 ---
+
+## Part 4 — After the decisions
+
+### 4.1 The operating fee: a proposal
+
+Dandelion is a non-profit, so the fee must be **small, visible and
+accounted for**. The proposal:
+
+- **A fixed amount per unit,** set per area alongside the price list. Two
+  admins approve it, like prices.
+- **Shown openly:** on the public record and in each area's price list, as
+  "includes a TZS X Dandelion operating fee". Being open is what keeps a fee
+  acceptable to buyers and funders.
+- **Who pays, today:** the supplier, once per unit sold into the chain, on a
+  monthly statement the app produces from confirmed sales. The supplier is
+  the one party paid for every unit, and one monthly payment keeps
+  mobile-money fees down.
+- **Who pays, later:** once the platform collects and pays out (payment
+  route G1), the fee is deducted automatically at payout.
+- **Sized to running costs,** not profit. Publish once a year what the fee
+  raised against what running Dandelion cost.
+
+Founders to decide: the amount (or a percentage), and whether the supplier
+is the right payer.
+
+### 4.2 Thresholds to change course: a proposal
+
+Set these before the pilot starts. If a pilot number crosses the "change
+course" line at the stated time, the plan changes. Nobody re-reads the
+results afterwards to make them look better.
+
+| Measure | Target | Change course if |
+| --- | --- | --- |
+| Customers buying again | ≥ 40% in month 2 | < 25% in month 3 |
+| Plans completed within 60 days | ≥ 70% | < 50% at month 3 |
+| Days a hub is out of a product | ≤ 3 a month | > 7 a month in two months running |
+| Delivery cost per pack on the far route, after bundling | ≤ 10% of the customer price | > 25% at month 3 |
+| Local seller's net earnings (median, active sellers) | Founders to set (for example, at least a week of a boda rider's daily payment to the bike's owner) | Below half the target at month 3 |
+| Operating fee raised against Dandelion's running costs | Founders to set | Founders to set |
+| Safeguarding reports | 0 | **Any** report: immediate review by the safeguarding leads; the person is suspended from hand-overs until it is closed |
+| Complaints per 100 packs | ≤ 2 | > 5 in any month |
+
+### 4.3 What changed in the app (built and tested)
+
+**Safeguarding: customers belong to local sellers alone.**
+
+- Delivery partners and supplier staff can no longer enrol, see or sell to a
+  customer, in any area.
+- The two customer paths that bypassed local sellers are closed for good: a
+  delivery partner selling directly to customers (village drops), and
+  customers buying at the factory gate.
+  - No area switch can reopen them, even an old area record that lists them.
+  - Orders made before the rule can still be finished.
+- Delivery partners keep their own stock and sell it to verified
+  organisations instead: a village pharmacy, a school.
+- The customer pages are for local sellers only. A delivery partner gets
+  "not found".
+- The **Areas & sale paths** page states the rule. The demo no longer has
+  village drops or factory-gate customers.
+- **Tests:** unit (the closed paths; only local sellers hold customers),
+  integration (refused even with a legacy area record; rider stock sold to
+  an organisation), end-to-end (the switches are gone; a delivery partner
+  cannot open the customer pages), demo (no such orders anywhere in the
+  dataset).
+
+**Business buyers.**
+
+- Organisations can now be a **pharmacy** or a **business (shop)**, with a
+  **women-owned** status.
+- The second admin sees "(pharmacy, women-owned)" in the activation request,
+  and approving it confirms that status.
+- While the organisation is active, one admin cannot change the status: it
+  takes deactivation, an edit, and activation again (two admins). Other
+  details can still be edited.
+- The demo adds a women-owned pharmacy in each area.
+- **Tests:** integration (the status is named in the request and locked
+  while active), demo (an active women-owned pharmacy in the dataset).
+
+### 4.4 The product catalogue (next, after one answer)
+
+- **Normal pads:** disposable. Instructions on safe use and disposal (as
+  today).
+- **Reusable menstrual cups:** reusable. A cup needs clean water and boiling
+  between periods, so an area must have its water check confirmed before
+  cups are offered there (as for reusables today). It also needs its own
+  instructions at hand-over: boil before first use and between periods,
+  clean hands, empty and rinse, store dry in a breathable bag, when not to
+  use it, when to seek care. The instructions need the education approval
+  already in the app.
+- **Eco-friendly pads:**
+  - if **washable**, they are reusable: water check, and washing and drying
+    instructions;
+  - if **biodegradable disposables**, they are disposable: no water check,
+    and disposal instructions (and where they can be composted).
+
+### 4.5 Still open
+
+1. **Two named safeguarding leads.** Their phones receive confidential
+   reports. The reporting channel (J2) waits on them and on the text-keyword
+   decision (Prompt C §5.3).
+2. **Two admins for every local seller?** Today one admin adds field people,
+   and they confirm their own phone. Because local sellers hand products to
+   girls, recommended: a second admin confirms every local seller is a
+   woman, trained, and has signed a code of conduct.
+3. **The feature freeze** (§3.6): recommended yes, with J1 (pilot measures)
+   as the one build.
+4. **The operating fee:** amount and payer (§4.1).
+5. **Eco-friendly pads:** washable or biodegradable (§4.4).
+6. **Thresholds:** confirm or change §4.2.
+
+Found while testing, to fix next (no decision needed): a hub fills a
+seller's request from **one lot** only. A hub holding 6 units as 3 + 3
+refuses a request for 5, although it has enough. With stock now kept lean
+by demand, that will happen in the field. The fix is to fill a request from
+several lots, each with its own seal and custody record. The walkthrough
+picks a hub with a large enough lot in the meantime.
 
 ## Sources
 
@@ -729,3 +854,7 @@ never shows a person's name or phone. It is admin-only.
 | "Packs distributed" overstates impact | **J1/J7:** report girl-months covered. |
 | The blockchain anchor has no funder asking for it | **Parked:** no further investment until asked. |
 | Attendance is a weak headline | **Changed:** lead with dignity, health, comfort, cost and reliability (Known: Kenya, Nepal trials). |
+| Founders: Dandelion is a non-profit with a small operating fee | **Recorded;** fee mechanics proposed (§4.1). |
+| Founders: no vouchers | **Recorded;** J3 dropped. |
+| Founders: riders never sell to customers where girls are served | **Built:** everywhere, since the app stores no ages; supplier factory-gate sales to customers closed by the same rule. |
+| Founders: pharmacies and women-owned businesses as verified buyers | **Built:** pharmacy and business types; women-owned status confirmed by two admins, locked while active. |

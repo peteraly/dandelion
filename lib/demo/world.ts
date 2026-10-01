@@ -10,6 +10,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import type { Actor } from "@/lib/policy";
+import type { OrganisationKind } from "@/lib/domain/types";
 import { encryptString } from "@/lib/crypto/envelope";
 import { phoneBlindIndex } from "@/lib/crypto/blind-index";
 import { hashPin } from "@/lib/auth/secrets";
@@ -83,7 +84,7 @@ export interface OrgBuyer {
   id: string;
   name: string;
   areaId: string;
-  kind: "NGO" | "NON_PROFIT" | "SCHOOL" | "COMMUNITY" | "OTHER";
+  kind: OrganisationKind;
 }
 
 /** A pickup whose supplier confirms the batch late; the chain continues on `dueDay` (seed only). */

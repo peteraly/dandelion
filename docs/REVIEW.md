@@ -137,8 +137,13 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Item | Status | Notes |
 | --- | --- | --- |
 | Response and build prompt | **written** | `docs/PROMPT_J_PROBLEM_FIRST_STAKEHOLDERS.md`: outcome → conditions → what fails and why (each claim labelled Known / Reported / Assumed, with sources); 14 stakeholders; 7 misalignments (M1–M7); illustrative arithmetic; every built feature checked against a condition (blockchain anchor parked); assumptions A1–A9; field plan; verdict. |
-| Feature freeze | **recommended** | 6–8 weeks of field discovery and pilot; only J1 (pilot measures) built meanwhile. Founders' decision §3.6. |
-| J1–J7 | **not started** | J1 pilot measures (no decision needed); J2 confidential reporting (§3.5); J3 vouchers (§3.2); J4 basket (§3.4); J5 fee tracking; J6 reusable follow-up (§3.3); J7 funder reports. |
+| Founders' decisions (2026-10-01) | **recorded** | Prompt J Part 3: non-profit with a small operating fee; no vouchers; same ladder margin on reusables; catalogue (eco-friendly pads, normal pads, menstrual cups); direct-to-consumer with pharmacies and women-owned businesses as verified buyers; education partnerships alongside. ADR-037, ADR-038. |
+| Safeguarding: customers belong to local sellers | **done** | `CLOSED_KINDS` in `lib/domain/sales.ts`; policy `customer.*` for local sellers only; field customer pages 404 for others; Areas page states the rule; demo without village drops or factory-gate customers. Unit, integration, end-to-end and demo tests. |
+| Business buyers | **done** | Types `PHARMACY`, `BUSINESS`; `women_owned` named in the activation request and locked while active (migration `0007_business_buyers`); a women-owned pharmacy per demo area. Integration and demo tests. |
+| Feature freeze | **open** | Recommended: 6–8 weeks of field discovery and pilot; only J1 (pilot measures) built meanwhile. |
+| Open founders' items | **open** | Operating fee amount and payer (proposal §4.1); thresholds (proposal §4.2); eco-friendly pads washable or biodegradable (§4.4); two named safeguarding leads; a second admin for every local seller. |
+| A hub fills a request from one lot only | **found, open** | `prepareTransfer` needs a single `AVAILABLE_AT_HUB` lot as large as the request; 3 + 3 cannot fill 5. Lean, demand-driven stock makes this likely in the field. Next: fill from several lots, each keeping its seal and custody events. The walkthrough picks a hub with a large enough lot meanwhile. |
+| J1–J7 | **not started** | J1 pilot measures (no decision needed); J2 confidential reporting (needs the safeguarding leads); J3 vouchers — dropped; J4 catalogue (needs §4.4); J5 fee tracking; J6 reusable follow-up — dropped; J7 funder reports. |
 
 ## Prompt I (roads, rains, trip pay, beyond pads) — status
 

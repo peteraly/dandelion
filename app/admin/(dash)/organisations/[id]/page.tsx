@@ -36,6 +36,7 @@ export default async function OrganisationPage({ params, searchParams }: { param
           <Name value={o.name} />
         </h1>
         <Badge>{t(`kinds.${o.kind}`)}</Badge>
+        {o.womenOwned ? <Badge tone="purple">{t("womenOwnedBadge")}</Badge> : null}
         <Badge tone={o.active ? "green" : "amber"}>{o.active ? t("active") : t("inactive")}</Badge>
         {o.pendingActivation ? <Badge tone="purple">{t("pending")}</Badge> : null}
       </div>
@@ -75,7 +76,7 @@ export default async function OrganisationPage({ params, searchParams }: { param
         <form action={updateOrganisationAction} className="grid gap-3 md:grid-cols-2">
           <IdemKey />
           <input type="hidden" name="organisationId" value={o.id} />
-          <OrganisationFields t={t} areas={ref.areas} defaults={{ name: o.name, kind: o.kind, serviceAreaId: o.areaId, contactName: o.contactName, notes: d.notes }} />
+          <OrganisationFields t={t} areas={ref.areas} defaults={{ name: o.name, kind: o.kind, serviceAreaId: o.areaId, contactName: o.contactName, womenOwned: o.womenOwned, notes: d.notes }} statusLocked={o.active} />
           <div className="md:col-span-2">
             <PrimaryButton>{t("save")}</PrimaryButton>
           </div>

@@ -270,7 +270,7 @@ export async function approveEducationPackAction(fd: FormData): Promise<void> {
 // ---------- organisations and sale paths (prompt §8.8) ----------
 
 function readOrganisation(fd: FormData): OrganisationInputT {
-  return { name: str(fd, "name"), kind: str(fd, "kind") as OrganisationInputT["kind"], serviceAreaId: str(fd, "serviceAreaId"), contactName: str(fd, "contactName") || undefined, contactPhone: str(fd, "contactPhone"), notes: str(fd, "notes") || undefined };
+  return { name: str(fd, "name"), kind: str(fd, "kind") as OrganisationInputT["kind"], serviceAreaId: str(fd, "serviceAreaId"), contactName: str(fd, "contactName") || undefined, contactPhone: str(fd, "contactPhone"), womenOwned: bool(fd, "womenOwned"), notes: str(fd, "notes") || undefined };
 }
 
 export async function createOrganisationAction(fd: FormData): Promise<void> {

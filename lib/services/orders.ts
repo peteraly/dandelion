@@ -135,7 +135,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
     await assertSaleAllowed(tx, areaId, kind);
     if (kind === "SUPPLIER_TO_RIDER" && !hubId) {
       const allowed = await allowedSalesFor(tx, areaId);
-      if (!allowed.includes("RIDER_TO_CUSTOMER") && !allowed.includes("RIDER_TO_ORG")) throw new DomainError("sale_not_allowed", "rider stock needs a direct rider path in the area");
+      if (!allowed.includes("RIDER_TO_ORG")) throw new DomainError("sale_not_allowed", "rider stock needs the rider-to-organisation path in the area");
     }
     const item = await activePriceItem(tx, { serviceAreaId: areaId, productId: input.productId, supplierId: supplier.id });
     const [order] = await tx

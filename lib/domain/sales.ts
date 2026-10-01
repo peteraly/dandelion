@@ -35,8 +35,18 @@ export const ALLOWED_SALES: readonly SaleRow[] = [
   { kind: "RIDER_TO_ORG", seller: "BOSS_RIDER", buyer: "ORGANISATION", shape: "bulk", ladder: false },
 ];
 
+/**
+ * Safeguarding (founders, 2026-10-01; Prompt J §3.5): hand-overs to girls and women go through women local sellers,
+ * or to schools and other organisations. The app stores no ages, so it cannot tell where girls under 18 are served;
+ * delivery partners and supplier staff therefore never sell directly to a customer, in any area. These kinds stay
+ * in the table so orders made before the rule can finish and history still reads; no new ones are created, and no
+ * area switch can turn them back on.
+ */
+export const CLOSED_KINDS: readonly OrderKind[] = ["RIDER_TO_CUSTOMER", "SUPPLIER_TO_CUSTOMER"];
+
 export const LADDER_KINDS: readonly OrderKind[] = ALLOWED_SALES.filter((r) => r.ladder).map((r) => r.kind);
-export const DIRECT_KINDS: readonly OrderKind[] = ALLOWED_SALES.filter((r) => !r.ladder).map((r) => r.kind);
+/** The per-area switches: every non-ladder path except the closed ones. */
+export const DIRECT_KINDS: readonly OrderKind[] = ALLOWED_SALES.filter((r) => !r.ladder && !CLOSED_KINDS.includes(r.kind)).map((r) => r.kind);
 export const PLAN_KINDS: readonly OrderKind[] = ALLOWED_SALES.filter((r) => r.shape === "plan").map((r) => r.kind);
 export const ORG_KINDS: readonly OrderKind[] = ALLOWED_SALES.filter((r) => r.buyer === "ORGANISATION").map((r) => r.kind);
 /** Pickups at the factory: the supplier prepares a batch, the buyer collects it. */
@@ -61,8 +71,9 @@ export function deriveKind(seller: Role, buyer: SaleBuyer): OrderKind | null {
   return ALLOWED_SALES.find((r) => r.seller === seller && r.buyer === buyer)?.kind ?? null;
 }
 
-/** Is `kind` allowed in an area whose switches are `allowed`? Ladder kinds always are. */
+/** Is `kind` allowed in an area whose switches are `allowed`? Ladder kinds always are; closed kinds never are. */
 export function saleAllowed(kind: OrderKind, allowed: readonly string[]): boolean {
+  if (CLOSED_KINDS.includes(kind)) return false;
   return LADDER_KINDS.includes(kind) || allowed.includes(kind);
 }
 

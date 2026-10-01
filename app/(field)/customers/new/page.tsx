@@ -1,14 +1,18 @@
+import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Card, Check, Field, IdemKey, PrimaryButton } from "@/components/ui";
 import { Notice } from "@/components/notice";
 import { requireField } from "@/lib/auth/current";
+import { can } from "@/lib/policy";
 import { flags, type SearchParams } from "@/lib/actions";
 import { createCustomerAction } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewCustomerPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireField();
+  const { actor } = await requireField();
+  // Only local sellers hold customers (safeguarding, lib/domain/sales.ts CLOSED_KINDS).
+  if (!can(actor, "customer.create")) notFound();
   const t = await getTranslations("field.customer");
   const tc = await getTranslations("common");
   const { error } = await flags(searchParams);

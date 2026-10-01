@@ -100,7 +100,8 @@ export const PURPOSE_BY_ORDER_KIND: Record<OrderKind, PaymentPurpose> = {
 };
 
 /** Buyer organisations (prompt §8.8.4): a record, not a login. */
-export const ORGANISATION_KINDS = ["NGO", "NON_PROFIT", "SCHOOL", "COMMUNITY", "OTHER"] as const;
+/** Buyer organisations (prompt §8.8.4); pharmacies and businesses (often women-owned) since the founders' decision of 2026-10-01. */
+export const ORGANISATION_KINDS = ["NGO", "NON_PROFIT", "SCHOOL", "COMMUNITY", "OTHER", "PHARMACY", "BUSINESS"] as const;
 export type OrganisationKind = (typeof ORGANISATION_KINDS)[number];
 
 /** Handbook §12 problem list (plus WASH concern from §11). */

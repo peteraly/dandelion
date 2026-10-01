@@ -132,6 +132,11 @@ export const organisations = pgTable("organisations", {
   contactName: text("contact_name"),
   contactPhoneEnc: text("contact_phone_enc"),
   contactPhoneIndex: text("contact_phone_index"),
+  /**
+   * A women-owned business (founders, 2026-10-01): stated when the organisation is added and confirmed by the second
+   * admin who approves its activation; it cannot change while the organisation is active.
+   */
+  womenOwned: boolean("women_owned").notNull().default(false),
   notes: text("notes"),
   createdAt: createdAt(),
   updatedAt: updatedAt(),

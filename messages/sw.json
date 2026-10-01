@@ -831,7 +831,7 @@
     },
     "organisations": {
       "title": "Mashirika",
-      "intro": "NGOs, mashirika yasiyo ya faida, shule na vikundi vya jamii vinavyonunua kwa wingi. Ni rekodi, si akaunti ya kuingia: hulipa kwa pesa za simu na kupata risiti na kiungo cha kuthibitisha kwa SMS. Kuwasha kunahitaji wasimamizi wawili.",
+      "intro": "NGO, taasisi zisizo za faida, shule, vikundi vya jamii, maduka ya dawa na biashara (mara nyingi zinazomilikiwa na wanawake) zinazonunua kwa jumla. Ni rekodi, si akaunti ya kuingia: hulipa kwa pesa ya simu na hupokea risiti na kiungo cha uthibitisho kwa SMS. Kuanzishwa kunahitaji admin wawili; wa pili anathibitisha aina na hali ya kumilikiwa na wanawake.",
       "create": "Ongeza shirika",
       "createNote": "Shirika jipya huanza likiwa halifanyi kazi. Omba kuwashwa baada ya kukagua maelezo yake.",
       "name": "Jina",
@@ -841,7 +841,9 @@
         "NON_PROFIT": "Shirika lisilo la faida",
         "SCHOOL": "Shule",
         "COMMUNITY": "Kikundi cha jamii",
-        "OTHER": "Nyingine"
+        "OTHER": "Nyingine",
+        "PHARMACY": "Duka la dawa",
+        "BUSINESS": "Biashara (duka)"
       },
       "area": "Eneo la huduma",
       "contactName": "Jina la mtu wa mawasiliano",
@@ -869,7 +871,11 @@
       "requestedBy": "imeombwa na",
       "activate": "Washa",
       "deactivate": "Zima",
-      "privacy": "Hakuna kitu kuhusu watu wanaohudumiwa na shirika kinachorekodiwa hapa."
+      "privacy": "Hakuna kitu kuhusu watu wanaohudumiwa na shirika kinachorekodiwa hapa.",
+      "womenOwned": "Biashara inayomilikiwa na wanawake",
+      "womenOwnedHint": "Admin wa pili anathibitisha hili anapoidhinisha kuanzishwa.",
+      "womenOwnedLocked": "Imethibitishwa na admin wawili. Ili kubadilisha: omba kusitishwa, hariri, kisha omba kuanzishwa tena.",
+      "womenOwnedBadge": "Inamilikiwa na wanawake"
     },
     "areas": {
       "title": "Maeneo na njia za mauzo",
@@ -892,7 +898,8 @@
         "HUB_TO_ORG": "Vituo vinauza kwa mashirika",
         "RIDER_TO_ORG": "Wasafirishaji wanauza kwa mashirika"
       },
-      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
+      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee.",
+      "safeguarding": "Wasafirishaji na wafanyakazi wa msambazaji hawauzi moja kwa moja kwa wateja, katika eneo lolote: kila makabidhiano kwa msichana au mwanamke hupitia kwa muuzaji wa mtaani, au kwa shule au taasisi. Hii ni kanuni ya ulinzi ya waanzilishi; hakuna swichi hapa inayoweza kuibadilisha."
     },
     "navGroups": {
       "overview": "Tazama",
@@ -1321,6 +1328,7 @@
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
+    "organisation_status_confirmed": "Hali hii ilithibitishwa na admin wawili. Ili kuibadilisha: omba kusitishwa, hariri, kisha omba kuanzishwa tena.",
     "forbidden": "Hauruhusiwi kufanya hivyo.",
     "not_found": "Haipatikani.",
     "invalid_phone": "Ingiza namba sahihi ya simu ya Tanzania.",
@@ -1498,7 +1506,7 @@
       "noEdges": "Hakuna kinachoendelea.",
       "organisations": "Mashirika",
       "earned": "imepata {tzs}",
-      "direct": "Mistari ya vitone ni njia za moja kwa moja (kijijini, kiwandani, mashirika)."
+      "direct": "Mistari ya vitone ni njia za moja kwa moja (stoo ya msafirishaji, kiwandani, mashirika)."
     },
     "status": {
       "active": "anafanya kazi",

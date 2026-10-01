@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Name } from "@/components/name";
 import { getTranslations } from "next-intl/server";
 import { and, eq, inArray } from "drizzle-orm";
 import { Badge, Card, LinkButton } from "@/components/ui";
 import { requireField } from "@/lib/auth/current";
+import { can } from "@/lib/policy";
 import { myCustomers } from "@/lib/services/customers";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -14,6 +16,8 @@ export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
   const { actor } = await requireField();
+  // Only local sellers hold customers (safeguarding, lib/domain/sales.ts CLOSED_KINDS).
+  if (!can(actor, "customer.create")) notFound();
   const t = await getTranslations("field.customer");
   const customers = await myCustomers(actor);
   const plans = customers.length

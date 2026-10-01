@@ -634,9 +634,6 @@ test("ecosystem view: one screen, filters, feed, visibility-aware refresh, acces
   await admin.ctx.close();
 });
 
-
-const KIT_EDUCATION = ["Wash with water and soap after use", "Dry fully before reuse", "Store safely", "When not to use it", "When to seek medical care"];
-
 test("demo polish: the guide is demo-only, the presenter view drops the sidebar, names carry a chip, earnings show net", async ({ browser }) => {
   const admin = await adminLogin(browser, SEED.adminA);
   await english(admin.page);
@@ -683,14 +680,17 @@ test("demo polish: the guide is demo-only, the presenter view drops the sidebar,
   await rider.ctx.close();
 });
 
-test("sale paths: two admins switch on village drops; a rider keeps factory stock and sells it in a village", async ({ browser, request }) => {
-  // Ladder-only until two admins decide otherwise (prompt §8.8.2).
+test("sale paths: two admins switch on organisation sales; delivery partners and suppliers never sell to customers; a rider keeps factory stock", async ({ browser, request }) => {
+  // Ladder-only until two admins decide otherwise (prompt §8.8.2); the customer paths for riders and suppliers are closed for good (Prompt J §3.5).
   const a = await adminLogin(browser, SEED.adminA);
   await english(a.page);
   await a.page.goto("/admin/areas");
+  await expect(a.page.getByTestId("safeguarding-rule")).toContainText("never sell directly to customers");
   const area = a.page.getByTestId("area-card").first();
   await expect(area.getByTestId("area-allowed")).toContainText("Ladder only");
-  await area.getByLabel(/Delivery partners sell directly to customers/).check();
+  await expect(area.getByLabel(/sell directly to customers/)).toHaveCount(0);
+  await expect(area.getByLabel(/Customers buy at the factory gate/)).toHaveCount(0);
+  await area.getByLabel(/Delivery partners sell to organisations/).check();
   await area.getByLabel(/Suppliers sell to organisations/).check();
   await area.getByRole("button", { name: "Request change" }).click();
   await expect(a.page).toHaveURL(/ok=requested/);
@@ -704,7 +704,7 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await req.getByRole("button", { name: "Approve" }).click();
   await expect(b.page).toHaveURL(/ok=decided/);
   await b.page.goto("/admin/areas");
-  await expect(b.page.getByTestId("area-allowed").first()).toContainText("Delivery partner → customer (village drop)");
+  await expect(b.page.getByTestId("area-allowed").first()).toContainText("Delivery partner → organisation");
 
   // A pickup with no hub behind it: the rider keeps the stock (§8.8.1).
   await b.page.goto("/admin/orders/new");
@@ -761,42 +761,12 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
   await expect(rider.page.getByRole("heading", { name: "Stock has left the factory" })).toBeVisible();
   await supplier.ctx.close();
 
-  // The village drop: the rider enrols the customer and sells like a champion would. The stock on hand shows on the home screen.
+  // Rider stock goes to organisations, never to a customer: no customer list, no way to enrol one.
   await rider.page.goto("/home");
-  await expect(rider.page.getByTestId("customers-link")).toBeVisible();
   await expect(rider.page.getByTestId("rider-stock")).toContainText("4 units");
-  await rider.page.goto("/customers/new");
-  await rider.page.getByLabel("Name or preferred name").fill("Village customer (TEST)");
-  await rider.page.getByLabel(/Phone number/).fill("+255700000057");
-  await rider.page.getByLabel(/consents to transaction messages/).check();
-  await rider.page.getByRole("button", { name: "Continue" }).click();
-  await expect(rider.page).toHaveURL(/\/customers\/[0-9a-f-]+\?challenge=/);
-  await rider.page.getByLabel("Enter the code").fill(digits(await lastSms(request, "OTP"), 6));
-  await rider.page.getByRole("button", { name: "Confirm" }).click();
-  await rider.page.getByRole("radio").first().check();
-  await rider.page.getByRole("button", { name: "Start purchase plan" }).click();
-  await expect(rider.page.getByRole("heading", { name: "Installment plan active" })).toBeVisible();
-  const saleRef = await currentOrderRef(rider.page);
-  const saleId = rider.page.url().match(/orders\/([0-9a-f-]+)/)![1]!;
-  const full = (await sim(request, { op: "simulate", scenario: "success", orderRef: saleRef })) as { outcomes: string[] };
-  expect(full.outcomes).toContain("CONFIRMED");
-  await rider.page.goto(`/orders/${saleId}`);
-  await rider.page.getByRole("button", { name: "Start handover" }).click();
-  await expect(rider.page.getByRole("heading", { name: "Handover required" })).toBeVisible();
-  const code = digits(await lastSms(request, "HANDOVER_CODE"), 6);
-  for (const label of KIT_EDUCATION) await rider.page.getByLabel(label).check();
-  await rider.page.getByLabel("Customer's code").fill(code);
-  await rider.page.getByRole("button", { name: "Confirm handover" }).click();
-  await expect(rider.page.getByText(/Receipt RC-/)).toBeVisible();
-  // What the rider earned, confirmed by the provider, sits on the home screen.
-  await rider.page.goto("/home");
-  await expect(rider.page.getByTestId("earnings")).toBeVisible();
-  // The customer's verify link shows the village drop like any other purchase (§8.8.7).
-  const receiptLink = (await lastSms(request, "RECEIPT")).match(/https?:\/\/\S+\/verify\/[A-Za-z0-9_-]+\?t=[A-Za-z0-9_-]+/)![0];
-  await rider.page.goto(receiptLink);
-  await english(rider.page);
-  await expect(rider.page.getByText("Handover completed")).toBeVisible();
-  await expect(rider.page.getByTestId("receipt")).toContainText("11,400 TZS");
+  await expect(rider.page.getByTestId("customers-link")).toHaveCount(0);
+  const enrol = await rider.page.goto("/customers/new");
+  expect(enrol?.status()).toBe(404);
   await rider.ctx.close();
 });
 

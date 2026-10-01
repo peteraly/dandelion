@@ -830,7 +830,7 @@
     },
     "organisations": {
       "title": "Organisations",
-      "intro": "NGOs, non-profits, schools and community groups that buy in bulk. A record, not a login: they pay by mobile money and get the receipt and verify link by SMS. Activation needs two admins.",
+      "intro": "NGOs, non-profits, schools, community groups, pharmacies and businesses (often women-owned) that buy in bulk. A record, not a login: they pay by mobile money and get the receipt and verify link by SMS. Activation needs two admins; the second confirms the type and any women-owned status.",
       "create": "Add organisation",
       "createNote": "A new organisation starts inactive. Request activation once its details are checked.",
       "name": "Name",
@@ -840,7 +840,9 @@
         "NON_PROFIT": "Non-profit",
         "SCHOOL": "School",
         "COMMUNITY": "Community group",
-        "OTHER": "Other"
+        "OTHER": "Other",
+        "PHARMACY": "Pharmacy",
+        "BUSINESS": "Business (shop)"
       },
       "area": "Service area",
       "contactName": "Contact name",
@@ -868,7 +870,11 @@
       "requestedBy": "requested by",
       "activate": "Activate",
       "deactivate": "Deactivate",
-      "privacy": "Nothing about the people an organisation serves is recorded here."
+      "privacy": "Nothing about the people an organisation serves is recorded here.",
+      "womenOwned": "Women-owned business",
+      "womenOwnedHint": "The second admin confirms this when approving activation.",
+      "womenOwnedLocked": "Confirmed by two admins. To change it: request deactivation, edit, then request activation again.",
+      "womenOwnedBadge": "Women-owned"
     },
     "areas": {
       "title": "Areas & sale paths",
@@ -891,7 +897,8 @@
         "HUB_TO_ORG": "Hubs sell to organisations",
         "RIDER_TO_ORG": "Delivery partners sell to organisations"
       },
-      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
+      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only.",
+      "safeguarding": "Delivery partners and supplier staff never sell directly to customers, in any area: every hand-over to a girl or woman goes through a local seller, or to a school or organisation. This is the founders' safeguarding rule; no switch here can change it."
     },
     "navGroups": {
       "overview": "Watch",
@@ -1320,6 +1327,7 @@
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
+    "organisation_status_confirmed": "This status was confirmed by two admins. To change it: request deactivation, edit, then request activation again.",
     "forbidden": "You are not allowed to do that.",
     "not_found": "Not found.",
     "invalid_phone": "Enter a valid Tanzanian mobile number.",
@@ -1497,7 +1505,7 @@
       "noEdges": "Nothing in flight.",
       "organisations": "Organisations",
       "earned": "earned {tzs}",
-      "direct": "Dashed edges are direct paths (village drops, factory gate, organisations)."
+      "direct": "Dashed edges are direct paths (rider stock, factory gate, organisations)."
     },
     "status": {
       "active": "active",

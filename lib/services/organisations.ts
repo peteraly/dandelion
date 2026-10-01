@@ -31,6 +31,8 @@ export const OrganisationInput = z
     contactName: z.string().trim().max(80).optional(),
     /** The phone the receipt and verify link go to. Required: an organisation without it cannot be sold to. */
     contactPhone: z.string().trim().max(20),
+    /** A women-owned business; the second admin confirms it when approving activation. */
+    womenOwned: z.boolean().optional(),
     notes: z.string().trim().max(1000).optional(),
   })
   .strict();
@@ -38,7 +40,7 @@ export type OrganisationInputT = z.input<typeof OrganisationInput>;
 
 async function columns(input: z.infer<typeof OrganisationInput>) {
   const e164 = TzPhoneSchema.parse(input.contactPhone);
-  return { name: input.name, kind: input.kind, serviceAreaId: input.serviceAreaId, contactName: blank(input.contactName), contactPhoneEnc: await encryptString(e164), contactPhoneIndex: phoneBlindIndex(e164), notes: blank(input.notes) };
+  return { name: input.name, kind: input.kind, serviceAreaId: input.serviceAreaId, contactName: blank(input.contactName), contactPhoneEnc: await encryptString(e164), contactPhoneIndex: phoneBlindIndex(e164), womenOwned: input.womenOwned ?? false, notes: blank(input.notes) };
 }
 
 export async function createOrganisation(actor: Actor, raw: OrganisationInputT): Promise<{ organisationId: string }> {
@@ -52,7 +54,7 @@ export async function createOrganisation(actor: Actor, raw: OrganisationInputT):
       .insert(s.organisations)
       .values({ ...(await columns(input)), active: false })
       .returning({ id: s.organisations.id });
-    await logAdminAction(tx, actor.userId, "organisation.create", { type: "organisation", id: row!.id }, { kind: input.kind });
+    await logAdminAction(tx, actor.userId, "organisation.create", { type: "organisation", id: row!.id }, { kind: input.kind, womenOwned: input.womenOwned ?? false });
     return { organisationId: row!.id };
   });
 }
@@ -64,6 +66,8 @@ export async function updateOrganisation(actor: Actor, organisationId: string, r
   await withTx(async (tx) => {
     const existing = await tx.query.organisations.findFirst({ where: eq(s.organisations.id, organisationId) });
     if (!existing) throw new DomainError("organisation_not_found");
+    // A confirmed status changes only through the two admins: deactivate, edit, then activate again.
+    if (existing.active && (input.womenOwned ?? false) !== existing.womenOwned) throw new DomainError("organisation_status_confirmed");
     await tx
       .update(s.organisations)
       .set({ ...(await columns(input)), updatedAt: now() })
@@ -86,13 +90,16 @@ export async function requestOrganisationActivation(actor: Actor, organisationId
   if (!org) throw new DomainError("organisation_not_found");
   if (org.active === active) throw new DomainError("organisation_already_in_state");
   if ((await pendingActivationIds(getDb())).has(organisationId)) throw new DomainError("organisation_activation_pending");
-  return requestApproval(actor, "STAKEHOLDER_ACTIVATE", { organisationId, active }, `${active ? "Activate" : "Deactivate"} organisation ${org.name}`);
+  // The summary names what the second admin confirms by approving: the type, and a women-owned status.
+  const confirms = `${org.kind.toLowerCase().replace("_", "-")}${org.womenOwned ? ", women-owned" : ""}`;
+  return requestApproval(actor, "STAKEHOLDER_ACTIVATE", { organisationId, active }, `${active ? "Activate" : "Deactivate"} organisation ${org.name} (${confirms})`);
 }
 
 export interface OrganisationSummary {
   id: string;
   name: string;
   kind: Row["kind"];
+  womenOwned: boolean;
   areaId: string | null;
   areaName: string;
   active: boolean;
@@ -123,6 +130,7 @@ async function summarise(db: DbOrTx, o: Row, areaName: string, pending: boolean)
     id: o.id,
     name: o.name,
     kind: o.kind,
+    womenOwned: o.womenOwned,
     areaId: o.serviceAreaId,
     areaName,
     active: o.active,

@@ -4,7 +4,7 @@ import { ORGANISATION_KINDS } from "@/lib/domain/types";
 type T = (key: string) => string;
 
 /** Organisation reference data (prompt §8.8.4): a name, a type, an area, one contact. Nothing about the people it serves. */
-export function OrganisationFields({ t, areas, defaults }: { t: T; areas: { id: string; name: string }[]; defaults?: { name?: string; kind?: string; serviceAreaId?: string | null; contactName?: string | null; notes?: string | null } }) {
+export function OrganisationFields({ t, areas, defaults, statusLocked }: { t: T; areas: { id: string; name: string }[]; defaults?: { name?: string; kind?: string; serviceAreaId?: string | null; contactName?: string | null; womenOwned?: boolean; notes?: string | null }; statusLocked?: boolean }) {
   const d = defaults ?? {};
   return (
     <>
@@ -35,6 +35,16 @@ export function OrganisationFields({ t, areas, defaults }: { t: T; areas: { id: 
       <Field label={t("contactPhone")} htmlFor="contactPhone">
         <input id="contactPhone" name="contactPhone" className="field" inputMode="tel" required maxLength={20} />
       </Field>
+      <div className="md:col-span-2">
+        <label className="check">
+          {/* A confirmed status cannot change while the organisation is active; the box keeps its value so the form still submits it. */}
+          <input type="checkbox" name="womenOwned" value="true" defaultChecked={d.womenOwned ?? false} className="mt-0.5" disabled={statusLocked} />
+          {statusLocked && d.womenOwned ? <input type="hidden" name="womenOwned" value="true" /> : null}
+          <span>
+            {t("womenOwned")} <span className="block text-xs text-stone-500">{statusLocked ? t("womenOwnedLocked") : t("womenOwnedHint")}</span>
+          </span>
+        </label>
+      </div>
       <div className="md:col-span-2">
         <Field label={t("notes")} htmlFor="notes">
           <textarea id="notes" name="notes" className="field" rows={2} maxLength={1000} defaultValue={d.notes ?? ""} />

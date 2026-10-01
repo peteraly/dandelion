@@ -152,7 +152,9 @@ export function isOrderParty(a: Actor, o: OrderResource): boolean {
 const sellerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).seller === a.role;
 const buyerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).buyer === a.role;
 /** Roles that may enrol customers and sell to them: on the ladder the champion; on direct paths riders and suppliers (the area switch is checked in the service). */
-const SELLS_TO_CUSTOMERS: readonly Role[] = ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER"];
+// Only local sellers hold customers (safeguarding, lib/domain/sales.ts CLOSED_KINDS): delivery partners and supplier
+// staff never enrol, see or sell to a customer.
+const SELLS_TO_CUSTOMERS: readonly Role[] = ["FIELD_CHAMPION"];
 const SELLS_TO_ORGS: readonly Role[] = ["SUPPLIER", "HUB_MANAGER", "BOSS_RIDER"];
 
 const orderRule =
