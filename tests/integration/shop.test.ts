@@ -137,7 +137,7 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     const { supplier, disposable } = await ids();
     const rider = await actors.rider();
     const pickupId = (await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: disposable.id, buyerUserId: rider.userId, quantity: 5, pickupDate: tzDay() })).orderId;
-    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-SHOP-1");
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-SHOP-1", { packedWaterproof: true });
     await acceptPickup(rider, pickupId);
     await simulate("success", (await order(pickupId)).ref);
     await confirmRelease(await actors.supplier(), pickupId);
@@ -206,7 +206,7 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     const champion = await actors.champion();
     // The local seller collects her own stock at the factory gate.
     const pickupId = (await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: disposable.id, buyerUserId: champion.userId, quantity: 4, pickupDate: tzDay() })).orderId;
-    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-SHOP-2");
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-SHOP-2", { packedWaterproof: true });
     await acceptPickup(champion, pickupId);
     await simulate("success", (await order(pickupId)).ref);
     await confirmRelease(await actors.supplier(), pickupId);

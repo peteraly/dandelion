@@ -291,3 +291,10 @@ behind an interface with a mock and must be checked before go-live.
 - **Consequences.** Demo district: 34 items → 11. The next steps (Prompt M Part 2: payment claims that heal, field settlements, owners and due times, a demo that tidies up, abuse caps) aim at about 5 items that need a person by design.
 - **Status.** accepted (founders' direction, 2026-10-01).
 
+## ADR-043 — Prevent, then clear by itself: packing and rain checks, lapsing claims, SMS cap, a demo that tidies up
+
+- **Context.** Founders (2026-10-01): nothing done by hand if possible, everything in the tool with no improvising, everyone in the system; items should not be damaged in the first place; payments should settle instantly with no ambiguity; settlement limit 100,000 TZS; shop code SMS capped at 100 an hour with an alarm at 50.
+- **Decision.** A batch cannot be marked ready unless the maker confirms sealed waterproof packing (`batches.packed_waterproof_at`); in an area's rainy months a pickup cannot be accepted without a rain cover (`orders.rain_cover_at`). A payment claim with no money after `paymentClaimLapseHours` (24) lapses by itself with one SMS, before the nightly reconciliation; the request stays open so late money still confirms. Shop sign-in codes are capped per hour across the district (`shopCodeSmsPerHour` 100) with one `SHOP_CODE_SURGE` alarm per hour at `shopCodeSmsAlarm` (50); the cap counts every request, revealing nothing about who joined. Unconfirmed shop numbers are erased after 7 days by the retention job. In the demo, simulated admins close ordinary problems after a day (never safety, theft, reversals, unwell customers) and stuck inspections are finished by the live engine.
+- **Consequences.** A fresh full demo district opens with 7 items on the four lists instead of 34. Instant payments in and out (payment requests confirmed with a PIN; payout API) and automatic reassignment of late shop orders are designed (Prompt M §3.1–3.2) and wait for the provider contract, G1, and the founders' agreement that a customer's payment may follow her order to a new seller.
+- **Status.** accepted (founders, 2026-10-01).
+

@@ -3,6 +3,7 @@
  * in-app "simulate" controls (real clock) share. Every phase drives the real
  * services; the clock only decides what timestamps they get.
  */
+import { lapseStaleClaims } from "@/lib/services/self-heal";
 import { sendRestockReminders } from "@/lib/services/reminders";
 import { eq, sql } from "drizzle-orm";
 import * as s from "@/lib/db/schema";
@@ -171,6 +172,8 @@ export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise
 /** The nightly reconciliation and stock record at 20:00 EAT (the seed) or right now (a tick). */
 export async function nightly(w: World, dayStart: Date): Promise<void> {
   w.clock.advanceTo(atEat(dayStart, 20, 0));
+  const { lapsed } = await lapseStaleClaims();
+  if (lapsed) w.manifest.count("claims.lapsed", lapsed);
   await runDailyReconciliation();
   w.manifest.count("reconciliation.runs");
   await recordHubStock();

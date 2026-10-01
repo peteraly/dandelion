@@ -56,11 +56,11 @@ async function step(w: World, orderId: string): Promise<string | null> {
   switch (`${o.kind}:${o.state}`) {
     case "SUPPLIER_TO_RIDER:PICKUP_ASSIGNED":
       if (!supplierUser) return null;
-      await confirmBatchReady(supplierUser.actor, o.id, `SEAL-${w.rng.int(10000, 99999)}`);
+      await confirmBatchReady(supplierUser.actor, o.id, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
       return o.id;
     case "SUPPLIER_TO_RIDER:BATCH_READY":
       if (!rider) return null;
-      await acceptPickup(rider.actor, o.id);
+      await acceptPickup(rider.actor, o.id, { rainCover: true });
       return o.id;
     case "SUPPLIER_TO_RIDER:AWAITING_PAYMENT":
     case "RIDER_TO_HUB:AWAITING_PAYMENT":

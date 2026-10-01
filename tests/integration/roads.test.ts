@@ -39,8 +39,8 @@ async function trip(days: number, seal: string): Promise<void> {
   const rider = await userByPhone(SEED.riders[0]!.phone);
   ahead(60_000);
   const { orderId: pickupId } = await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: kit.id, hubId: hub.id, riderId: rider.id, quantity: 10, pickupDate: tzDay() });
-  await confirmBatchReady(await actors.supplier(), pickupId, seal);
-  await acceptPickup(await actors.rider(), pickupId);
+  await confirmBatchReady(await actors.supplier(), pickupId, seal, { packedWaterproof: true });
+  await acceptPickup(await actors.rider(), pickupId, { rainCover: true });
   await simulate("success", (await order(pickupId)).ref);
   await confirmRelease(await actors.supplier(), pickupId);
   await confirmReceipt(await actors.rider(), pickupId, CHECKS);
@@ -132,8 +132,8 @@ describe("roads and rains", () => {
     ahead(60_000);
     const before = await coming();
     const { orderId: pickupId } = await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: disposable.id, hubId: hub.id, riderId: rider.id, quantity: 20, pickupDate: tzDay() });
-    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-ROAD-WET");
-    await acceptPickup(await actors.rider(), pickupId);
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-ROAD-WET", { packedWaterproof: true });
+    await acceptPickup(await actors.rider(), pickupId, { rainCover: true });
     await simulate("success", (await order(pickupId)).ref);
     await confirmRelease(await actors.supplier(), pickupId);
     await confirmReceipt(await actors.rider(), pickupId, CHECKS);

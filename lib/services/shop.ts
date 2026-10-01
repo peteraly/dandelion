@@ -23,7 +23,7 @@ import { createCustomerSession } from "@/lib/auth/customer-session";
 import { getSmsProvider } from "@/lib/sms";
 import { tr } from "@/lib/i18n/server-translator";
 import { firstName } from "@/lib/util/names";
-import { DomainError, getSetting, withTx, isUniqueViolation } from "./core";
+import { DomainError, getSetting, logSecurityEvent, withTx, isUniqueViolation } from "./core";
 import { allowedSalesFor } from "./areas";
 import { activePriceItem } from "./pricing";
 import { createPlanInTx } from "./orders";
@@ -194,7 +194,28 @@ export async function startShopSignIn(phoneRaw: string, opts: SignInOpts): Promi
   return sendSignInCode(phone, phoneIndex, c?.id ?? null, opts);
 }
 
+/**
+ * A cap on shop sign-in codes across the district (founders, 2026-10-01: 100 an hour, an alarm at 50): nobody can make
+ * Dandelion send thousands of SMS. Counted for every code asked for, with or without an account, so the cap reveals
+ * nothing about who has joined.
+ */
+async function assertCodeCapacity(): Promise<void> {
+  const db = getDb();
+  const hourAgo = new Date(nowMs() - 3_600_000);
+  const [row] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(s.otpChallenges)
+    .where(and(eq(s.otpChallenges.purpose, "CUSTOMER_LOGIN"), gte(s.otpChallenges.createdAt, hourAgo)));
+  const n = Number(row?.n ?? 0);
+  if (n >= Number(await getSetting("shopCodeSmsPerHour"))) throw new DomainError("shop_busy");
+  if (n + 1 >= Number(await getSetting("shopCodeSmsAlarm"))) {
+    const raised = await db.query.securityEventLog.findFirst({ where: and(eq(s.securityEventLog.type, "SHOP_CODE_SURGE"), gte(s.securityEventLog.createdAt, hourAgo)), columns: { id: true } });
+    if (!raised) await logSecurityEvent(db, "SHOP_CODE_SURGE", "ALERT", { details: { lastHour: n + 1 } });
+  }
+}
+
 async function sendSignInCode(phone: string, phoneIndex: string, customerId: string | null, opts: SignInOpts): Promise<{ challengeId: string }> {
+  await assertCodeCapacity();
   return withTx(async (tx) => {
     const { challengeId, code } = await issueOtp({ purpose: "CUSTOMER_LOGIN", phoneIndex, subjectId: customerId, deviceId: opts.deviceId, ip: opts.ip }, tx);
     if (customerId) await getSmsProvider().send(phone, tr("sw", "sms.otp", { code }), "OTP", tx);

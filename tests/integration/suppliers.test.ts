@@ -80,7 +80,7 @@ describe("supplier organisation", () => {
     expect(can(colleague, "order.confirm_batch_ready", resource)).toBe(true);
     expect(can(stranger, "order.confirm_batch_ready", resource)).toBe(false);
     // The colleague can do the work: confirm the batch, and the home view lists the pickup.
-    await confirmBatchReady(colleague, orderId, "SEAL-COLL");
+    await confirmBatchReady(colleague, orderId, "SEAL-COLL", { packedWaterproof: true });
     const home = await supplierHome(colleague);
     expect(home.pickups.some((p) => p.id === orderId && p.state === "BATCH_READY")).toBe(true);
     expect(home.businessName).toBe(SEED.supplier.name);
@@ -94,7 +94,7 @@ describe("supplier organisation", () => {
     const rider = await userByPhone(SEED.riders[0]!.phone);
     const riderActor = await actors.rider();
     const { orderId } = await adminCreatePickup(admin, { supplierId: supplier.id, productId: kit.id, hubId: hub.id, riderId: rider.id, quantity: 4, pickupDate: tzDay() });
-    await confirmBatchReady(supplierActor, orderId, "SEAL-PAY");
+    await confirmBatchReady(supplierActor, orderId, "SEAL-PAY", { packedWaterproof: true });
     await acceptPickup(riderActor, orderId);
     const before = (await supplierDetail(admin, supplier.id))!.payments.confirmedWeekTzs;
     const o = (await getDb().query.orders.findFirst({ where: eq(s.orders.id, orderId) }))!;

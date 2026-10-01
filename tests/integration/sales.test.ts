@@ -166,7 +166,7 @@ describe("sale paths beyond the ladder", () => {
     // A pickup with no hub behind it: the rider's own stock (needs a direct rider path in the area — switched on above).
     const { orderId: pickupId } = await adminCreatePickup(admin, { supplierId: supplierRow.id, productId: disposable.id, buyerUserId: riderUser.id, quantity: 6, pickupDate: tzDay() });
     expect((await order(pickupId)).hubId).toBeNull();
-    await confirmBatchReady(supplier, pickupId, "SEAL-VD");
+    await confirmBatchReady(supplier, pickupId, "SEAL-VD", { packedWaterproof: true });
     await acceptPickup(rider, pickupId);
     expect((await simulate("success", (await order(pickupId)).ref)).outcomes).toContain("CONFIRMED");
     await confirmRelease(supplier, pickupId);

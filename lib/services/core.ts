@@ -181,6 +181,12 @@ export const SETTING_DEFAULTS = {
   safeguardingLeadPhones: "",
   /** Helpline numbers shown on the safety page and in the shop, once the safeguarding leads have checked each one. */
   helplineText: "",
+  /** Hours after which a payment someone said they made, that never arrived, lapses by itself (Prompt M). 0 = never. */
+  paymentClaimLapseHours: 24,
+  /** Shop sign-in code SMS allowed per hour across the district (founders, 2026-10-01): a cap against SMS abuse. */
+  shopCodeSmsPerHour: 100,
+  /** At this many shop code SMS in an hour, an alarm goes to the admins. */
+  shopCodeSmsAlarm: 50,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

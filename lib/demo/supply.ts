@@ -94,9 +94,9 @@ export async function resumeLatePickups(w: World, day: number): Promise<void> {
 async function continueChain(w: World, d: DeferredPickup, quantity: number): Promise<{ pickupId: string; deliveryId: string | null }> {
   const { pickupId, supplierUser, hub, rider, outcome } = d;
   void quantity;
-  await confirmBatchReady(supplierUser.actor, pickupId, `SEAL-${w.rng.int(10000, 99999)}`);
+  await confirmBatchReady(supplierUser.actor, pickupId, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
   w.tick(20, 60);
-  await acceptPickup(rider.actor, pickupId);
+  await acceptPickup(rider.actor, pickupId, { rainCover: true });
   w.tick(5, 30);
   if (outcome === "awaiting_rider_payment") {
     // The rider says "I have paid" but the provider never confirms anything.
@@ -369,28 +369,28 @@ export async function leaveInFlight(w: World, plans: Plan[]): Promise<void> {
   await attempt("PICKUP_ASSIGNED", async () => void (await newPickup()));
   await attempt("BATCH_READY", async () => {
     const id = await newPickup();
-    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`);
+    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
   });
   await attempt("AWAITING_PAYMENT.rider_accepted", async () => {
     const id = await newPickup();
-    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`);
+    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
     w.tick(10, 30);
-    await acceptPickup(rider.actor, id); // custody RESERVED_FOR_RIDER until the money moves
+    await acceptPickup(rider.actor, id, { rainCover: true }); // custody RESERVED_FOR_RIDER until the money moves
   });
   await attempt("AWAITING_PAYMENT.rider_claimed", async () => {
     const id = await newPickup();
-    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`);
+    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
     w.tick(10, 30);
-    await acceptPickup(rider.actor, id);
+    await acceptPickup(rider.actor, id, { rainCover: true });
     w.tick(5, 20);
     await claimPaid(rider.actor, id); // custody PAYMENT_PENDING
     w.manifest.anomaly("PAYMENT_PENDING_TOO_LONG", "rider claimed payment on the last day; nothing confirmed yet", { orderRef: await w.orderRef(id) });
   });
   await attempt("PAID.awaiting_confirmations", async () => {
     const id = await newPickup();
-    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`);
+    await confirmBatchReady(area.supplier.actor, id, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
     w.tick(10, 30);
-    await acceptPickup(rider.actor, id);
+    await acceptPickup(rider.actor, id, { rainCover: true });
     await pay(w, id, "success");
   });
   const primary = area.suppliers[0]!;

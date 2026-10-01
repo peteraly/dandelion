@@ -36,13 +36,13 @@ const orderPath = (id: string) => `/orders/${id}`;
 export async function confirmBatchReadyAction(fd: FormData): Promise<void> {
   const actor = await me();
   const id = str(fd, "orderId");
-  await act(orderPath(id), () => once(actor, fd, "confirmBatchReady", async () => (await orders.confirmBatchReady(actor, id, str(fd, "sealId")), null)), orderPath(id));
+  await act(orderPath(id), () => once(actor, fd, "confirmBatchReady", async () => (await orders.confirmBatchReady(actor, id, str(fd, "sealId"), { packedWaterproof: bool(fd, "packedWaterproof") }), null)), orderPath(id));
 }
 
 export async function acceptPickupAction(fd: FormData): Promise<void> {
   const actor = await me();
   const id = str(fd, "orderId");
-  await act(orderPath(id), () => once(actor, fd, "acceptPickup", async () => (await orders.acceptPickup(actor, id), null)), orderPath(id));
+  await act(orderPath(id), () => once(actor, fd, "acceptPickup", async () => (await orders.acceptPickup(actor, id, { rainCover: bool(fd, "rainCover") }), null)), orderPath(id));
 }
 
 export async function claimPaidAction(fd: FormData): Promise<void> {

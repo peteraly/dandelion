@@ -11,7 +11,7 @@ import { can } from "@/lib/policy";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { viewForOrder } from "@/lib/services/home";
-import { orderResource, revealDeliveryCode } from "@/lib/services/orders";
+import { orderResource, pickupNeedsRainCover, revealDeliveryCode } from "@/lib/services/orders";
 import { openIntent, paidTotals } from "@/lib/services/payments";
 import { formatTzs } from "@/lib/money";
 import { formatDateTime } from "@/lib/util/time";
@@ -45,6 +45,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const TERMINAL: Partial<Record<string, string>> = { COMPLETED: "order_completed", CANCELLED: "order_cancelled", CLOSED: "order_closed" };
   const status = view.order?.id === order.id ? view.status : (TERMINAL[order.state] ?? null);
   const action = view.order?.id === order.id ? view.action : null;
+  const needsRainCover = action === "accept_pickup" ? await pickupNeedsRainCover(db, order) : false;
 
   const payBlock = intent ? (
     <div className="rounded-xl bg-amber-50 p-3 text-amber-950">
@@ -75,6 +76,10 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
           <Field label={t("field.sealId")} htmlFor="sealId">
             <input id="sealId" name="sealId" className="field" required pattern="[A-Za-z0-9-]+" autoComplete="off" />
           </Field>
+          <label className="check">
+            <input type="checkbox" name="packedWaterproof" value="true" required className="mt-0.5" />
+            <span>{t("field.packedWaterproof")}</span>
+          </label>
           <PrimaryButton>{t("home.action.confirm_batch_ready")}</PrimaryButton>
         </form>
       );
@@ -84,6 +89,12 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
         <form action={a.acceptPickupAction} className="flex flex-col gap-3">
           {idem}
           {hidden}
+          {needsRainCover ? (
+            <label className="check" data-testid="rain-cover">
+              <input type="checkbox" name="rainCover" value="true" required className="mt-0.5" />
+              <span>{t("field.rainCover")}</span>
+            </label>
+          ) : null}
           <PrimaryButton>{t("home.action.accept_pickup")}</PrimaryButton>
         </form>
       );

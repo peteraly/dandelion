@@ -19,6 +19,7 @@ import { eatDayStart, isSunday } from "./time";
 import { loadPlans, loadWorld } from "./load";
 import { runDay, runHour, nightly } from "./day";
 import { advanceLiveChains } from "./live";
+import { tidyUp } from "./tidy";
 import type { SkippedScenario } from "./manifest";
 
 export type TickKind = "hour" | "day";
@@ -64,6 +65,8 @@ export async function simulateTick(kind: TickKind, adminId: string, opts: { auto
     await runHour(w, plans, customersPerDay);
     // Deliveries move one step per hour so the map catches them on the way (lib/demo/live.ts).
     await advanceLiveChains(w);
+    // Like a real team, the district handles what came up yesterday (Prompt M): the admin home stays short.
+    await tidyUp(w);
   } else {
     await runDay(w, plans, { day: status.ticks + 1000, totalDays: 10_000, dayStart: today, sunday: isSunday(today), customersPerDay, adminSetPieces: false, peopleLifecycle: false, holdHandovers: false, leaveInFlightChains: false });
   }

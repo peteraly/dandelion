@@ -473,6 +473,8 @@ export const batches = pgTable(
     serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
     quantity: integer("quantity").notNull(),
     sealId: text("seal_id"),
+    /** The maker confirmed the batch is packed in a sealed waterproof bag (Prompt M: prevent damage, not settle it). */
+    packedWaterproofAt: ts("packed_waterproof_at"),
     preparedOn: date("prepared_on", { mode: "string" }),
     custodyState: custodyStateEnum("custody_state").notNull(),
     /** Custody state at the moment the batch was locked (for dual-approved resume). */
@@ -563,6 +565,8 @@ export const orders = pgTable(
     senderConfirmedAt: ts("sender_confirmed_at"),
     receiverConfirmedAt: ts("receiver_confirmed_at"),
     educationConfirmedAt: ts("education_confirmed_at"),
+    /** The delivery partner confirmed a rain cover when accepting a pickup in the area's rainy months (Prompt M). */
+    rainCoverAt: ts("rain_cover_at"),
     createdBy: uuid("created_by").notNull().references(() => users.id),
     /**
      * Dandelion's operating fee on this sale, fixed when the order is made (Prompt L §2.3): taken from the seller's

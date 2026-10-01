@@ -122,6 +122,8 @@ test("factory pickup: assigned → batch ready → accept → pending → confir
   await supplier.page.getByRole("link", { name: "Confirm batch ready" }).click();
   state.pickupRef = await currentOrderRef(supplier.page);
   await supplier.page.getByLabel(/Seal/).fill("SEAL-001");
+
+  await supplier.page.getByLabel(/sealed waterproof bag/).check();
   await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
   await expect(supplier.page.getByRole("heading", { name: "Batch ready for delivery partner payment and pickup" })).toBeVisible();
 
@@ -733,6 +735,8 @@ test("sale paths: two admins switch on village drops; a rider keeps factory stoc
     await supplier.page.getByRole("link", { name: "Confirm batch ready", exact: true }).click();
     readyRefs.push(await currentOrderRef(supplier.page));
     await supplier.page.getByLabel(/Seal/).fill(seal);
+
+    await supplier.page.getByLabel(/sealed waterproof bag/).check();
     await supplier.page.getByRole("button", { name: "Confirm batch ready" }).click();
     await expect(supplier.page.getByRole("heading", { name: "Batch ready for delivery partner payment and pickup" })).toBeVisible();
   }

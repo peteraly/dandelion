@@ -153,7 +153,7 @@ it concerns.
 ## Part 2 — The prompt: what to build, in order
 
 - **M1 — Count once, close loops** *(done in this round)*: R1–R4 above; tests in `tests/integration/queues.test.ts`.
-- **M2 — Payment claims that heal.** A claim pending 24 h (setting) lapses: the customer gets one SMS ("we have not
+- **M2 — Payment claims that heal** *(done)*. A claim pending 24 h (setting) lapses: the customer gets one SMS ("we have not
   received it; if you paid, show your seller the M-Pesa message"); the reconciliation flag clears; a later payment
   confirms a fresh request as today. A matching payment that arrives after the lapse is matched automatically.
 - **M3 — Payment requests (push) and auto-matching** *(after G1 and the provider contract)*: payments start from a
@@ -165,26 +165,76 @@ it concerns.
 - **M5 — Owners, due times, nudges.** Every problem gets an owner role and a due time by type; an SMS nudge at the due
   time; the admin list shows only overdue items and the "always human" types. The admin home shows "closed by the
   system this week".
-- **M6 — A demo that tidies up.** In the live district, simulated admins and field people handle items older than a
+- **M6 — A demo that tidies up** *(done)*. In the live district, simulated admins and field people handle items older than a
   day (never safety, theft or reversals, which stay for the visitor to see); fewer problems are injected per hour; the
   demo settles at a realistic list of 3–6 items.
-- **M7 — Shop abuse and privacy.** A cap on shop code SMS per hour (setting) with an alarm; unconfirmed shop numbers
-  deleted after 7 days.
+- **M7 — Shop abuse and privacy** *(done)*: shop code SMS capped at 100 an hour with an alarm at 50; unconfirmed shop
+  numbers forgotten after 7 days by the retention job.
+- **M9 — Promises and the next seller** (§3.1), once the founders agree that her money may follow her order.
+- **M10 — Pickups by rule**: a restock suggestion becomes a pickup to the most reliable delivery partner with capacity.
+- **Prevention** *(done)*: waterproof packing confirmed before a batch can leave; a rain cover confirmed for pickups in
+  the rainy months.
 - **M8 — Safeguarding records.** A local seller's "woman" status recorded at enrolment and confirmed by the second
   admin (Prompt K, K3); woman-seller-only orders reach only confirmed sellers.
 
 ---
 
-## Part 3 — Decisions for the founders
+## Part 3 — Founders' decisions and direction (2026-10-01)
 
-1. **Field settlements (M4)**: up to what value may the hub keeper, delivery partner and supplier settle a short or
-   damaged delivery among themselves? Suggested: one pickup's value up to 100,000 TZS.
-2. **Payment claims (M2)**: lapse a claim after 24 hours? (The customer can pay again; nothing is lost.)
-3. **Code SMS cap (M7)**: suggested 200 shop code SMS per hour across the district, with an alarm at 100.
-4. **Who owns what (M5)**: confirm the owner list in §1.4.
-5. **Order**: M2, M5 and M6 do not need the provider; M3, R14 and R15 wait for G1 and the provider contract.
+In the founders' words: *nothing should be done by hand if possible — all automated, and in the tool, with limited to
+no creativity; everyone is in the system.* *Payments should settle and be received instantly after they are sent — no
+ambiguity.* *The items shouldn't be damaged in the first place.* *The system should be built so that no problems
+exist.* *The goal is for the customer to receive the products as soon as possible.*
 
----
+| # | Question | Decision | Built |
+| --- | --- | --- | --- |
+| 1 | Field settlement limit | **OK, 100,000 TZS**, but damage must be prevented first | **Prevention built**: a batch cannot be marked ready unless the maker confirms it is packed in a sealed waterproof bag (`batches.packed_waterproof_at`); in the area's rainy months a pickup cannot be accepted without a rain cover (`orders.rain_cover_at`). Settlement by rule (M4) next, with the limit as a backstop. |
+| 2 | Payment claims | Make it foolproof; payments settle instantly | **Fallback built**: a claim with no money after 24 h (`paymentClaimLapseHours`) lapses by itself, one SMS to the payer, no reconciliation flag; money that comes later still confirms. **The real fix** is the payment request she confirms with her PIN, confirmed by the provider within seconds (M3), and payouts sent through the provider's payout API — waiting for the provider contract and G1. |
+| 3 | Shop code SMS cap | **Half the suggestion: 100 an hour, alarm at 50** | **Built** (`shopCodeSmsPerHour`, `shopCodeSmsAlarm`; the cap counts every request, so it reveals nothing about who has joined) |
+| 4 | "Who owns each problem" | No list to approve: problems should not exist; where something unpreventable happens, the system tells the right person | Owners are fixed in the tool (§1.4), not chosen by people; admins see only what always needs a person |
+| 5 | Build order, in plain words | Build now what does not need the mobile-money company or the lawyer | Built now: claims that clear themselves, prevention checks, the SMS cap, forgetting unconfirmed numbers, a demo that tidies up. Waiting: paying with only a PIN; payouts and statements arriving by themselves. |
+
+### 3.1 Who carries the stock, and what happens when a seller is late
+
+**Known**: a delivery partner buys stock from the maker (paying Dandelion's account, credited to the maker), carries
+it and owns it (custody "with delivery partner"), and resells it — to customers who order in the shop, to hubs and to
+organisations. Women local sellers do the same with stock from their hub. Each sale's money is held until the
+hand-over, then credited to the seller less the fee.
+
+**Recommended (to build, M9) — the customer receives her pack as soon as possible:**
+
+1. **A promise when accepting.** The seller picks one of fixed slots — "today" or "tomorrow, at the meeting point's
+   usual time" — no free text. She sees the promised time.
+2. **The reliable go first.** Alerts go first to sellers who hold the product and keep their promises; a seller's
+   on-time record is part of the ranking. Reliability earns orders.
+3. **A reminder, then the next seller.** Half-way to the promise the seller gets an SMS. If the promise passes, the
+   order goes back to the sellers in her area automatically. The late seller earns nothing (he is only paid at the
+   hand-over) and his record drops.
+4. **Her money follows her order.** If she has already paid, her payment is carried to the new seller's order inside
+   Dandelion's account, automatically and recorded in the ledger — no refund, no waiting. **Founders' decision
+   needed**: this is money moving inside Dandelion's account without an admin.
+
+### 3.2 Instant payments, no ambiguity (to build, M3, after G1)
+
+- **In**: she presses "Pay" (or the seller sends the request); her phone shows the payment request with the amount,
+  Dandelion's account and the reference filled in; she enters her PIN; the provider confirms to Dandelion within
+  seconds; both see "Paid". No "I have paid" button, nothing pending to check, no reference to type.
+- **Out**: a payout approved by two admins is sent through the provider's payout API; the member receives it on their
+  phone at once; the provider's reference is recorded automatically. Nobody types a reference.
+- Until the provider contract: the simulated provider behaves the same way in the demo, and a claim that never turns
+  into money lapses by itself after 24 h.
+
+### 3.3 What is still done by hand, and how each goes away
+
+| Done by hand today | Becomes | When |
+| --- | --- | --- |
+| Customer types amount, account, reference | Payment request confirmed with her PIN | M3, after G1 |
+| Admin sends payouts with the provider's tools and types the reference | Payout API, reference recorded | after G1 |
+| Admin uploads the provider statement | Statement fetched every night | after G1 |
+| Admin assigns pickups (with a suggestion filled in) | Restock suggestion becomes a pickup to the most reliable delivery partner with capacity, by rule | M10 |
+| Admins settle damaged or short deliveries | Settlement by rule from the evidence (seal intact and wet → packing; seal broken → the trip), within 100,000 TZS | M4 |
+| Admins close stuck items | Reminders, then reassignment by rule | M5, M9 |
+| Two admins for prices, sale paths, settings, members, money out | Stays — these are decisions, not chores | — |
 
 ## Review log
 
@@ -192,3 +242,10 @@ it concerns.
   this round: migration `0012_queues_count_once`, `lib/services/admin.ts` (one definition per list),
   `lib/services/reconciliation.ts`, `lib/services/exceptions.ts` (closing a problem closes its payment; hub keeper
   nudge), `lib/services/ecosystem.ts` and `lib/services/brief.ts` (same definitions).
+- 2026-10-01 (later) — Founders' decisions applied: prevention checks (migration `0013_prevent_damage`), payment claims
+  that lapse (`lib/services/self-heal.ts`), shop code cap 100/h with alarm at 50, unconfirmed shop numbers forgotten
+  after 7 days, the demo tidies up (`lib/demo/tidy.ts`); tests in `tests/integration/self-heal.test.ts`.
+- 2026-10-01 (later) — Measured again on a fresh full demo district after these changes: the same four lists show
+  **7** items (2 payments to check, 5 problems, 0 money that does not match, 0 deliveries stuck), all from the last
+  day — against **34** at the start. Two payouts also wait for a second admin, by design.
+

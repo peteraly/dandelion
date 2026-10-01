@@ -22,6 +22,7 @@ import { nightly, runDay, summary } from "@/lib/demo/day";
 import { advanceLiveChains } from "@/lib/demo/live";
 import { payoutsRound } from "@/lib/demo/payouts";
 import { shopSafetyReports } from "@/lib/demo/shop";
+import { tidyUp } from "@/lib/demo/tidy";
 
 /** Live steps run once the history is in, so the first visitor finds deliveries already under way. */
 const LIVE_WARM_UP_HOURS = 6;
@@ -104,7 +105,10 @@ export async function runDemoSeed(): Promise<DemoRunResult> {
     // The district is running when the preview opens: back on the real clock, a few hours of live steps put deliveries
     // at the factory, on the road and at the hubs, and an organisation's order on its way (lib/demo/live.ts).
     setClock(null);
-    for (let i = 0; i < LIVE_WARM_UP_HOURS; i++) await advanceLiveChains(w);
+    for (let i = 0; i < LIVE_WARM_UP_HOURS; i++) {
+      await advanceLiveChains(w);
+      await tidyUp(w);
+    }
 
     const manifest = w.manifest.toJSON(atEat(firstDay, 7, 0), addDays(todayStart, -1), FICTIONAL_PLACES);
     await putSetting(w.db, "seedProfile", "demo", w.adminA.userId);

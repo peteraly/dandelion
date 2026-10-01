@@ -13,6 +13,7 @@ import { decryptString } from "@/lib/crypto/envelope";
 import { maskPhone } from "@/lib/phone";
 import { DomainError, getSetting, logAdminAction, logSecurityEvent, withTx } from "./core";
 import { payoutsWaiting } from "./wallets";
+import { forgetUnconfirmedShopNumbers } from "./self-heal";
 import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
 import { DEMO_CSV_HEADER } from "@/lib/demo/label";
 import { TERMINAL_ORDER_STATES } from "@/lib/domain/orders";
@@ -349,7 +350,7 @@ export async function openDataRequests(actor: Actor) {
 }
 
 /** Retention purge (settings-driven). Called by the daily cron. */
-export async function retentionPurge(): Promise<{ sessions: number; otps: number; securityEvents: number }> {
+export async function retentionPurge(): Promise<{ sessions: number; otps: number; securityEvents: number; unconfirmedShopNumbers: number }> {
   const db = getDb();
   const sessDays = await getSetting("retentionSessionsDays");
   const otpDays = await getSetting("retentionOtpDays");
@@ -361,5 +362,6 @@ export async function retentionPurge(): Promise<{ sessions: number; otps: number
     const r = await tx.execute(sql`delete from security_event_log where created_at < now() - make_interval(days => ${secDays})`);
     return Number(r.rowCount ?? 0);
   });
-  return { sessions, otps, securityEvents };
+  const { forgotten: unconfirmedShopNumbers } = await forgetUnconfirmedShopNumbers();
+  return { sessions, otps, securityEvents, unconfirmedShopNumbers };
 }

@@ -22,9 +22,9 @@ export async function riderStockPickup(w: World, rider: Person, product: Product
   w.manifest.count("orders.SUPPLIER_TO_RIDER");
   w.manifest.count("paths.rider_stock_pickups");
   w.tick(30, 90);
-  await confirmBatchReady(supplierUser.actor, orderId, `SEAL-${w.rng.int(10000, 99999)}`);
+  await confirmBatchReady(supplierUser.actor, orderId, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
   w.tick(15, 45);
-  await acceptPickup(rider.actor, orderId);
+  await acceptPickup(rider.actor, orderId, { rainCover: true });
   w.tick(5, 20);
   await pay(w, orderId, "success");
   w.tick(5, 20);
@@ -42,9 +42,9 @@ export async function championCollects(w: World, hub: Hub, champion: Person, pro
   const { orderId } = await adminCreatePickup(w.adminA, { supplierId: org.id, productId: product.id, buyerUserId: champion.actor.userId, quantity, pickupDate: tzDay() });
   w.manifest.count("orders.SUPPLIER_TO_CHAMPION");
   w.tick(30, 90);
-  await confirmBatchReady(supplierUser.actor, orderId, `SEAL-${w.rng.int(10000, 99999)}`);
+  await confirmBatchReady(supplierUser.actor, orderId, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
   w.tick(15, 45);
-  await acceptPickup(champion.actor, orderId);
+  await acceptPickup(champion.actor, orderId, { rainCover: true });
   w.tick(5, 20);
   await pay(w, orderId, "success");
   w.tick(5, 20);

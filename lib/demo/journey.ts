@@ -192,11 +192,11 @@ export async function advanceJourney(adminId: string): Promise<JourneyState> {
         break;
       }
       case "batchReady":
-        await confirmBatchReady(supplier.actor, st.pickupId!, `SEAL-${w.rng.int(10000, 99999)}`);
+        await confirmBatchReady(supplier.actor, st.pickupId!, `SEAL-${w.rng.int(10000, 99999)}`, { packedWaterproof: true });
         facts.ref = await ref(st.pickupId);
         break;
       case "pickupAccept":
-        await acceptPickup(rider.actor, st.pickupId!);
+        await acceptPickup(rider.actor, st.pickupId!, { rainCover: true });
         facts.ref = await ref(st.pickupId);
         break;
       case "pickupPay": {

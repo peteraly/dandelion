@@ -541,7 +541,9 @@
       "meetAt": "Oda ya duka {ref} — kutana {place}. Kabidhi tu baada ya malipo kuthibitishwa, kwa msimbo wake.",
       "waitingHere": "{n} wanasubiri",
       "womenOnly": "Aliomba muuzaji mwanamke wa mtaani."
-    }
+    },
+    "packedWaterproof": "Imefungwa kwenye mfuko usiopitisha maji uliofungwa, na namba ya kufuli hapo juu. Hakuna kinachotoka bila hiyo.",
+    "rainCover": "Nina kifuniko cha mvua kwa safari hii (msimu wa mvua)."
   },
   "problems": {
     "title": "Ripoti tatizo",
@@ -838,6 +840,18 @@
         "aiMonthlyBudgetCents": {
           "label": "Bajeti ya AI kwa mwezi (senti za Marekani)",
           "hint": "Msaidizi husimama bajeti ikiisha."
+        },
+        "shopCodeSmsPerHour": {
+          "label": "Misimbo ya kuingia dukani kwa saa (kikomo)",
+          "hint": "Si zaidi ya SMS hizi za msimbo kwa saa katika wilaya, ili mtu asiongeze gharama ya SMS."
+        },
+        "shopCodeSmsAlarm": {
+          "label": "Kengele kwa misimbo hii kwa saa",
+          "hint": "Admin huarifiwa misimbo ya kuingia dukani ikifikia idadi hii kwa saa."
+        },
+        "paymentClaimLapseHours": {
+          "label": "Saa kabla dai lisilolipwa kujifuta",
+          "hint": "Mtu akisema amelipa na hakuna kinachofika ndani ya muda huu, oda husubiri malipo tena na hupata SMS moja. 0 = kamwe."
         }
       }
     },
@@ -1564,7 +1578,8 @@
     "shopPlan": "Habari {name}. Oda {ref}: {seller} atakutana nawe {place}. Bei {price}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
     "reminder": "Habari {name}. Mwezi umepita. Unahitaji zaidi? Agiza {link} au muulize muuzaji wako. Zima vikumbusho dukani.",
     "safeguarding": "Ripoti ya usalama ya Dandelion {ref}: mteja alihisi si salama ({area}, {place}). Tafadhali mpigie leo: {name} {phone}. Maelezo: Admin > Matatizo.",
-    "inspectionResume": "Habari {name}. Tatizo la mzigo {ref} limetatuliwa. Tafadhali maliza ukaguzi kwenye programu leo."
+    "inspectionResume": "Habari {name}. Tatizo la mzigo {ref} limetatuliwa. Tafadhali maliza ukaguzi kwenye programu leo.",
+    "claimLapsed": "Habari {name}. Hatujapokea malipo yako ya oda {ref}. Kama ulilipa, yataunganishwa mara yatakapofika. Kama sivyo, lipa kwenda {payee} ukitumia kumbukumbu {reference}."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -1699,7 +1714,10 @@
     "request_other_area": "Oda hii iko eneo lingine.",
     "request_no_stock": "Huna bidhaa hii. Ongeza mzigo kwanza.",
     "meeting_point_exists": "Eneo hili tayari lina mahali penye jina hilo.",
-    "request_women_only": "Aliomba muuzaji mwanamke wa mtaani akabidhi hii."
+    "request_women_only": "Aliomba muuzaji mwanamke wa mtaani akabidhi hii.",
+    "packing_not_confirmed": "Thibitisha mzigo umefungwa kwenye mfuko usiopitisha maji uliofungwa.",
+    "rain_cover_required": "Katika msimu wa mvua, thibitisha kifuniko cha mvua kwa safari.",
+    "shop_busy": "Duka lina shughuli nyingi. Tafadhali jaribu tena baada ya saa moja."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1855,7 +1873,8 @@
         "UNKNOWN": "Tukio la usalama",
         "ORGANISATION_ACTIVATED": "Shirika limewashwa",
         "ORGANISATION_DEACTIVATED": "Shirika limezimwa",
-        "OPEN_DEMO_ENTRY": "Onyesho la wazi limefunguliwa"
+        "OPEN_DEMO_ENTRY": "Onyesho la wazi limefunguliwa",
+        "SHOP_CODE_SURGE": "Misimbo mingi ya kuingia dukani ndani ya saa moja"
       },
       "admin": {
         "admin_enrolled": "Msimamizi amejiandikisha",

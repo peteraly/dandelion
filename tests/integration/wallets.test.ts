@@ -27,7 +27,7 @@ describe("wallets: Dandelion collects, members withdraw, two admins send", () =>
     const { supplier, hub, kit } = await ids();
     const rider = await userByPhone(SEED.riders[0]!.phone);
     pickupId = (await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: kit.id, hubId: hub.id, riderId: rider.id, quantity: 10, pickupDate: tzDay() })).orderId;
-    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-WAL-1");
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-WAL-1", { packedWaterproof: true });
     await acceptPickup(await actors.rider(), pickupId);
   });
 

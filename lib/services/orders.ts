@@ -17,6 +17,7 @@ import type { DualApprovalProof } from "@/lib/domain/approval";
 import { isLocked } from "@/lib/domain/custody";
 import type { OrderKind, PaymentRoute } from "@/lib/domain/types";
 import { platformFeeFor } from "@/lib/domain/wallet";
+import { isRainyMonth } from "@/lib/domain/routes";
 import { deriveKind, FACTORY_PICKUP_KINDS, isOrgKind, isPlanKind, saleFor, SUPPLIER_SELLER_KINDS } from "@/lib/domain/sales";
 import { allowedSalesFor, assertSaleAllowed } from "./areas";
 import { authorize, type Actor, type OrderResource } from "@/lib/policy";
@@ -181,9 +182,14 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
   });
 }
 
-export async function confirmBatchReady(actor: Actor, orderId: string, sealIdRaw: string): Promise<void> {
+/**
+ * The maker marks a batch ready. Damage is prevented, not settled (Prompt M): the batch must be packed in a sealed
+ * waterproof bag, confirmed with the seal number, or it cannot go out.
+ */
+export async function confirmBatchReady(actor: Actor, orderId: string, sealIdRaw: string, checks: { packedWaterproof: boolean }): Promise<void> {
   const sealId = z.string().trim().min(1).max(40).regex(/^[A-Za-z0-9-]+$/).safeParse(sealIdRaw);
   if (!sealId.success) throw new DomainError("seal_id_invalid");
+  if (checks.packedWaterproof !== true) throw new DomainError("packing_not_confirmed");
   await actOn(actor, orderId, "order.confirm_batch_ready", async (tx, order) => {
     const hub = order.hubId ? await tx.query.hubs.findFirst({ where: eq(s.hubs.id, order.hubId) }) : null;
     const supplier = await tx.query.suppliers.findFirst({ where: eq(s.suppliers.id, order.supplierId!) });
@@ -196,15 +202,29 @@ export async function confirmBatchReady(actor: Actor, orderId: string, sealIdRaw
       custodianUserId: order.sellerUserId,
       orderId: order.id,
     });
+    await tx.update(s.batches).set({ packedWaterproofAt: now() }).where(eq(s.batches.id, batch.id));
     await applyOrder(tx, order, "CONFIRM_BATCH_READY", asService(actor), {}, { batchId: batch.id });
   });
 }
 
-export async function acceptPickup(actor: Actor, orderId: string): Promise<void> {
+/** In the area's rainy months, a pickup is accepted only with a rain cover for the trip (Prompt M: prevent damage). */
+export async function pickupNeedsRainCover(db: Tx | ReturnType<typeof getDb>, order: Pick<Order, "hubId" | "supplierId">): Promise<boolean> {
+  const hub = order.hubId ? await db.query.hubs.findFirst({ where: eq(s.hubs.id, order.hubId), columns: { serviceAreaId: true } }) : null;
+  const supplier = !hub && order.supplierId ? await db.query.suppliers.findFirst({ where: eq(s.suppliers.id, order.supplierId), columns: { serviceAreaId: true } }) : null;
+  const areaId = hub?.serviceAreaId ?? supplier?.serviceAreaId;
+  if (!areaId) return false;
+  const area = await db.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, areaId), columns: { rainyMonths: true } });
+  const month = Number(new Intl.DateTimeFormat("en-GB", { month: "numeric", timeZone: "Africa/Dar_es_Salaam" }).format(now()));
+  return isRainyMonth(Array.isArray(area?.rainyMonths) ? area.rainyMonths : [], month);
+}
+
+export async function acceptPickup(actor: Actor, orderId: string, checks: { rainCover?: boolean } = {}): Promise<void> {
   await actOn(actor, orderId, "order.accept_pickup", async (tx, order) => {
+    const rainy = await pickupNeedsRainCover(tx, order);
+    if (rainy && checks.rainCover !== true) throw new DomainError("rain_cover_required");
     const batch = await lockBatch(tx, order.batchId!);
     await applyCustody(tx, batch, "RESERVE_FOR_RIDER", asService(actor), {}, { orderId: order.id });
-    const updated = await applyOrder(tx, order, "ACCEPT_PICKUP", asService(actor), {});
+    const updated = await applyOrder(tx, order, "ACCEPT_PICKUP", asService(actor), {}, rainy ? { rainCoverAt: now() } : {});
     await ensureOpenIntent(tx, updated);
   });
 }

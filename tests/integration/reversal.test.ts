@@ -52,7 +52,7 @@ describe("payment reversals", () => {
     const { supplier, hub, disposable } = await ids();
     const rider = await userByPhone(SEED.riders[1]!.phone);
     const { orderId } = await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: disposable.id, hubId: hub.id, riderId: rider.id, quantity: 20, pickupDate: tzDay() });
-    await confirmBatchReady(await actors.supplier(), orderId, "SEAL-REV-1");
+    await confirmBatchReady(await actors.supplier(), orderId, "SEAL-REV-1", { packedWaterproof: true });
     await acceptPickup(await actors.rider2(), orderId);
     const o = await order(orderId);
     const paid = await simulate("success", o.ref);

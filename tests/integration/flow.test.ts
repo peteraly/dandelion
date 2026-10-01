@@ -72,11 +72,11 @@ describe("A/B: supplier → rider pickup", () => {
     const { supplier, hub, kit } = await ids();
     const rider = await userByPhone(SEED.riders[0]!.phone);
     await expect(adminCreatePickup(await actors.rider(), { supplierId: supplier.id, productId: kit.id, hubId: hub.id, riderId: rider.id, quantity: 1, pickupDate: tzDay() })).rejects.toThrow(PolicyError);
-    await expect(confirmBatchReady(await actors.rider(), pickupId, "SEAL-1")).rejects.toThrow(PolicyError);
+    await expect(confirmBatchReady(await actors.rider(), pickupId, "SEAL-1", { packedWaterproof: true })).rejects.toThrow(PolicyError);
   });
 
   it("supplier confirms batch ready → batch registered (ledger) and rider accepts", async () => {
-    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-001");
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-001", { packedWaterproof: true });
     let o = await order(pickupId);
     expect(o.state).toBe("BATCH_READY");
     expect(o.batchId).toBeTruthy();

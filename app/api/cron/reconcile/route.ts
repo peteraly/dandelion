@@ -1,6 +1,7 @@
 import { runDailyReconciliation } from "@/lib/services/reconciliation";
 import { recordHubStock } from "@/lib/services/replenishment";
 import { sendRestockReminders } from "@/lib/services/reminders";
+import { lapseStaleClaims } from "@/lib/services/self-heal";
 import { cronAuthorized, heartbeat } from "@/lib/security/cron";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,8 @@ export const maxDuration = 60;
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) return new Response(null, { status: 401 });
   try {
+    // Claims that never turned into money lapse first (Prompt M), so they are not flagged as mismatches.
+    const claims = await lapseStaleClaims().catch(async (e: Error) => (await heartbeat("claims", "error", { message: e.message }), { lapsed: 0 }));
     const result = await runDailyReconciliation();
     // The nightly stock record (Prompt I §2.3) rides on the same nightly run; its failure never hides the reconciliation's result.
     let stock: { rows: number } | { error: string };
@@ -28,7 +31,7 @@ export async function GET(request: Request) {
       reminders = { error: (e as Error).message };
       await heartbeat("reminders", "error", reminders);
     }
-    return Response.json({ ...result, stock, reminders });
+    return Response.json({ ...result, claims, stock, reminders });
   } catch (e) {
     await heartbeat("reconciliation", "error", { message: (e as Error).message });
     throw e;
