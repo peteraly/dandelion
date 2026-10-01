@@ -777,7 +777,69 @@
       "aiUsage": "AI mwezi huu: simu {calls}, takriban senti {cost} za Marekani; {accepted} zimekubaliwa, {rejected} zimekataliwa na walinzi.",
       "approvePack": "Idhinisha kifurushi cha elimu",
       "packStatus": "Kifurushi cha elimu {version}: {status}",
-      "packApproved": "Kifurushi cha elimu kimeidhinishwa."
+      "packApproved": "Kifurushi cha elimu kimeidhinishwa.",
+      "mainTitle": "Mipangilio unayoweza kubadilisha",
+      "mainHint": "Kila badiliko ni pendekezo: admin wa pili huliidhinisha kwenye Idhini kabla halijaanza kutumika.",
+      "technicalTitle": "Mipangilio ya kiufundi",
+      "technicalHint": "Hutumiwa na mfumo na onyesho; hubadilishwa kwa mkono mara chache.",
+      "keys": {
+        "platformFeeTzs": {
+          "label": "Ada ya Dandelion (TZS)",
+          "hint": "Inachukuliwa kwenye mauzo ya mzalishaji → msambazaji na msambazaji → mteja kuendesha huduma."
+        },
+        "platformFeeBasis": {
+          "label": "Ada inatozwa kwa",
+          "hint": "PACK: kwa kila pakiti (pakiti 50 = ada 50). ORDER: mara moja kwa oda."
+        },
+        "paymentRoute": {
+          "label": "Wanunuzi hulipa wapi",
+          "hint": "PLATFORM: akaunti ya Dandelion, kisha hulipwa wauzaji wanapoomba. DIRECT: namba ya muuzaji mwenyewe."
+        },
+        "platformPayeeAccount": {
+          "label": "Akaunti ya makusanyo ya Dandelion",
+          "hint": "Namba ya till au akaunti wanayolipia wanunuzi."
+        },
+        "withdrawalMinTzs": {
+          "label": "Kiwango cha chini cha kutoa (TZS)",
+          "hint": "Wanachama hawawezi kuomba chini ya hiki."
+        },
+        "shopAlertSellers": {
+          "label": "Wauzaji wanaotumiwa SMS kwa kila oda ya duka",
+          "hint": "Wauzaji wa karibu wenye bidhaa hupata SMS. Zaidi = majibu ya haraka na gharama zaidi ya SMS. 0 = zima."
+        },
+        "safeguardingLeadPhones": {
+          "label": "Simu za viongozi wa ulinzi",
+          "hint": "Hadi namba mbili, zikitenganishwa kwa koma. Kila mmoja hupata SMS mteja akiripoti kuhisi si salama."
+        },
+        "helplineText": {
+          "label": "Namba za msaada",
+          "hint": "Huonyeshwa kwenye ukurasa wa usalama na dukani. Baada tu ya viongozi wa ulinzi kupiga kila namba."
+        },
+        "approvalThreshold": {
+          "label": "Admin wanaohitajika kuidhinisha",
+          "hint": "Admin tofauti wangapi lazima wakubali mabadiliko ya hatari (angalau 2)."
+        },
+        "donorMonthlyCapTzs": {
+          "label": "Kikomo cha ufadhili kwa mwezi (TZS)",
+          "hint": "Pesa za wafadhili zisizozidi hizi kwa oda kila mwezi."
+        },
+        "customerPauseDays": {
+          "label": "Siku kabla mpango kuonekana umesimama",
+          "hint": "Bila malipo kwa muda huu, mpango wa mteja huonekana umesimama."
+        },
+        "paymentPendingAlertMinutes": {
+          "label": "Dakika kabla malipo yanayosubiri kuripotiwa",
+          "hint": "Malipo yasiyothibitishwa baada ya muda huu huwa tatizo la kukagua."
+        },
+        "largeExportRows": {
+          "label": "Safu kabla upakuaji kuhitaji admin wa pili",
+          "hint": "Upakuaji mkubwa wa data unahitaji admin wawili."
+        },
+        "aiMonthlyBudgetCents": {
+          "label": "Bajeti ya AI kwa mwezi (senti za Marekani)",
+          "hint": "Msaidizi husimama bajeti ikiisha."
+        }
+      }
     },
     "messages": {
       "title": "Rasimu za ujumbe",
@@ -1348,7 +1410,8 @@
       },
       "approved": "Imeidhinishwa. Admin mwingine ataituma.",
       "sent": "Imerekodiwa kuwa imetumwa; mshiriki amepata ujumbe.",
-      "rejected": "Imekataliwa; mshiriki amepata ujumbe na pesa zinapatikana tena."
+      "rejected": "Imekataliwa; mshiriki amepata ujumbe na pesa zinapatikana tena.",
+      "routePlatformPack": "Malipo yanaenda kwenye akaunti ya Dandelion {account}. Ada: {fee} kwa kila pakiti kwenye mauzo ya mzalishaji → msambazaji na msambazaji → mteja."
     },
     "places": {
       "title": "Maeneo ya kukutana kwa oda za duka",
@@ -1427,7 +1490,9 @@
     "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Wauzaji wa mtaani wanaeleza matumizi salama na utupaji.",
     "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi.",
     "shopCta": "Agiza pedi",
-    "impactLink": "Matokeo yetu, moja kwa moja"
+    "impactLink": "Matokeo yetu, moja kwa moja",
+    "safetyReport": "Kitu kikienda vibaya, tumia \"Ripoti tatizo\" kwenye oda yako dukani, au mwambie muuzaji wako wa mtaani. Viongozi wa ulinzi wa Dandelion hufuatilia.",
+    "safetyProducts": "Kutumia bidhaa kwa usalama"
   },
   "verify": {
     "title": "Ukaguzi wa rekodi",
@@ -1485,7 +1550,7 @@
     "otp": "Msimbo wako wa uthibitisho ni {code}. Unaisha baada ya dakika 5. Usimpe mtu yeyote.",
     "pickup": "Habari {name}. Uchukuzi umepangwa kwako. Bidhaa: {product}. Idadi: {quantity}. Msambazaji: {supplier}. Jumla iliyoidhinishwa: {amount}. Fungua programu, kagua uchukuzi na chagua Kubali Uchukuzi. Lipa kwa pesa za simu. Usichukue bidhaa hadi programu ionyeshe MALIPO YAMETHIBITISHWA.",
     "customerPlan": "Habari {name}. Bei ya bidhaa yako ni {price}. Imethibitishwa kulipwa: {paid}. Iliyobaki: {remaining}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Bidhaa inakabidhiwa baada ya malipo kamili kuthibitishwa.",
-    "customerPaid": "Habari {name}. Malipo yako kamili yamethibitishwa. Hatua inayofuata: kutana na muuzaji wako wa mtaani aliyeidhinishwa kupokea bidhaa yako na maelekezo ya matumizi. Risiti yako itapatikana baada ya makabidhiano.",
+    "customerPaid": "Habari {name}. Malipo kamili yamethibitishwa. Kutana na muuzaji wako upokee oda yako; msimbo utakuja kwa SMS wakati huo.",
     "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee muuzaji wako wa mtaani tu unapopokea bidhaa yako.",
     "receipt": "Habari {name}. Risiti {receiptNo}: oda yako imekabidhiwa. Rekodi yako: {link}",
     "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa.",
@@ -1495,8 +1560,10 @@
     "orgSale": "{name}: oda {reference} - {product} x {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
     "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} x {quantity} kunafuata. Rekodi: {link}",
     "orgReceipt": "{name}: {product} x {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}",
-    "shopAccepted": "Habari {name}. Oda yako {ref} imekubaliwa na {seller}. Kutana {place}. Jinsi ya kulipa iko kwenye SMS inayofuata na dukani. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
-    "shopAlert": "Habari {name}. Mteja anasubiri {place} (oda {ref}). Fungua programu uikubali kama unaweza kuifikisha."
+    "shopAlert": "Habari {name}. Mteja anasubiri {place} (oda {ref}). Fungua programu uikubali kama unaweza kuifikisha.",
+    "shopPlan": "Habari {name}. Oda {ref}: {seller} atakutana nawe {place}. Bei {price}. Lipa kwa awamu za hiari au yote kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}. Hakuna makato ya kiotomatiki, hakuna faini ya kuchelewa, hakuna deni. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
+    "reminder": "Habari {name}. Mwezi umepita. Unahitaji zaidi? Agiza {link} au muulize muuzaji wako. Zima vikumbusho dukani.",
+    "safeguarding": "Ripoti ya usalama ya Dandelion {ref}: mteja alihisi si salama ({area}, {place}). Tafadhali mpigie leo: {name} {phone}. Maelezo: Admin > Matatizo."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -2084,9 +2151,17 @@
       "money": "Niliombwa pesa zaidi, au pesa taslimu",
       "other": "Kitu kingine (bidhaa, mahali, muda)",
       "note": "Tueleze zaidi (si lazima)",
-      "private": "Ni admin wa Dandelion tu wanaoona hili. Muuzaji haambiwi nani aliripoti.",
+      "private": "Ni admin wa Dandelion na viongozi wa ulinzi tu wanaoona hili. Muuzaji haambiwi nani aliripoti.",
       "send": "Tuma kwa Dandelion"
-    }
+    },
+    "helpline": "Namba za msaada: {numbers}",
+    "remindersTitle": "Vikumbusho vya kila mwezi",
+    "remindersOnText": "Vimewashwa: karibu mwezi baada ya pakiti yako ya mwisho, SMS moja kuuliza kama unahitaji zaidi. Haitaji bidhaa kamwe.",
+    "remindersOffText": "Vimezimwa: hatutakukumbusha.",
+    "remindersTurnOff": "Zima vikumbusho",
+    "remindersTurnOn": "Washa vikumbusho",
+    "remindersOn": "Vikumbusho vimewashwa.",
+    "remindersOff": "Vikumbusho vimezimwa."
   },
   "impact": {
     "title": "Matokeo yetu",

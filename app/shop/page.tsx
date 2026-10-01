@@ -12,7 +12,8 @@ import { shopAreas, shopHome, type ShopOrderRow } from "@/lib/services/shop";
 import { formatTzs } from "@/lib/money";
 import { formatDateTime } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
-import { cancelRequestAction, reportProblemAction, requestOrderAction, setShopPlaceAction, signOutShopAction } from "./actions";
+import { cancelRequestAction, reportProblemAction, requestOrderAction, setRemindersAction, setShopPlaceAction, signOutShopAction } from "./actions";
+import { getSetting } from "@/lib/services/core";
 import { PlaceSelect } from "./place-select";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +30,7 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
   if (!customer) {
     // The public catalogue must not fail when the database is unreachable (e.g. a fresh preview).
     const areas = await shopAreas().catch(() => []);
+    const helpline = String(await getSetting("helplineText").catch(() => ""));
     return (
       <PublicShell path="/shop">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
@@ -50,7 +52,7 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
             ))}
           </ol>
         </Card>
-        <SafetyNote />
+        <SafetyNote helpline={helpline} />
         <Card data-testid="shop-catalogue">
           <h2 className="mb-2 text-lg font-semibold">{t("whereTitle")}</h2>
           {areas.length === 0 ? <p className="text-stone-600">{t("nowhereYet")}</p> : null}
@@ -149,7 +151,18 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
           ))}
         </ul>
       </Card>
-      <SafetyNote />
+      <Card data-testid="shop-reminders">
+        <h2 className="mb-1 font-semibold">{t("remindersTitle")}</h2>
+        <p className="mb-2 text-sm text-stone-600">{home.reminders ? t("remindersOnText") : t("remindersOffText")}</p>
+        <form action={setRemindersAction}>
+          <IdemKey />
+          <input type="hidden" name="on" value={home.reminders ? "false" : "true"} />
+          <button type="submit" className="btn btn-secondary w-auto px-4 text-sm" data-testid="shop-reminders-toggle">
+            {home.reminders ? t("remindersTurnOff") : t("remindersTurnOn")}
+          </button>
+        </form>
+      </Card>
+      <SafetyNote helpline={home.helpline} />
       {home.home ? (
         <details className="text-sm">
           <summary className="cursor-pointer text-stone-600">{t("changePlace")}</summary>
@@ -258,7 +271,7 @@ function orderStep(o: NonNullable<ShopOrderRow["order"]>): "pay" | "meet" | "don
   return "stopped";
 }
 
-async function SafetyNote() {
+async function SafetyNote({ helpline }: { helpline: string }) {
   const t = await getTranslations("shop");
   return (
     <Card className="border-sky-200 bg-sky-50" data-testid="shop-safety">
@@ -268,6 +281,11 @@ async function SafetyNote() {
           <li key={k}>{t(`safety.${k}`)}</li>
         ))}
       </ul>
+      {helpline ? (
+        <p className="mt-2 text-sm font-semibold" data-testid="shop-helpline">
+          {t("helpline", { numbers: helpline })}
+        </p>
+      ) : null}
       <Link href="/safety" className="mt-2 inline-block text-sm underline">
         {t("safetyMore")}
       </Link>

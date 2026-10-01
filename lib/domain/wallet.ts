@@ -12,10 +12,19 @@ import type { OrderKind, OrderState, PaymentRoute, WithdrawalState } from "./typ
 /** The sales Dandelion's fee applies to (founders: supplier → delivery partner, delivery partner → customer). */
 export const FEE_KINDS: readonly OrderKind[] = ["SUPPLIER_TO_RIDER", "RIDER_TO_CUSTOMER"];
 
-/** The fee to fix on a new order: only when the platform collects, only on the fee kinds, never more than the order. */
-export function platformFeeFor(kind: OrderKind, totalTzs: number, feeTzs: number, route: PaymentRoute): number {
+/** Per pack (founders, 2026-10-01: a pickup of 50 packs carries 50 fees) or once per order (the first rule). */
+export const FEE_BASES = ["PACK", "ORDER"] as const;
+export type FeeBasis = (typeof FEE_BASES)[number];
+
+/**
+ * The fee to fix on a new order: only when the platform collects, only on the fee kinds, never more than the order.
+ * Per pack, a pickup of 50 packs at 50 TZS carries 2,500 TZS; a customer's sale of one pack carries 50 TZS either way.
+ */
+export function platformFeeFor(kind: OrderKind, totalTzs: number, feeTzs: number, route: PaymentRoute, quantity = 1, basis: FeeBasis = "PACK"): number {
   if (route !== "PLATFORM" || !FEE_KINDS.includes(kind)) return 0;
-  return Math.max(0, Math.min(Math.trunc(feeTzs), totalTzs));
+  const each = Math.max(0, Math.trunc(feeTzs));
+  const packs = basis === "PACK" ? Math.max(1, Math.trunc(quantity)) : 1;
+  return Math.min(each * packs, totalTzs);
 }
 
 export interface CreditRow {

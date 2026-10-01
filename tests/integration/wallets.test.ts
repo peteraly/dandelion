@@ -31,15 +31,15 @@ describe("wallets: Dandelion collects, members withdraw, two admins send", () =>
     await acceptPickup(await actors.rider(), pickupId);
   });
 
-  it("holds the supplier's money while the pickup is open and releases it, less the fee, at hand-over", async () => {
+  it("holds the supplier's money while the pickup is open and releases it, less the fee per pack, at hand-over", async () => {
     const supplierId = (await userByPhone(SEED.supplier.phone)).id;
     const o = await order(pickupId);
-    expect(o.platformFeeTzs).toBe(50);
+    expect(o.platformFeeTzs).toBe(50 * 10); // 50 TZS per pack, 10 packs (founders, 2026-10-01)
     expect((await simulate("success", o.ref)).outcomes).toContain("CONFIRMED");
-    expect(await balanceFor(getDb(), supplierId)).toMatchObject({ availableTzs: 0, onHoldTzs: o.totalTzs - 50 });
+    expect(await balanceFor(getDb(), supplierId)).toMatchObject({ availableTzs: 0, onHoldTzs: o.totalTzs - 500 });
     await confirmRelease(await actors.supplier(), pickupId);
     await confirmReceipt(await actors.rider(), pickupId, CHECKS);
-    expect(await balanceFor(getDb(), supplierId)).toMatchObject({ availableTzs: o.totalTzs - 50, onHoldTzs: 0, feesTzs: 50 });
+    expect(await balanceFor(getDb(), supplierId)).toMatchObject({ availableTzs: o.totalTzs - 500, onHoldTzs: 0, feesTzs: 500 });
   });
 
   it("a delivery to a hub carries no fee; the rider's money is on hold until the hub's payment and the hand-over complete", async () => {
@@ -101,7 +101,7 @@ describe("wallets: Dandelion collects, members withdraw, two admins send", () =>
     const m = await moneyOverview(await actors.adminA());
     expect(m.paidOutTzs).toBe(10_000);
     expect(m.expectedInAccountTzs).toBe(m.collectedTzs - m.paidOutTzs);
-    expect(m.feesTzs).toBe(50);
+    expect(m.feesTzs).toBe(500);
     expect(m.owedTzs).toBe(m.expectedInAccountTzs - m.feesTzs);
     expect(m.recent.map((w) => w.state).sort()).toEqual(["REJECTED", "SENT"]);
     await expect(moneyOverview(await actors.supplier())).rejects.toThrow(PolicyError);

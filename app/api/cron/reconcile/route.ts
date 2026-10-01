@@ -1,5 +1,6 @@
 import { runDailyReconciliation } from "@/lib/services/reconciliation";
 import { recordHubStock } from "@/lib/services/replenishment";
+import { sendRestockReminders } from "@/lib/services/reminders";
 import { cronAuthorized, heartbeat } from "@/lib/security/cron";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,16 @@ export async function GET(request: Request) {
       stock = { error: (e as Error).message };
       await heartbeat("hub-stock", "error", stock);
     }
-    return Response.json({ ...result, stock });
+    // Monthly "time to restock?" reminders (founders, 2026-10-01) ride on the same evening run, with their own heartbeat.
+    let reminders: { sent: number } | { error: string };
+    try {
+      reminders = await sendRestockReminders();
+      await heartbeat("reminders", "ok", reminders);
+    } catch (e) {
+      reminders = { error: (e as Error).message };
+      await heartbeat("reminders", "error", reminders);
+    }
+    return Response.json({ ...result, stock, reminders });
   } catch (e) {
     await heartbeat("reconciliation", "error", { message: (e as Error).message });
     throw e;

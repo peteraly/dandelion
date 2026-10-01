@@ -157,7 +157,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
         unitPriceTzs: item.supplierPriceTzs,
         totalTzs: item.supplierPriceTzs * input.quantity,
         unitCostTzs: 0,
-        platformFeeTzs: await feeFor(tx, kind, item.supplierPriceTzs * input.quantity),
+        platformFeeTzs: await feeFor(tx, kind, item.supplierPriceTzs * input.quantity, input.quantity),
         pickupDate: input.pickupDate,
         createdBy: actor.userId,
       })
@@ -303,8 +303,9 @@ export async function tryCompleteTransfer(tx: Tx, orderIn: Order, actor: Service
 }
 
 /** Dandelion's operating fee to fix on a new order (lib/domain/wallet.ts; Prompt L §2.3). */
-async function feeFor(tx: Tx, kind: OrderKind, totalTzs: number): Promise<number> {
-  return platformFeeFor(kind, totalTzs, Number(await getSetting("platformFeeTzs", tx)), (await getSetting("paymentRoute", tx)) as PaymentRoute);
+async function feeFor(tx: Tx, kind: OrderKind, totalTzs: number, quantity: number): Promise<number> {
+  const basis = String(await getSetting("platformFeeBasis", tx)) === "ORDER" ? "ORDER" : "PACK";
+  return platformFeeFor(kind, totalTzs, Number(await getSetting("platformFeeTzs", tx)), (await getSetting("paymentRoute", tx)) as PaymentRoute, quantity, basis);
 }
 
 /** Margin = sale price − purchase price. With the platform collecting, it is credited to the seller's balance (Prompt L). */
@@ -509,7 +510,13 @@ export async function startPlan(actor: Actor, customerId: string, productId: str
  * A customer's plan with this seller, inside the caller's transaction: from the seller's own customer page, or from a
  * shop request a delivery partner accepted (Prompt L §3). The caller has checked who may sell to this customer.
  */
-export async function createPlanInTx(tx: Tx, actor: Actor, customer: typeof s.customers.$inferSelect, productId: string): Promise<{ orderId: string }> {
+export async function createPlanInTx(
+  tx: Tx,
+  actor: Actor,
+  customer: typeof s.customers.$inferSelect,
+  productId: string,
+  shop?: { ref: string; seller: string; place: string },
+): Promise<{ orderId: string }> {
   const open = await tx.query.orders.findFirst({
     where: and(eq(s.orders.customerId, customer.id), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID", "HANDOVER_PENDING"])),
   });
@@ -541,25 +548,18 @@ export async function createPlanInTx(tx: Tx, actor: Actor, customer: typeof s.cu
       unitPriceTzs: item.customerPriceTzs,
       totalTzs: item.customerPriceTzs,
       unitCostTzs,
-      platformFeeTzs: await feeFor(tx, kind, item.customerPriceTzs),
+      platformFeeTzs: await feeFor(tx, kind, item.customerPriceTzs, 1),
       createdBy: actor.userId,
     })
     .returning();
   const intent = await ensureOpenIntent(tx, order!);
   const c = await customerContact(tx, customer.id);
-  await getSmsProvider().send(
-    c.phone,
-    tr(c.locale, "sms.customerPlan", {
-      name: c.name,
-      price: formatTzs(order!.totalTzs, c.locale),
-      paid: formatTzs(0, c.locale),
-      remaining: formatTzs(order!.totalTzs, c.locale),
-      payee: intent.payeeAccount,
-      reference: order!.paymentRef,
-    }),
-    "CUSTOMER_PLAN",
-    tx,
-  );
+  const pay = { name: c.name, price: formatTzs(order!.totalTzs, c.locale), payee: intent.payeeAccount, reference: order!.paymentRef };
+  // A shop order says who is coming, where, and how to pay in one SMS instead of two (founders, 2026-10-01).
+  const body = shop
+    ? tr(c.locale, "sms.shopPlan", { ...pay, ref: shop.ref, seller: shop.seller, place: shop.place })
+    : tr(c.locale, "sms.customerPlan", { ...pay, paid: formatTzs(0, c.locale), remaining: formatTzs(order!.totalTzs, c.locale) });
+  await getSmsProvider().send(c.phone, body, "CUSTOMER_PLAN", tx);
   return { orderId: order!.id };
 }
 

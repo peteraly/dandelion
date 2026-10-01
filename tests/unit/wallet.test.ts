@@ -14,6 +14,13 @@ describe("platformFeeFor", () => {
     expect(platformFeeFor("HUB_TO_CHAMPION", 40_000, 50, "PLATFORM")).toBe(0);
     expect(platformFeeFor("RIDER_TO_CUSTOMER", 4_500, 50, "DIRECT")).toBe(0);
   });
+  it("is charged per pack (founders, 2026-10-01), or once per order when two admins choose that", () => {
+    expect(platformFeeFor("SUPPLIER_TO_RIDER", 150_000, 50, "PLATFORM", 50)).toBe(2_500);
+    expect(platformFeeFor("SUPPLIER_TO_RIDER", 150_000, 50, "PLATFORM", 50, "ORDER")).toBe(50);
+    expect(platformFeeFor("RIDER_TO_CUSTOMER", 4_500, 50, "PLATFORM", 1)).toBe(50);
+    expect(platformFeeFor("SUPPLIER_TO_RIDER", 100, 50, "PLATFORM", 10)).toBe(100); // never more than the order
+    expect(platformFeeFor("SUPPLIER_TO_RIDER", 150_000, 50, "DIRECT", 50)).toBe(0);
+  });
   it("is never negative, fractional or more than the order", () => {
     expect(platformFeeFor("RIDER_TO_CUSTOMER", 30, 50, "PLATFORM")).toBe(30);
     expect(platformFeeFor("RIDER_TO_CUSTOMER", 4_500, -5, "PLATFORM")).toBe(0);

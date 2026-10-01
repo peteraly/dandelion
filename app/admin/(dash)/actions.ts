@@ -22,7 +22,7 @@ import { humanCode } from "@/lib/crypto/random";
 import { appEnv } from "@/lib/env";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { ROAD_TYPES, type OrderKind, type RoadType } from "@/lib/domain/types";
-import { idempotent, DomainError } from "@/lib/services/core";
+import { idempotent, DomainError, SETTING_DEFAULTS, type SettingKey } from "@/lib/services/core";
 
 async function admin(): Promise<Actor> {
   const a = await adminActorFromCookies();
@@ -186,7 +186,9 @@ export async function donorFundingAction(fd: FormData): Promise<void> {
 export async function settingChangeAction(fd: FormData): Promise<void> {
   const actor = await admin();
   const raw = str(fd, "value");
-  const value = raw === "true" ? true : raw === "false" ? false : /^-?\d+$/.test(raw) ? Number(raw) : raw;
+  // The value takes the setting's own type, so a phone typed as 0712… stays text and a number stays a number.
+  const kind = typeof SETTING_DEFAULTS[str(fd, "key") as SettingKey];
+  const value = kind === "boolean" ? raw === "true" : kind === "number" && /^-?\d+$/.test(raw) ? Number(raw) : raw;
   await act("/admin/settings", () => once(actor, fd, "settingChange", () => requestApproval(actor, "SETTING_CHANGE", { key: str(fd, "key"), value }, `Set ${str(fd, "key")} = ${raw}`)), "/admin/approvals", "submitted");
 }
 

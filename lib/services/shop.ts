@@ -393,7 +393,7 @@ export async function shopHome(customer: ShopCustomerLike) {
     });
   }
   const busy = rows.some((r) => r.state === "OPEN" || (r.order && OPEN_PLAN_STATES.includes(r.order.state as (typeof OPEN_PLAN_STATES)[number])));
-  return { areas, home, orders: rows, canOrder: !busy && areas.length > 0 };
+  return { areas, home, orders: rows, canOrder: !busy && areas.length > 0, reminders: await remindersOn(db, customer.id), helpline: String(await getSetting("helplineText", db)) };
 }
 
 type ShopCustomerLike = Pick<typeof s.customers.$inferSelect, "id" | "serviceAreaId" | "meetingPointId">;
@@ -477,20 +477,41 @@ export async function acceptCustomerRequest(actor: Actor, requestId: string): Pr
     const customer = await tx.query.customers.findFirst({ where: eq(s.customers.id, r.customerId) });
     if (!customer || customer.status !== "ACTIVE" || !customer.phoneVerifiedAt) throw new DomainError("not_found");
     const place = (await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId) }))!;
-    // The plan's own SMS carries the price and how to pay; this one says who is coming and where.
-    const { orderId } = await createPlanInTx(tx, actor, customer, r.productId);
-    await getSmsProvider().send(
-      await decryptString(customer.phoneEnc),
-      tr("sw", "sms.shopAccepted", { name: customer.displayName, ref: r.ref, seller: firstName(me.displayName), place: place.name }),
-      "SHOP_REQUEST",
-      tx,
-    );
+    // One SMS: who is coming, where, the price and how to pay.
+    const { orderId } = await createPlanInTx(tx, actor, customer, r.productId, { ref: r.ref, seller: firstName(me.displayName), place: place.name });
     await tx.update(s.customerRequests).set({ state: "ACCEPTED", acceptedBy: actor.userId, acceptedAt: now(), orderId, updatedAt: now() }).where(eq(s.customerRequests.id, r.id));
     return { orderId };
   });
 }
 
 // ---------- safety ----------
+
+async function alertSafeguardingLeads(tx: Tx, ref: string, r: typeof s.customerRequests.$inferSelect): Promise<void> {
+  const phones = String(await getSetting("safeguardingLeadPhones", tx))
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+  if (!phones.length) return;
+  const c = (await tx.query.customers.findFirst({ where: eq(s.customers.id, r.customerId) }))!;
+  const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, r.serviceAreaId), columns: { name: true } });
+  const place = await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId), columns: { name: true } });
+  const body = tr("sw", "sms.safeguarding", { ref, name: firstName(c.displayName), phone: await decryptString(c.phoneEnc), area: area?.name ?? "", place: place?.name ?? "" });
+  for (const phone of phones) await getSmsProvider().send(phone, body, "SAFEGUARDING", tx);
+}
+
+/** Her latest choice about monthly reminders (she can change it in the shop at any time). */
+export async function remindersOn(db: DbOrTx, customerId: string): Promise<boolean> {
+  const row = await db.query.consentRecords.findFirst({
+    where: and(eq(s.consentRecords.customerId, customerId), eq(s.consentRecords.kind, "REMINDERS")),
+    orderBy: desc(s.consentRecords.createdAt),
+  });
+  return row?.granted ?? false;
+}
+
+/** Switch monthly reminders on or off: a new consent record, so the history of her choices is kept. */
+export async function setShopReminders(customer: { id: string }, on: boolean): Promise<void> {
+  await getDb().insert(s.consentRecords).values({ customerId: customer.id, kind: "REMINDERS", granted: on, noticeVersion: PRIVACY_NOTICE_VERSION, recordedBy: null });
+}
 
 export const ShopReportSchema = z
   .object({
@@ -519,6 +540,8 @@ export async function reportShopProblem(customer: { id: string }, raw: z.input<t
     if (Number(recent?.n ?? 0) >= 3) throw new DomainError("rate_limited");
     const ref = `EX-${humanCode(6)}`;
     await tx.insert(s.exceptions).values({ ref, type: REPORT_TYPE[input.category], orderId: r.orderId, reportedBy: null, note: `[shop] ${r.ref}: ${input.note || "—"}`.slice(0, 600) });
+    // A customer who felt unsafe: the safeguarding leads are texted at once, with what they need to call her back.
+    if (input.category === "unsafe") await alertSafeguardingLeads(tx, ref, r);
     return { ref };
   });
 }

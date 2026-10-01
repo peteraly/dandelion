@@ -9,6 +9,7 @@ import { now } from "@/lib/clock";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { PAYMENT_ROUTES } from "@/lib/domain/types";
+import { FEE_BASES } from "@/lib/domain/wallet";
 import { getDb, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { canDecide, evaluateApproval, type DualApprovalProof } from "@/lib/domain/approval";
@@ -16,6 +17,7 @@ import type { ApprovalType, OrderKind } from "@/lib/domain/types";
 import { DIRECT_KINDS, isPlanKind } from "@/lib/domain/sales";
 import { authorize, type Actor } from "@/lib/policy";
 import { TzsSchema } from "@/lib/money";
+import { TzPhoneSchema } from "@/lib/phone";
 import { sha256Hex } from "@/lib/crypto/random";
 import { tzMonthStart } from "@/lib/util/time";
 import { actAsApprovals, DomainError, getSetting, logAdminAction, logSecurityEvent, putSetting, recordLedgerEvent, withTx, SETTING_DEFAULTS, type SettingKey } from "./core";
@@ -236,6 +238,9 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       if (key === "paymentRoute" && !(PAYMENT_ROUTES as readonly string[]).includes(p.value as string)) throw new DomainError("setting_value_invalid");
       if ((key === "platformFeeTzs" || key === "withdrawalMinTzs") && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 100_000)) throw new DomainError("setting_value_invalid");
       if (key === "platformPayeeAccount" && !/^[A-Za-z0-9-]{4,32}$/.test(p.value as string)) throw new DomainError("setting_value_invalid");
+      if (key === "platformFeeBasis" && !(FEE_BASES as readonly string[]).includes(p.value as string)) throw new DomainError("setting_value_invalid");
+      if (key === "safeguardingLeadPhones") p.value = leadPhones(p.value as string);
+      if (key === "helplineText" && (p.value as string).length > 200) throw new DomainError("setting_value_invalid");
       if (key === "shopAlertSellers" && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 10)) throw new DomainError("setting_value_invalid");
       await putSetting(tx, key, p.value, approverId);
       return;
@@ -289,4 +294,17 @@ export async function pendingApprovals(actor: Actor) {
     ? await getDb().query.approvalDecisions.findMany({ where: sql`${s.approvalDecisions.requestId} in ${reqs.map((r) => r.id)}` })
     : [];
   return reqs.map((r) => ({ ...r, decisions: decisions.filter((d) => d.requestId === r.id), canDecide: canDecide(r.requestedBy, actor.userId, decisions.filter((d) => d.requestId === r.id)) === null }));
+}
+
+/** Up to two Tanzanian phones, comma-separated, stored in international form; anything else is refused. */
+function leadPhones(raw: string): string {
+  const parts = raw.split(",").map((x) => x.trim()).filter(Boolean);
+  if (parts.length > 2) throw new DomainError("setting_value_invalid");
+  return parts
+    .map((x) => {
+      const r = TzPhoneSchema.safeParse(x);
+      if (!r.success) throw new DomainError("setting_value_invalid");
+      return r.data;
+    })
+    .join(",");
 }

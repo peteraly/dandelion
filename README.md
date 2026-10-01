@@ -234,7 +234,7 @@ On the demo dataset, the walkthrough follows one sale across every stakeholder i
 
 Founders, 2026-10-01: all money stays in the ecosystem and only admins move it. With the setting `paymentRoute = PLATFORM` (the default) every buyer pays **Dandelion's collection account** (`platformPayeeAccount`, set by two admins; a test account outside production), and each confirmed payment is credited to the seller it was for (`payment_intents.collected_by_platform`).
 
-- **Balance** (`lib/domain/wallet.ts`): a sale's money is **on hold** until the goods are handed over, then **available**; Dandelion's operating fee — `platformFeeTzs`, 50 TZS per sale on supplier → delivery partner and delivery partner → customer, fixed on the order (`orders.platform_fee_tzs`) — comes off the seller's credit.
+- **Balance** (`lib/domain/wallet.ts`): a sale's money is **on hold** until the goods are handed over, then **available**; Dandelion's operating fee — `platformFeeTzs`, 50 TZS **per pack** (`platformFeeBasis = PACK`, founders 2026-10-01) on supplier → delivery partner and delivery partner → customer sales, fixed on the order (`orders.platform_fee_tzs`) — comes off the seller's credit.
 - **Wallet** (`/wallet`, a card on every field home): available, on hold, waiting, withdrawn and fees; the member chooses when to ask for a withdrawal (at least `withdrawalMinTzs`, one at a time), always to the payout number an admin registered.
 - **Payouts** (`/admin/payouts`, Money): the collection account at a glance (should be in the account, members' money, Dandelion's fees, paid out) and the withdrawals waiting. **One admin approves, a different admin sends** the money with the provider's own tools and records its reference (outside production a "simulate" button fills it in); the member gets a text; the ledger records `PAYOUT_SENT`. The database refuses to rewrite a fee, a collection flag or a withdrawal's terms, refuses the same admin approving and sending, and keeps withdrawals forever (migration `0008_platform_wallets`).
 - **Before real money:** the payment route still needs the legal opinion of gate G1 (National Payment Systems Act, Bank of Tanzania) — collecting and paying out on behalf of others may need a licence.
@@ -249,7 +249,9 @@ Girls, women and anyone else join at **`/shop`** like a delivery app — a name 
 - **Safety**: "Report a problem" on an accepted order goes to the admins' problems (`SAFETY_CONCERN` first on the admin home), never to the seller.
 - **Shop health** (`/admin/shop`): per area — orders, share taken, time to be taken, lapsed (unmet demand), waiting now, sellers with stock, who came back — with one sentence on what to do (`lib/services/marketplace.ts`).
 - **Impact** (`/impact`, public): hand-overs, packs to organisations, time to hand-over, money in / paid out / fees, the public record; counts under 10 hidden.
-- **SMS cost**: every SMS is reduced to the basic SMS alphabet before sending; a shop sale costs about 11–14 SMS parts (see `docs/PROMPT_L_MARKETPLACE.md` §1.4).
+- **SMS cost**: every SMS is reduced to the basic SMS alphabet before sending; a shop order's acceptance is one SMS (who, where, price, how to pay); a shop sale costs about 8–11 SMS parts (see `docs/PROMPT_L_MARKETPLACE.md` §1.4).
+- **Monthly reminders**: to customers who agreed, about 25 days after their last pack, once per pack, never naming the product; switched on or off in the shop; sent with the nightly reconciliation (`lib/services/reminders.ts`).
+- **Safeguarding leads**: settings `safeguardingLeadPhones` (up to two) get an SMS for every "I felt unsafe" report; `helplineText` shows on `/safety` and in the shop once the leads have checked the numbers. Both need two admins.
 
 ## Restock suggestions (Stock page)
 

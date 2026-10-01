@@ -28,6 +28,7 @@ export default async function PayoutsPage({ searchParams }: { searchParams: Sear
   const route = String(await getSetting("paymentRoute"));
   const account = String(await getSetting("platformPayeeAccount"));
   const fee = Number(await getSetting("platformFeeTzs"));
+  const perPack = String(await getSetting("platformFeeBasis")) !== "ORDER";
   const tzs = (n: number) => formatTzs(n, locale);
   const canSimulate = appEnv() !== "production";
   const tiles: [string, number, string][] = [
@@ -42,7 +43,7 @@ export default async function PayoutsPage({ searchParams }: { searchParams: Sear
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p className="text-sm text-stone-600">{t("intro")}</p>
         <p className="mt-1 text-xs text-stone-500" data-testid="payout-settings">
-          {route === "PLATFORM" ? t("routePlatform", { account: account || "—", fee: tzs(fee) }) : t("routeDirect")}
+          {route === "PLATFORM" ? t(perPack ? "routePlatformPack" : "routePlatform", { account: account || "—", fee: tzs(fee) }) : t("routeDirect")}
         </p>
       </header>
       <Notice error={error} ok={ok} okNamespace="admin.payouts" />

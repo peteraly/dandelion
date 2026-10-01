@@ -986,7 +986,7 @@ test("shop: a customer joins with her phone, orders to a public meeting point, a
   // She sees who accepted, and how to pay Dandelion's account with her reference.
   await page.goto("/shop");
   await expect(page.getByTestId("shop-pay")).toContainText("TILL-DANDELION-001");
-  expect(await lastSms(request, "SHOP_REQUEST")).toContain("Market gate (TEST)");
+  expect(await lastSms(request, "CUSTOMER_PLAN")).toContain("Market gate (TEST)");
   const paid = (await sim(request, { op: "simulate", scenario: "success", orderRef: saleRef })) as { outcomes: string[] };
   expect(paid.outcomes).toContain("CONFIRMED");
   await page.goto("/shop");

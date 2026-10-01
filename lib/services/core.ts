@@ -163,8 +163,10 @@ export const SETTING_DEFAULTS = {
   paymentRoute: "PLATFORM",
   /** Dandelion's collection account (till). Empty in production until two admins set it: payments then refuse. */
   platformPayeeAccount: "",
-  /** Dandelion's operating fee per sale, TZS, on supplier → delivery partner and delivery partner → customer. 0 = none. */
+  /** Dandelion's operating fee, TZS, on supplier → delivery partner and delivery partner → customer sales. 0 = none. */
   platformFeeTzs: 50,
+  /** "PACK": the fee is charged per pack (founders, 2026-10-01); "ORDER": once per order. */
+  platformFeeBasis: "PACK",
   /** The smallest withdrawal a member can ask for, TZS. */
   withdrawalMinTzs: 1000,
   /**
@@ -172,6 +174,13 @@ export const SETTING_DEFAULTS = {
    * More means faster answers and more SMS cost; 0 = none (they see requests when they open the app).
    */
   shopAlertSellers: 3,
+  /**
+   * The safeguarding leads' phones (founders, 2026-10-01): up to two, comma-separated. Each gets an SMS when a customer
+   * reports feeling unsafe. Empty until the founders name them.
+   */
+  safeguardingLeadPhones: "",
+  /** Helpline numbers shown on the safety page and in the shop, once the safeguarding leads have checked each one. */
+  helplineText: "",
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

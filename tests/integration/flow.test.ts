@@ -93,8 +93,8 @@ describe("A/B: supplier → rider pickup", () => {
     expect(intents[0]!.payeeAccount).toBe("TILL-DANDELION-001");
     expect(intents[0]!.collectedByPlatform).toBe(true);
     expect(intents[0]!.payeeUserId).toBe((await userByPhone(SEED.supplier.phone)).id);
-    // Dandelion's fee on supplier → delivery partner sales is fixed on the order.
-    expect(o.platformFeeTzs).toBe(50);
+    // Dandelion's fee on supplier → delivery partner sales is fixed on the order: 50 TZS per pack (founders, 2026-10-01).
+    expect(o.platformFeeTzs).toBe(50 * o.quantity);
     expect(intents[0]!.amountRule).toBe("EXACT_REMAINING");
   });
 

@@ -7,7 +7,7 @@ import { hitRateLimit } from "@/lib/security/rate-limit";
 import { sha256Hex } from "@/lib/crypto/random";
 import { openDemoEnabled } from "@/lib/demo/open";
 import { idempotent } from "@/lib/services/core";
-import { cancelShopRequest, finishShopSignIn, joinShop, reportShopProblem, requestOrder, setShopPlace, startShopSignIn } from "@/lib/services/shop";
+import { cancelShopRequest, finishShopSignIn, joinShop, reportShopProblem, requestOrder, setShopPlace, setShopReminders, startShopSignIn } from "@/lib/services/shop";
 
 /** Joining and signing in are rate-limited per network as well as per phone (the code itself allows 3 per 15 minutes). */
 async function limited(kind: string, back: string, max: number): Promise<void> {
@@ -100,4 +100,11 @@ export async function reportProblemAction(fd: FormData): Promise<void> {
   const c = await customerOrSignIn();
   const category = str(fd, "category") as "unsafe" | "money" | "other";
   await act("/shop", () => once(c.id, fd, "shop.report", () => reportShopProblem(c, { requestId: str(fd, "requestId"), category, note: str(fd, "note") })), "/shop", "reported");
+}
+
+/** Monthly "time to restock?" reminders, on or off, whenever she likes. */
+export async function setRemindersAction(fd: FormData): Promise<void> {
+  const c = await customerOrSignIn();
+  const on = bool(fd, "on");
+  await act("/shop", () => once(c.id, fd, "shop.reminders", () => setShopReminders(c, on).then(() => ({}))), "/shop", on ? "remindersOn" : "remindersOff");
 }

@@ -16,11 +16,12 @@ import { simulate } from "@/lib/payments/simulator";
 import { tzDay } from "@/lib/util/time";
 import { loadCustomerSession, revokeCustomerSession } from "@/lib/auth/customer-session";
 import { requestAreaSales, addMeetingPoint, setMeetingPointActive, setMeetingPointWhen } from "@/lib/services/areas";
-import { decideApproval } from "@/lib/services/approvals";
+import { decideApproval, requestApproval } from "@/lib/services/approvals";
 import { acceptPickup, adminCreatePickup, completeHandover, confirmBatchReady, confirmReceipt, confirmRelease, startHandover } from "@/lib/services/orders";
 import { balanceFor } from "@/lib/services/wallets";
-import { acceptCustomerRequest, cancelShopRequest, expireShopRequests, finishShopSignIn, joinShop, openRequestsFor, reportShopProblem, requestOrder, shopAreas, shopHome, startShopSignIn } from "@/lib/services/shop";
-import { putSetting } from "@/lib/services/core";
+import { acceptCustomerRequest, cancelShopRequest, expireShopRequests, finishShopSignIn, joinShop, openRequestsFor, remindersOn, reportShopProblem, requestOrder, setShopReminders, shopAreas, shopHome, startShopSignIn } from "@/lib/services/shop";
+import { sendRestockReminders } from "@/lib/services/reminders";
+import { getSetting, putSetting } from "@/lib/services/core";
 import { marketplaceHealth, marketplaceNeeds, publicImpact } from "@/lib/services/marketplace";
 import { actors, ids, lastSms, order, rejectsWithPg, userByPhone } from "./helpers";
 
@@ -146,10 +147,13 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     ({ orderId } = await acceptCustomerRequest(rider, requestId));
     const o = await order(orderId);
     expect(o).toMatchObject({ kind: "RIDER_TO_CUSTOMER", sellerUserId: rider.userId, customerId, totalTzs: 4500, platformFeeTzs: 50, state: "PLAN_ACTIVE" });
-    const accepted = (await lastSms("SHOP_REQUEST"))!.body;
+    // One SMS says who is coming, where, the price and how to pay (founders, 2026-10-01: fewer texts).
+    const accepted = (await lastSms("CUSTOMER_PLAN"))!.body;
     expect(accepted).toContain("Market gate (TEST)");
+    expect(accepted).toContain(o.paymentRef);
+    expect(accepted).toContain("TILL-DANDELION-001");
     expect(accepted).not.toMatch(/\b(pads?|pedi|kit|disposable|reusable)\b/i); // the SMS never names the product
-    expect((await lastSms("CUSTOMER_PLAN"))!.body).toContain(o.paymentRef);
+    expect(await lastSms("SHOP_REQUEST")).toBeUndefined();
     // Taken once only.
     await expect(acceptCustomerRequest(await actors.rider2(), requestId)).rejects.toMatchObject({ code: "request_taken" });
     expect(await openRequestsFor(rider)).toHaveLength(0);
@@ -172,6 +176,27 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     const home = await shopHome({ id: customerId, serviceAreaId: (await ids()).area.id, meetingPointId: placeId });
     expect(home.canOrder).toBe(true);
     expect(home.orders[0]!.order!.state).toBe("COMPLETED");
+  });
+
+  it("about 25 days after her last pack, one reminder if she agreed; never twice for one pack; she can switch it off", async () => {
+    expect(await remindersOn(getDb(), customerId)).toBe(true);
+    const before = await smsCount("REMINDER");
+    await sendRestockReminders();
+    expect(await smsCount("REMINDER")).toBe(before); // too soon
+    setClock(new Date(Date.now() + 26 * 86_400_000));
+    await setShopReminders({ id: customerId }, false);
+    await sendRestockReminders();
+    expect(await smsCount("REMINDER")).toBe(before); // she switched them off
+    await setShopReminders({ id: customerId }, true);
+    expect((await sendRestockReminders()).sent).toBeGreaterThanOrEqual(1);
+    const sms = (await lastSms("REMINDER"))!.body;
+    expect(sms).toContain("Neema");
+    expect(sms).toContain("/shop");
+    expect(sms).not.toMatch(/\b(pads?|pedi|kit|disposable|reusable)\b/i);
+    const after = await smsCount("REMINDER");
+    await sendRestockReminders();
+    expect(await smsCount("REMINDER")).toBe(after); // once per pack
+    setClock(null);
   });
 
   it("a request for a woman local seller is hidden from delivery partners and taken by a local seller who holds it", async () => {
@@ -212,8 +237,23 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
   });
 
   it("she can report a problem on an accepted order privately to the admins; at most three a day", async () => {
+    // Two admins set the safeguarding leads' phones; numbers are checked and stored in international form.
+    const setLeads = async (value: string) => {
+      const { requestId: req } = await requestApproval(await actors.adminA(), "SETTING_CHANGE", { key: "safeguardingLeadPhones", value }, "Safeguarding leads");
+      await decideApproval(await actors.adminB(), req, "APPROVE", "Named by the founders");
+    };
+    await expect(setLeads("not a phone")).rejects.toMatchObject({ code: "setting_value_invalid" });
+    await setLeads("0700009991, +255 700 009 992");
+    expect(await getSetting("safeguardingLeadPhones")).toBe("+255700009991,+255700009992");
+    const leadsBefore = await smsCount("SAFEGUARDING");
     const accepted = (await getDb().query.customerRequests.findFirst({ where: and(eq(s.customerRequests.customerId, customerId), eq(s.customerRequests.state, "ACCEPTED")) }))!;
     const { ref } = await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "unsafe", note: "He asked me to come to his house" });
+    // Both leads are texted at once, with what they need to call her back.
+    expect(await smsCount("SAFEGUARDING")).toBe(leadsBefore + 2);
+    const lead = (await lastSms("SAFEGUARDING"))!.body;
+    expect(lead).toContain(ref);
+    expect(lead).toContain(PHONE);
+    expect(lead).toContain("Market gate (TEST)");
     const ex = (await getDb().query.exceptions.findFirst({ where: eq(s.exceptions.ref, ref) }))!;
     expect(ex).toMatchObject({ type: "SAFETY_CONCERN", orderId: accepted.orderId, reportedBy: null, status: "OPEN" });
     expect(ex.note).toContain(accepted.ref);
@@ -222,6 +262,7 @@ describe("shop: customers join, order to a meeting point, a seller in her area a
     const zawadi = (await signIn(other.challengeId, "+255700009803")).customerId;
     await expect(reportShopProblem({ id: zawadi }, { requestId: accepted.id, category: "other" })).rejects.toMatchObject({ code: "not_found" });
     await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "money" });
+    expect(await smsCount("SAFEGUARDING")).toBe(leadsBefore + 2); // money questions go to admins only
     await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "other" });
     await expect(reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "other" })).rejects.toMatchObject({ code: "rate_limited" });
   });

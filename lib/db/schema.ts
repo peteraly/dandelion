@@ -353,6 +353,8 @@ export const customers = pgTable(
     selfRegistered: boolean("self_registered").notNull().default(false),
     /** Her usual public meeting point for deliveries (never a home address). */
     meetingPointId: uuid("meeting_point_id").references(() => meetingPoints.id),
+    /** When she was last sent a "time to restock?" reminder (founders, 2026-10-01): one per pack, at most monthly. */
+    lastReminderAt: ts("last_reminder_at"),
     phoneVerifiedAt: ts("phone_verified_at"),
     status: text("status", { enum: ["ACTIVE", "DELETED"] }).notNull().default("ACTIVE"),
     createdAt: createdAt(),

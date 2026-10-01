@@ -110,6 +110,9 @@ So the fee alone will not pay for the service at pilot volumes. The levers, chea
 
 `/impact` shows the fees collected; the founders should add the SMS bill beside it each month.
 
+**Applied (founders, 2026-10-01; Part 3):** fee per pack on supplier → delivery partner (≈ 100 TZS per pack in all), one SMS
+instead of two when a shop order is accepted, and a one-part "payment confirmed" — about 8–11 SMS parts per shop sale.
+
 ### 1.5 The ideas you shared: what makes sense, what to adapt, what not to do
 
 | Idea | Verdict | Why |
@@ -217,19 +220,16 @@ pay → hand-over → report → impact → shop health), unit (SMS alphabet).
 
 ---
 
-## Part 3 — Decisions for the founders
+## Part 3 — Founders' decisions (2026-10-01)
 
-1. **Fees and SMS cost (§1.4).** (a) Keep 50 TZS per order, or 50 TZS **per pack** on supplier → delivery partner?
-   (b) Merge "order accepted" into the payment SMS and drop "payment confirmed" for shop customers? (c) Is a grant
-   for running costs needed in the pilot? Get SMS and mobile-money quotes first.
-2. **Paying dukas or schools** a handling fee as pickup points, or a published "hard-to-reach" bonus for delivery
-   partners from donor money? Both send money out; both need the legal opinion.
-3. **Cross-subsidy**: should town prices fund village prices? (Per-area price lists, two admins.)
-4. **Monthly reminders** to customers who agreed to reminders ("time to restock?"). One SMS a month each; never names
-   the product.
-5. **Safeguarding leads**: name the two people; then they get a text for every safety report, and a second admin
-   confirms every local seller and delivery partner (Prompt K, K3).
-6. **Helpline numbers** for the safety page and the shop, checked by the leads before they are published.
-7. **Next build, in order of value**: offline hand-over (§1.5), USSD ordering (needs an aggregator), the carrier leg
-   (after road data), the viewer accounts for funders (Prompt K, K4).
-8. **Real money** still waits for the G1 legal opinion (National Payment Systems Act, Bank of Tanzania).
+The founders accepted the recommendations ("yes as you recommend"), and the verdicts in §1.5 (later / not built).
+
+| # | Decision | What it means | Status |
+| --- | --- | --- | --- |
+| 1 | **Fee per pack** on supplier → delivery partner sales; 50 TZS per customer sale stays. **Cut two customer texts.** | About 100 TZS per pack (≈ 2 % of a 4,500 TZS pack), up from about 52. A shop order now sends one SMS with who, where, the price and how to pay; "payment confirmed" is one SMS part. Saves about 3 parts per shop sale, 1 per ladder sale. A small running-cost grant is still planned for the first months; SMS quotes to be gathered. | **Built**: setting `platformFeeBasis` = `PACK` (two admins can switch to `ORDER`); `sms.shopPlan`; shorter `sms.customerPaid`. |
+| 2 | **No handling fees** for shops or schools yet; **a hard-to-reach bonus for delivery partners later** — donor-funded, fixed per pack, published, only where Shop health shows "slow" after a month of data. | Shops and schools start as free meeting points. | Bonus **not started** (after a month of data; needs G1 like all payouts). |
+| 3 | **No cross-subsidy** from town to village prices for now; donor funding for village orders instead (exists, two admins). | Revisit after 3 months of real prices and sales. | No change needed. |
+| 4 | **Monthly reminders: yes.** | Only to customers who agreed; about 25 days after the last pack; once per pack and never twice in 30 days; never while an order is open; never naming the product; one SMS part; she switches them on or off in the shop. | **Built**: `lib/services/reminders.ts`, run with the nightly reconciliation (20:00 East Africa time). |
+| 5 | **Safeguarding leads**: two women, at least one independent of money and approvals, ideally one with child-protection experience. **Helplines**: national child helpline 116, police 112, the nearest police Gender and Children Desk — each called by the leads before publishing. | The leads' phones are a setting; each lead gets an SMS (report reference, area, meeting point, her first name and phone) whenever a customer reports feeling unsafe. Helplines are a setting shown on the safety page and in the shop once set. | **Built**: settings `safeguardingLeadPhones`, `helplineText` (two admins). **Waiting on the founders** to name the leads and set both. |
+
+Still open from Prompt L: real SMS and mobile-money quotes; the G1 legal opinion before real money; next builds in order of value — offline hand-over, USSD ordering, the carrier leg, viewer accounts for funders (Prompt K, K4); a second admin to confirm every local seller and delivery partner (Prompt K, K3).

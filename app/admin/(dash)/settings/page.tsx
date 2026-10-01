@@ -11,6 +11,47 @@ import { aiUsageThisMonth, educationPackApproved, loadEducationPack } from "@/li
 import { appEnv, aiEnabled, paymentProviderId, smsProviderId, chainNetwork } from "@/lib/env";
 import { dataKeyStatus } from "@/lib/crypto/envelope";
 
+/** The settings founders change, in the order they think about them; the rest are technical and folded away. */
+const MAIN: SettingKey[] = [
+  "platformFeeTzs",
+  "platformFeeBasis",
+  "paymentRoute",
+  "platformPayeeAccount",
+  "withdrawalMinTzs",
+  "shopAlertSellers",
+  "safeguardingLeadPhones",
+  "helplineText",
+  "approvalThreshold",
+  "donorMonthlyCapTzs",
+  "customerPauseDays",
+  "paymentPendingAlertMinutes",
+  "largeExportRows",
+  "aiMonthlyBudgetCents",
+];
+
+/** One setting: its plain name and what it does, its value now, and a proposal that a second admin approves. */
+function SettingRow({ k, v, label, hint, propose }: { k: SettingKey; v: unknown; label: string; hint: string; propose: string }) {
+  return (
+    <li className="flex flex-col gap-2 py-3 md:flex-row md:items-end md:justify-between" data-testid="setting-row" data-key={k}>
+      <div className="min-w-0">
+        <p className="font-medium">{label}</p>
+        {hint ? <p className="text-sm text-stone-600">{hint}</p> : null}
+        <p className="text-xs text-stone-500">
+          <span className="font-mono">{k}</span> = <span className="font-mono">{String(v) || "—"}</span>
+        </p>
+      </div>
+      <form action={settingChangeAction} className="flex gap-2">
+        <IdemKey />
+        <input type="hidden" name="key" value={k} />
+        <input name="value" className="field md:w-56" defaultValue={String(v)} aria-label={`new value for ${k}`} />
+        <button type="submit" className="btn btn-secondary w-40">
+          {propose}
+        </button>
+      </form>
+    </li>
+  );
+}
+
 export default async function SettingsPage({ searchParams }: { searchParams: SearchParams }) {
   const { actor } = await requireAdmin();
   const t = await getTranslations("admin.settings");
@@ -48,28 +89,29 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
           </form>
         ) : null}
       </Card>
-      <Card>
-        <table className="w-full text-sm">
-          <tbody className="divide-y divide-stone-100">
-            {values.map(([k, v]) => (
-              <tr key={k}>
-                <td className="py-2 font-mono">{k}</td>
-                <td className="py-2">{String(v)}</td>
-                <td className="py-2">
-                  <form action={settingChangeAction} className="flex gap-2">
-                    <IdemKey />
-                    <input type="hidden" name="key" value={k} />
-                    <input name="value" className="field" defaultValue={String(v)} aria-label={`new value for ${k}`} />
-                    <button type="submit" className="btn btn-secondary w-40">
-                      {t("propose")}
-                    </button>
-                  </form>
-                </td>
-              </tr>
+      <Card data-testid="settings-main">
+        <h2 className="mb-1 font-semibold">{t("mainTitle")}</h2>
+        <p className="mb-2 text-sm text-stone-600">{t("mainHint")}</p>
+        <ul className="divide-y divide-stone-100">
+          {values
+            .filter(([k]) => MAIN.includes(k))
+            .sort(([a], [b]) => MAIN.indexOf(a) - MAIN.indexOf(b))
+            .map(([k, v]) => (
+              <SettingRow key={k} k={k} v={v} label={t(`keys.${k}.label`)} hint={t(`keys.${k}.hint`)} propose={t("propose")} />
             ))}
-          </tbody>
-        </table>
+        </ul>
       </Card>
+      <details className="rounded-2xl border border-stone-200 bg-white p-4">
+        <summary className="cursor-pointer font-semibold">{t("technicalTitle")}</summary>
+        <p className="my-2 text-sm text-stone-600">{t("technicalHint")}</p>
+        <ul className="divide-y divide-stone-100">
+          {values
+            .filter(([k]) => !MAIN.includes(k))
+            .map(([k, v]) => (
+              <SettingRow key={k} k={k} v={v} label={k} hint="" propose={t("propose")} />
+            ))}
+        </ul>
+      </details>
       <Card>
         <h2 className="mb-2 font-semibold">Product availability (WASH)</h2>
         <ul className="mb-3 text-sm">

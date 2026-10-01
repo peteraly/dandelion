@@ -3,6 +3,7 @@
  * in-app "simulate" controls (real clock) share. Every phase drives the real
  * services; the clock only decides what timestamps they get.
  */
+import { sendRestockReminders } from "@/lib/services/reminders";
 import { eq, sql } from "drizzle-orm";
 import * as s from "@/lib/db/schema";
 import { now } from "@/lib/clock";
@@ -174,6 +175,8 @@ export async function nightly(w: World, dayStart: Date): Promise<void> {
   w.manifest.count("reconciliation.runs");
   await recordHubStock();
   w.manifest.count("stock.nights");
+  const { sent } = await sendRestockReminders();
+  if (sent) w.manifest.count("reminders.sent", sent);
 }
 
 /**

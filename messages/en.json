@@ -776,7 +776,69 @@
       "aiUsage": "AI this month: {calls} calls, about {cost} US cents; {accepted} accepted, {rejected} rejected by guards.",
       "approvePack": "Approve education pack",
       "packStatus": "Education pack {version}: {status}",
-      "packApproved": "Education pack approved."
+      "packApproved": "Education pack approved.",
+      "mainTitle": "Settings you may change",
+      "mainHint": "Every change is a proposal: a second admin approves it in Approvals before it takes effect.",
+      "technicalTitle": "Technical settings",
+      "technicalHint": "Used by the system and the demo; rarely changed by hand.",
+      "keys": {
+        "platformFeeTzs": {
+          "label": "Dandelion's fee (TZS)",
+          "hint": "Kept on supplier → delivery partner and delivery partner → customer sales to run the service."
+        },
+        "platformFeeBasis": {
+          "label": "Fee charged per",
+          "hint": "PACK: per pack (a pickup of 50 packs carries 50 fees). ORDER: once per order."
+        },
+        "paymentRoute": {
+          "label": "Where buyers pay",
+          "hint": "PLATFORM: Dandelion's account, paid out to sellers when they ask. DIRECT: the seller's own number."
+        },
+        "platformPayeeAccount": {
+          "label": "Dandelion's collection account",
+          "hint": "The till or account number buyers pay into."
+        },
+        "withdrawalMinTzs": {
+          "label": "Smallest withdrawal (TZS)",
+          "hint": "Members cannot ask for less than this."
+        },
+        "shopAlertSellers": {
+          "label": "Sellers texted per shop order",
+          "hint": "Sellers nearby who hold the product get an SMS. More = faster answers and more SMS cost. 0 = off."
+        },
+        "safeguardingLeadPhones": {
+          "label": "Safeguarding leads' phones",
+          "hint": "Up to two numbers, separated by a comma. Each gets an SMS when a customer reports feeling unsafe."
+        },
+        "helplineText": {
+          "label": "Helpline numbers",
+          "hint": "Shown on the safety page and in the shop. Only after the safeguarding leads have called each number."
+        },
+        "approvalThreshold": {
+          "label": "Admins needed to approve",
+          "hint": "How many different admins must agree on a risky change (at least 2)."
+        },
+        "donorMonthlyCapTzs": {
+          "label": "Donor funding cap per month (TZS)",
+          "hint": "The most donor money that can be applied to orders each month."
+        },
+        "customerPauseDays": {
+          "label": "Days before a plan shows as paused",
+          "hint": "With no payment for this long, a customer's plan is shown as paused."
+        },
+        "paymentPendingAlertMinutes": {
+          "label": "Minutes before a waiting payment is flagged",
+          "hint": "A payment still unconfirmed after this long becomes a problem to check."
+        },
+        "largeExportRows": {
+          "label": "Rows before an export needs a second admin",
+          "hint": "Bigger downloads of data need two admins."
+        },
+        "aiMonthlyBudgetCents": {
+          "label": "AI budget per month (US cents)",
+          "hint": "The assistant stops when this is spent."
+        }
+      }
     },
     "messages": {
       "title": "Message drafts",
@@ -1347,7 +1409,8 @@
       },
       "approved": "Approved. A different admin sends it.",
       "sent": "Recorded as sent; the member got a text.",
-      "rejected": "Turned down; the member got a text and the money is available again."
+      "rejected": "Turned down; the member got a text and the money is available again.",
+      "routePlatformPack": "Payments go to Dandelion's account {account}. Fee: {fee} per pack on supplier → delivery partner and delivery partner → customer sales."
     },
     "places": {
       "title": "Meeting points for shop orders",
@@ -1426,7 +1489,9 @@
     "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Local sellers explain safe use and disposal.",
     "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products.",
     "shopCta": "Order pads",
-    "impactLink": "Our impact, live"
+    "impactLink": "Our impact, live",
+    "safetyReport": "If something goes wrong, use \"Report a problem\" on your order in the shop, or tell your local seller. Dandelion's safeguarding leads follow up.",
+    "safetyProducts": "Using the products safely"
   },
   "verify": {
     "title": "Record check",
@@ -1484,7 +1549,7 @@
     "otp": "Your confirmation code is {code}. It expires in 5 minutes. Never share it.",
     "pickup": "Habari {name}. A pickup has been assigned to you. Product: {product}. Quantity: {quantity}. Supplier: {supplier}. Approved total: {amount}. Open the app, review the pickup and select Accept Pickup. Pay via mobile money. Do not collect stock until the app shows PAYMENT CONFIRMED.",
     "customerPlan": "Habari {name}. Your product price is {price}. Confirmed paid: {paid}. Remaining: {remaining}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. The product is handed over after full payment is confirmed.",
-    "customerPaid": "Habari {name}. Your full payment has been confirmed. Next: meet your approved local seller to receive your product and use instructions. Your receipt will be available after handover.",
+    "customerPaid": "Habari {name}. Full payment confirmed. Meet your seller to receive your order; your hand-over code comes by SMS then.",
     "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your local seller only when you receive your product.",
     "receipt": "Habari {name}. Receipt {receiptNo}: your order has been handed over. Your record: {link}",
     "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money.",
@@ -1494,8 +1559,10 @@
     "orgSale": "{name}: order {reference} - {product} x {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
     "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} x {quantity} follows. Record: {link}",
     "orgReceipt": "{name}: {product} x {quantity} delivered. Receipt {receiptNo}. Record: {link}",
-    "shopAccepted": "Habari {name}. Your order {ref} was accepted by {seller}. Meet at {place}. How to pay is in the next SMS and in the shop. Read your hand-over code only when you have received your order.",
-    "shopAlert": "Habari {name}. A customer is waiting at {place} (order {ref}). Open the app to accept it if you can bring it."
+    "shopAlert": "Habari {name}. A customer is waiting at {place} (order {ref}). Open the app to accept it if you can bring it.",
+    "shopPlan": "Habari {name}. Order {ref}: {seller} will meet you at {place}. Price {price}. Pay in voluntary installments or in full via mobile money to {payee} with reference {reference}. No automatic deductions, no late fees, no debt. Read your hand-over code only when you have received your order.",
+    "reminder": "Habari {name}. About a month has passed. Need more? Order at {link} or ask your local seller. Turn reminders off in the shop.",
+    "safeguarding": "Dandelion safety report {ref}: a customer felt unsafe ({area}, {place}). Please call her today: {name} {phone}. Details in Admin > Problems."
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
@@ -2083,9 +2150,17 @@
       "money": "I was asked for more money, or for cash",
       "other": "Something else (the product, the place, the time)",
       "note": "Tell us more (optional)",
-      "private": "Only Dandelion's admins see this. The seller is not told who reported it.",
+      "private": "Only Dandelion's admins and safeguarding leads see this. The seller is not told who reported it.",
       "send": "Send to Dandelion"
-    }
+    },
+    "helpline": "Helplines: {numbers}",
+    "remindersTitle": "Monthly reminders",
+    "remindersOnText": "On: about a month after your last pack, one SMS to ask if you need more. It never names the product.",
+    "remindersOffText": "Off: we will not remind you.",
+    "remindersTurnOff": "Turn reminders off",
+    "remindersTurnOn": "Turn reminders on",
+    "remindersOn": "Reminders are on.",
+    "remindersOff": "Reminders are off."
   },
   "impact": {
     "title": "Our impact",
