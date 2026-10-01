@@ -945,3 +945,68 @@ test("payouts: a supplier asks to withdraw from the wallet; one admin approves, 
   await expect(supplier.page.getByTestId("withdrawal-row").first()).toHaveAttribute("data-state", "SENT");
   await supplier.ctx.close();
 });
+
+test("shop: a customer joins with her phone, orders to a public meeting point, a delivery partner accepts, she pays and receives it", async ({ browser, request }) => {
+  // Prompt L §3. The area allows delivery partners to sell to customers (switched on above) and has two meeting points.
+  const c = await browser.newContext();
+  const page = await c.newPage();
+  await page.goto("/");
+  await english(page);
+  await page.getByTestId("shop-cta").click();
+  await expect(page.getByTestId("shop-catalogue")).toContainText("Test Village (TEST)");
+  await page.getByTestId("shop-join").click();
+  await page.getByLabel("Your name").fill("Shop customer (TEST)");
+  await page.getByLabel("Phone number").fill("+255700000071");
+  await page.getByLabel("Meeting point").selectOption({ label: "Market gate (TEST)" });
+  await page.getByLabel(/receive SMS about my orders/).check();
+  await page.getByRole("button", { name: "Send me a code" }).click();
+  await expect(page).toHaveURL(/\/shop\/verify\?c=/);
+  await page.getByLabel("Code from the SMS").fill(digits(await lastSms(request, "OTP"), 6));
+  await page.getByRole("button", { name: "Confirm" }).click();
+  await expect(page).toHaveURL(/\/shop\?ok=signedIn/);
+  await expect(page.getByRole("heading", { name: "Habari Shop customer (TEST)" })).toBeVisible();
+  await page.getByRole("radio", { name: /Standard kit/ }).check();
+  await page.getByRole("button", { name: "Send my order" }).click();
+  await expect(page).toHaveURL(/ok=requested/);
+  await expect(page.getByTestId("shop-order-row").first()).toHaveAttribute("data-state", "OPEN");
+  await expect(page.getByTestId("shop-order")).toHaveCount(0); // one order at a time
+
+  // The delivery partner who holds kits sees her request on his home screen and accepts it.
+  const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
+  await english(rider.page);
+  const req = rider.page.getByTestId("shop-request-row").first();
+  await expect(req).toContainText("Market gate (TEST)");
+  await req.getByTestId("shop-request-accept").click();
+  await expect(rider.page).toHaveURL(/\/orders\/[0-9a-f-]+\?ok=requestAccepted/);
+  await expect(rider.page.getByTestId("shop-meeting")).toContainText("Market gate (TEST)");
+  const saleRef = await currentOrderRef(rider.page);
+  const saleId = rider.page.url().match(/orders\/([0-9a-f-]+)/)![1]!;
+
+  // She sees who accepted, and how to pay Dandelion's account with her reference.
+  await page.goto("/shop");
+  await expect(page.getByTestId("shop-pay")).toContainText("TILL-DANDELION-001");
+  expect(await lastSms(request, "SHOP_REQUEST")).toContain("Market gate (TEST)");
+  const paid = (await sim(request, { op: "simulate", scenario: "success", orderRef: saleRef })) as { outcomes: string[] };
+  expect(paid.outcomes).toContain("CONFIRMED");
+  await page.goto("/shop");
+  await expect(page.getByTestId("shop-meet")).toBeVisible();
+
+  // Hand-over at the meeting point with her code.
+  await rider.page.goto(`/orders/${saleId}`);
+  await rider.page.getByRole("button", { name: "Start handover" }).click();
+  await expect(rider.page.getByRole("heading", { name: "Handover required" })).toBeVisible();
+  const code = digits(await lastSms(request, "HANDOVER_CODE"), 6);
+  for (const label of KIT_EDUCATION) await rider.page.getByLabel(label).check();
+  await rider.page.getByLabel("Customer's code").fill(code);
+  await rider.page.getByRole("button", { name: "Confirm handover" }).click();
+  await expect(rider.page.getByText(/Receipt RC-/)).toBeVisible();
+  await rider.ctx.close();
+
+  await page.goto("/shop");
+  await expect(page.getByTestId("shop-order-row").first()).toHaveAttribute("data-order-state", "COMPLETED");
+  await expect(page.getByTestId("shop-order")).toBeVisible(); // she can order again
+  await page.getByTestId("shop-sign-out").click();
+  await expect(page).toHaveURL(/ok=signedOut/);
+  await expect(page.getByTestId("shop-join")).toBeVisible();
+  await c.close();
+});

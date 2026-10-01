@@ -18,6 +18,8 @@ import { formatDateTime } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
 import * as a from "../../actions";
 
+import { shopRequestForOrder } from "@/lib/services/shop";
+
 export const dynamic = "force-dynamic";
 
 export default async function OrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: SearchParams }) {
@@ -36,6 +38,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
   const snap = view.snapshot;
   const intent = await openIntent(db, order.id);
   const totals = await paidTotals(db, order);
+  const shop = order.customerId ? await shopRequestForOrder(db, order.id) : null;
   const idem = <IdemKey />;
   const hidden = <input type="hidden" name="orderId" value={order.id} />;
   // The decision table speaks for the user's current order; a finished order gets a plain terminal status.
@@ -353,6 +356,11 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
           <h1 className="text-2xl font-bold">{t(`home.status.${status}.title`)}</h1>
           <p className="mt-2 text-stone-700">{t(`home.status.${status}.explain`)}</p>
         </Card>
+      ) : null}
+      {shop ? (
+        <p className="rounded-xl bg-sky-50 p-3 text-sky-950" data-testid="shop-meeting">
+          {t("field.shopRequests.meetAt", { ref: shop.ref, place: shop.placeName })}
+        </p>
       ) : null}
       <Card>
         <OrderSummary snap={snap} product={product.name} />

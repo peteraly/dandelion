@@ -122,6 +122,22 @@ describe("demo profile", () => {
     expect(manifest.counts["suppliers.second_user_enrolled"]).toBe(1);
   });
 
+  it("the shop: customers joined with their phone, ordered to public meeting points, delivery partners accepted, one still waits (Prompt L §3)", async () => {
+    const places = await db().execute<{ n: string }>(sql`select count(*)::text as n from meeting_points where active`);
+    expect(Number(places.rows[0]!.n)).toBeGreaterThanOrEqual(3);
+    expect(manifest.counts["shop.accepted"] ?? 0).toBeGreaterThan(0);
+    const selfJoined = await db().execute<{ n: string }>(sql`select count(*)::text as n from customers where self_registered and champion_id is null and phone_verified_at is not null`);
+    expect(Number(selfJoined.rows[0]!.n)).toBe(manifest.counts["shop.joined"]);
+    const states = await distinct("customer_requests", "state");
+    expect(states.has("ACCEPTED")).toBe(true);
+    expect(states.has("OPEN")).toBe(true);
+    // Every accepted request is a delivery partner's plan with the customer who asked.
+    const mismatched = await db().execute<{ n: string }>(
+      sql`select count(*)::text as n from customer_requests r join orders o on o.id = r.order_id where r.state = 'ACCEPTED' and (o.customer_id <> r.customer_id or o.seller_user_id <> r.accepted_by or o.kind <> 'RIDER_TO_CUSTOMER')`,
+    );
+    expect(mismatched.rows[0]!.n).toBe("0");
+  });
+
   it("money goes through Dandelion's account: sellers are credited, withdrawals are approved by one admin and sent by another (Prompt L §2)", async () => {
     const intents = await db().execute<{ platform: string; direct: string }>(sql`select count(*) filter (where collected_by_platform)::text as platform, count(*) filter (where not collected_by_platform)::text as direct from payment_intents`);
     expect(Number(intents.rows[0]!.platform)).toBeGreaterThan(0);

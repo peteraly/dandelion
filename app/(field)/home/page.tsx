@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { eq } from "drizzle-orm";
-import { Badge, Card, LinkButton } from "@/components/ui";
+import { Badge, Card, IdemKey, LinkButton } from "@/components/ui";
 import { OrderSummary } from "@/components/order-bits";
 import { requireField } from "@/lib/auth/current";
 import { homeFor } from "@/lib/services/home";
@@ -9,11 +9,15 @@ import { supplierHome, type SupplierHome } from "@/lib/services/suppliers";
 import { directSalesFor, sellerAreaId } from "@/lib/services/areas";
 import { earningsFor, type Earnings } from "@/lib/services/earnings";
 import { myWallet, type Wallet } from "@/lib/services/wallets";
+import { openRequestsFor } from "@/lib/services/shop";
+import { acceptShopRequestAction } from "../actions";
+import type { Actor } from "@/lib/policy";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { rowForOrder, type ActionKey } from "@/lib/domain/workflows";
 import type { FieldRole } from "@/lib/domain/types";
 import { formatTzs } from "@/lib/money";
+import { formatDateTime } from "@/lib/util/time";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +77,7 @@ export default async function HomePage() {
         <p className="mb-1 text-xs uppercase tracking-wide text-stone-500">{t("common.nextAction")}</p>
         <LinkButton href={actionHref(view.action, view.order?.id ?? null)}>{t(`home.action.${view.action}`)}</LinkButton>
       </div>
+      {actor.role === "BOSS_RIDER" ? <ShopRequestsCard actor={actor} locale={locale} /> : null}
       {wallet.platformCollects ? <WalletCard wallet={wallet} locale={locale} /> : null}
       <EarningsCard earnings={earnings} locale={locale} />
       {supplier ? <SupplierCards data={supplier} locale={locale} /> : null}
@@ -215,6 +220,39 @@ async function SupplierCards({ data, locale }: { data: SupplierHome; locale: "sw
 
 /** Earned = received − paid, provider-confirmed only (prompt §8.8.1). Every field role sees their own. */
 /** Dandelion holds the money from sales (Prompt L §2): what can be withdrawn now, what waits for a hand-over. */
+/** Customers who ordered in the shop, in this delivery partner's area (Prompt L §3). Shown only when there are some. */
+async function ShopRequestsCard({ actor, locale }: { actor: Actor; locale: "sw" | "en" }) {
+  const rows = await openRequestsFor(actor);
+  if (!rows.length) return null;
+  const t = await getTranslations("field.shopRequests");
+  return (
+    <Card className="border-sky-200" data-testid="shop-requests">
+      <h2 className="font-semibold">{t("title", { n: rows.length })}</h2>
+      <p className="mb-2 text-sm text-stone-600">{t("hint")}</p>
+      <ul className="divide-y divide-stone-100">
+        {rows.map((r) => (
+          <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 py-3" data-testid="shop-request-row">
+            <span className="min-w-0 text-sm">
+              <span className="font-medium">{r.customerName}</span> · {r.productName}
+              <span className="block text-stone-600">
+                {t("place", { place: r.placeName })} · {formatDateTime(r.createdAt, locale)}
+              </span>
+              {!r.inStock ? <span className="block text-amber-900">{t("noStock")}</span> : null}
+            </span>
+            <form action={acceptShopRequestAction}>
+              <IdemKey />
+              <input type="hidden" name="requestId" value={r.id} />
+              <button type="submit" className="btn btn-primary w-auto px-4" disabled={!r.inStock} data-testid="shop-request-accept">
+                {t("accept")}
+              </button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 async function WalletCard({ wallet, locale }: { wallet: Wallet; locale: "sw" | "en" }) {
   const t = await getTranslations("field.wallet");
   return (

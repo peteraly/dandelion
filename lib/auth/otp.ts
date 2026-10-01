@@ -18,7 +18,7 @@ export const OTP_MAX_ATTEMPTS = 5;
 export const OTP_MAX_PER_WINDOW = 3;
 export const OTP_WINDOW_MS = 15 * 60_000;
 
-export type OtpPurpose = "ENROLL" | "CUSTOMER_VERIFY" | "HANDOVER";
+export type OtpPurpose = "ENROLL" | "CUSTOMER_VERIFY" | "HANDOVER" | "CUSTOMER_LOGIN";
 
 export async function issueOtp(
   opts: { purpose: OtpPurpose; phoneIndex: string; subjectId: string | null; deviceId: string | null; userId?: string | null; ip?: string | null },

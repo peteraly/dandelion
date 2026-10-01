@@ -303,7 +303,10 @@ export async function handleDataRequest(actor: Actor, requestId: string, outcome
       if (open) throw new DomainError("subject_has_open_orders");
       const tomb = `deleted-${crypto.randomUUID()}`;
       if (req.subjectType === "CUSTOMER") {
-        await tx.update(s.customers).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "DELETED", updatedAt: now() }).where(eq(s.customers.id, req.subjectId));
+        await tx.update(s.customers).set({ displayName: "[deleted]", phoneEnc: tomb, phoneIndex: tomb, status: "DELETED", meetingPointId: null, updatedAt: now() }).where(eq(s.customers.id, req.subjectId));
+        // Signed out of the shop everywhere; a request nobody took yet is withdrawn.
+        await tx.update(s.customerSessions).set({ revokedAt: now() }).where(and(eq(s.customerSessions.customerId, req.subjectId), isNull(s.customerSessions.revokedAt)));
+        await tx.update(s.customerRequests).set({ state: "CANCELLED", updatedAt: now() }).where(and(eq(s.customerRequests.customerId, req.subjectId), eq(s.customerRequests.state, "OPEN")));
       } else {
         const u = await tx.query.users.findFirst({ where: eq(s.users.id, req.subjectId) });
         if (u && u.role === "SUPER_ADMIN") throw new DomainError("cannot_delete_admin");

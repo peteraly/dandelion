@@ -107,3 +107,47 @@ export async function updateAreaRains(actor: Actor, serviceAreaId: string, month
     await logAdminAction(tx, actor.userId, "area.rains.update", { type: "service_area", id: serviceAreaId }, { before: area.rainyMonths, after: rainyMonths });
   });
 }
+
+// ---------- public meeting points (Prompt L §3) ----------
+
+/**
+ * Where a delivery partner hands over a shop order: named public places only — a market, a dispensary gate, a school
+ * gate. Never coordinates or a home address (§3.9). A girl meets her delivery partner where other people are.
+ */
+export const MeetingPointInput = z.object({
+  serviceAreaId: z.uuid(),
+  name: z.string().trim().min(3).max(60),
+});
+
+export async function meetingPointsFor(db: DbOrTx, serviceAreaId?: string, includeInactive = false) {
+  const rows = await db.query.meetingPoints.findMany({
+    where: and(serviceAreaId ? eq(s.meetingPoints.serviceAreaId, serviceAreaId) : sql`true`, includeInactive ? sql`true` : eq(s.meetingPoints.active, true)),
+    orderBy: [s.meetingPoints.serviceAreaId, s.meetingPoints.name],
+  });
+  return rows;
+}
+
+export async function addMeetingPoint(actor: Actor, raw: z.input<typeof MeetingPointInput>): Promise<{ meetingPointId: string }> {
+  authorize(actor, "admin.area.places");
+  const input = MeetingPointInput.parse(raw);
+  return withTx(async (tx) => {
+    const area = await tx.query.serviceAreas.findFirst({ where: eq(s.serviceAreas.id, input.serviceAreaId) });
+    if (!area) throw new DomainError("not_found");
+    const clash = await tx.query.meetingPoints.findFirst({ where: and(eq(s.meetingPoints.serviceAreaId, area.id), sql`lower(${s.meetingPoints.name}) = lower(${input.name})`) });
+    if (clash) throw new DomainError("meeting_point_exists");
+    const [row] = await tx.insert(s.meetingPoints).values(input).returning({ id: s.meetingPoints.id });
+    await logAdminAction(tx, actor.userId, "area.place.add", { type: "service_area", id: area.id }, { name: input.name });
+    return { meetingPointId: row!.id };
+  });
+}
+
+/** Retire a place (or bring it back). Open requests to it stay valid; new requests cannot choose it. */
+export async function setMeetingPointActive(actor: Actor, meetingPointId: string, active: boolean): Promise<void> {
+  authorize(actor, "admin.area.places");
+  await withTx(async (tx) => {
+    const mp = await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, meetingPointId) });
+    if (!mp) throw new DomainError("not_found");
+    await tx.update(s.meetingPoints).set({ active }).where(eq(s.meetingPoints.id, meetingPointId));
+    await logAdminAction(tx, actor.userId, "area.place.update", { type: "service_area", id: mp.serviceAreaId }, { name: mp.name, active });
+  });
+}

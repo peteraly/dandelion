@@ -9,6 +9,7 @@ import { acceptPickup, adminCreatePickup, confirmBatchReady, confirmReceipt, con
 import { tzDay } from "@/lib/util/time";
 import type { Hub, OrgBuyer, Person, Product, World } from "./world";
 import { enrolCustomer, pay, startCustomerPlan, type Plan } from "./supply";
+import { shopOrder } from "./shop";
 
 const CHECKS = { quantityOk: true, sealOk: true };
 
@@ -108,6 +109,17 @@ export async function directDay(w: World, plans: Plan[], day: number, totalDays:
   // Village drops: one every other working day once the rider holds stock.
   if ((await w.sellerStock(rider, disposable.id)) >= 1 && (rng.chance(0.5) || w.once("villageDrop.first"))) {
     await attempt("villageDrop", async () => void plans.push(await directPlan(w, rider, disposable, day)));
+  }
+  // The shop (Prompt L §3): a girl or woman joins with her phone and orders; the village delivery partner accepts.
+  if ((await w.sellerStock(rider, disposable.id)) >= 1 && (rng.chance(0.35) || w.once("shop.first"))) {
+    await attempt("shopOrder", async () => {
+      const plan = await shopOrder(w, rider, disposable, day);
+      if (plan) plans.push(plan);
+    });
+  }
+  // On the last day one shop request is left waiting for a delivery partner.
+  if (day >= totalDays - 1 && totalDays < 1000 && w.once("shop.waiting")) {
+    await attempt("shopWaiting", async () => void (await shopOrder(w, rider, disposable, day, false)));
   }
   // Factory-gate customers: a couple over the run.
   if (rng.chance(0.25) || w.once("factoryGate.first")) {

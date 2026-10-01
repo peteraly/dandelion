@@ -7,6 +7,8 @@
  * roads; per hub, its distance from the district town, the worst stretch of
  * road and whether the rains slow it — with the lead time restocking now plans
  * for, and what real trips took.
+ *
+ * Meeting points (Prompt L §3): the named public places where delivery partners hand over shop orders.
  */
 import { getLocale, getTranslations } from "next-intl/server";
 import { Badge, Card, IdemKey, PrimaryButton } from "@/components/ui";
@@ -14,12 +16,12 @@ import { Notice } from "@/components/notice";
 import { Name } from "@/components/name";
 import { requireAdmin } from "@/lib/auth/current";
 import { getDb } from "@/lib/db/client";
-import { listAreasWithSales } from "@/lib/services/areas";
+import { listAreasWithSales, meetingPointsFor } from "@/lib/services/areas";
 import { hubRoads } from "@/lib/services/replenishment";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { ROAD_TYPES } from "@/lib/domain/types";
 import { flags, type SearchParams } from "@/lib/actions";
-import { requestAreaSalesAction, updateAreaRainsAction, updateHubRoadAction } from "../actions";
+import { addMeetingPointAction, requestAreaSalesAction, setMeetingPointActiveAction, updateAreaRainsAction, updateHubRoadAction } from "../actions";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const monthName = (m: number, locale: string) => new Intl.DateTimeFormat(locale === "sw" ? "sw-TZ" : "en-GB", { month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, m - 1, 15)));
@@ -36,6 +38,8 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
   const rows = await listAreasWithSales(actor);
   const areas = await getDb().query.serviceAreas.findMany();
   const roads = [...(await hubRoads()).values()];
+  const places = await meetingPointsFor(getDb(), undefined, true);
+  const tp = await getTranslations("admin.places");
   // Days to whole days or hours, in plain words.
   const span = (days: number) => (days < 1 ? tr("hours", { n: Math.max(1, Math.round(days * 24)) }) : tr("days", { n: Math.round(days * 10) / 10 }));
   return (
@@ -69,6 +73,40 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
               <PrimaryButton disabled={a.pendingRequest}>{t("request")}</PrimaryButton>
             </div>
           </form>
+
+          <div className="mt-4 border-t border-stone-200 pt-3" data-testid="area-places">
+            <h3 className="font-semibold">{tp("title")}</h3>
+            <p className="mb-2 text-sm text-stone-600">{a.allowedSales.includes("RIDER_TO_CUSTOMER") ? tp("intro") : tp("shopOff")}</p>
+            <ul className="mb-2 flex flex-wrap gap-2">
+              {places
+                .filter((p) => p.serviceAreaId === a.id)
+                .map((p) => (
+                  <li key={p.id} className="flex items-center gap-1 rounded-full border border-stone-200 py-1 pl-3 pr-1 text-sm" data-testid="meeting-point" data-active={p.active}>
+                    <span className={p.active ? "" : "text-stone-400 line-through"}>{p.name}</span>
+                    <form action={setMeetingPointActiveAction}>
+                      <IdemKey />
+                      <input type="hidden" name="meetingPointId" value={p.id} />
+                      <input type="hidden" name="active" value={p.active ? "false" : "true"} />
+                      <button type="submit" className="rounded-full px-2 py-0.5 text-xs text-brand-800 underline">
+                        {p.active ? tp("retire") : tp("restore")}
+                      </button>
+                    </form>
+                  </li>
+                ))}
+            </ul>
+            <form action={addMeetingPointAction} className="flex flex-wrap items-end gap-2" data-testid="place-form">
+              <IdemKey />
+              <input type="hidden" name="serviceAreaId" value={a.id} />
+              <label className="text-sm">
+                <span className="label">{tp("name")}</span>
+                <input name="name" className="field" minLength={3} maxLength={60} required placeholder={tp("placeholder")} />
+              </label>
+              <button type="submit" className="btn btn-secondary w-auto px-4 text-sm">
+                {tp("add")}
+              </button>
+            </form>
+            <p className="mt-1 text-xs text-stone-500">{tp("rule")}</p>
+          </div>
 
           <div className="mt-4 border-t border-stone-200 pt-3" data-testid="area-roads">
             <h3 className="font-semibold">{tr("title")}</h3>

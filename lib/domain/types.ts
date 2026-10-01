@@ -198,3 +198,10 @@ export type PaymentRoute = (typeof PAYMENT_ROUTES)[number];
 /** A member's withdrawal from their balance: one admin approves, a different admin sends. */
 export const WITHDRAWAL_STATES = ["REQUESTED", "APPROVED", "SENT", "REJECTED"] as const;
 export type WithdrawalState = (typeof WITHDRAWAL_STATES)[number];
+
+/**
+ * A customer's order request from the shop (Prompt L §3): open until a delivery partner in her area accepts it (the
+ * sale is then an ordinary plan), or she cancels, or it expires unanswered.
+ */
+export const CUSTOMER_REQUEST_STATES = ["OPEN", "ACCEPTED", "CANCELLED", "EXPIRED"] as const;
+export type CustomerRequestState = (typeof CUSTOMER_REQUEST_STATES)[number];

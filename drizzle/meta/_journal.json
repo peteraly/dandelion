@@ -64,6 +64,13 @@
       "when": 1790821107718,
       "tag": "0008_platform_wallets",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790822325053,
+      "tag": "0009_customer_shop",
+      "breakpoints": true
     }
   ]
 }

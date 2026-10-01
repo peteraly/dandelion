@@ -55,7 +55,9 @@ export type PickupOutcome = "complete" | "in_transit" | "awaiting_rider_payment"
 export async function pickupChain(w: World, hub: Hub, rider: Person, product: Product, quantity: number, outcome: PickupOutcome, day = 0, org?: SupplierOrg): Promise<{ pickupId: string; deliveryId: string | null }> {
   const area = w.areas.find((a) => a.id === hub.areaId)!;
   const story = !org;
-  const chosen = org ?? w.pickSupplier(area);
+  // The quality story needs the occasional supplier to appear at least once in the history, whatever the dice say.
+  const poor = area.suppliers.find((o) => o.quality === "poor");
+  const chosen = org ?? (story && poor && day >= 7 && w.allowLateBatches && w.once(`supplier.poor.${area.id}`) ? poor : w.pickSupplier(area));
   const supplierUser = w.rng.pick(chosen.users);
   let effective: PickupOutcome = outcome;
   if (story && effective === "complete" && chosen.quality === "poor" && w.rng.chance(0.12)) effective = w.rng.chance(0.5) ? "inspection_issue" : "damaged";
@@ -189,6 +191,11 @@ export interface Plan {
 /** Start a plan and decide its installment schedule up front (paid on later days). */
 export async function startCustomerPlan(w: World, c: Customer, product: Product, today: number): Promise<Plan> {
   const { orderId } = await startPlan(c.champion.actor, c.id, product.id);
+  return planFromOrder(w, c, product, orderId, today);
+}
+
+/** A plan just started (by a seller, or from a shop request a delivery partner accepted) and its installment schedule. */
+export async function planFromOrder(w: World, c: Customer, product: Product, orderId: string, today: number): Promise<Plan> {
   const o = await w.order(orderId);
   w.manifest.count(`orders.${o.kind}`);
   const total = o.totalTzs;

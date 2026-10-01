@@ -1,6 +1,6 @@
 /**
  * Current-request session helpers for server components, actions and route
- * handlers. Cookies: `sid` (field), `asid` (admin) — HttpOnly, Secure,
+ * handlers. Cookies: `sid` (field), `asid` (admin), `csid` (shop customer) — HttpOnly, Secure,
  * SameSite=Strict; the DB holds only their hashes.
  */
 import { cookies, headers } from "next/headers";
@@ -8,10 +8,13 @@ import { redirect } from "next/navigation";
 import { appEnv } from "@/lib/env";
 import type { Actor } from "@/lib/policy";
 import { loadSession, revokeSession, type LoadedSession } from "./session";
+import { loadCustomerSession, revokeCustomerSession, type ShopCustomer } from "./customer-session";
 
 export const FIELD_COOKIE = "sid";
 export const ADMIN_COOKIE = "asid";
 export const DEVICE_COOKIE = "did";
+/** A customer's shop session (Prompt L §3); separate from staff sessions, never an Actor. */
+export const CUSTOMER_COOKIE = "csid";
 
 const secure = appEnv() !== "development";
 
@@ -108,4 +111,22 @@ export async function actorFromCookies(): Promise<Actor | null> {
   if (admin) return toActor(admin);
   const field = await currentFieldSession();
   return field ? toActor(field) : null;
+}
+
+/** The customer signed in to the shop, or null. Customers are not staff: they never get an Actor or a staff page. */
+export async function currentCustomer(): Promise<ShopCustomer | null> {
+  const jar = await cookies();
+  return loadCustomerSession(jar.get(CUSTOMER_COOKIE)?.value);
+}
+
+export async function setCustomerCookie(token: string, expiresAt: Date): Promise<void> {
+  const jar = await cookies();
+  jar.set(CUSTOMER_COOKIE, token, cookieOptions(expiresAt));
+}
+
+export async function clearCustomerCookie(): Promise<void> {
+  const jar = await cookies();
+  const token = jar.get(CUSTOMER_COOKIE)?.value;
+  if (token) await revokeCustomerSession(token);
+  jar.delete(CUSTOMER_COOKIE);
 }

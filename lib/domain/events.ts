@@ -43,6 +43,8 @@ export const ADMIN_ACTIONS = [
   "approval.approve",
   "approval.reject",
   "approval.request",
+  "area.place.add",
+  "area.place.update",
   "area.rains.update",
   "area.sales.change",
   "data_request.create",

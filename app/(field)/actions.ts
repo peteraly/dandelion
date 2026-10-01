@@ -12,6 +12,7 @@ import { syncOfflineNotes } from "@/lib/services/notes";
 import { lockUser } from "@/lib/services/users";
 import { recordDecision } from "@/lib/services/ai-gateway";
 import { requestWithdrawal } from "@/lib/services/wallets";
+import { acceptCustomerRequest } from "@/lib/services/shop";
 import type { Actor } from "@/lib/policy";
 import { PolicyError } from "@/lib/policy";
 
@@ -241,4 +242,10 @@ export async function cancelOrgSaleAction(fd: FormData): Promise<void> {
 export async function requestWithdrawalAction(fd: FormData): Promise<void> {
   const actor = await me();
   await act("/wallet", () => once(actor, fd, "requestWithdrawal", async () => (await requestWithdrawal(actor, { amountTzs: Number(str(fd, "amountTzs")) }), null)), "/wallet", "withdrawalRequested");
+}
+
+/** A delivery partner takes a customer's shop request; it becomes their plan with her (Prompt L §3). */
+export async function acceptShopRequestAction(fd: FormData): Promise<void> {
+  const actor = await me();
+  await act("/home", () => once(actor, fd, "acceptShopRequest", () => acceptCustomerRequest(actor, str(fd, "requestId"))), (r) => orderPath(r.orderId), "requestAccepted");
 }

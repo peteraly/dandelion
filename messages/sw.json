@@ -52,7 +52,8 @@
     "ledgerPending": "Leja: inasubiri",
     "ledgerRecorded": "Leja: imerekodiwa",
     "underReview": "Inakaguliwa",
-    "switchRole": "Badili jukumu"
+    "switchRole": "Badili jukumu",
+    "requestAccepted": "Oda imekubaliwa. Ameambiwa nani anakuja na jinsi ya kulipa."
   },
   "roles": {
     "SUPER_ADMIN": "Msimamizi",
@@ -530,6 +531,14 @@
         "SENT": "Imetumwa",
         "REJECTED": "Imekataliwa"
       }
+    },
+    "shopRequests": {
+      "title": "Wateja wanaosubiri karibu nawe ({n})",
+      "hint": "Waliagiza dukani na kuchagua mahali pa wazi pa kukutana. Kubali tu unachoweza kufikisha leo.",
+      "place": "Kutana {place}",
+      "noStock": "Huna bidhaa hii.",
+      "accept": "Kubali",
+      "meetAt": "Oda ya duka {ref} — kutana {place}. Kabidhi tu baada ya malipo kuthibitishwa, kwa msimbo wake."
     }
   },
   "problems": {
@@ -929,7 +938,9 @@
         "HUB_TO_ORG": "Vituo vinauza kwa mashirika",
         "RIDER_TO_ORG": "Wasafirishaji wanauza kwa mashirika"
       },
-      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
+      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee.",
+      "placeAdded": "Mahali pa kukutana pameongezwa.",
+      "placeSaved": "Mahali pa kukutana pamehifadhiwa."
     },
     "navGroups": {
       "overview": "Tazama",
@@ -1322,6 +1333,17 @@
       "approved": "Imeidhinishwa. Admin mwingine ataituma.",
       "sent": "Imerekodiwa kuwa imetumwa; mshiriki amepata ujumbe.",
       "rejected": "Imekataliwa; mshiriki amepata ujumbe na pesa zinapatikana tena."
+    },
+    "places": {
+      "title": "Maeneo ya kukutana kwa oda za duka",
+      "intro": "Wateja wanaoagiza dukani huchagua mojawapo ya maeneo haya; msambazaji hukabidhi hapo.",
+      "shopOff": "Duka linafunguliwa hapa \"msambazaji → mteja\" ikiwashwa kwa eneo hili (juu). Unaweza kuongeza maeneo sasa.",
+      "retire": "Ondoa",
+      "restore": "Rudisha",
+      "name": "Mahali papya",
+      "placeholder": "mf. Geti la soko, Zahanati",
+      "add": "Ongeza mahali",
+      "rule": "Maeneo ya wazi yenye majina tu — soko, zahanati, geti la shule. Kamwe si nyumba, kamwe si viwianishi vya ramani."
     }
   },
   "public": {
@@ -1348,7 +1370,8 @@
     "safetyDraft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
     "safetyReusable": "Bidhaa zinazotumika tena zinatolewa tu pale mteja anapoweza kupata maji safi, sabuni, faragha, mahali pa kuosha, mahali pa kukausha bidhaa kabisa, na uhifadhi salama. Vifaa vinavyotumika tena lazima vioshwe na kukaushwa baada ya kutumika.",
     "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Wauzaji wa mtaani wanaeleza matumizi salama na utupaji.",
-    "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi."
+    "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi.",
+    "shopCta": "Agiza pedi"
   },
   "verify": {
     "title": "Ukaguzi wa rekodi",
@@ -1415,7 +1438,8 @@
     "payoutRejected": "Habari {name}. Ombi lako la kutoa pesa {ref} la {amount} halikutumwa. Kiasi kimerudi kwenye salio lako; admin atawasiliana nawe.",
     "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
     "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} × {quantity} kunafuata. Rekodi: {link}",
-    "orgReceipt": "{name}: {product} × {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}"
+    "orgReceipt": "{name}: {product} × {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}",
+    "shopAccepted": "Habari {name}. Oda yako {ref} imekubaliwa na msambazaji {seller}. Kutana {place}. Jinsi ya kulipa iko kwenye SMS inayofuata na dukani. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -1541,7 +1565,15 @@
     "withdrawal_not_approved": "Ombi hili lazima liidhinishwe kwanza.",
     "payout_needs_second_admin": "Wewe uliidhinisha ombi hili. Admin mwingine lazima alitume.",
     "withdrawal_finished": "Ombi hili limeshakamilika.",
-    "platform_payee_not_set": "Akaunti ya makusanyo ya Dandelion haijawekwa. Admin wawili lazima waiweke kwenye Mipangilio."
+    "platform_payee_not_set": "Akaunti ya makusanyo ya Dandelion haijawekwa. Admin wawili lazima waiweke kwenye Mipangilio.",
+    "meeting_point_unavailable": "Chagua mojawapo ya maeneo ya kukutana kwenye orodha.",
+    "shop_closed_here": "Duka halijafunguliwa katika eneo hilo.",
+    "shop_order_open": "Tayari una oda inayoendelea. Imalize au ighairi kwanza.",
+    "request_not_open": "Oda hii haisubiri tena.",
+    "request_taken": "Msambazaji mwingine ameshakubali oda hii.",
+    "request_other_area": "Oda hii iko eneo lingine.",
+    "request_no_stock": "Huna bidhaa hii. Ongeza mzigo kwanza.",
+    "meeting_point_exists": "Eneo hili tayari lina mahali penye jina hilo."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1742,7 +1774,9 @@
         "organisation_create": "Shirika limeongezwa",
         "organisation_deactivate": "Shirika limezimwa",
         "organisation_update": "Shirika limesasishwa",
-        "demo_journey": "Hatua ya maelezo"
+        "demo_journey": "Hatua ya maelezo",
+        "area_place_add": "Mahali pa kukutana pameongezwa",
+        "area_place_update": "Mahali pa kukutana pamebadilishwa"
       },
       "more": "Onyesha {n} zaidi"
     },
@@ -1894,5 +1928,91 @@
         "what": "Sajili wateja, uza kwa awamu, kabidhi, risiti."
       }
     }
+  },
+  "shop": {
+    "title": "Pedi karibu nawe",
+    "hero": "Jiunge kwa simu yako, chagua mahali pa wazi pa kukutana, na msambazaji wa eneo lako atakuletea pakiti yako huko. Unalipa kwa pesa za simu; unapokea pakiti malipo yakithibitishwa.",
+    "join": "Jiunge",
+    "signIn": "Ingia",
+    "howTitle": "Inavyofanya kazi",
+    "how": {
+      "1": "Jiunge kwa jina na simu yako, na uchague mahali pa wazi pa kukutana karibu nawe — sokoni, getini mwa zahanati, getini mwa shule.",
+      "2": "Chagua bidhaa. Msambazaji wa eneo lako anakubali oda yako.",
+      "3": "Lipa kwa pesa za simu ukitumia kumbukumbu utakayopokea. Lipa kwa awamu au yote; hakuna deni wala faini ya kuchelewa.",
+      "4": "Kutana mahali ulipochagua. Soma msimbo wako wa makabidhiano pale tu unaposhika pakiti yako. Utapokea risiti kwa SMS."
+    },
+    "whereTitle": "Tunapofikisha na bei",
+    "nowhereYet": "Duka bado halijafunguliwa katika eneo lolote. Tafadhali muulize muuzaji wa mtaani aliye karibu nawe.",
+    "hello": "Habari {name}",
+    "signOut": "Toka",
+    "choosePlace": "Chagua mahali pa kukutana",
+    "choosePlaceHint": "Msambazaji akukute wapi? Ni maeneo ya wazi tu yanayotolewa.",
+    "place": "Mahali pa kukutana",
+    "placeHint": "Mahali pa wazi. Usitoe kamwe anwani ya nyumbani.",
+    "savePlace": "Hifadhi mahali pa kukutana",
+    "changePlace": "Badilisha mahali pangu pa kawaida",
+    "orderTitle": "Agiza pakiti",
+    "orderHint": "Bei za {area}. Oda moja kwa wakati.",
+    "product": "Bidhaa",
+    "submit": "Tuma oda yangu",
+    "myOrders": "Oda zangu",
+    "noOrders": "Bado hakuna oda.",
+    "states": {
+      "OPEN": "Inasubiri msambazaji",
+      "ACCEPTED": "Imekubaliwa",
+      "CANCELLED": "Imeghairiwa",
+      "EXPIRED": "Haikuchukuliwa kwa wakati"
+    },
+    "steps": {
+      "pay": "Lipa sasa",
+      "meet": "Imelipwa — kutana upokee",
+      "done": "Imepokelewa",
+      "stopped": "Imesimamishwa"
+    },
+    "meetAt": "Kutana {place}",
+    "waiting": "Inasubiri msambazaji wa eneo lako aikubali.",
+    "cancel": "Ghairi oda",
+    "expired": "Hakuna msambazaji aliyeweza kuchukua oda hii ndani ya siku mbili. Tafadhali agiza tena.",
+    "acceptedBy": "Msambazaji: {name}",
+    "payNow": "Lipa {amount} kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}.",
+    "paidSoFar": "Imethibitishwa hadi sasa: {paid} kati ya {total}.",
+    "payNote": "Lipa kwa namba hii tu na kumbukumbu hii. Hakuna mtu wa Dandelion atakayekuomba pesa taslimu au PIN yako.",
+    "paidMeet": "Malipo yamethibitishwa. Kutana na {name} {place}. Utapokea msimbo wa makabidhiano kwa SMS: msomee {name} pale tu unaposhika pakiti yako.",
+    "handedOver": "Imekabidhiwa. Risiti yako imetumwa kwa SMS.",
+    "stopped": "Oda hii imesimamishwa. Malipo yoyote yaliyothibitishwa yanakaguliwa na kurejeshwa na admin.",
+    "safetyTitle": "Usalama wako",
+    "safety": {
+      "1": "Kutana tu mahali pa wazi ulipochagua, mchana. Unaweza kuja na rafiki.",
+      "2": "Usitoe kamwe anwani ya nyumbani. Msambazaji hahitaji kamwe.",
+      "3": "Soma msimbo wako wa makabidhiano pale tu pakiti iko mikononi mwako.",
+      "4": "Kitu chochote kikikutia wasiwasi, ondoka na uripoti — hutapoteza pesa yako."
+    },
+    "safetyMore": "Usalama na jinsi ya kuripoti tatizo",
+    "joinTitle": "Jiunge na duka",
+    "joinIntro": "Tunahifadhi tu jina unalochagua, simu yako na mahali pako pa kukutana — si kingine.",
+    "name": "Jina lako",
+    "nameHint": "Jina lako la kwanza au jina unalopendelea.",
+    "consentMessages": "Nakubali kupokea SMS kuhusu oda zangu (bei, malipo, msimbo wa makabidhiano, risiti). Lazima.",
+    "consentReminders": "Nakubali pia kupokea vikumbusho. Si lazima.",
+    "privacyNote": "Jinsi tunavyotumia taarifa zako:",
+    "privacyLink": "taarifa ya faragha",
+    "sendCode": "Nitumie msimbo",
+    "haveAccount": "Umeshajiunga? Ingia",
+    "signInTitle": "Ingia kwenye duka",
+    "expiredSession": "Umetolewa. Tafadhali ingia tena.",
+    "noAccount": "Mgeni hapa? Jiunge",
+    "verifyTitle": "Weka msimbo wako",
+    "verifyIntro": "Ikiwa simu hii imejiunga, tumeitumia msimbo wa tarakimu 6 kwa SMS. Unaisha baada ya dakika 5.",
+    "demoCode": "Onyesho tu — simu ya kubuni. SMS ilibeba msimbo {code}.",
+    "code": "Msimbo kutoka kwenye SMS",
+    "confirm": "Thibitisha",
+    "noSms": "Hakuna SMS baada ya dakika moja? Hakiki namba ujaribu tena, au jiunge kwanza kama wewe ni mgeni.",
+    "tryAgain": "Jaribu tena",
+    "codeSent": "Msimbo umetumwa.",
+    "signedIn": "Umeingia.",
+    "signedOut": "Umetoka.",
+    "requested": "Oda imetumwa. Msambazaji wa eneo lako ataikubali.",
+    "cancelled": "Oda imeghairiwa.",
+    "placeSaved": "Mahali pa kukutana pamehifadhiwa."
   }
 }

@@ -36,7 +36,8 @@ export interface OrderResource {
 }
 
 export interface CustomerResource {
-  championId: string;
+  /** Null for a customer who signed up herself in the shop: no seller owns her; each order has its own seller. */
+  championId: string | null;
 }
 
 export interface BatchResource {
@@ -79,6 +80,7 @@ export const ACTIONS = [
   "admin.organisation.manage",
   "admin.area.sales",
   "admin.area.roads",
+  "admin.area.places",
   // shared field
   "order.view",
   "order.claim_paid",
@@ -112,6 +114,7 @@ export const ACTIONS = [
   "customer.create",
   "customer.view",
   "order.start_plan",
+  "order.accept_request",
   "order.expect_payment",
   "order.start_handover",
   "order.complete_handover",
@@ -193,6 +196,7 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "admin.organisation.manage": adminOnly,
   "admin.area.sales": adminOnly,
   "admin.area.roads": adminOnly,
+  "admin.area.places": adminOnly,
 
   "order.view": (a, r) => isAdmin(a) || (r.type === "order" && isOrderParty(a, r.order)),
   // Only the buyer pays; "I have paid" never confirms anything, it only asks the verifier to look.
@@ -231,6 +235,8 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "customer.create": (a) => SELLS_TO_CUSTOMERS.includes(a.role),
   "customer.view": (a, r) => isAdmin(a) || (SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId),
   "order.start_plan": (a, r) => SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId,
+  // Shop requests (Prompt L §3) go to delivery partners in the customer's area; the area and stock are checked in the service.
+  "order.accept_request": (a) => isRole(a, "BOSS_RIDER"),
   "order.expect_payment": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
   "order.start_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
   "order.complete_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),

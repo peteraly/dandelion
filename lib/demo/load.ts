@@ -3,7 +3,7 @@
  * controls (Prompt B §2.5). Only active people take part; phones are
  * decrypted for the SMS-code lookups the flows need.
  */
-import { and, eq, gt, inArray, isNotNull, isNull } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull } from "drizzle-orm";
 import { now, nowMs } from "@/lib/clock";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -90,7 +90,9 @@ export async function loadWorld(rng: Rng, clock: DemoClock, seedName: string): P
   // Whoever serves the customer: a champion on the ladder, a rider or supplier user on a direct path (prompt §8.8).
   const sellers = new Map([...w.champions, ...w.riders, ...w.supplierOrgs.flatMap((o) => o.users)].map((c) => [c.actor.userId, c]));
   for (const c of await db.query.customers.findMany({ where: and(eq(s.customers.status, "ACTIVE"), isNotNull(s.customers.phoneVerifiedAt)) })) {
-    const champion = sellers.get(c.championId);
+    // A customer who joined in the shop is served, order by order, by the delivery partner who accepted: her latest one.
+    const latest = c.championId ? null : await db.query.orders.findFirst({ where: eq(s.orders.customerId, c.id), orderBy: desc(s.orders.createdAt), columns: { sellerUserId: true } });
+    const champion = sellers.get(c.championId ?? latest?.sellerUserId ?? "");
     if (!champion) continue;
     const phone = await decryptString(c.phoneEnc);
     phones.push(phone);

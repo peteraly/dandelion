@@ -41,6 +41,7 @@ import {
   ORGANISATION_KINDS,
   ROAD_TYPES,
   WITHDRAWAL_STATES,
+  CUSTOMER_REQUEST_STATES,
   type OrderKind,
 } from "@/lib/domain/types";
 
@@ -77,6 +78,7 @@ export const jobStatusEnum = pgEnum("job_status", ["QUEUED", "RUNNING", "DONE", 
 export const localeEnum = pgEnum("locale", ["sw", "en"]);
 export const roadTypeEnum = pgEnum("road_type", ROAD_TYPES);
 export const withdrawalStateEnum = pgEnum("withdrawal_state", WITHDRAWAL_STATES);
+export const customerRequestStateEnum = pgEnum("customer_request_state", CUSTOMER_REQUEST_STATES);
 
 // ---------- reference data ----------
 export const serviceAreas = pgTable("service_areas", {
@@ -272,7 +274,7 @@ export const otpChallenges = pgTable(
   "otp_challenges",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    purpose: text("purpose", { enum: ["ENROLL", "CUSTOMER_VERIFY", "HANDOVER"] }).notNull(),
+    purpose: text("purpose", { enum: ["ENROLL", "CUSTOMER_VERIFY", "HANDOVER", "CUSTOMER_LOGIN"] }).notNull(),
     phoneIndex: text("phone_index").notNull(),
     subjectId: uuid("subject_id"), // enrollment token / customer / order id
     codeHash: text("code_hash").notNull(),
@@ -313,18 +315,42 @@ export const trainingRecords = pgTable("training_records", {
   completedAt: createdAt(),
 });
 
+/**
+ * Public meeting points per area (Prompt L §3): a market, a dispensary gate, a school gate — where a delivery partner
+ * hands over an order from the shop. Named places only; never coordinates or a home address (§3.9).
+ */
+export const meetingPoints = pgTable(
+  "meeting_points",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
+    name: text("name").notNull(),
+    active: boolean("active").notNull().default(true),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("meeting_points_area_name_uq").on(t.serviceAreaId, t.name)],
+);
+
 // ---------- customers ----------
 export const customers = pgTable(
   "customers",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    /** The stakeholder who enrolled and serves this customer: a champion on the ladder, a rider or supplier user on a direct path (prompt §8.8). */
-    championId: uuid("champion_id").notNull().references(() => users.id),
+    /**
+     * The stakeholder who enrolled and serves this customer: a champion on the ladder, a rider or supplier user on a
+     * direct path (prompt §8.8). Null for a customer who signed up herself in the shop (Prompt L §3): each order is
+     * then served by the delivery partner who accepted it.
+     */
+    championId: uuid("champion_id").references(() => users.id),
     displayName: text("display_name").notNull(), // name or preferred name only
     phoneEnc: text("phone_enc").notNull(),
     phoneIndex: text("phone_index").notNull(),
     /** Optional broad service area (never a precise location). */
     serviceAreaId: uuid("service_area_id").references(() => serviceAreas.id),
+    /** Signed up herself in the shop (Prompt L §3) rather than enrolled by a seller. */
+    selfRegistered: boolean("self_registered").notNull().default(false),
+    /** Her usual public meeting point for deliveries (never a home address). */
+    meetingPointId: uuid("meeting_point_id").references(() => meetingPoints.id),
     phoneVerifiedAt: ts("phone_verified_at"),
     status: text("status", { enum: ["ACTIVE", "DELETED"] }).notNull().default("ACTIVE"),
     createdAt: createdAt(),
@@ -333,13 +359,55 @@ export const customers = pgTable(
   (t) => [uniqueIndex("customers_phone_index_uq").on(t.phoneIndex), index("customers_champion_idx").on(t.championId)],
 );
 
+/** A customer's shop session (Prompt L §3): the cookie holds a random token, the database only its SHA-256. */
+export const customerSessions = pgTable(
+  "customer_sessions",
+  {
+    id: text("id").primaryKey(),
+    customerId: uuid("customer_id").notNull().references(() => customers.id),
+    createdAt: createdAt(),
+    lastSeenAt: ts("last_seen_at").notNull().defaultNow().$defaultFn(() => now()),
+    expiresAt: ts("expires_at").notNull(),
+    revokedAt: ts("revoked_at"),
+  },
+  (t) => [index("customer_sessions_customer_idx").on(t.customerId)],
+);
+
+/**
+ * A customer's order request from the shop (Prompt L §3): one pack, to a public meeting point. Open until a delivery
+ * partner in her area accepts it — the sale is then an ordinary plan (`orderId`) — or she cancels, or it expires.
+ */
+export const customerRequests = pgTable(
+  "customer_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ref: text("ref").notNull().unique(),
+    customerId: uuid("customer_id").notNull().references(() => customers.id),
+    serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
+    meetingPointId: uuid("meeting_point_id").notNull().references(() => meetingPoints.id),
+    productId: uuid("product_id").notNull().references(() => products.id),
+    state: customerRequestStateEnum("state").notNull().default("OPEN"),
+    acceptedBy: uuid("accepted_by").references(() => users.id),
+    acceptedAt: ts("accepted_at"),
+    orderId: uuid("order_id").references(() => orders.id),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    index("customer_requests_open_idx").on(t.state, t.serviceAreaId),
+    index("customer_requests_customer_idx").on(t.customerId),
+    check("customer_request_accepted", sql`${t.state} <> 'ACCEPTED' OR (${t.acceptedBy} IS NOT NULL AND ${t.orderId} IS NOT NULL)`),
+  ],
+);
+
 export const consentRecords = pgTable("consent_records", {
   id: uuid("id").primaryKey().defaultRandom(),
   customerId: uuid("customer_id").notNull().references(() => customers.id),
   kind: text("kind", { enum: ["TRANSACTION_MESSAGES", "REMINDERS"] }).notNull(),
   granted: boolean("granted").notNull(),
   noticeVersion: text("notice_version").notNull(),
-  recordedBy: uuid("recorded_by").notNull().references(() => users.id),
+  /** The seller who recorded it; null when the customer gave it herself in the shop. */
+  recordedBy: uuid("recorded_by").references(() => users.id),
   createdAt: createdAt(),
 });
 

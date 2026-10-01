@@ -501,58 +501,66 @@ export async function startPlan(actor: Actor, customerId: string, productId: str
     if (!customer || customer.status !== "ACTIVE") throw new DomainError("not_found");
     authorize(actor, "order.start_plan", { type: "customer", customer: { championId: customer.championId } });
     if (!customer.phoneVerifiedAt) throw new DomainError("customer_phone_not_verified");
-    const open = await tx.query.orders.findFirst({
-      where: and(eq(s.orders.customerId, customer.id), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID", "HANDOVER_PENDING"])),
-    });
-    if (open) throw new DomainError("plan_already_active");
-    // Who sells decides the kind (prompt §8.8): the champion on the ladder, a rider on a village drop, a supplier at the factory gate.
-    const kind = deriveKind(actor.role, "CUSTOMER");
-    if (!kind) throw new DomainError("sale_not_allowed");
-    const where = await sellerArea(tx, actor);
-    await assertSaleAllowed(tx, where.areaId, kind);
-    await assertProductAvailable(tx, productId, where.areaId);
-    const item = await activePriceItem(tx, { serviceAreaId: where.areaId, productId, supplierId: actor.role === "SUPPLIER" ? (actor.supplierId ?? undefined) : undefined });
-    // One customer price per area, whoever sells; the seller's cost is what they paid their own seller.
-    const unitCostTzs = actor.role === "FIELD_CHAMPION" ? item.championPriceTzs : actor.role === "BOSS_RIDER" ? item.supplierPriceTzs : 0;
-    const [order] = await tx
-      .insert(s.orders)
-      .values({
-        ref: await uniqueRef(tx, "OR-", 6, "ref"),
-        verifyRef: randomRef128(),
-        paymentRef: await uniqueRef(tx, "", 8, "paymentRef"),
-        kind,
-        state: INITIAL_ORDER_STATE[kind],
-        sellerUserId: actor.userId,
-        customerId: customer.id,
-        supplierId: item.supplierId,
-        hubId: where.hubId,
-        productId,
-        priceListItemId: item.id,
-        quantity: 1,
-        unitPriceTzs: item.customerPriceTzs,
-        totalTzs: item.customerPriceTzs,
-        unitCostTzs,
-        platformFeeTzs: await feeFor(tx, kind, item.customerPriceTzs),
-        createdBy: actor.userId,
-      })
-      .returning();
-    const intent = await ensureOpenIntent(tx, order!);
-    const c = await customerContact(tx, customer.id);
-    await getSmsProvider().send(
-      c.phone,
-      tr(c.locale, "sms.customerPlan", {
-        name: c.name,
-        price: formatTzs(order!.totalTzs, c.locale),
-        paid: formatTzs(0, c.locale),
-        remaining: formatTzs(order!.totalTzs, c.locale),
-        payee: intent.payeeAccount,
-        reference: order!.paymentRef,
-      }),
-      "CUSTOMER_PLAN",
-      tx,
-    );
-    return { orderId: order!.id };
+    return createPlanInTx(tx, actor, customer, productId);
   });
+}
+
+/**
+ * A customer's plan with this seller, inside the caller's transaction: from the seller's own customer page, or from a
+ * shop request a delivery partner accepted (Prompt L §3). The caller has checked who may sell to this customer.
+ */
+export async function createPlanInTx(tx: Tx, actor: Actor, customer: typeof s.customers.$inferSelect, productId: string): Promise<{ orderId: string }> {
+  const open = await tx.query.orders.findFirst({
+    where: and(eq(s.orders.customerId, customer.id), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID", "HANDOVER_PENDING"])),
+  });
+  if (open) throw new DomainError("plan_already_active");
+  // Who sells decides the kind (prompt §8.8): the champion on the ladder, a rider on a village drop, a supplier at the factory gate.
+  const kind = deriveKind(actor.role, "CUSTOMER");
+  if (!kind) throw new DomainError("sale_not_allowed");
+  const where = await sellerArea(tx, actor);
+  await assertSaleAllowed(tx, where.areaId, kind);
+  await assertProductAvailable(tx, productId, where.areaId);
+  const item = await activePriceItem(tx, { serviceAreaId: where.areaId, productId, supplierId: actor.role === "SUPPLIER" ? (actor.supplierId ?? undefined) : undefined });
+  // One customer price per area, whoever sells; the seller's cost is what they paid their own seller.
+  const unitCostTzs = actor.role === "FIELD_CHAMPION" ? item.championPriceTzs : actor.role === "BOSS_RIDER" ? item.supplierPriceTzs : 0;
+  const [order] = await tx
+    .insert(s.orders)
+    .values({
+      ref: await uniqueRef(tx, "OR-", 6, "ref"),
+      verifyRef: randomRef128(),
+      paymentRef: await uniqueRef(tx, "", 8, "paymentRef"),
+      kind,
+      state: INITIAL_ORDER_STATE[kind],
+      sellerUserId: actor.userId,
+      customerId: customer.id,
+      supplierId: item.supplierId,
+      hubId: where.hubId,
+      productId,
+      priceListItemId: item.id,
+      quantity: 1,
+      unitPriceTzs: item.customerPriceTzs,
+      totalTzs: item.customerPriceTzs,
+      unitCostTzs,
+      platformFeeTzs: await feeFor(tx, kind, item.customerPriceTzs),
+      createdBy: actor.userId,
+    })
+    .returning();
+  const intent = await ensureOpenIntent(tx, order!);
+  const c = await customerContact(tx, customer.id);
+  await getSmsProvider().send(
+    c.phone,
+    tr(c.locale, "sms.customerPlan", {
+      name: c.name,
+      price: formatTzs(order!.totalTzs, c.locale),
+      paid: formatTzs(0, c.locale),
+      remaining: formatTzs(order!.totalTzs, c.locale),
+      payee: intent.payeeAccount,
+      reference: order!.paymentRef,
+    }),
+    "CUSTOMER_PLAN",
+    tx,
+  );
+  return { orderId: order!.id };
 }
 
 /** The area a seller works in, and their hub when they have one. */

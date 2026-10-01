@@ -51,7 +51,8 @@
     "ledgerPending": "Ledger: pending",
     "ledgerRecorded": "Ledger: recorded",
     "underReview": "Under review",
-    "switchRole": "Switch role"
+    "switchRole": "Switch role",
+    "requestAccepted": "Order accepted. She has been told who is coming and how to pay."
   },
   "roles": {
     "SUPER_ADMIN": "Administrator",
@@ -529,6 +530,14 @@
         "SENT": "Sent",
         "REJECTED": "Turned down"
       }
+    },
+    "shopRequests": {
+      "title": "Customers waiting near you ({n})",
+      "hint": "They ordered in the shop and chose a public meeting point. Accept only what you can bring today.",
+      "place": "Meet at {place}",
+      "noStock": "You do not hold this product.",
+      "accept": "Accept",
+      "meetAt": "Shop order {ref} — meet at {place}. Hand over only after payment is confirmed, with her code."
     }
   },
   "problems": {
@@ -928,7 +937,9 @@
         "HUB_TO_ORG": "Hubs sell to organisations",
         "RIDER_TO_ORG": "Delivery partners sell to organisations"
       },
-      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
+      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only.",
+      "placeAdded": "Meeting point added.",
+      "placeSaved": "Meeting point saved."
     },
     "navGroups": {
       "overview": "Watch",
@@ -1321,6 +1332,17 @@
       "approved": "Approved. A different admin sends it.",
       "sent": "Recorded as sent; the member got a text.",
       "rejected": "Turned down; the member got a text and the money is available again."
+    },
+    "places": {
+      "title": "Meeting points for shop orders",
+      "intro": "Customers who order in the shop choose one of these places; the delivery partner hands over there.",
+      "shopOff": "The shop opens here once \"delivery partner → customer\" is switched on for this area (above). You can add places now.",
+      "retire": "Retire",
+      "restore": "Restore",
+      "name": "New place",
+      "placeholder": "e.g. Market gate, Dispensary",
+      "add": "Add place",
+      "rule": "Named public places only — a market, a dispensary, a school gate. Never a home, never map coordinates."
     }
   },
   "public": {
@@ -1347,7 +1369,8 @@
     "safetyDraft": "DRAFT — requires review by a qualified health advisor",
     "safetyReusable": "Reusable products are offered only where the customer has access to clean water, soap, privacy, a place to wash, a place to dry products thoroughly, and safe storage. Reusable materials must be washed and dried after use.",
     "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Local sellers explain safe use and disposal.",
-    "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products."
+    "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products.",
+    "shopCta": "Order pads"
   },
   "verify": {
     "title": "Record check",
@@ -1414,7 +1437,8 @@
     "payoutRejected": "Habari {name}. Your withdrawal {ref} of {amount} was not sent. The amount is back in your balance; an admin will contact you.",
     "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
     "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} × {quantity} follows. Record: {link}",
-    "orgReceipt": "{name}: {product} × {quantity} delivered. Receipt {receiptNo}. Record: {link}"
+    "orgReceipt": "{name}: {product} × {quantity} delivered. Receipt {receiptNo}. Record: {link}",
+    "shopAccepted": "Habari {name}. Your order {ref} was accepted by delivery partner {seller}. Meet at {place}. How to pay is in the next SMS and in the shop. Read your hand-over code only when you have received your order."
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
@@ -1540,7 +1564,15 @@
     "withdrawal_not_approved": "This withdrawal must be approved first.",
     "payout_needs_second_admin": "You approved this withdrawal. A different admin must send it.",
     "withdrawal_finished": "This withdrawal is already finished.",
-    "platform_payee_not_set": "Dandelion's collection account is not set. Two admins must set it in Settings."
+    "platform_payee_not_set": "Dandelion's collection account is not set. Two admins must set it in Settings.",
+    "meeting_point_unavailable": "Choose one of the meeting points on the list.",
+    "shop_closed_here": "The shop is not open in that area.",
+    "shop_order_open": "You already have an order in progress. Finish or cancel it first.",
+    "request_not_open": "This order is no longer waiting.",
+    "request_taken": "Another delivery partner has already accepted this order.",
+    "request_other_area": "This order is in another area.",
+    "request_no_stock": "You do not hold this product. Restock first.",
+    "meeting_point_exists": "This area already has a place with that name."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
@@ -1741,7 +1773,9 @@
         "organisation_create": "Organisation added",
         "organisation_deactivate": "Organisation deactivated",
         "organisation_update": "Organisation updated",
-        "demo_journey": "Walkthrough step"
+        "demo_journey": "Walkthrough step",
+        "area_place_add": "Meeting point added",
+        "area_place_update": "Meeting point changed"
       },
       "more": "Show {n} more"
     },
@@ -1893,5 +1927,91 @@
         "what": "Sign up customers, sell on plans, hand over, receipts."
       }
     }
+  },
+  "shop": {
+    "title": "Pads near you",
+    "hero": "Join with your phone, choose a public meeting point, and a delivery partner in your area brings your pack there. You pay by mobile money; you get your pack when payment is confirmed.",
+    "join": "Join",
+    "signIn": "Sign in",
+    "howTitle": "How it works",
+    "how": {
+      "1": "Join with your name and phone, and choose a public meeting point near you — a market, a dispensary gate, a school gate.",
+      "2": "Choose a product. A delivery partner in your area accepts your order.",
+      "3": "Pay by mobile money with the reference you receive. Pay in parts or in full; there is no debt and no late fee.",
+      "4": "Meet at your place. Read your hand-over code only when you hold your pack. You get a receipt by SMS."
+    },
+    "whereTitle": "Where we deliver and prices",
+    "nowhereYet": "The shop is not open in any area yet. Please ask a local seller near you.",
+    "hello": "Habari {name}",
+    "signOut": "Sign out",
+    "choosePlace": "Choose your meeting point",
+    "choosePlaceHint": "Where should your delivery partner meet you? Only public places are offered.",
+    "place": "Meeting point",
+    "placeHint": "A public place. Never give your home address.",
+    "savePlace": "Save meeting point",
+    "changePlace": "Change my usual meeting point",
+    "orderTitle": "Order a pack",
+    "orderHint": "Prices for {area}. One order at a time.",
+    "product": "Product",
+    "submit": "Send my order",
+    "myOrders": "My orders",
+    "noOrders": "No orders yet.",
+    "states": {
+      "OPEN": "Waiting for a delivery partner",
+      "ACCEPTED": "Accepted",
+      "CANCELLED": "Cancelled",
+      "EXPIRED": "Not taken in time"
+    },
+    "steps": {
+      "pay": "Pay now",
+      "meet": "Paid — meet to receive",
+      "done": "Received",
+      "stopped": "Stopped"
+    },
+    "meetAt": "Meet at {place}",
+    "waiting": "Waiting for a delivery partner in your area to accept.",
+    "cancel": "Cancel order",
+    "expired": "No delivery partner could take this order in two days. Please order again.",
+    "acceptedBy": "Delivery partner: {name}",
+    "payNow": "Pay {amount} by mobile money to {payee} with reference {reference}.",
+    "paidSoFar": "Confirmed so far: {paid} of {total}.",
+    "payNote": "Only pay to this number with this reference. Nobody from Dandelion will ask you for cash or for your PIN.",
+    "paidMeet": "Payment confirmed. Meet {name} at {place}. You will receive a hand-over code by SMS: read it to {name} only when you hold your pack.",
+    "handedOver": "Handed over. Your receipt was sent by SMS.",
+    "stopped": "This order was stopped. Any confirmed payment is reviewed and refunded by an admin.",
+    "safetyTitle": "Your safety",
+    "safety": {
+      "1": "Meet only at the public meeting point you chose, in daylight. Bring a friend if you like.",
+      "2": "Never share your home address. A delivery partner never needs it.",
+      "3": "Read your hand-over code only when the pack is in your hands.",
+      "4": "If anything makes you uncomfortable, leave and report it — you will not lose your money."
+    },
+    "safetyMore": "Safety and how to report a problem",
+    "joinTitle": "Join the shop",
+    "joinIntro": "We keep only a name you choose, your phone and your meeting point — nothing else.",
+    "name": "Your name",
+    "nameHint": "Your first name or a name you prefer.",
+    "consentMessages": "I agree to receive SMS about my orders (price, payment, hand-over code, receipt). Required.",
+    "consentReminders": "I also agree to receive reminders. Optional.",
+    "privacyNote": "How we use your information:",
+    "privacyLink": "privacy notice",
+    "sendCode": "Send me a code",
+    "haveAccount": "Already joined? Sign in",
+    "signInTitle": "Sign in to the shop",
+    "expiredSession": "You were signed out. Please sign in again.",
+    "noAccount": "New here? Join",
+    "verifyTitle": "Enter your code",
+    "verifyIntro": "If this phone has joined, we sent it a 6-digit code by SMS. It expires in 5 minutes.",
+    "demoCode": "Demo only — fictional phone. The SMS carried the code {code}.",
+    "code": "Code from the SMS",
+    "confirm": "Confirm",
+    "noSms": "No SMS after a minute? Check the number and try again, or join first if you are new.",
+    "tryAgain": "Try again",
+    "codeSent": "Code sent.",
+    "signedIn": "You are signed in.",
+    "signedOut": "You are signed out.",
+    "requested": "Order sent. A delivery partner in your area will accept it.",
+    "cancelled": "Order cancelled.",
+    "placeSaved": "Meeting point saved."
   }
 }

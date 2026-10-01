@@ -64,6 +64,11 @@ export async function seed(): Promise<MinimalSeedResult | null> {
       .values({ businessName: SEED.supplier.name, serviceAreaId: area!.id, active: true, contactName: "Supplier contact (TEST)", leadTimeDays: 2, paymentTermsNote: "Paid per pickup by mobile money before release (test data)" })
       .returning();
     const [hub] = await tx.insert(s.hubs).values({ name: "Test Hub (TEST)", serviceAreaId: area!.id, minStockUnits: 10, active: true }).returning();
+    // Public meeting points for shop orders (Prompt L §3); the shop opens once the area allows delivery partners to sell to customers.
+    await tx.insert(s.meetingPoints).values([
+      { serviceAreaId: area!.id, name: "Market gate (TEST)" },
+      { serviceAreaId: area!.id, name: "Dispensary gate (TEST)" },
+    ]);
     const [kit] = await tx
       .insert(s.products)
       .values({ name: "Standard kit (reusable)", category: "REUSABLE", unitDescription: "1 kit: reusable pads + storage bag" })

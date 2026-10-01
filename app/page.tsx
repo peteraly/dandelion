@@ -19,8 +19,11 @@ export default async function LandingPage() {
     <PublicShell path="/">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-lg">{t("hero")}</p>
+      <Link href="/shop" className="btn btn-primary" data-testid="shop-cta">
+        {t("shopCta")}
+      </Link>
       {openDemo ? (
-        <Link href="/demo" className="btn btn-primary" data-testid="try-demo">
+        <Link href="/demo" className="btn btn-secondary" data-testid="try-demo">
           {(await getTranslations("openDemo"))("landingCta")}
         </Link>
       ) : null}

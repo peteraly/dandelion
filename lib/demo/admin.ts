@@ -15,6 +15,7 @@ import { proposeResolution, reportProblem } from "@/lib/services/exceptions";
 import { createDataRequest, handleDataRequest, openDataRequests } from "@/lib/services/admin";
 import { createSupplier, requestSupplierActivation, setSupplierProduct } from "@/lib/services/suppliers";
 import { createOrganisation, requestOrganisationActivation } from "@/lib/services/organisations";
+import { addDemoPlaces } from "./shop";
 import { requestAreaSales, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { adminCreatePickup, expectCustomerPayment } from "@/lib/services/orders";
@@ -91,6 +92,8 @@ export async function buildWorld(w: World): Promise<void> {
     w.manifest.count("approvals.AREA_SALES_CHANGE");
   }
   w.directPaths = true;
+  // Public meeting points for shop orders in every area (Prompt L §3).
+  await addDemoPlaces(w);
   for (const [i, area] of w.areas.entries()) {
     // A school, an NGO and a women-owned pharmacy (business buyers, founders' decision of 2026-10-01) per area.
     for (const [j, kind] of (["SCHOOL", "NGO", "PHARMACY"] as const).entries()) {
