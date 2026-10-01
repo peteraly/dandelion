@@ -137,7 +137,9 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Item | Status | Notes |
 | --- | --- | --- |
 | M1 — count once, close loops | **built** | Closing a problem closes its payment; one definition per list; no re-flagging in reconciliation; only stuck deliveries; hub keeper texted when a held delivery may continue. Demo district 34 → 11 items. |
-| M2–M8 | **not started** | Payment claims that heal, push payments (after G1), field settlements, owners and due times, a demo that tidies up, shop SMS cap and cleanup, confirmed women sellers. `docs/PROMPT_M_RED_TEAM_SELF_HEALING.md`. |
+| M2, M6, M7, prevention | **built** | Payment claims lapse by themselves; a demo that tidies up (keeping one held delivery of each kind and the always-human problems for visitors); shop code SMS cap 100/h with an alarm at 50; unconfirmed shop numbers forgotten; waterproof packing and rain covers required (ADR-043). |
+| M9 — the next seller | **built** | A paid shop order not handed over in 24 h passes to the next seller with stock, her payment with it (`order_transfers`, permanent); reminder half-way; reliable sellers asked first; refund opened automatically if nobody takes it (ADR-044). |
+| M3, M4, M5, M8, M10 | **not started** | Push payments and payout API (after G1), field settlement by rule, owners and due times, confirmed women sellers, pickups by rule. `docs/PROMPT_M_RED_TEAM_SELF_HEALING.md`. |
 
 ## Prompt L (money, the shop, a marketplace where every side wins) — status
 

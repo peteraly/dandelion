@@ -25,7 +25,9 @@ export type OrderEvent =
   | "CANCEL_HANDOVER"
   | "COMPLETE"
   | "CANCEL"
-  | "CLOSE_PLAN";
+  | "CLOSE_PLAN"
+  | "REASSIGN"
+  | "PAYMENT_CARRIED";
 
 export interface OrderCtx {
   fullyPaid?: boolean;
@@ -166,6 +168,15 @@ function planMachine(kind: OrderKind, seller: ActorKind): OrderMachine {
       ],
     },
     { event: "CLOSE_PLAN", from: ["PLAN_ACTIVE"], to: "CLOSED", actors: [seller, "SUPER_ADMIN"], guards: [noPayment] },
+    // A shop order not handed over in time passes to the next seller (Prompt M §3.1); her payment follows it.
+    { event: "REASSIGN", from: ["FULLY_PAID", "HANDOVER_PENDING"], to: "CANCELLED", actors: ["SYSTEM"] },
+    // The payment she made on the order that passed on, carried to this one.
+    {
+      event: "PAYMENT_CARRIED",
+      from: ["PLAN_ACTIVE"],
+      to: { oneOf: ["PLAN_ACTIVE", "FULLY_PAID"], pick: (c) => (c.fullyPaid ? "FULLY_PAID" : "PLAN_ACTIVE") },
+      actors: ["SYSTEM"],
+    },
   ];
   return defineMachine<OrderState, OrderEvent, OrderCtx>(`order:${kind}`, ORDER_STATES, rows);
 }

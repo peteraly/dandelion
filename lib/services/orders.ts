@@ -29,7 +29,7 @@ import { tr, type Locale } from "@/lib/i18n/server-translator";
 import { appOrigin } from "@/lib/env";
 import { formatTzs } from "@/lib/money";
 import { tzDay } from "@/lib/util/time";
-import { DomainError, getSetting, logAdminAction, recordLedgerEvent, withTx, type ServiceActor } from "./core";
+import { DomainError, getSetting, logAdminAction, recordLedgerEvent, withTx, SYSTEM, type ServiceActor } from "./core";
 import { applyCustody, lockBatch, registerBatch, returnToParent, splitBatch } from "./custody";
 import { ensureOpenIntent, enqueuePoll, openIntent, paidTotals, type Order } from "./payments";
 import { activePriceItem } from "./pricing";
@@ -66,7 +66,14 @@ export async function applyOrder(tx: Tx, order: Order, event: OrderEvent, actor:
   if (!res.ok) throw new DomainError("transition_refused", res.reason);
   const [o] = await tx
     .update(s.orders)
-    .set({ ...patch, state: res.to, updatedAt: now(), completedAt: res.to === "COMPLETED" ? now() : undefined })
+    .set({
+      ...patch,
+      state: res.to,
+      updatedAt: now(),
+      completedAt: res.to === "COMPLETED" ? now() : undefined,
+      // When it became fully paid: a shop order's hand-over is due within shopHandoverHours of it (Prompt M §3.1).
+      fullyPaidAt: res.to === "FULLY_PAID" && order.state !== "FULLY_PAID" && order.state !== "HANDOVER_PENDING" ? now() : undefined,
+    })
     .where(eq(s.orders.id, order.id))
     .returning();
   return o!;
@@ -535,7 +542,7 @@ export async function createPlanInTx(
   actor: Actor,
   customer: typeof s.customers.$inferSelect,
   productId: string,
-  shop?: { ref: string; seller: string; place: string },
+  shop?: { ref: string; seller: string; place: string; carried?: { fromOrderId: string; amountTzs: number } },
 ): Promise<{ orderId: string }> {
   const open = await tx.query.orders.findFirst({
     where: and(eq(s.orders.customerId, customer.id), inArray(s.orders.state, ["PLAN_ACTIVE", "FULLY_PAID", "HANDOVER_PENDING"])),
@@ -572,15 +579,32 @@ export async function createPlanInTx(
       createdBy: actor.userId,
     })
     .returning();
-  const intent = await ensureOpenIntent(tx, order!);
+  let plan = order!;
   const c = await customerContact(tx, customer.id);
-  const pay = { name: c.name, price: formatTzs(order!.totalTzs, c.locale), payee: intent.payeeAccount, reference: order!.paymentRef };
+  // Her payment followed her order from a seller who was late (Prompt M §3.1): it covers this order, in Dandelion's
+  // account, recorded once and for ever; anything above this order's price goes to an admin to refund.
+  const carried = shop?.carried && shop.carried.amountTzs > 0 ? Math.min(shop.carried.amountTzs, plan.totalTzs) : 0;
+  if (carried > 0) {
+    await tx.insert(s.orderTransfers).values({ fromOrderId: shop!.carried!.fromOrderId, toOrderId: plan.id, customerId: customer.id, amountTzs: carried });
+    plan = await applyOrder(tx, plan, "PAYMENT_CARRIED", SYSTEM, { fullyPaid: carried >= plan.totalTzs });
+    if (shop!.carried!.amountTzs > carried) {
+      await tx.insert(s.exceptions).values({ ref: `EX-${humanCode(6)}`, type: "REFUND_REQUEST", orderId: plan.id, reportedBySystem: true, note: `Carried ${shop!.carried!.amountTzs} TZS to an order of ${plan.totalTzs} TZS: refund the difference` });
+    }
+  }
+  if (plan.state === "FULLY_PAID") {
+    // Nothing to pay: no payment request, so she cannot pay twice.
+    await getSmsProvider().send(c.phone, tr(c.locale, "sms.shopPlanPaid", { name: c.name, ref: shop!.ref, seller: shop!.seller, place: shop!.place }), "CUSTOMER_PLAN", tx);
+    return { orderId: plan.id };
+  }
+  const intent = await ensureOpenIntent(tx, plan);
+  const remaining = plan.totalTzs - carried;
+  const pay = { name: c.name, price: formatTzs(remaining, c.locale), payee: intent.payeeAccount, reference: plan.paymentRef };
   // A shop order says who is coming, where, and how to pay in one SMS instead of two (founders, 2026-10-01).
   const body = shop
     ? tr(c.locale, "sms.shopPlan", { ...pay, ref: shop.ref, seller: shop.seller, place: shop.place })
-    : tr(c.locale, "sms.customerPlan", { ...pay, paid: formatTzs(0, c.locale), remaining: formatTzs(order!.totalTzs, c.locale) });
+    : tr(c.locale, "sms.customerPlan", { ...pay, paid: formatTzs(0, c.locale), remaining: formatTzs(plan.totalTzs, c.locale) });
   await getSmsProvider().send(c.phone, body, "CUSTOMER_PLAN", tx);
-  return { orderId: order!.id };
+  return { orderId: plan.id };
 }
 
 /** The area a seller works in, and their hub when they have one. */

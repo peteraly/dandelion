@@ -2,7 +2,7 @@
  * Payment intents and paid totals. Nothing here can confirm a payment:
  * confirmation lives only in lib/payments/verification.ts.
  */
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, or, sql } from "drizzle-orm";
 import type { DbOrTx, Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { amountRuleFor } from "@/lib/domain/orders";
@@ -31,7 +31,14 @@ export async function paidTotals(db: DbOrTx, order: Pick<Order, "id" | "totalTzs
     .select({ sum: sql<number>`coalesce(sum(${s.donorFundings.amountTzs}), 0)::int` })
     .from(s.donorFundings)
     .where(eq(s.donorFundings.orderId, order.id));
-  const confirmedTzs = Number(p?.sum ?? 0);
+  // A payment that followed this order from one that passed on counts here; one that left with the order counts there.
+  const [tr] = await db
+    .select({
+      sum: sql<number>`coalesce(sum(case when ${s.orderTransfers.toOrderId} = ${order.id} then ${s.orderTransfers.amountTzs} else -${s.orderTransfers.amountTzs} end), 0)::int`,
+    })
+    .from(s.orderTransfers)
+    .where(or(eq(s.orderTransfers.toOrderId, order.id), eq(s.orderTransfers.fromOrderId, order.id)));
+  const confirmedTzs = Number(p?.sum ?? 0) + Number(tr?.sum ?? 0);
   const donorTzs = Number(d?.sum ?? 0);
   const covered = confirmedTzs + donorTzs;
   // Invariant: coverage can never exceed the price (overpayments go to review, never counted).
@@ -41,7 +48,7 @@ export async function paidTotals(db: DbOrTx, order: Pick<Order, "id" | "totalTzs
     confirmedTzs,
     donorTzs,
     remainingTzs: order.totalTzs - covered,
-    hasConfirmed: Number(p?.n ?? 0) > 0,
+    hasConfirmed: Number(p?.n ?? 0) > 0 || confirmedTzs > 0,
     fullyPaid: covered === order.totalTzs,
   };
 }

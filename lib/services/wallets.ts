@@ -24,18 +24,22 @@ export type Withdrawal = typeof s.withdrawals.$inferSelect;
 
 /** Credits per order for one member, or for everyone (grouped by member). */
 async function creditRows(db: DbOrTx, userId?: string): Promise<(CreditRow & { userId: string })[]> {
-  const rows = await db
-    .select({
-      userId: s.paymentIntents.payeeUserId,
-      orderState: s.orders.state,
-      platformFeeTzs: s.orders.platformFeeTzs,
-      confirmedTzs: sql<number>`coalesce(sum(${s.paymentIntents.confirmedAmountTzs}), 0)::int`,
-    })
-    .from(s.paymentIntents)
-    .innerJoin(s.orders, eq(s.orders.id, s.paymentIntents.orderId))
-    .where(and(eq(s.paymentIntents.collectedByPlatform, true), eq(s.paymentIntents.status, "PAYMENT_CONFIRMED"), userId ? eq(s.paymentIntents.payeeUserId, userId) : undefined))
-    .groupBy(s.paymentIntents.payeeUserId, s.orders.id, s.orders.state, s.orders.platformFeeTzs);
-  return rows.map((r) => ({ ...r, confirmedTzs: Number(r.confirmedTzs) }));
+  // Confirmed payments into Dandelion's account, credited to the seller they were for, plus payments that followed a
+  // late order to the next seller (Prompt M §3.1): the first seller's credit for that order falls to zero, the next
+  // seller's order carries it.
+  const rows = await db.execute<{ user_id: string; order_state: CreditRow["orderState"]; platform_fee_tzs: number; confirmed: number }>(sql`
+    select user_id, order_state, platform_fee_tzs, sum(amount)::int as confirmed from (
+      select pi.payee_user_id as user_id, o.id as order_id, o.state as order_state, o.platform_fee_tzs, pi.confirmed_amount_tzs as amount
+        from payment_intents pi join orders o on o.id = pi.order_id
+        where pi.collected_by_platform and pi.status = 'PAYMENT_CONFIRMED' and pi.payee_user_id is not null
+      union all
+      select o.seller_user_id, o.id, o.state, o.platform_fee_tzs, -t.amount_tzs from order_transfers t join orders o on o.id = t.from_order_id
+      union all
+      select o.seller_user_id, o.id, o.state, o.platform_fee_tzs, t.amount_tzs from order_transfers t join orders o on o.id = t.to_order_id
+    ) x
+    where ${userId ? sql`user_id = ${userId}` : sql`true`}
+    group by user_id, order_id, order_state, platform_fee_tzs`);
+  return rows.rows.map((r) => ({ userId: r.user_id, orderState: r.order_state, platformFeeTzs: Number(r.platform_fee_tzs), confirmedTzs: Number(r.confirmed) }));
 }
 
 /** One member's balance, computed from confirmed payments and their withdrawals. */

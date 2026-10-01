@@ -8,7 +8,7 @@
  * member must not be able to find out who buys here). Names only, never an address; places are named public places.
  */
 import { now, nowMs } from "@/lib/clock";
-import { and, desc, eq, gte, inArray, lt, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, isNotNull, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, type DbOrTx, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
@@ -23,10 +23,12 @@ import { createCustomerSession } from "@/lib/auth/customer-session";
 import { getSmsProvider } from "@/lib/sms";
 import { tr } from "@/lib/i18n/server-translator";
 import { firstName } from "@/lib/util/names";
-import { DomainError, getSetting, logSecurityEvent, withTx, isUniqueViolation } from "./core";
+import { formatTzs } from "@/lib/money";
+import { DomainError, getSetting, logSecurityEvent, recordLedgerEvent, SYSTEM, withTx, isUniqueViolation } from "./core";
 import { allowedSalesFor } from "./areas";
 import { activePriceItem } from "./pricing";
-import { createPlanInTx } from "./orders";
+import { applyOrder, createPlanInTx, lockOrder } from "./orders";
+import { lockBatch, returnToParent } from "./custody";
 import { openIntent, paidTotals } from "./payments";
 import { PRIVACY_NOTICE_VERSION } from "./customers";
 
@@ -256,15 +258,133 @@ export async function demoCodeFor(challengeId: string): Promise<string | null> {
 
 // ---------- ordering ----------
 
-/** Requests nobody accepted in time lapse (checked whenever the shop or a delivery partner looks). */
-export async function expireShopRequests(db: DbOrTx = getDb()): Promise<number> {
+/**
+ * Requests nobody accepted in time lapse (checked whenever the shop or a delivery partner looks). One that carried her
+ * payment from a late seller lapses the same way, and her money is given back: that is money going out, so the system
+ * opens the refund for the admins and tells her by SMS — nobody has to notice it.
+ */
+export async function expireShopRequests(): Promise<number> {
   const cutoff = new Date(nowMs() - SHOP_REQUEST_HOURS * 3_600_000);
+  return withTx(async (tx) => {
+    const rows = await tx
+      .update(s.customerRequests)
+      .set({ state: "EXPIRED", updatedAt: now() })
+      .where(and(eq(s.customerRequests.state, "OPEN"), lt(s.customerRequests.createdAt, cutoff)))
+      .returning();
+    for (const r of rows.filter((x) => x.carriedTzs > 0)) await refundCarried(tx, r, "nobody could take it in time", "sms.carriedRefund");
+    return rows.length;
+  });
+}
+
+/** Her carried payment goes back to her: a refund case for the admins (only admins move money out) and one SMS. */
+async function refundCarried(tx: Tx, r: typeof s.customerRequests.$inferSelect, why: string, sms: "sms.carriedRefund" | "sms.cancelledRefund"): Promise<void> {
+  await tx.insert(s.exceptions).values({ ref: `EX-${humanCode(6)}`, type: "REFUND_REQUEST", orderId: r.carriedFromOrderId, reportedBySystem: true, note: `[shop] ${r.ref}: ${why}; refund ${r.carriedTzs} TZS` });
+  const c = await tx.query.customers.findFirst({ where: eq(s.customers.id, r.customerId) });
+  if (c?.status === "ACTIVE") {
+    await getSmsProvider().send(await decryptString(c.phoneEnc), tr("sw", sms, { name: firstName(c.displayName), ref: r.ref, amount: formatTzs(r.carriedTzs, "sw") }), "SHOP_REQUEST", tx);
+  }
+}
+
+// ---------- late orders pass to the next seller (Prompt M §3.1, founders 2026-10-01) ----------
+
+/**
+ * A shop order must be handed over within `shopHandoverHours` of her full payment. Half-way, the seller is reminded.
+ * At the deadline it passes on by itself: the late seller's order is cancelled (a pack set aside goes back to his
+ * stock), her order reopens to the other sellers in her area — never to him — and her payment follows it to the next
+ * seller's order, recorded once and for ever. He earns nothing from it and is asked later in future. Runs whenever the
+ * shop, a seller's list or the admin's shop page is opened, every live-demo minute and every night.
+ */
+export async function passOnLateShopOrders(): Promise<{ reminded: number; passed: number }> {
+  const hours = Number(await getSetting("shopHandoverHours"));
+  if (hours <= 0) return { reminded: 0, passed: 0 };
+  const db = getDb();
   const rows = await db
-    .update(s.customerRequests)
-    .set({ state: "EXPIRED", updatedAt: now() })
-    .where(and(eq(s.customerRequests.state, "OPEN"), lt(s.customerRequests.createdAt, cutoff)))
-    .returning({ id: s.customerRequests.id });
-  return rows.length;
+    .select({ o: s.orders, r: s.customerRequests })
+    .from(s.orders)
+    .innerJoin(s.customerRequests, eq(s.customerRequests.orderId, s.orders.id))
+    .where(and(inArray(s.orders.state, ["FULLY_PAID", "HANDOVER_PENDING"]), isNotNull(s.orders.fullyPaidAt)))
+    .limit(200);
+  let reminded = 0;
+  let passed = 0;
+  for (const { o, r } of rows) {
+    const due = o.fullyPaidAt!.getTime() + hours * 3_600_000;
+    if (nowMs() >= due) {
+      // One order that cannot pass on (its stock is held in a problem) never stops the others.
+      if (await passOn(o.id, r).catch((e: unknown) => (e instanceof DomainError ? false : Promise.reject(e)))) passed++;
+    } else if (!o.dueReminderAt && nowMs() >= due - (hours * 3_600_000) / 2) {
+      await withTx(async (tx) => {
+        const marked = await tx.update(s.orders).set({ dueReminderAt: now() }).where(and(eq(s.orders.id, o.id), isNull(s.orders.dueReminderAt)));
+        if (!marked.rowCount) return;
+        const seller = await tx.query.users.findFirst({ where: eq(s.users.id, o.sellerUserId) });
+        if (seller) {
+          const when = formatDue(new Date(due), seller.preferredLocale);
+          await getSmsProvider().send(await decryptString(seller.phoneEnc), tr(seller.preferredLocale, "sms.handoverDue", { name: firstName(seller.displayName), ref: o.ref, due: when }), "NOTICE", tx);
+        }
+        reminded++;
+      });
+    }
+  }
+  return { reminded, passed };
+}
+
+function formatDue(d: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale === "sw" ? "sw-TZ" : "en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: "Africa/Dar_es_Salaam" }).format(d);
+}
+
+/** When a shop order's hand-over is due, or null before she has paid in full. */
+export async function handoverDueAt(order: Pick<typeof s.orders.$inferSelect, "fullyPaidAt" | "state">): Promise<Date | null> {
+  if (!order.fullyPaidAt || !["FULLY_PAID", "HANDOVER_PENDING"].includes(order.state)) return null;
+  const hours = Number(await getSetting("shopHandoverHours"));
+  return hours > 0 ? new Date(order.fullyPaidAt.getTime() + hours * 3_600_000) : null;
+}
+
+async function passOn(orderId: string, r: typeof s.customerRequests.$inferSelect): Promise<boolean> {
+  return withTx(async (tx) => {
+    const order = await lockOrder(tx, orderId);
+    if (order.state !== "FULLY_PAID" && order.state !== "HANDOVER_PENDING") return false; // handed over or handled meanwhile
+    if (order.state === "HANDOVER_PENDING" && order.batchId) {
+      const child = await lockBatch(tx, order.batchId);
+      if (child.custodyState === "RESERVED_FOR_CUSTOMER") await returnToParent(tx, SYSTEM, child, "CANCEL_CUSTOMER_RESERVATION", { orderHasConfirmedPayment: true }, order.id);
+    }
+    const paid = await paidTotals(tx, order);
+    // Only money in Dandelion's account can follow the order. Money paid straight to the late seller (the seller-collects
+    // route) stays with him: the admins get it back for her.
+    const [direct] = await tx
+      .select({ n: sql<number>`coalesce(sum(${s.paymentIntents.confirmedAmountTzs}), 0)::int` })
+      .from(s.paymentIntents)
+      .where(and(eq(s.paymentIntents.orderId, order.id), eq(s.paymentIntents.status, "PAYMENT_CONFIRMED"), eq(s.paymentIntents.collectedByPlatform, false)));
+    const sellerHeld = Number(direct?.n ?? 0);
+    const carried = Math.max(0, paid.confirmedTzs - sellerHeld);
+    await applyOrder(tx, order, "REASSIGN", SYSTEM, {});
+    const ref = await uniqueRequestRef(tx);
+    await tx.insert(s.customerRequests).values({
+      ref,
+      customerId: r.customerId,
+      serviceAreaId: r.serviceAreaId,
+      meetingPointId: r.meetingPointId,
+      productId: r.productId,
+      womenOnly: r.womenOnly,
+      carriedFromOrderId: order.id,
+      carriedTzs: carried,
+      excludedSellerId: order.sellerUserId,
+    });
+    if (sellerHeld > 0) {
+      await tx.insert(s.exceptions).values({ ref: `EX-${humanCode(6)}`, type: "REFUND_REQUEST", orderId: order.id, reportedBySystem: true, note: `[shop] ${order.ref} passed on late; ${sellerHeld} TZS was paid straight to the late seller: get it back to her` });
+    }
+    if (paid.donorTzs > 0) {
+      await tx.insert(s.exceptions).values({ ref: `EX-${humanCode(6)}`, type: "OTHER", orderId: order.id, reportedBySystem: true, note: `Donor funding of ${paid.donorTzs} TZS was on an order that passed to another seller (${ref}): apply it again` });
+    }
+    await recordLedgerEvent(tx, { type: "ORDER_REASSIGNED", subjectRef: order.ref, orderId: order.id, amountTzs: carried, role: "SYSTEM" });
+    // Both are told; neither SMS names the product.
+    const seller = await tx.query.users.findFirst({ where: eq(s.users.id, order.sellerUserId) });
+    if (seller) await getSmsProvider().send(await decryptString(seller.phoneEnc), tr(seller.preferredLocale, "sms.passedOnSeller", { name: firstName(seller.displayName), ref: order.ref }), "NOTICE", tx);
+    const c = (await tx.query.customers.findFirst({ where: eq(s.customers.id, r.customerId) }))!;
+    await getSmsProvider().send(await decryptString(c.phoneEnc), tr("sw", "sms.passedOnCustomer", { name: firstName(c.displayName), ref: order.ref, amount: formatTzs(carried, "sw") }), "SHOP_REQUEST", tx);
+    const place = (await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId) }))!;
+    const area = (await shopAreas(tx)).find((a) => a.id === r.serviceAreaId);
+    if (area) await alertSellers(tx, { ref, productId: r.productId, womenOnly: r.womenOnly, place, area, exclude: order.sellerUserId });
+    return true;
+  });
 }
 
 export const ShopRequestSchema = z.object({ productId: z.uuid(), meetingPointId: z.uuid(), womenOnly: z.boolean().default(false) }).strict();
@@ -319,13 +439,25 @@ async function sellersFor(db: DbOrTx, q: { serviceAreaId: string; productId: str
           .where(and(eq(s.users.role, "BOSS_RIDER"), eq(s.users.status, "ACTIVE"), eq(s.users.serviceAreaId, q.serviceAreaId)))
           .groupBy(s.users.id)
       : [];
-  return [...champions, ...riders].filter((x) => Number(x.held) > 0).sort((a, b) => Number(b.held) - Number(a.held));
+  // Sellers who kept their promises are asked first (Prompt M §3.1): fewest orders passed on from them in 90 days,
+  // then the most stock.
+  const since = new Date(nowMs() - 90 * 86_400_000);
+  const lateRows = await db
+    .select({ id: s.customerRequests.excludedSellerId, n: sql<number>`count(*)::int` })
+    .from(s.customerRequests)
+    .where(and(isNotNull(s.customerRequests.excludedSellerId), gte(s.customerRequests.createdAt, since)))
+    .groupBy(s.customerRequests.excludedSellerId);
+  const late = new Map(lateRows.map((x) => [x.id, Number(x.n)]));
+  return [...champions, ...riders]
+    .filter((x) => Number(x.held) > 0)
+    .sort((a, b) => (late.get(a.id) ?? 0) - (late.get(b.id) ?? 0) || Number(b.held) - Number(a.held));
 }
 
-async function alertSellers(tx: Tx, r: { ref: string; productId: string; womenOnly: boolean; place: typeof s.meetingPoints.$inferSelect; area: ShopArea }): Promise<void> {
+async function alertSellers(tx: Tx, r: { ref: string; productId: string; womenOnly: boolean; place: typeof s.meetingPoints.$inferSelect; area: ShopArea; exclude?: string }): Promise<void> {
   const max = Number(await getSetting("shopAlertSellers", tx));
   if (max <= 0) return;
-  for (const seller of (await sellersFor(tx, { serviceAreaId: r.area.id, productId: r.productId, womenOnly: r.womenOnly, ridersSell: r.area.ridersSell })).slice(0, max)) {
+  const sellers = (await sellersFor(tx, { serviceAreaId: r.area.id, productId: r.productId, womenOnly: r.womenOnly, ridersSell: r.area.ridersSell })).filter((x) => x.id !== r.exclude);
+  for (const seller of sellers.slice(0, max)) {
     // Never the product's name, and never the customer's: the phone may be shared.
     const body = tr(seller.locale, "sms.shopAlert", { name: firstName(seller.displayName), ref: r.ref, place: r.place.name });
     await getSmsProvider().send(await decryptString(seller.phoneEnc), body, "SHOP_ALERT", tx);
@@ -349,12 +481,16 @@ export async function setShopPlace(customer: { id: string }, meetingPointId: str
 
 export async function cancelShopRequest(customer: { id: string }, requestId: string): Promise<void> {
   if (!z.uuid().safeParse(requestId).success) throw new DomainError("not_found");
-  const rows = await getDb()
-    .update(s.customerRequests)
-    .set({ state: "CANCELLED", updatedAt: now() })
-    .where(and(eq(s.customerRequests.id, requestId), eq(s.customerRequests.customerId, customer.id), eq(s.customerRequests.state, "OPEN")))
-    .returning({ id: s.customerRequests.id });
-  if (!rows.length) throw new DomainError("request_not_open");
+  await withTx(async (tx) => {
+    const rows = await tx
+      .update(s.customerRequests)
+      .set({ state: "CANCELLED", updatedAt: now() })
+      .where(and(eq(s.customerRequests.id, requestId), eq(s.customerRequests.customerId, customer.id), eq(s.customerRequests.state, "OPEN")))
+      .returning();
+    if (!rows.length) throw new DomainError("request_not_open");
+    // Her payment was carried in it: it goes back to her.
+    if (rows[0]!.carriedTzs > 0) await refundCarried(tx, rows[0]!, "she cancelled", "sms.cancelledRefund");
+  });
 }
 
 export interface ShopOrderRow {
@@ -368,6 +504,12 @@ export interface ShopOrderRow {
   productId: string;
   meetingPointId: string;
   womenOnly: boolean;
+  /** Her payment came with this order from one that passed on. */
+  carriedTzs: number;
+  /** This order was not handed over in time and passed to another seller. */
+  passedOn: boolean;
+  /** When the seller must hand over by (after full payment). */
+  dueAt: Date | null;
   sellerName: string | null;
   order: null | {
     state: string;
@@ -382,6 +524,7 @@ export interface ShopOrderRow {
 /** Her shop page: her area's places and products, and her orders with what to pay and where to meet. */
 export async function shopHome(customer: ShopCustomerLike) {
   await expireShopRequests();
+  await passOnLateShopOrders();
   const db = getDb();
   const areas = await shopAreas(db);
   const home = areas.find((a) => a.id === customer.serviceAreaId) ?? null;
@@ -392,8 +535,12 @@ export async function shopHome(customer: ShopCustomerLike) {
     const place = await db.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId), columns: { name: true, whenText: true } });
     const seller = r.acceptedBy ? await db.query.users.findFirst({ where: eq(s.users.id, r.acceptedBy), columns: { displayName: true } }) : undefined;
     let order: ShopOrderRow["order"] = null;
+    let passedOn = false;
+    let dueAt: Date | null = null;
     if (r.orderId) {
       const o = (await db.query.orders.findFirst({ where: eq(s.orders.id, r.orderId) }))!;
+      passedOn = o.state === "CANCELLED" && !!(await db.query.customerRequests.findFirst({ where: eq(s.customerRequests.carriedFromOrderId, o.id), columns: { id: true } }));
+      dueAt = await handoverDueAt(o);
       const t = await paidTotals(db, o);
       const intent = await openIntent(db, o.id);
       order = { state: o.state, totalTzs: o.totalTzs, paidTzs: t.confirmedTzs, remainingTzs: t.remainingTzs, paymentRef: o.paymentRef, payee: intent?.payeeAccount ?? null };
@@ -409,6 +556,9 @@ export async function shopHome(customer: ShopCustomerLike) {
       productId: r.productId,
       meetingPointId: r.meetingPointId,
       womenOnly: r.womenOnly,
+      carriedTzs: r.carriedTzs,
+      passedOn,
+      dueAt,
       sellerName: seller ? firstName(seller.displayName) : null,
       order,
     });
@@ -442,6 +592,7 @@ async function sellerShopArea(db: DbOrTx, actor: Actor): Promise<string | null> 
 export async function openRequestsFor(actor: Actor) {
   authorize(actor, "order.accept_request");
   await expireShopRequests();
+  await passOnLateShopOrders();
   const db = getDb();
   const areaId = await sellerShopArea(db, actor);
   if (!areaId) return [];
@@ -451,7 +602,14 @@ export async function openRequestsFor(actor: Actor) {
     .innerJoin(s.products, eq(s.products.id, s.customerRequests.productId))
     .innerJoin(s.meetingPoints, eq(s.meetingPoints.id, s.customerRequests.meetingPointId))
     .innerJoin(s.customers, eq(s.customers.id, s.customerRequests.customerId))
-    .where(and(eq(s.customerRequests.state, "OPEN"), eq(s.customerRequests.serviceAreaId, areaId), actor.role === "FIELD_CHAMPION" ? sql`true` : eq(s.customerRequests.womenOnly, false)))
+    .where(
+      and(
+        eq(s.customerRequests.state, "OPEN"),
+        eq(s.customerRequests.serviceAreaId, areaId),
+        actor.role === "FIELD_CHAMPION" ? sql`true` : eq(s.customerRequests.womenOnly, false),
+        or(isNull(s.customerRequests.excludedSellerId), ne(s.customerRequests.excludedSellerId, actor.userId)),
+      ),
+    )
     .orderBy(s.meetingPoints.name, s.customerRequests.createdAt)
     .limit(30);
   const held = await heldBy(db, actor);
@@ -463,6 +621,7 @@ export async function openRequestsFor(actor: Actor) {
     placeName: x.place,
     placeWhen: x.when,
     womenOnly: x.r.womenOnly,
+    carriedTzs: x.r.carriedTzs,
     customerName: firstName(x.customer),
     inStock: (held.get(x.r.productId) ?? 0) > 0,
   }));
@@ -492,6 +651,7 @@ export async function acceptCustomerRequest(actor: Actor, requestId: string): Pr
     if (r.state !== "OPEN") throw new DomainError(r.state === "ACCEPTED" ? "request_taken" : "request_not_open");
     if (r.createdAt.getTime() < nowMs() - SHOP_REQUEST_HOURS * 3_600_000) throw new DomainError("request_not_open");
     if (r.womenOnly && actor.role !== "FIELD_CHAMPION") throw new DomainError("request_women_only");
+    if (r.excludedSellerId === actor.userId) throw new DomainError("request_passed_on");
     if ((await sellerShopArea(tx, actor)) !== r.serviceAreaId) throw new DomainError("request_other_area");
     if (!((await heldBy(tx, actor)).get(r.productId) ?? 0)) throw new DomainError("request_no_stock");
     const me = (await tx.query.users.findFirst({ where: eq(s.users.id, actor.userId) }))!;
@@ -499,7 +659,8 @@ export async function acceptCustomerRequest(actor: Actor, requestId: string): Pr
     if (!customer || customer.status !== "ACTIVE" || !customer.phoneVerifiedAt) throw new DomainError("not_found");
     const place = (await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId) }))!;
     // One SMS: who is coming, where, the price and how to pay.
-    const { orderId } = await createPlanInTx(tx, actor, customer, r.productId, { ref: r.ref, seller: firstName(me.displayName), place: place.name });
+    const carried = r.carriedFromOrderId && r.carriedTzs > 0 ? { fromOrderId: r.carriedFromOrderId, amountTzs: r.carriedTzs } : undefined;
+    const { orderId } = await createPlanInTx(tx, actor, customer, r.productId, { ref: r.ref, seller: firstName(me.displayName), place: place.name, carried });
     await tx.update(s.customerRequests).set({ state: "ACCEPTED", acceptedBy: actor.userId, acceptedAt: now(), orderId, updatedAt: now() }).where(eq(s.customerRequests.id, r.id));
     return { orderId };
   });
@@ -568,12 +729,14 @@ export async function reportShopProblem(customer: { id: string }, raw: z.input<t
 }
 
 /** The shop request behind a plan, for the delivery partner's order page (where to meet). */
-export async function shopRequestForOrder(db: DbOrTx, orderId: string): Promise<{ ref: string; placeName: string; placeWhen: string | null } | null> {
+export async function shopRequestForOrder(db: DbOrTx, orderId: string): Promise<{ ref: string; placeName: string; placeWhen: string | null; dueAt: Date | null } | null> {
   const rows = await db
-    .select({ ref: s.customerRequests.ref, placeName: s.meetingPoints.name, placeWhen: s.meetingPoints.whenText })
+    .select({ ref: s.customerRequests.ref, placeName: s.meetingPoints.name, placeWhen: s.meetingPoints.whenText, fullyPaidAt: s.orders.fullyPaidAt, state: s.orders.state })
     .from(s.customerRequests)
     .innerJoin(s.meetingPoints, eq(s.meetingPoints.id, s.customerRequests.meetingPointId))
+    .innerJoin(s.orders, eq(s.orders.id, s.customerRequests.orderId))
     .where(eq(s.customerRequests.orderId, orderId))
     .limit(1);
-  return rows[0] ?? null;
+  const r = rows[0];
+  return r ? { ref: r.ref, placeName: r.placeName, placeWhen: r.placeWhen, dueAt: await handoverDueAt(r) } : null;
 }

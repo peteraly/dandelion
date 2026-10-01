@@ -2,6 +2,7 @@ import { runDailyReconciliation } from "@/lib/services/reconciliation";
 import { recordHubStock } from "@/lib/services/replenishment";
 import { sendRestockReminders } from "@/lib/services/reminders";
 import { lapseStaleClaims } from "@/lib/services/self-heal";
+import { passOnLateShopOrders } from "@/lib/services/shop";
 import { cronAuthorized, heartbeat } from "@/lib/security/cron";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,17 @@ export async function GET(request: Request) {
       reminders = { error: (e as Error).message };
       await heartbeat("reminders", "error", reminders);
     }
-    return Response.json({ ...result, claims, stock, reminders });
+    // Paid shop orders not handed over in time pass to the next seller (Prompt M §3.1). The shop and the sellers' pages
+    // also run this whenever they are opened; the nightly run makes sure it happens even when nobody looks.
+    let passedOn: { reminded: number; passed: number } | { error: string };
+    try {
+      passedOn = await passOnLateShopOrders();
+      await heartbeat("shop-pass-on", "ok", passedOn);
+    } catch (e) {
+      passedOn = { error: (e as Error).message };
+      await heartbeat("shop-pass-on", "error", passedOn);
+    }
+    return Response.json({ ...result, claims, stock, reminders, passedOn });
   } catch (e) {
     await heartbeat("reconciliation", "error", { message: (e as Error).message });
     throw e;

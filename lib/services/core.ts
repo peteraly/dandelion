@@ -187,6 +187,12 @@ export const SETTING_DEFAULTS = {
   shopCodeSmsPerHour: 100,
   /** At this many shop code SMS in an hour, an alarm goes to the admins. */
   shopCodeSmsAlarm: 50,
+  /**
+   * Hours a seller has to hand over a shop order after she has paid in full (Prompt M §3.1, founders 2026-10-01).
+   * Half-way he is reminded; at the deadline the order passes to the next seller with stock and her payment follows it.
+   * 0 = never passes on.
+   */
+  shopHandoverHours: 24,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

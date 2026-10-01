@@ -11,7 +11,7 @@ import * as s from "@/lib/db/schema";
 import { authorize, type Actor } from "@/lib/policy";
 import { PLAN_KINDS } from "@/lib/domain/sales";
 import { firstName } from "@/lib/util/names";
-import { expireShopRequests, shopAreas } from "./shop";
+import { expireShopRequests, passOnLateShopOrders, shopAreas } from "./shop";
 
 const DAY = 86_400_000;
 
@@ -43,6 +43,7 @@ export interface AreaHealth {
 export async function marketplaceHealth(actor: Actor, days = 30): Promise<{ areas: AreaHealth[]; waiting: WaitingRequest[]; days: number }> {
   authorize(actor, "admin.dashboard");
   await expireShopRequests();
+  await passOnLateShopOrders();
   const db = getDb();
   const since = new Date(nowMs() - days * DAY);
   const at = now();

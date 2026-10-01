@@ -997,8 +997,9 @@ test("shop: a customer joins with her phone, orders to a public meeting point, a
   await page.goto("/shop");
   await expect(page.getByTestId("shop-meet")).toBeVisible();
 
-  // Hand-over at the meeting point with her code.
+  // Hand-over at the meeting point with her code. Paid in full, the page says by when, or the order passes on.
   await rider.page.goto(`/orders/${saleId}`);
+  await expect(rider.page.getByTestId("shop-due")).toContainText("Hand over by");
   await rider.page.getByRole("button", { name: "Start handover" }).click();
   await expect(rider.page.getByRole("heading", { name: "Handover required" })).toBeVisible();
   const code = digits(await lastSms(request, "HANDOVER_CODE"), 6);

@@ -166,7 +166,7 @@ export const custodyMachine = defineMachine<CustodyState, CustodyEvent, CustodyC
       requireTrue((c) => c.educationConfirmed, "education_not_confirmed"),
     ],
   },
-  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER", "SUPER_ADMIN", "SYSTEM_VERIFIER"] },
+  { event: "CANCEL_CUSTOMER_RESERVATION", from: ["RESERVED_FOR_CUSTOMER"], to: "RETURNED", actors: ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER", "SUPER_ADMIN", "SYSTEM_VERIFIER", "SYSTEM"] },
   { event: "QUARANTINE", from: UNLOCKED_ACTIVE, to: "DAMAGED_OR_QUARANTINED", actors: ALL_FIELD },
   {
     event: "RESOLVE_RESUME",

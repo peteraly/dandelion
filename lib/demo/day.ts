@@ -5,6 +5,7 @@
  */
 import { lapseStaleClaims } from "@/lib/services/self-heal";
 import { sendRestockReminders } from "@/lib/services/reminders";
+import { passOnLateShopOrders } from "@/lib/services/shop";
 import { eq, sql } from "drizzle-orm";
 import * as s from "@/lib/db/schema";
 import { now } from "@/lib/clock";
@@ -15,6 +16,7 @@ import type { Hub, Person, Product, World } from "./world";
 import { claimWithoutPaying, deadJob, delayedPayment, enrolCustomer, handover, overpaymentWithRefund, payInstallment, pickupChain, restock, resumeLatePickups, reviewPayment, reversedPayment, startCustomerPlan, type Plan } from "./supply";
 import { adminDay, ensureExceptionCoverage, peopleLifecycle, reportFieldProblems, resolveOpenExceptions, supplierSetPieces, syncNotes } from "./admin";
 import { directDay } from "./direct";
+import { takePassedOnOrders } from "./shop";
 
 export interface DayOptions {
   /** Index of the day within the run (drives the set-piece admin scenarios). */
@@ -122,7 +124,7 @@ export async function installmentsAndHandovers(w: World, plans: Plan[], opts: Pi
         w.manifest.skip("payInstallment", e);
         p.nextPaymentDay = opts.day + 3;
       }
-    } else if (p.nextPaymentDay === null && !opts.holdHandovers) {
+    } else if (p.nextPaymentDay === null && !opts.holdHandovers && !p.late) {
       w.clock.advanceTo(atEat(opts.dayStart, rng.int(10, 18), rng.int(0, 59)));
       try {
         await handover(w, p);
@@ -156,6 +158,7 @@ export async function runDay(w: World, plans: Plan[], opts: DayOptions): Promise
     }
   }
   if (w.directPaths && !sunday) await directDay(w, plans, day, opts.totalDays);
+  await takePassedOnOrders(w, plans, day);
   await installmentsAndHandovers(w, plans, opts);
   // The afternoon block runs on working days, and always on the last day (coverage must not depend on the calendar).
   if (!sunday || lastDay) {
@@ -180,6 +183,9 @@ export async function nightly(w: World, dayStart: Date): Promise<void> {
   w.manifest.count("stock.nights");
   const { sent } = await sendRestockReminders();
   if (sent) w.manifest.count("reminders.sent", sent);
+  const late = await passOnLateShopOrders();
+  if (late.passed) w.manifest.count("shop.passedOn", late.passed);
+  if (late.reminded) w.manifest.count("shop.handoverReminders", late.reminded);
 }
 
 /**
@@ -199,6 +205,7 @@ export async function runHour(w: World, plans: Plan[], customersPerDay: number):
   }
   for (const p of plans) if (!p.handedOver && p.nextPaymentDay !== null) p.nextPaymentDay = rng.chance(0.25) ? 0 : 1;
   if (w.directPaths && rng.chance(0.3)) await directDay(w, plans, 0, 10_000);
+  await takePassedOnOrders(w, plans, 0);
   await installmentsAndHandovers(w, plans, { day: 0, dayStart: now(), holdHandovers: false });
   if (rng.chance(0.4)) await reportFieldProblems(w, plans, 0);
   if (rng.chance(0.5)) await resolveOpenExceptions(w, 0, 100);

@@ -147,6 +147,21 @@ describe("demo profile", () => {
     expect(await ensureDemoPlaces()).toBe(0);
   });
 
+  it("a seller who did not come in time: the order passed to the next seller, her payment with it, and was handed over (Prompt M §3.1)", async () => {
+    expect(manifest.counts["shop.passedOn"] ?? 0).toBeGreaterThan(0);
+    expect(manifest.counts["shop.passedOnTaken"] ?? 0).toBeGreaterThan(0);
+    // Each move of her money is one record: from the late seller's cancelled order to the next seller's, same customer,
+    // never more than was paid, and never taken by the seller it passed on from.
+    const wrong = await db().execute<{ n: string }>(sql`
+      select count(*)::text as n from order_transfers t
+        join orders a on a.id = t.from_order_id join orders b on b.id = t.to_order_id
+        where a.state <> 'CANCELLED' or a.customer_id <> t.customer_id or b.customer_id <> t.customer_id
+          or a.seller_user_id = b.seller_user_id or t.amount_tzs > a.total_tzs`);
+    expect(wrong.rows[0]!.n).toBe("0");
+    const delivered = await db().execute<{ n: string }>(sql`select count(*)::text as n from order_transfers t join orders b on b.id = t.to_order_id where b.state = 'COMPLETED'`);
+    expect(Number(delivered.rows[0]!.n)).toBeGreaterThan(0);
+  });
+
   it("money goes through Dandelion's account: sellers are credited, withdrawals are approved by one admin and sent by another (Prompt L §2)", async () => {
     const intents = await db().execute<{ platform: string; direct: string }>(sql`select count(*) filter (where collected_by_platform)::text as platform, count(*) filter (where not collected_by_platform)::text as direct from payment_intents`);
     expect(Number(intents.rows[0]!.platform)).toBeGreaterThan(0);

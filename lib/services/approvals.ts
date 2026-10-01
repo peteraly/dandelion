@@ -241,7 +241,7 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       if (key === "platformFeeBasis" && !(FEE_BASES as readonly string[]).includes(p.value as string)) throw new DomainError("setting_value_invalid");
       if (key === "safeguardingLeadPhones") p.value = leadPhones(p.value as string);
       if (key === "helplineText" && (p.value as string).length > 200) throw new DomainError("setting_value_invalid");
-      if ((key === "paymentClaimLapseHours" || key === "shopCodeSmsPerHour" || key === "shopCodeSmsAlarm") && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 10_000)) throw new DomainError("setting_value_invalid");
+      if ((key === "paymentClaimLapseHours" || key === "shopCodeSmsPerHour" || key === "shopCodeSmsAlarm" || key === "shopHandoverHours") && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 10_000)) throw new DomainError("setting_value_invalid");
       if (key === "shopAlertSellers" && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 10)) throw new DomainError("setting_value_invalid");
       await putSetting(tx, key, p.value, approverId);
       return;

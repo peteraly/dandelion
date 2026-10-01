@@ -125,6 +125,18 @@ export async function directDay(w: World, plans: Plan[], day: number, totalDays:
       if (plan) plans.push(plan);
     });
   }
+  // One seller does not come in time (Prompt M §3.1): she pays in full, he never hands over, and the next night the
+  // order passes to the next seller with stock, her payment with it; a local seller takes it the day after.
+  if (day >= 4 && day < totalDays - 3 && totalDays < 1000 && (await w.sellerStock(rider, disposable.id)) >= 1 && w.once("shop.late")) {
+    await attempt("shopLate", async () => {
+      const plan = await shopOrder(w, rider, disposable, day);
+      if (!plan) return;
+      plan.late = true;
+      plan.installments = [plan.totalTzs];
+      plan.nextPaymentDay = day;
+      plans.push(plan);
+    });
+  }
   // On the last day one shop request is left waiting for a seller.
   if (day >= totalDays - 1 && totalDays < 1000 && w.once("shop.waiting")) {
     await attempt("shopWaiting", async () => void (await shopOrder(w, rider, disposable, day, { accept: false })));

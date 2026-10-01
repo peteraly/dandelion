@@ -248,6 +248,7 @@ async function ShopRequestsCard({ actor, locale }: { actor: Actor; locale: "sw" 
                     <span className="font-medium">{r.customerName}</span> · {r.productName}
                     <span className="block text-stone-600">{formatDateTime(r.createdAt, locale)}</span>
                     {r.womenOnly ? <span className="block text-purple-900">{t("womenOnly")}</span> : null}
+                    {r.carriedTzs > 0 ? <span className="block text-green-900">{t("alreadyPaid", { amount: formatTzs(r.carriedTzs, locale) })}</span> : null}
                     {!r.inStock ? <span className="block text-amber-900">{t("noStock")}</span> : null}
                   </span>
                   <form action={acceptShopRequestAction}>

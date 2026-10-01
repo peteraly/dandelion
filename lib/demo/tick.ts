@@ -20,6 +20,7 @@ import { loadPlans, loadWorld } from "./load";
 import { runDay, runHour, nightly } from "./day";
 import { advanceLiveChains } from "./live";
 import { tidyUp } from "./tidy";
+import { passOnLateShopOrders } from "@/lib/services/shop";
 import type { SkippedScenario } from "./manifest";
 
 export type TickKind = "hour" | "day";
@@ -62,6 +63,8 @@ export async function simulateTick(kind: TickKind, adminId: string, opts: { auto
   const today = eatDayStart(now());
 
   if (kind === "hour") {
+    // A paid shop order not handed over in time passes to the next seller (Prompt M §3.1); runHour lets one take it.
+    await passOnLateShopOrders();
     await runHour(w, plans, customersPerDay);
     // Deliveries move one step per hour so the map catches them on the way (lib/demo/live.ts).
     await advanceLiveChains(w);

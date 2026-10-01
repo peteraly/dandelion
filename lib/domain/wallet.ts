@@ -64,6 +64,9 @@ export function balance(credits: readonly CreditRow[], withdrawals: readonly Wit
   let onHold = 0;
   for (const c of credits) {
     if (c.confirmedTzs <= 0) continue;
+    // A cancelled order's money is never the seller's: it goes back to the buyer, or followed her order to the next
+    // seller (Prompt M §3.1). It is neither earned nor on hold.
+    if (c.orderState === "CANCELLED") continue;
     const fee = Math.min(c.platformFeeTzs, c.confirmedTzs);
     if (FINISHED.includes(c.orderState)) {
       earned += c.confirmedTzs - fee;

@@ -186,6 +186,8 @@ export interface Plan {
   installments: number[];
   stalled: boolean;
   handedOver: boolean;
+  /** The seller never comes: the order passes to the next seller once she has paid (Prompt M §3.1). */
+  late?: boolean;
 }
 
 /** Start a plan and decide its installment schedule up front (paid on later days). */
@@ -241,7 +243,7 @@ export async function payInstallment(w: World, p: Plan, today: number, holdHando
     }
     p.nextPaymentDay = null;
     // The seed's last day holds handovers so some plans stay FULLY_PAID (Prompt B §2.3).
-    if (!holdHandover) await handover(w, p);
+    if (!holdHandover && !p.late) await handover(w, p);
   } else {
     const gap = w.rng.chance(w.params.stallRate) ? w.rng.int(10, 16) : w.rng.int(2, 9);
     if (gap >= 10) p.stalled = true;
@@ -258,6 +260,11 @@ export async function resyncPlan(w: World, p: Plan): Promise<number> {
 }
 
 export async function handover(w: World, p: Plan): Promise<void> {
+  // Passed to another seller while this one waited for stock (Prompt M §3.1): nothing left for this seller to do.
+  if ((await w.order(p.orderId)).state === "CANCELLED") {
+    p.handedOver = true;
+    return;
+  }
   const stock = await w.sellerStock(p.customer.champion, p.product.id);
   if (stock < 1) {
     // Realistic: the champion must restock first. Leave the order FULLY_PAID; the orchestrator restocks and retries.

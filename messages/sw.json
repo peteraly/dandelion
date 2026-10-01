@@ -540,7 +540,9 @@
       "accept": "Kubali",
       "meetAt": "Oda ya duka {ref} — kutana {place}. Kabidhi tu baada ya malipo kuthibitishwa, kwa msimbo wake.",
       "waitingHere": "{n} wanasubiri",
-      "womenOnly": "Aliomba muuzaji mwanamke wa mtaani."
+      "womenOnly": "Aliomba muuzaji mwanamke wa mtaani.",
+      "alreadyPaid": "Imeshalipwa: {amount}. Malipo yake yamekuja na oda hii kutoka kwa muuzaji aliyechelewa; kabidhi ndani ya muda unaoonyeshwa ukishakubali.",
+      "handOverBy": "Kabidhi kabla ya {due}, la sivyo oda itaenda kwa muuzaji mwingine."
     },
     "packedWaterproof": "Imefungwa kwenye mfuko usiopitisha maji uliofungwa, na namba ya kufuli hapo juu. Hakuna kinachotoka bila hiyo.",
     "rainCover": "Nina kifuniko cha mvua kwa safari hii (msimu wa mvua)."
@@ -852,6 +854,10 @@
         "paymentClaimLapseHours": {
           "label": "Saa kabla dai lisilolipwa kujifuta",
           "hint": "Mtu akisema amelipa na hakuna kinachofika ndani ya muda huu, oda husubiri malipo tena na hupata SMS moja. 0 = kamwe."
+        },
+        "shopHandoverHours": {
+          "label": "Saa za kukabidhi oda ya duka iliyolipwa",
+          "hint": "Huhesabiwa tangu alipolipa yote. Nusu ya muda muuzaji hukumbushwa; muda ukiisha oda huenda kwa muuzaji anayefuata mwenye mzigo na malipo yake huifuata. 0 = kamwe."
         }
       }
     },
@@ -1525,7 +1531,8 @@
       "PRICE_LIST_UPDATED": "Orodha ya bei imesasishwa",
       "DONOR_FUNDING_APPROVED": "Ufadhili wa mfadhili umeidhinishwa",
       "DAILY_RECONCILIATION": "Usuluhishi wa kila siku",
-      "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki"
+      "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki",
+      "ORDER_REASSIGNED": "Oda iliyochelewa imeenda kwa muuzaji anayefuata, pamoja na malipo"
     },
     "anchored": "Imerekodiwa kwenye leja ya umma",
     "pending": "Inasubiri kurekodiwa kwenye leja ya umma",
@@ -1579,7 +1586,13 @@
     "reminder": "Habari {name}. Mwezi umepita. Unahitaji zaidi? Agiza {link} au muulize muuzaji wako. Zima vikumbusho dukani.",
     "safeguarding": "Ripoti ya usalama ya Dandelion {ref}: mteja alihisi si salama ({area}, {place}). Tafadhali mpigie leo: {name} {phone}. Maelezo: Admin > Matatizo.",
     "inspectionResume": "Habari {name}. Tatizo la mzigo {ref} limetatuliwa. Tafadhali maliza ukaguzi kwenye programu leo.",
-    "claimLapsed": "Habari {name}. Hatujapokea malipo yako ya oda {ref}. Kama ulilipa, yataunganishwa mara yatakapofika. Kama sivyo, lipa kwenda {payee} ukitumia kumbukumbu {reference}."
+    "claimLapsed": "Habari {name}. Hatujapokea malipo yako ya oda {ref}. Kama ulilipa, yataunganishwa mara yatakapofika. Kama sivyo, lipa kwenda {payee} ukitumia kumbukumbu {reference}.",
+    "handoverDue": "Habari {name}. Oda {ref} imelipwa yote. Ikabidhi kabla ya {due}, la sivyo itaenda kwa muuzaji mwingine.",
+    "passedOnSeller": "Habari {name}. Oda {ref} haikukabidhiwa kwa wakati na imeenda kwa muuzaji mwingine. Ulichotenga kwa ajili yake kimerudi kwenye mzigo wako.",
+    "passedOnCustomer": "Habari {name}. Muuzaji wako hakuweza kuja kwa wakati, kwa hiyo oda {ref} imeenda kwa muuzaji mwingine karibu nawe. Malipo yako ya {amount} yanaifuata; hulipi tena. Tutakutumia SMS ya nani anakuja.",
+    "shopPlanPaid": "Habari {name}. Oda {ref}: {seller} atakutana nawe {place}. Malipo yako yameshathibitishwa; hulipi tena. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
+    "carriedRefund": "Habari {name}. Hakuna muuzaji aliyeweza kuchukua oda {ref} kwa wakati. Malipo yako ya {amount} yatarudishwa kwako.",
+    "cancelledRefund": "Habari {name}. Oda {ref} imeghairiwa kama ulivyoomba. Malipo yako ya {amount} yatarudishwa kwako."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -1713,6 +1726,7 @@
     "request_taken": "Msambazaji mwingine ameshakubali oda hii.",
     "request_other_area": "Oda hii iko eneo lingine.",
     "request_no_stock": "Huna bidhaa hii. Ongeza mzigo kwanza.",
+    "request_passed_on": "Oda hii iliondolewa kwako kwa sababu ilichelewa. Muuzaji mwingine ataichukua.",
     "meeting_point_exists": "Eneo hili tayari lina mahali penye jina hilo.",
     "request_women_only": "Aliomba muuzaji mwanamke wa mtaani akabidhi hii.",
     "packing_not_confirmed": "Thibitisha mzigo umefungwa kwenye mfuko usiopitisha maji uliofungwa.",
@@ -1840,7 +1854,8 @@
         "PRICE_LIST_UPDATED": "Orodha ya bei imesasishwa",
         "DONOR_FUNDING_APPROVED": "Ufadhili wa wafadhili umeidhinishwa",
         "DAILY_RECONCILIATION": "Usuluhishi wa kila siku",
-        "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki"
+        "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki",
+        "ORDER_REASSIGNED": "Oda iliyochelewa imeenda kwa muuzaji anayefuata, pamoja na malipo"
       },
       "security": {
         "ACCOUNT_LOCKED": "Akaunti imefungwa",
@@ -2112,12 +2127,18 @@
       "pay": "Lipa sasa",
       "meet": "Imelipwa — kutana upokee",
       "done": "Imepokelewa",
-      "stopped": "Imesimamishwa"
+      "stopped": "Imesimamishwa",
+      "passedOn": "Imeenda kwa muuzaji mwingine"
     },
     "meetAt": "Kutana {place}",
     "waiting": "Inasubiri muuzaji wa eneo lako aikubali.",
     "cancel": "Ghairi oda",
     "expired": "Hakuna aliyeweza kuchukua oda hii ndani ya siku mbili. Tafadhali agiza tena.",
+    "expiredRefund": "Hakuna aliyeweza kuchukua oda hii kwa wakati. Malipo yako ya {amount} yatarudishwa kwako.",
+    "cancelledRefund": "Umeghairi oda hii. Malipo yako ya {amount} yatarudishwa kwako.",
+    "carried": "Malipo yako ya {amount} yamehifadhiwa kwa oda hii. Hulipi tena.",
+    "passedOn": "Muuzaji wako hakuweza kuja kwa wakati, kwa hiyo oda hii imeenda kwa muuzaji mwingine karibu nawe, pamoja na malipo yako. Angalia oda yako mpya juu.",
+    "dueBy": "{name} ataikabidhi kabla ya {due}. Asipofanya hivyo, muuzaji mwingine hutumwa na malipo yako huifuata oda.",
     "acceptedBy": "Imekubaliwa na {name}",
     "payNow": "Lipa {amount} kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}.",
     "paidSoFar": "Imethibitishwa hadi sasa: {paid} kati ya {total}.",

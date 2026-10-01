@@ -5,12 +5,13 @@
  * Every step is the real service call; codes are read from the mock SMS outbox like everywhere else in the demo.
  */
 import { addMeetingPoint, meetingPointsFor } from "@/lib/services/areas";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, gt, isNotNull } from "drizzle-orm";
 import * as s from "@/lib/db/schema";
 import { acceptCustomerRequest, finishShopSignIn, joinShop, reportShopProblem, requestOrder } from "@/lib/services/shop";
 import { decideApproval } from "@/lib/services/approvals";
 import { proposeResolution } from "@/lib/services/exceptions";
-import { planFromOrder, type Plan } from "./supply";
+import { DomainError } from "@/lib/services/core";
+import { planFromOrder, resyncPlan, type Plan } from "./supply";
 import type { Person, Product, World } from "./world";
 
 /** Named public places, with when a seller is usually there so orders can be brought together (market day). */
@@ -59,6 +60,39 @@ export async function shopOrder(w: World, seller: Person, product: Product, day:
   const c = { id: customerId, name, phone, champion: seller };
   w.customers.push(c);
   return planFromOrder(w, c, product, orderId, day);
+}
+
+/**
+ * Orders that passed on from a late seller (Prompt M §3.1) carry her payment and wait for the next seller in her area:
+ * a local seller who holds the product takes it first, else a delivery partner. Nothing is owed, so the plan goes
+ * straight to the hand-over. The late seller is never offered it.
+ */
+export async function takePassedOnOrders(w: World, plans: Plan[], day: number): Promise<void> {
+  const waiting = await w.db.query.customerRequests.findMany({ where: and(eq(s.customerRequests.state, "OPEN"), gt(s.customerRequests.carriedTzs, 0)), limit: 5 });
+  for (const r of waiting) {
+    const c = w.customers.find((x) => x.id === r.customerId);
+    const product = w.products.find((p) => p.id === r.productId);
+    const area = w.areas.find((a) => a.id === r.serviceAreaId);
+    if (!c || !product || !area) continue;
+    const candidates = [...area.hubs.flatMap((h) => h.champions), ...(r.womenOnly ? [] : w.riders)].filter((x) => x.actor.userId !== r.excludedSellerId && !w.busy.has(x.actor.userId));
+    for (const seller of candidates) {
+      if ((await w.sellerStock(seller, r.productId)) < 1) continue;
+      let orderId: string;
+      try {
+        ({ orderId } = await acceptCustomerRequest(seller.actor, r.id));
+      } catch (e) {
+        if (e instanceof DomainError) continue; // not in this seller's area: the next one
+        throw e;
+      }
+      w.manifest.count("shop.passedOnTaken");
+      c.champion = seller; // she is served by the seller of her latest order
+      const plan = await planFromOrder(w, c, product, orderId, day);
+      if ((await resyncPlan(w, plan)) === 0) plan.nextPaymentDay = null;
+      plans.push(plan);
+      w.tick(5, 30);
+      break;
+    }
+  }
 }
 
 /**

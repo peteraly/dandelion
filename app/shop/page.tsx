@@ -182,14 +182,14 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
 async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" | "en"; reorder: boolean }) {
   const t = await getTranslations("shop");
   const tzs = (n: number) => formatTzs(n, locale);
-  const step = o.order ? orderStep(o.order) : null;
+  const step = o.passedOn ? "passedOn" : o.order ? orderStep(o.order) : null;
   return (
     <li className="rounded-xl border border-stone-200 p-3" data-testid="shop-order-row" data-state={o.state} data-order-state={o.order?.state ?? ""}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p className="font-medium">
           {o.productName} <span className="font-mono text-xs text-stone-500">{o.ref}</span>
         </p>
-        <Badge tone={step === "done" ? "green" : TONE[o.state]}>{step ? t(`steps.${step}`) : t(`states.${o.state}`)}</Badge>
+        <Badge tone={step === "done" ? "green" : step === "passedOn" ? "neutral" : TONE[o.state]}>{step ? t(`steps.${step}`) : t(`states.${o.state}`)}</Badge>
       </div>
       <p className="text-sm text-stone-600">
         {t("meetAt", { place: o.placeName })}
@@ -198,7 +198,14 @@ async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" 
       </p>
       {o.state === "OPEN" ? (
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm text-amber-950">{t("waiting")}</p>
+          <p className="text-sm text-amber-950">
+            {t("waiting")}
+            {o.carriedTzs > 0 ? (
+              <span className="block text-green-900" data-testid="shop-carried">
+                {t("carried", { amount: tzs(o.carriedTzs) })}
+              </span>
+            ) : null}
+          </p>
           <form action={cancelRequestAction}>
             <IdemKey />
             <input type="hidden" name="requestId" value={o.id} />
@@ -208,7 +215,8 @@ async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" 
           </form>
         </div>
       ) : null}
-      {o.state === "EXPIRED" ? <p className="mt-2 text-sm text-stone-600">{t("expired")}</p> : null}
+      {o.state === "EXPIRED" ? <p className="mt-2 text-sm text-stone-600">{o.carriedTzs > 0 ? t("expiredRefund", { amount: tzs(o.carriedTzs) }) : t("expired")}</p> : null}
+      {o.state === "CANCELLED" && o.carriedTzs > 0 ? <p className="mt-2 text-sm text-stone-600">{t("cancelledRefund", { amount: tzs(o.carriedTzs) })}</p> : null}
       {o.order ? (
         <div className="mt-2 flex flex-col gap-2 text-sm">
           {o.sellerName ? <p>{t("acceptedBy", { name: o.sellerName })}</p> : null}
@@ -222,10 +230,16 @@ async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" 
           {step === "meet" ? (
             <p className="rounded-xl bg-green-50 p-3 text-green-900" data-testid="shop-meet">
               {t("paidMeet", { name: o.sellerName ?? "", place: o.placeName })}
+              {o.dueAt ? <span className="mt-1 block font-semibold">{t("dueBy", { name: o.sellerName ?? "", due: formatDateTime(o.dueAt, locale) })}</span> : null}
             </p>
           ) : null}
           {step === "done" ? <p className="text-green-900">{t("handedOver")}</p> : null}
           {step === "stopped" ? <p className="text-stone-600">{t("stopped")}</p> : null}
+          {step === "passedOn" ? (
+            <p className="text-stone-600" data-testid="shop-passed-on">
+              {t("passedOn")}
+            </p>
+          ) : null}
           <details className="text-sm" data-testid="shop-report">
             <summary className="cursor-pointer text-stone-600 underline">{t("report.open")}</summary>
             <form action={reportProblemAction} className="mt-2 flex flex-col gap-2">
@@ -249,7 +263,7 @@ async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" 
           </details>
         </div>
       ) : null}
-      {reorder && o.state !== "OPEN" && (!o.order || orderStep(o.order) === "done" || orderStep(o.order) === "stopped") ? (
+      {reorder && o.state !== "OPEN" && !o.passedOn && (!o.order || orderStep(o.order) === "done" || orderStep(o.order) === "stopped") ? (
         <form action={requestOrderAction} className="mt-2">
           <IdemKey />
           <input type="hidden" name="productId" value={o.productId} />

@@ -4,6 +4,8 @@
  * turned down with a reason; one waits for approval and one, approved, waits for the second admin to send it — so
  * the admin home and Money → Payouts open with real work. Every step is the real service call.
  */
+import { eq } from "drizzle-orm";
+import * as s from "@/lib/db/schema";
 import { humanCode } from "@/lib/crypto/random";
 import { getSetting } from "@/lib/services/core";
 import { approveWithdrawal, balanceFor, rejectWithdrawal, requestWithdrawal, sendWithdrawal } from "@/lib/services/wallets";
@@ -16,6 +18,9 @@ export async function payoutsRound(w: World): Promise<void> {
   const people = [...w.supplierOrgs.flatMap((o) => o.users), ...w.riders, ...w.hubs.map((h) => h.manager), ...w.hubs.flatMap((h) => h.champions)];
   const eligible: { person: (typeof people)[number]; available: number }[] = [];
   for (const person of people) {
+    // Only active members can withdraw; someone deactivated earlier in the history is skipped.
+    const user = await w.db.query.users.findFirst({ where: eq(s.users.id, person.actor.userId), columns: { status: true } });
+    if (user?.status !== "ACTIVE") continue;
     const b = await balanceFor(w.db, person.actor.userId);
     if (b.availableTzs >= min * 2 && b.pendingWithdrawalTzs === 0) eligible.push({ person, available: b.availableTzs });
   }

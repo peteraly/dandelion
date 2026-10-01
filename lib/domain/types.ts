@@ -193,6 +193,8 @@ export const LEDGER_EVENT_TYPES = [
   "DAILY_RECONCILIATION",
   /** A withdrawal sent from the Dandelion collection account to a member (Prompt L §2.2). */
   "PAYOUT_SENT",
+  /** A late shop order passed to the next seller; her payment moved with it (Prompt M §3.1). */
+  "ORDER_REASSIGNED",
 ] as const;
 export type LedgerEventType = (typeof LEDGER_EVENT_TYPES)[number];
 

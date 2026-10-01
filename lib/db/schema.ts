@@ -392,6 +392,11 @@ export const customerRequests = pgTable(
     productId: uuid("product_id").notNull().references(() => products.id),
     /** She asked for a woman local seller to hand it over (safeguarding, founders' decision of 2026-10-01): delivery partners do not see it. */
     womenOnly: boolean("women_only").notNull().default(false),
+    /** Reopened because the first seller did not hand over in time (Prompt M §3.1): her payment follows her order. */
+    carriedFromOrderId: uuid("carried_from_order_id").references(() => orders.id),
+    carriedTzs: integer("carried_tzs").notNull().default(0),
+    /** The seller who was late: they cannot take it again. */
+    excludedSellerId: uuid("excluded_seller_id").references(() => users.id),
     state: customerRequestStateEnum("state").notNull().default("OPEN"),
     acceptedBy: uuid("accepted_by").references(() => users.id),
     acceptedAt: ts("accepted_at"),
@@ -404,6 +409,24 @@ export const customerRequests = pgTable(
     index("customer_requests_customer_idx").on(t.customerId),
     check("customer_request_accepted", sql`${t.state} <> 'ACCEPTED' OR (${t.acceptedBy} IS NOT NULL AND ${t.orderId} IS NOT NULL)`),
   ],
+);
+
+/**
+ * A customer's payment moved with her order to the next seller (Prompt M §3.1, founders 2026-10-01): when a seller
+ * does not hand over in time, the order passes on and what she paid follows it. Never changed or deleted; each order
+ * passes its money on at most once. Counted in what each order has been paid and in each seller's balance.
+ */
+export const orderTransfers = pgTable(
+  "order_transfers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    fromOrderId: uuid("from_order_id").notNull().references(() => orders.id),
+    toOrderId: uuid("to_order_id").notNull().references(() => orders.id),
+    customerId: uuid("customer_id").notNull().references(() => customers.id),
+    amountTzs: integer("amount_tzs").notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [uniqueIndex("order_transfers_from_uq").on(t.fromOrderId), uniqueIndex("order_transfers_to_uq").on(t.toOrderId), check("order_transfer_positive", sql`${t.amountTzs} > 0`)],
 );
 
 export const consentRecords = pgTable("consent_records", {
@@ -566,6 +589,10 @@ export const orders = pgTable(
     receiverConfirmedAt: ts("receiver_confirmed_at"),
     educationConfirmedAt: ts("education_confirmed_at"),
     /** The delivery partner confirmed a rain cover when accepting a pickup in the area's rainy months (Prompt M). */
+    /** When the order became fully paid (a shop order's seller must hand over within `shopHandoverHours` of it, Prompt M §3.1). */
+    fullyPaidAt: ts("fully_paid_at"),
+    /** When the seller was reminded that the hand-over is due. */
+    dueReminderAt: ts("due_reminder_at"),
     rainCoverAt: ts("rain_cover_at"),
     createdBy: uuid("created_by").notNull().references(() => users.id),
     /**

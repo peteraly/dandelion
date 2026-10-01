@@ -170,7 +170,8 @@ it concerns.
   demo settles at a realistic list of 3–6 items.
 - **M7 — Shop abuse and privacy** *(done)*: shop code SMS capped at 100 an hour with an alarm at 50; unconfirmed shop
   numbers forgotten after 7 days by the retention job.
-- **M9 — Promises and the next seller** (§3.1), once the founders agree that her money may follow her order.
+- **M9 — The next seller** *(done)* (§3.1): a paid shop order not handed over in time passes to the next seller with
+  stock, her payment with it; reminder half-way; sellers who pass fewer orders on are asked first.
 - **M10 — Pickups by rule**: a restock suggestion becomes a pickup to the most reliable delivery partner with capacity.
 - **Prevention** *(done)*: waterproof packing confirmed before a batch can leave; a rain cover confirmed for pickups in
   the rainy months.
@@ -201,18 +202,37 @@ it and owns it (custody "with delivery partner"), and resells it — to customer
 organisations. Women local sellers do the same with stock from their hub. Each sale's money is held until the
 hand-over, then credited to the seller less the fee.
 
-**Recommended (to build, M9) — the customer receives her pack as soon as possible:**
+**Decided (founders, 2026-10-01: "Ok") and built (M9) — the customer receives her pack as soon as possible:**
 
-1. **A promise when accepting.** The seller picks one of fixed slots — "today" or "tomorrow, at the meeting point's
-   usual time" — no free text. She sees the promised time.
-2. **The reliable go first.** Alerts go first to sellers who hold the product and keep their promises; a seller's
-   on-time record is part of the ranking. Reliability earns orders.
-3. **A reminder, then the next seller.** Half-way to the promise the seller gets an SMS. If the promise passes, the
-   order goes back to the sellers in her area automatically. The late seller earns nothing (he is only paid at the
-   hand-over) and his record drops.
-4. **Her money follows her order.** If she has already paid, her payment is carried to the new seller's order inside
-   Dandelion's account, automatically and recorded in the ledger — no refund, no waiting. **Founders' decision
-   needed**: this is money moving inside Dandelion's account without an admin.
+1. **A deadline, the same for everyone.** Once she has paid in full, the seller has `shopHandoverHours` (24, a
+   setting two admins change; 0 = off) to hand over. Both see it: "Hand over by Thu 14:00" on the seller's order
+   page, "Juma hands it over by …" in her shop. No free text, no negotiating. *(A promise slot chosen by the seller
+   at acceptance — "today" or "market day" — is a possible refinement; the fixed deadline needs nothing from him.)*
+2. **A reminder half-way.** One SMS to the seller at half the time: "hand it over by …, or it passes to another
+   seller". Never twice.
+3. **Then the next seller, by itself.** At the deadline the order is cancelled for him (`REASSIGN`, by the system), a
+   pack he had set aside goes back into his stock, and her order reopens to the other sellers in her area who hold
+   the product — never to him: he does not see it and cannot take it (`request_passed_on`). Both get one SMS; neither
+   names the product. It runs whenever the shop, a seller's list or Shop health is opened, every live-demo hour, and
+   every night.
+4. **Her money follows her order.** What she paid into Dandelion's account moves to the next seller's order the
+   moment he accepts — one permanent row in `order_transfers` (never changed, never deleted; database guard) and an
+   `ORDER_REASSIGNED` entry in the public ledger. She does not pay again; the next seller's plan starts paid in full
+   with no payment request, and she is told who is coming. The late seller earns nothing (his balance for that order
+   is zero; a cancelled order's money never counts as his); the seller who delivers is credited at the hand-over, less
+   the fee, as for any sale.
+5. **The reliable go first.** Sellers are alerted and listed in order of how few orders passed on from them in the
+   last 90 days, then by stock. Reliability earns orders.
+6. **When nobody can take it.** A reopened order that no seller takes within 48 hours lapses like any other, and her
+   money goes back to her: the system opens the refund for the admins (only admins send money out) and texts her.
+   The same when she cancels while waiting. If the price went up meanwhile she pays only the difference; if it went
+   down, the difference is opened as a refund. Money paid straight to the late seller (the seller-collects route)
+   cannot follow the order; the system opens a case to get it back to her.
+
+Code: `passOnLateShopOrders`, `passOn`, `handoverDueAt` in `lib/services/shop.ts`; `createPlanInTx` (carried payment)
+in `lib/services/orders.ts`; `paidTotals`, `creditRows` and reconciliation count transfers; migration
+`0014_late_orders_pass_on`. Tests: `tests/integration/late-orders.test.ts`; the demo shows one late seller whose order
+passed on and was handed over by a local seller (`tests/demo/demo-profile.test.ts`).
 
 ### 3.2 Instant payments, no ambiguity (to build, M3, after G1)
 
@@ -233,7 +253,8 @@ hand-over, then credited to the seller less the fee.
 | Admin uploads the provider statement | Statement fetched every night | after G1 |
 | Admin assigns pickups (with a suggestion filled in) | Restock suggestion becomes a pickup to the most reliable delivery partner with capacity, by rule | M10 |
 | Admins settle damaged or short deliveries | Settlement by rule from the evidence (seal intact and wet → packing; seal broken → the trip), within 100,000 TZS | M4 |
-| Admins close stuck items | Reminders, then reassignment by rule | M5, M9 |
+| A shop order a seller never brings | Reminder half-way, then the next seller, her payment with it | **built** (M9) |
+| Admins close other stuck items | Reminders, then reassignment by rule | M5 |
 | Two admins for prices, sale paths, settings, members, money out | Stays — these are decisions, not chores | — |
 
 ## Review log
@@ -248,4 +269,10 @@ hand-over, then credited to the seller less the fee.
 - 2026-10-01 (later) — Measured again on a fresh full demo district after these changes: the same four lists show
   **7** items (2 payments to check, 5 problems, 0 money that does not match, 0 deliveries stuck), all from the last
   day — against **34** at the start. Two payouts also wait for a second admin, by design.
+- 2026-10-01 (later) — M9 built after the founders' "Ok": late shop orders pass to the next seller with her payment
+  (migration `0014_late_orders_pass_on`, ADR-044). Red-team points handled in the same change: only money in
+  Dandelion's account follows an order; the late seller can neither see nor take it back; a cancelled order's money
+  never counts in a seller's balance; a reopened order that nobody takes refunds her automatically; one order that
+  cannot pass on (its stock held in a problem) never blocks the others; the demo keeps one held delivery of each kind
+  for visitors instead of tidying every one away.
 

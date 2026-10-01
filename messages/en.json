@@ -539,7 +539,9 @@
       "accept": "Accept",
       "meetAt": "Shop order {ref} — meet at {place}. Hand over only after payment is confirmed, with her code.",
       "waitingHere": "{n} waiting",
-      "womenOnly": "She asked for a woman local seller."
+      "womenOnly": "She asked for a woman local seller.",
+      "alreadyPaid": "Already paid: {amount}. Her payment came with this order from a seller who was late; hand over within the time shown once you accept.",
+      "handOverBy": "Hand over by {due}, or the order passes to another seller."
     },
     "packedWaterproof": "Packed in a sealed waterproof bag, with the seal number above. Nothing leaves without it.",
     "rainCover": "I have a rain cover for this trip (rainy season)."
@@ -851,6 +853,10 @@
         "paymentClaimLapseHours": {
           "label": "Hours before an unpaid claim clears itself",
           "hint": "If someone says they paid and nothing arrives in this time, the order waits for payment again and they get one SMS. 0 = never."
+        },
+        "shopHandoverHours": {
+          "label": "Hours to hand over a paid shop order",
+          "hint": "Counted from her full payment. Half-way the seller is reminded; at the deadline the order passes to the next seller with stock and her payment follows it. 0 = never."
         }
       }
     },
@@ -1524,7 +1530,8 @@
       "PRICE_LIST_UPDATED": "Price list updated",
       "DONOR_FUNDING_APPROVED": "Donor funding approved",
       "DAILY_RECONCILIATION": "Daily reconciliation",
-      "PAYOUT_SENT": "Payout sent to a member"
+      "PAYOUT_SENT": "Payout sent to a member",
+      "ORDER_REASSIGNED": "Late order passed to the next seller, payment with it"
     },
     "anchored": "Recorded on the public ledger",
     "pending": "Waiting to be recorded on the public ledger",
@@ -1578,7 +1585,13 @@
     "reminder": "Habari {name}. About a month has passed. Need more? Order at {link} or ask your local seller. Turn reminders off in the shop.",
     "safeguarding": "Dandelion safety report {ref}: a customer felt unsafe ({area}, {place}). Please call her today: {name} {phone}. Details in Admin > Problems.",
     "inspectionResume": "Habari {name}. The problem with delivery {ref} is resolved. Please finish the inspection in the app today.",
-    "claimLapsed": "Habari {name}. We have not received your payment for order {ref}. If you paid, it will be matched as soon as it arrives. If not, pay to {payee} with reference {reference}."
+    "claimLapsed": "Habari {name}. We have not received your payment for order {ref}. If you paid, it will be matched as soon as it arrives. If not, pay to {payee} with reference {reference}.",
+    "handoverDue": "Habari {name}. Order {ref} is paid in full. Hand it over by {due}, or it passes to another seller.",
+    "passedOnSeller": "Habari {name}. Order {ref} was not handed over in time and has passed to another seller. Anything set aside for it is back in your stock.",
+    "passedOnCustomer": "Habari {name}. Your seller could not come in time, so order {ref} has passed to another seller near you. Your payment of {amount} goes with it; you do not pay again. We will text you who is coming.",
+    "shopPlanPaid": "Habari {name}. Order {ref}: {seller} will meet you at {place}. Your payment is already confirmed; you do not pay again. Read your hand-over code only when you have received your order.",
+    "carriedRefund": "Habari {name}. No seller could take order {ref} in time. Your payment of {amount} will be sent back to you.",
+    "cancelledRefund": "Habari {name}. Order {ref} is cancelled as you asked. Your payment of {amount} will be sent back to you."
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
@@ -1712,6 +1725,7 @@
     "request_taken": "Another delivery partner has already accepted this order.",
     "request_other_area": "This order is in another area.",
     "request_no_stock": "You do not hold this product. Restock first.",
+    "request_passed_on": "This order passed on from you because it was late. Another seller will take it.",
     "meeting_point_exists": "This area already has a place with that name.",
     "request_women_only": "She asked for a woman local seller to hand this over.",
     "packing_not_confirmed": "Confirm the batch is packed in a sealed waterproof bag.",
@@ -1839,7 +1853,8 @@
         "PRICE_LIST_UPDATED": "Price list updated",
         "DONOR_FUNDING_APPROVED": "Donor funding approved",
         "DAILY_RECONCILIATION": "Daily reconciliation",
-        "PAYOUT_SENT": "Payout sent to a member"
+        "PAYOUT_SENT": "Payout sent to a member",
+        "ORDER_REASSIGNED": "Late order passed to the next seller, payment with it"
       },
       "security": {
         "ACCOUNT_LOCKED": "Account locked",
@@ -2111,12 +2126,18 @@
       "pay": "Pay now",
       "meet": "Paid — meet to receive",
       "done": "Received",
-      "stopped": "Stopped"
+      "stopped": "Stopped",
+      "passedOn": "Passed to another seller"
     },
     "meetAt": "Meet at {place}",
     "waiting": "Waiting for a seller in your area to accept.",
     "cancel": "Cancel order",
     "expired": "Nobody could take this order in two days. Please order again.",
+    "expiredRefund": "Nobody could take this order in time. Your payment of {amount} will be sent back to you.",
+    "cancelledRefund": "You cancelled this order. Your payment of {amount} will be sent back to you.",
+    "carried": "Your payment of {amount} is kept for this order. You do not pay again.",
+    "passedOn": "Your seller could not come in time, so this order passed to another seller near you, with your payment. See your newest order above.",
+    "dueBy": "{name} hands it over by {due}. If not, another seller is sent and your payment goes with the order.",
     "acceptedBy": "Accepted by {name}",
     "payNow": "Pay {amount} by mobile money to {payee} with reference {reference}.",
     "paidSoFar": "Confirmed so far: {paid} of {total}.",

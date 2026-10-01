@@ -38,6 +38,10 @@ describe("balance", () => {
     expect(b).toMatchObject({ availableTzs: 4_450, onHoldTzs: 1_950, earnedTzs: 4_450, feesTzs: 50, withdrawnTzs: 0, pendingWithdrawalTzs: 0, overdrawn: false });
   });
 
+  it("never counts a cancelled order's money: it goes back to the buyer or followed her order to the next seller", () => {
+    expect(balance([done(4_500), { orderState: "CANCELLED", confirmedTzs: 4_500, platformFeeTzs: 50 }], [])).toMatchObject({ availableTzs: 4_450, onHoldTzs: 0 });
+  });
+
   it("takes withdrawals waiting and sent off what is available; a turned-down one gives it back", () => {
     const credits = [done(10_000, 0), done(5_000, 0)];
     expect(balance(credits, [{ amountTzs: 6_000, state: "REQUESTED" }]).availableTzs).toBe(9_000);

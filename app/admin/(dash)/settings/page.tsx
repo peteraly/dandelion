@@ -19,6 +19,7 @@ const MAIN: SettingKey[] = [
   "platformPayeeAccount",
   "withdrawalMinTzs",
   "shopAlertSellers",
+  "shopHandoverHours",
   "shopCodeSmsPerHour",
   "shopCodeSmsAlarm",
   "paymentClaimLapseHours",

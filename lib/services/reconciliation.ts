@@ -61,7 +61,9 @@ export async function runDailyReconciliation(): Promise<{ checked: number; match
   const since = new Date(nowMs() - 45 * 86_400_000);
   const rows = await db.execute<Record<string, unknown>>(sql`
     select o.id, o.kind, o.state, o.total_tzs as "totalTzs", o.batch_id as "batchId", o.completed_at as "completedAt",
-      coalesce((select sum(confirmed_amount_tzs) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_CONFIRMED'), 0)::int as "confirmedTzs",
+      (coalesce((select sum(confirmed_amount_tzs) from payment_intents p where p.order_id = o.id and p.status = 'PAYMENT_CONFIRMED'), 0)
+        + coalesce((select sum(amount_tzs) from order_transfers t where t.to_order_id = o.id), 0)
+        - coalesce((select sum(amount_tzs) from order_transfers t where t.from_order_id = o.id), 0))::int as "confirmedTzs",
       coalesce((select sum(amount_tzs) from donor_fundings d where d.order_id = o.id), 0)::int as "donorTzs",
       b.custody_state as "batchState",
       (select count(*) from custody_events ce where ce.order_id = o.id and ce.event in ('PICKUP','HUB_ACCEPT','CHAMPION_HANDOVER','CUSTOMER_HANDOVER','KEEP_WITH_RIDER','FACTORY_GATE_TO_HUB','FACTORY_GATE_TO_CHAMPION','SPLIT_FOR_ORG'))::int as "transferEvents",

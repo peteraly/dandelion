@@ -3,9 +3,10 @@
  * demo does too, instead of piling problems on the admin home. After a day, simulated admins close ordinary problems
  * (two of them, as the rule says) and hub keepers finish deliveries left at inspection. A customer who felt unsafe,
  * suspected theft, a reversed payment and an unwell customer stay open: those always need a person, and a visitor
- * should see them. Every step is the real service call.
+ * should see them. So does the newest delivery held for each kind of hold (a problem at inspection; damaged stock set
+ * aside), so the map and the admin home always show what a held delivery looks like. Every step is the real service call.
  */
-import { and, asc, eq, lt } from "drizzle-orm";
+import { and, asc, desc, eq, lt } from "drizzle-orm";
 import { nowMs } from "@/lib/clock";
 import * as s from "@/lib/db/schema";
 import { isLocked } from "@/lib/domain/custody";
@@ -23,9 +24,10 @@ export async function tidyUp(w: World, max = 4): Promise<{ resolved: number; res
   const dayAgo = new Date(nowMs() - DAY);
   const old = await w.db.query.exceptions.findMany({ where: and(eq(s.exceptions.status, "OPEN"), lt(s.exceptions.createdAt, dayAgo)), orderBy: asc(s.exceptions.createdAt), limit: 30 });
   let resolved = 0;
+  const shown = await newestHeldDeliveries(w);
   for (const ex of old) {
     if (resolved >= max) break;
-    if (ALWAYS_HUMAN.has(ex.type)) continue;
+    if (ALWAYS_HUMAN.has(ex.type) || shown.has(ex.id)) continue;
     const batch = ex.batchId ? await w.db.query.batches.findFirst({ where: eq(s.batches.id, ex.batchId) }) : null;
     const outcome = batch && isLocked(batch.custodyState) ? "RESUME" : "CLOSE";
     try {
@@ -56,4 +58,16 @@ export async function tidyUp(w: World, max = 4): Promise<{ resolved: number; res
     w.manifest.count("tidy.resumed", add.length);
   }
   return { resolved, resumed: add.length };
+}
+
+/** For each kind of hold, the newest open problem keeping stock locked: left for a visitor to see (and two admins to decide). */
+async function newestHeldDeliveries(w: World): Promise<Set<string>> {
+  const open = await w.db.query.exceptions.findMany({ where: eq(s.exceptions.status, "OPEN"), orderBy: desc(s.exceptions.createdAt), limit: 50 });
+  const byState = new Map<string, string>();
+  for (const ex of open) {
+    if (!ex.batchId) continue;
+    const batch = await w.db.query.batches.findFirst({ where: eq(s.batches.id, ex.batchId), columns: { custodyState: true, quantity: true } });
+    if (batch && batch.quantity > 0 && isLocked(batch.custodyState) && !byState.has(batch.custodyState)) byState.set(batch.custodyState, ex.id);
+  }
+  return new Set(byState.values());
 }
