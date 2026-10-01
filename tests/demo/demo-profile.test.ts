@@ -4,6 +4,7 @@
  * anomaly in its manifest, keep every identity fake, and finish in budget.
  * Uses DATABASE_URL from the "demo" vitest project (dandelion_demo by default).
  */
+import { ensureDemoPlaces } from "@/lib/demo/shop";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDb, getDb } from "@/lib/db/client";
@@ -142,6 +143,8 @@ describe("demo profile", () => {
     expect(wrongSeller.rows[0]!.n).toBe("0");
     const timed = await db().execute<{ n: string }>(sql`select count(*)::text as n from meeting_points where when_text is not null`);
     expect(Number(timed.rows[0]!.n)).toBeGreaterThan(0);
+    // A redeploy tops up meeting points only for a district built before the shop; this one has them.
+    expect(await ensureDemoPlaces()).toBe(0);
   });
 
   it("money goes through Dandelion's account: sellers are credited, withdrawals are approved by one admin and sent by another (Prompt L §2)", async () => {

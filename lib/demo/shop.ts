@@ -79,3 +79,17 @@ export async function shopSafetyReports(w: World): Promise<void> {
     await decideApproval(w.adminB, requestId, "APPROVE", "Follow-up done (demo)");
   }
 }
+
+/**
+ * A demo district built before the shop existed has no meeting points, so its shop would stay closed. On a redeploy
+ * the build tops them up (the same named public places), and nothing else: the history is left as it was.
+ */
+export async function ensureDemoPlaces(): Promise<number> {
+  const { getDb } = await import("@/lib/db/client");
+  const db = getDb();
+  if (await db.query.meetingPoints.findFirst({ columns: { id: true } })) return 0;
+  const areas = await db.query.serviceAreas.findMany({ where: eq(s.serviceAreas.active, true) });
+  const rows = areas.flatMap((a) => DEMO_PLACES.map((p) => ({ serviceAreaId: a.id, name: p.name, whenText: p.when })));
+  if (rows.length) await db.insert(s.meetingPoints).values(rows);
+  return rows.length;
+}

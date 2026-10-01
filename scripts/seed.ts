@@ -205,7 +205,10 @@ export async function currentSeedProfile(): Promise<string | null> {
 export async function seedDemoProfile(): Promise<void> {
   const current = await currentSeedProfile();
   if (current === "demo") {
-    console.log("[seed] the demo district is already in place; nothing to do");
+    // A district built before the shop existed gets its meeting points (Prompt L §3); nothing else changes.
+    const { ensureDemoPlaces } = await import("@/lib/demo/shop");
+    const added = await ensureDemoPlaces();
+    console.log(added ? `[seed] the demo district is in place; added ${added} meeting points for the shop` : "[seed] the demo district is already in place; nothing to do");
     return;
   }
   requireSeedCredentials();
