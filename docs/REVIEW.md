@@ -132,6 +132,13 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt N (a clean, calm look modelled on the World Bank sites) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Response and build prompt | **written** | `docs/PROMPT_N_CLEAN_DESIGN.md`: what makes the reference pages clean, where Dandelion is crowded, the "Calm" tokens (contrast checked), screen-by-screen changes, N1–N6 build steps. Qualities only: no World Bank name, logo, photos or fonts. |
+| N1–N6 | **not started** | Waits on the founders' decisions in Part 3 (colours, font, order). |
+
 ## Prompt M (red team of all work; an admin list that stays short) — status
 
 | Item | Status | Notes |
