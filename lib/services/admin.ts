@@ -12,6 +12,7 @@ import { authorize, type Actor } from "@/lib/policy";
 import { decryptString } from "@/lib/crypto/envelope";
 import { maskPhone } from "@/lib/phone";
 import { DomainError, getSetting, logAdminAction, logSecurityEvent, withTx } from "./core";
+import { payoutsWaiting } from "./wallets";
 import { unanchoredCount, walletStatus } from "@/lib/ledger/anchor";
 import { DEMO_CSV_HEADER } from "@/lib/demo/label";
 import { TERMINAL_ORDER_STATES } from "@/lib/domain/orders";
@@ -27,6 +28,9 @@ export interface Priorities {
   ledgerUnanchored: number;
   wallet: Awaited<ReturnType<typeof walletStatus>>;
   alerts24h: number;
+  /** Withdrawals waiting for a first admin, and approved ones waiting for a second admin to send (Prompt L §2.2). */
+  payoutsToApprove: number;
+  payoutsToSend: number;
 }
 
 export async function priorities(actor: Actor): Promise<Priorities> {
@@ -49,7 +53,8 @@ export async function priorities(actor: Actor): Promise<Priorities> {
   const alerts24h = await count(
     db.select({ n: sql<number>`count(*)::int` }).from(s.securityEventLog).where(and(eq(s.securityEventLog.severity, "ALERT"), gte(s.securityEventLog.createdAt, new Date(nowMs() - 86_400_000)))),
   );
-  return { paymentsReview, deliveriesInspection, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h };
+  const payouts = await payoutsWaiting(db);
+  return { paymentsReview, deliveriesInspection, lowStockHubs, pendingApprovals, openExceptions, reconFlags, ledgerUnanchored: await unanchoredCount(), wallet: await walletStatus(), alerts24h, payoutsToApprove: payouts.toApprove, payoutsToSend: payouts.toSend };
 }
 
 /** "Happening right now" on the admin home: a handful of counts, cheap enough to run on every visit (the map has the rest). */

@@ -38,7 +38,7 @@
     "paid": "Imelipwa",
     "remaining": "Iliyobaki",
     "margin": "Faida yako",
-    "marginNote": "Bei ya kuuza ukiondoa bei ya kununua. Inaonyeshwa kwa kumbukumbu zako; programu hailipi pesa yoyote.",
+    "marginNote": "Bei ya kuuza ukitoa bei ya kununua, kwa kumbukumbu zako. Pesa za mauzo yako huingia kwenye salio lako la Dandelion; toa kupitia pochi yako.",
     "offline": "Hauko mtandaoni. Maelezo tu yanaweza kuhifadhiwa.",
     "online": "Umerudi mtandaoni",
     "role": "Nafasi",
@@ -149,7 +149,7 @@
       },
       "awaiting_payment": {
         "title": "Mlipe msambazaji kwa pesa za simu",
-        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya msambazaji ukitumia kumbukumbu iliyoonyeshwa. Kisha tuambie umelipa."
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti iliyoonyeshwa (akaunti ya makusanyo ya Dandelion), ukitumia kumbukumbu iliyoonyeshwa. Dandelion humwekea msambazaji. Kisha tuambie umelipa."
       },
       "waiting_supplier_release": {
         "title": "Inasubiri msambazaji athibitishe kutoa",
@@ -193,7 +193,7 @@
       },
       "stock_accepted": {
         "title": "Thibitisha malipo kwa msafirishaji kwa pesa za simu",
-        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya msafirishaji ukitumia kumbukumbu iliyoonyeshwa."
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti iliyoonyeshwa (akaunti ya makusanyo ya Dandelion), ukitumia kumbukumbu iliyoonyeshwa. Dandelion humwekea msafirishaji."
       },
       "rider_payment_pending": {
         "title": "Malipo yanahakikiwa na mtoa huduma",
@@ -261,7 +261,7 @@
       },
       "stock_awaiting_payment": {
         "title": "Lipa kituo kwa pesa za simu",
-        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti ya kituo ukitumia kumbukumbu iliyoonyeshwa."
+        "explain": "Lipa kiasi kamili kilichoidhinishwa kwenye akaunti iliyoonyeshwa (akaunti ya makusanyo ya Dandelion), ukitumia kumbukumbu iliyoonyeshwa. Dandelion hukiwekea kituo."
       },
       "stock_payment_pending": {
         "title": "Malipo yanahakikiwa na mtoa huduma",
@@ -500,6 +500,36 @@
       "by": "na {role}",
       "empty": "Hakuna kilichorekodiwa bado.",
       "system": "mfumo"
+    },
+    "wallet": {
+      "title": "Pochi yangu",
+      "intro": "Pesa za mauzo yako, zinazoshikiliwa na Dandelion. Wewe unachagua lini kutoa; admin anazituma kwenye namba yako ya malipo.",
+      "available": "Inayoweza kutolewa",
+      "onHold": "Imeshikiliwa",
+      "pending": "Inasubiri kutumwa",
+      "withdrawn": "Ulizotoa hadi sasa",
+      "fees": "Ada za Dandelion hadi sasa",
+      "howItWorks": "Pesa ya mauzo hushikiliwa hadi bidhaa ikabidhiwe, kisha inaweza kutolewa. Dandelion huchukua ada ndogo kwenye baadhi ya mauzo kuendesha huduma.",
+      "ask": "Toa pesa",
+      "direct": "Katika eneo hili wanunuzi wanakulipa moja kwa moja; hakuna cha kutoa hapa.",
+      "waiting": "Ombi lako linasubiri admin. Unaweza kuomba tena likishatumwa.",
+      "noPayout": "Bado hujasajiliwa namba ya malipo. Muulize admin.",
+      "belowMin": "Unaweza kutoa ukiwa na angalau {min}.",
+      "amount": "Kiasi (TZS)",
+      "amountHint": "Kati ya {min} na {max}.",
+      "payoutTo": "Itatumwa kwenye namba yako ya malipo iliyosajiliwa {number}.",
+      "submit": "Omba kutoa",
+      "history": "Maombi ya kutoa",
+      "none": "Bado hakuna.",
+      "withdraw": "Toa pesa",
+      "open": "Pochi yangu",
+      "withdrawalRequested": "Ombi limetumwa. Admin mmoja ataidhinisha na mwingine atatuma; utapata ujumbe.",
+      "states": {
+        "REQUESTED": "Inasubiri idhini",
+        "APPROVED": "Imeidhinishwa, inatumwa",
+        "SENT": "Imetumwa",
+        "REJECTED": "Imekataliwa"
+      }
     }
   },
   "problems": {
@@ -607,7 +637,8 @@
       "passkeys": "Funguo za kuingia",
       "present": "Mwonekano wa mtangazaji",
       "exitPresent": "Ondoka mwonekano wa mtangazaji",
-      "journey": "Fuatilia mauzo moja"
+      "journey": "Fuatilia mauzo moja",
+      "payouts": "Malipo kwa washiriki"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -898,8 +929,7 @@
         "HUB_TO_ORG": "Vituo vinauza kwa mashirika",
         "RIDER_TO_ORG": "Wasafirishaji wanauza kwa mashirika"
       },
-      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee.",
-      "safeguarding": "Wasafirishaji na wafanyakazi wa msambazaji hawauzi moja kwa moja kwa wateja, katika eneo lolote: kila makabidhiano kwa msichana au mwanamke hupitia kwa muuzaji wa mtaani, au kwa shule au taasisi. Hii ni kanuni ya ulinzi ya waanzilishi; hakuna swichi hapa inayoweza kuibadilisha."
+      "decision": "Njia zinazoruhusiwa katika eneo halisi ni uamuzi wa waanzilishi (prompt §8.8.6). Hadi uamuzi, maeneo halisi hubaki na ngazi pekee."
     },
     "navGroups": {
       "overview": "Tazama",
@@ -1016,7 +1046,8 @@
       "passkeys": "Ingia kwa mguso mmoja kwenye kifaa hiki badala ya msimbo.",
       "demo": "Maelezo ya dakika kumi kwa wawekezaji, pamoja na vidhibiti vya kuyaendesha.",
       "demoControls": "Iga malipo na muda katika wilaya ya onyesho.",
-      "journey": "Fuatilia mauzo moja kuanzia ujumbe wa kwanza wa mteja hadi kiwanda kujaza kituo, simu ya kila mtu ikionekana."
+      "journey": "Fuatilia mauzo moja kuanzia ujumbe wa kwanza wa mteja hadi kiwanda kujaza kituo, simu ya kila mtu ikionekana.",
+      "payouts": "Pesa za washiriki kwenye akaunti ya Dandelion; idhinisha na tuma maombi ya kutoa (admin wawili)."
     },
     "home": {
       "title": "Wilaya yako leo",
@@ -1068,6 +1099,14 @@
         "alerts24h": {
           "title": "Tahadhari za usalama (saa 24)",
           "hint": "Kuingia kusiko kawaida au vitendo vilivyokataliwa vinavyostahili kuangaliwa."
+        },
+        "payoutsToSend": {
+          "title": "Maombi ya kutoa ya kutuma",
+          "hint": "Yameidhinishwa na admin mmoja; admin mwingine anatuma pesa na kurekodi kumbukumbu."
+        },
+        "payoutsToApprove": {
+          "title": "Maombi ya kutoa ya kuidhinisha",
+          "hint": "Washiriki wameomba pesa zao. Kagua na uidhinishe, au kataa kwa sababu."
         }
       },
       "seedError": "Wilaya kamili ya onyesho haikuweza kujengwa kwenye usambazaji uliopita, kwa hiyo data ndogo ya mwanzo inaonyeshwa badala yake. Tuma mstari huu kwa anayetunza programu: {reason}",
@@ -1235,6 +1274,54 @@
     "menu": {
       "open": "Menyu",
       "close": "Funga menyu"
+    },
+    "payouts": {
+      "title": "Malipo kwa washiriki",
+      "intro": "Kila mnunuzi hulipa akaunti ya makusanyo ya Dandelion. Pesa za washiriki husubiri hapa hadi waombe kutoa; admin mmoja anaidhinisha, admin mwingine anatuma na kurekodi kumbukumbu ya mtoa huduma.",
+      "routePlatform": "Malipo huenda kwenye akaunti ya Dandelion {account}. Ada: {fee} kwa kila mauzo ya msambazaji → msafirishaji na msafirishaji → mteja.",
+      "routeDirect": "Wanunuzi huwalipa wauzaji moja kwa moja (hakuna akaunti ya makusanyo).",
+      "summary": "Akaunti ya makusanyo",
+      "tiles": {
+        "inAccount": "Inapaswa kuwa kwenye akaunti",
+        "owed": "Pesa za washiriki",
+        "fees": "Ada za Dandelion",
+        "paidOut": "Zilizotumwa hadi sasa"
+      },
+      "tilesHint": {
+        "inAccount": "Zilizokusanywa ukitoa zilizotumwa. Linganisha na taarifa ya mtoa huduma.",
+        "owed": "Zinazoweza kutolewa, zinazosubiri kutumwa, na zilizoshikiliwa hadi makabidhiano.",
+        "fees": "Kutoka mauzo yaliyokamilika; zinaendesha huduma.",
+        "paidOut": "Zilizotumwa kwa washiriki tangu mwanzo."
+      },
+      "waitingTitle": "Zinasubiri: {approve} kuidhinishwa, {send} kutumwa",
+      "waitingHint": "Idhinisha ikiwa mshiriki anadai pesa hizo. Tuma kutoka akaunti ya makusanyo kwa zana za mtoa huduma, kisha andika kumbukumbu yake hapa.",
+      "noneWaiting": "Hakuna kinachosubiri.",
+      "to": "kwa",
+      "approve": "Idhinisha",
+      "reject": "Kataa",
+      "reasonPlaceholder": "Sababu (mshiriki ataambiwa)",
+      "needsOther": "Wewe uliidhinisha hili. Admin mwingine lazima alitume.",
+      "providerRef": "Kumbukumbu ya mtoa huduma",
+      "send": "Weka kuwa imetumwa",
+      "simulate": "Iga kutuma (majaribio tu)",
+      "membersTitle": "Salio za washiriki",
+      "membersHint": "Wenye pesa kwenye akaunti, anayedai zaidi kwanza.",
+      "member": "Mshiriki",
+      "available": "Inayoweza kutolewa",
+      "onHold": "Imeshikiliwa",
+      "pending": "Inasubiri",
+      "withdrawn": "Zilizotolewa",
+      "overdrawn": "Imezidi salio",
+      "recentTitle": "Malipo ya karibuni",
+      "noneRecent": "Bado hakuna malipo.",
+      "sentRef": "Kumbukumbu",
+      "states": {
+        "SENT": "Imetumwa",
+        "REJECTED": "Imekataliwa"
+      },
+      "approved": "Imeidhinishwa. Admin mwingine ataituma.",
+      "sent": "Imerekodiwa kuwa imetumwa; mshiriki amepata ujumbe.",
+      "rejected": "Imekataliwa; mshiriki amepata ujumbe na pesa zinapatikana tena."
     }
   },
   "public": {
@@ -1279,7 +1366,8 @@
       "STAKEHOLDER_ACTIVATED": "Mdau amewashwa",
       "PRICE_LIST_UPDATED": "Orodha ya bei imesasishwa",
       "DONOR_FUNDING_APPROVED": "Ufadhili wa mfadhili umeidhinishwa",
-      "DAILY_RECONCILIATION": "Usuluhishi wa kila siku"
+      "DAILY_RECONCILIATION": "Usuluhishi wa kila siku",
+      "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki"
     },
     "anchored": "Imerekodiwa kwenye leja ya umma",
     "pending": "Inasubiri kurekodiwa kwenye leja ya umma",
@@ -1322,6 +1410,9 @@
     "handoverCode": "Habari {name}. Msimbo wako wa makabidhiano ni {code}. Msomee muuzaji wako wa mtaani tu unapopokea bidhaa yako.",
     "receipt": "Habari {name}. Risiti {receiptNo}: oda yako imekabidhiwa. Rekodi yako: {link}",
     "margin": "Habari {name}. Mauzo {ref} yamekamilika. Faida yako kwenye mauzo haya: {amount}. Hii ni kwa kumbukumbu zako; programu hailipi pesa.",
+    "marginPlatform": "Habari {name}. Mauzo {ref} yamekamilika. {credited} sasa ziko kwenye salio lako la Dandelion (faida yako kwenye mauzo haya: {amount}). Toa pesa kupitia programu utakapotaka.",
+    "payoutSent": "Habari {name}. {amount} zimetumwa kwenye namba yako ya malipo. Kumbukumbu {ref}.",
+    "payoutRejected": "Habari {name}. Ombi lako la kutoa pesa {ref} la {amount} halikutumwa. Kiasi kimerudi kwenye salio lako; admin atawasiliana nawe.",
     "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
     "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} × {quantity} kunafuata. Rekodi: {link}",
     "orgReceipt": "{name}: {product} × {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}"
@@ -1440,7 +1531,17 @@
     "journey_no_supplier": "Hakuna msambazaji au msafirishaji anayepatikana kwa maelezo haya.",
     "journey_not_started": "Anza maelezo kwanza.",
     "journey_people_changed": "Mtu katika maelezo haya hafanyi kazi tena. Anza maelezo mapya.",
-    "journey_hub_short": "Kituo hakikuweza kutenga vipande. Anza maelezo mapya."
+    "journey_hub_short": "Kituo hakikuweza kutenga vipande. Anza maelezo mapya.",
+    "setting_value_invalid": "Thamani hiyo hairuhusiwi kwa mpangilio huu.",
+    "withdrawal_too_small": "Kiasi hicho ni chini ya kiwango cha chini cha kutoa.",
+    "withdrawal_exceeds_available": "Hicho ni zaidi ya kinachoweza kutolewa.",
+    "withdrawal_pending": "Kuna ombi linalosubiri tayari. Omba tena likishatumwa.",
+    "no_payout_account": "Hakuna namba ya malipo iliyosajiliwa. Admin lazima aiongeze.",
+    "withdrawal_not_requested": "Ombi hili halisubiri tena idhini.",
+    "withdrawal_not_approved": "Ombi hili lazima liidhinishwe kwanza.",
+    "payout_needs_second_admin": "Wewe uliidhinisha ombi hili. Admin mwingine lazima alitume.",
+    "withdrawal_finished": "Ombi hili limeshakamilika.",
+    "platform_payee_not_set": "Akaunti ya makusanyo ya Dandelion haijawekwa. Admin wawili lazima waiweke kwenye Mipangilio."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1506,7 +1607,7 @@
       "noEdges": "Hakuna kinachoendelea.",
       "organisations": "Mashirika",
       "earned": "imepata {tzs}",
-      "direct": "Mistari ya vitone ni njia za moja kwa moja (stoo ya msafirishaji, kiwandani, mashirika)."
+      "direct": "Mistari ya vitone ni njia za moja kwa moja (kijijini, kiwandani, mashirika)."
     },
     "status": {
       "active": "anafanya kazi",
@@ -1562,7 +1663,8 @@
         "STAKEHOLDER_ACTIVATED": "Mdau amewashwa",
         "PRICE_LIST_UPDATED": "Orodha ya bei imesasishwa",
         "DONOR_FUNDING_APPROVED": "Ufadhili wa wafadhili umeidhinishwa",
-        "DAILY_RECONCILIATION": "Usuluhishi wa kila siku"
+        "DAILY_RECONCILIATION": "Usuluhishi wa kila siku",
+        "PAYOUT_SENT": "Malipo yametumwa kwa mshiriki"
       },
       "security": {
         "ACCOUNT_LOCKED": "Akaunti imefungwa",
@@ -1611,6 +1713,9 @@
         "exception_resolved": "Utatuzi wa tatizo umetekelezwa",
         "export_csv": "CSV imehamishwa",
         "message_send": "Ujumbe umetumwa",
+        "payout_approve": "Ombi la kutoa pesa limeidhinishwa",
+        "payout_reject": "Ombi la kutoa pesa limekataliwa",
+        "payout_send": "Pesa zimetumwa kwa mshiriki",
         "pickup_create": "Uchukuaji kiwandani umepangwa",
         "pricelist_draft": "Orodha ya bei imeandaliwa",
         "recon_flag_resolve": "Alama ya usuluhishi imetatuliwa",

@@ -57,6 +57,13 @@
       "when": 1790817878593,
       "tag": "0007_business_buyers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790821107718,
+      "tag": "0008_platform_wallets",
+      "breakpoints": true
     }
   ]
 }

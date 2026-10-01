@@ -183,5 +183,18 @@ export const LEDGER_EVENT_TYPES = [
   "PRICE_LIST_UPDATED",
   "DONOR_FUNDING_APPROVED",
   "DAILY_RECONCILIATION",
+  /** A withdrawal sent from the Dandelion collection account to a member (Prompt L §2.2). */
+  "PAYOUT_SENT",
 ] as const;
 export type LedgerEventType = (typeof LEDGER_EVENT_TYPES)[number];
+
+/**
+ * Where buyers' money goes (founders, 2026-10-01; Prompt L §2): PLATFORM — every payment to Dandelion's collection
+ * account, credited to the seller's balance; members withdraw and admins send. DIRECT — the buyer pays the seller.
+ */
+export const PAYMENT_ROUTES = ["PLATFORM", "DIRECT"] as const;
+export type PaymentRoute = (typeof PAYMENT_ROUTES)[number];
+
+/** A member's withdrawal from their balance: one admin approves, a different admin sends. */
+export const WITHDRAWAL_STATES = ["REQUESTED", "APPROVED", "SENT", "REJECTED"] as const;
+export type WithdrawalState = (typeof WITHDRAWAL_STATES)[number];

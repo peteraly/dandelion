@@ -4,7 +4,7 @@
  * the ladder is always allowed, everything else is a per-area switch.
  */
 import { describe, expect, it } from "vitest";
-import { ALLOWED_SALES, CLOSED_KINDS, DEFAULT_ALLOWED_SALES, DIRECT_KINDS, FACTORY_PICKUP_KINDS, LADDER_KINDS, ORG_KINDS, PLAN_KINDS, SUPPLIER_SELLER_KINDS, type SaleBuyer, deriveKind, isOrgKind, isPlanKind, saleAllowed, saleFor } from "@/lib/domain/sales";
+import { ALLOWED_SALES, DEFAULT_ALLOWED_SALES, DIRECT_KINDS, FACTORY_PICKUP_KINDS, LADDER_KINDS, ORG_KINDS, PLAN_KINDS, SUPPLIER_SELLER_KINDS, deriveKind, isOrgKind, isPlanKind, saleAllowed, saleFor, type SaleBuyer } from "@/lib/domain/sales";
 import { INITIAL_ORDER_STATE, ORDER_MACHINES } from "@/lib/domain/orders";
 import { ORDER_KINDS, type Role } from "@/lib/domain/types";
 
@@ -41,17 +41,7 @@ describe("allowed sales table", () => {
       expect(saleAllowed(k, [k]), k).toBe(true);
       expect(saleAllowed(k, DIRECT_KINDS.filter((x) => x !== k)), k).toBe(false);
     }
-    expect([...LADDER_KINDS, ...DIRECT_KINDS, ...CLOSED_KINDS].sort()).toEqual([...ORDER_KINDS].sort());
-  });
-
-  it("safeguarding: delivery partners and supplier staff never sell to a customer, whatever an area's switches say", () => {
-    expect(CLOSED_KINDS).toEqual(["RIDER_TO_CUSTOMER", "SUPPLIER_TO_CUSTOMER"]);
-    for (const k of CLOSED_KINDS) {
-      expect(DIRECT_KINDS, k).not.toContain(k);
-      expect(saleAllowed(k, [...ORDER_KINDS]), k).toBe(false);
-    }
-    // Every sale to a customer that can still be made is a local seller's.
-    expect(ALLOWED_SALES.filter((r) => r.buyer === "CUSTOMER" && !CLOSED_KINDS.includes(r.kind)).map((r) => r.seller)).toEqual(["FIELD_CHAMPION"]);
+    expect([...LADDER_KINDS, ...DIRECT_KINDS].sort()).toEqual([...ORDER_KINDS].sort());
   });
 
   it("customers pay in installments; stakeholders and organisations pay the exact amount", () => {

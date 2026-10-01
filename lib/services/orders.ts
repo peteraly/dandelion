@@ -15,7 +15,8 @@ import * as s from "@/lib/db/schema";
 import { ORDER_MACHINES, INITIAL_ORDER_STATE, type OrderCtx, type OrderEvent } from "@/lib/domain/orders";
 import type { DualApprovalProof } from "@/lib/domain/approval";
 import { isLocked } from "@/lib/domain/custody";
-import type { OrderKind } from "@/lib/domain/types";
+import type { OrderKind, PaymentRoute } from "@/lib/domain/types";
+import { platformFeeFor } from "@/lib/domain/wallet";
 import { deriveKind, FACTORY_PICKUP_KINDS, isOrgKind, isPlanKind, saleFor, SUPPLIER_SELLER_KINDS } from "@/lib/domain/sales";
 import { allowedSalesFor, assertSaleAllowed } from "./areas";
 import { authorize, type Actor, type OrderResource } from "@/lib/policy";
@@ -27,7 +28,7 @@ import { tr, type Locale } from "@/lib/i18n/server-translator";
 import { appOrigin } from "@/lib/env";
 import { formatTzs } from "@/lib/money";
 import { tzDay } from "@/lib/util/time";
-import { DomainError, logAdminAction, recordLedgerEvent, withTx, type ServiceActor } from "./core";
+import { DomainError, getSetting, logAdminAction, recordLedgerEvent, withTx, type ServiceActor } from "./core";
 import { applyCustody, lockBatch, registerBatch, returnToParent, splitBatch } from "./custody";
 import { ensureOpenIntent, enqueuePoll, openIntent, paidTotals, type Order } from "./payments";
 import { activePriceItem } from "./pricing";
@@ -135,7 +136,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
     await assertSaleAllowed(tx, areaId, kind);
     if (kind === "SUPPLIER_TO_RIDER" && !hubId) {
       const allowed = await allowedSalesFor(tx, areaId);
-      if (!allowed.includes("RIDER_TO_ORG")) throw new DomainError("sale_not_allowed", "rider stock needs the rider-to-organisation path in the area");
+      if (!allowed.includes("RIDER_TO_CUSTOMER") && !allowed.includes("RIDER_TO_ORG")) throw new DomainError("sale_not_allowed", "rider stock needs a direct rider path in the area");
     }
     const item = await activePriceItem(tx, { serviceAreaId: areaId, productId: input.productId, supplierId: supplier.id });
     const [order] = await tx
@@ -156,6 +157,7 @@ export async function adminCreatePickup(actor: Actor, raw: z.input<typeof Create
         unitPriceTzs: item.supplierPriceTzs,
         totalTzs: item.supplierPriceTzs * input.quantity,
         unitCostTzs: 0,
+        platformFeeTzs: await feeFor(tx, kind, item.supplierPriceTzs * input.quantity),
         pickupDate: input.pickupDate,
         createdBy: actor.userId,
       })
@@ -300,16 +302,26 @@ export async function tryCompleteTransfer(tx: Tx, orderIn: Order, actor: Service
   return true;
 }
 
-/** Margin = sale price − purchase price. Displayed, never disbursed (§4.2). */
+/** Dandelion's operating fee to fix on a new order (lib/domain/wallet.ts; Prompt L §2.3). */
+async function feeFor(tx: Tx, kind: OrderKind, totalTzs: number): Promise<number> {
+  return platformFeeFor(kind, totalTzs, Number(await getSetting("platformFeeTzs", tx)), (await getSetting("paymentRoute", tx)) as PaymentRoute);
+}
+
+/** Margin = sale price − purchase price. With the platform collecting, it is credited to the seller's balance (Prompt L). */
 async function notifyMargin(tx: Tx, order: Order, _product: string): Promise<void> {
   const seller = await userLocale(tx, order.sellerUserId);
   const margin = (order.unitPriceTzs - order.unitCostTzs) * order.quantity;
-  await getSmsProvider().send(
-    seller.phone,
-    tr(seller.locale, "sms.margin", { name: seller.name, amount: formatTzs(margin, seller.locale), ref: order.ref }),
-    "MARGIN",
-    tx,
-  );
+  // When Dandelion collected the money, say what was credited to the seller's balance (after the fee).
+  const [platform] = await tx
+    .select({ tzs: sql<number>`coalesce(sum(${s.paymentIntents.confirmedAmountTzs}), 0)::int` })
+    .from(s.paymentIntents)
+    .where(and(eq(s.paymentIntents.orderId, order.id), eq(s.paymentIntents.collectedByPlatform, true), eq(s.paymentIntents.status, "PAYMENT_CONFIRMED")));
+  const collected = Number(platform?.tzs ?? 0);
+  const body =
+    collected > 0
+      ? tr(seller.locale, "sms.marginPlatform", { name: seller.name, ref: order.ref, credited: formatTzs(collected - Math.min(order.platformFeeTzs, collected), seller.locale), amount: formatTzs(margin, seller.locale) })
+      : tr(seller.locale, "sms.margin", { name: seller.name, amount: formatTzs(margin, seller.locale), ref: order.ref });
+  await getSmsProvider().send(seller.phone, body, "MARGIN", tx);
 }
 
 async function createDeliveryOrder(tx: Tx, pickup: Order, batchId: string): Promise<void> {
@@ -520,6 +532,7 @@ export async function startPlan(actor: Actor, customerId: string, productId: str
         unitPriceTzs: item.customerPriceTzs,
         totalTzs: item.customerPriceTzs,
         unitCostTzs,
+        platformFeeTzs: await feeFor(tx, kind, item.customerPriceTzs),
         createdBy: actor.userId,
       })
       .returning();

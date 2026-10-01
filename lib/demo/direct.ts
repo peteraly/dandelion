@@ -1,16 +1,14 @@
 /**
  * The direct sale paths of prompt §8.8 in the demo: riders keep stock and
- * sell it to organisations (a village pharmacy, a school), champions buy at
- * the factory gate, and organisations buy in bulk from suppliers, hubs and
- * riders. Riders and supplier staff never sell to customers (safeguarding,
- * lib/domain/sales.ts CLOSED_KINDS): every customer is a local seller's.
- * Every step goes through the same services the field app uses; anomalies
- * are deliberate and in the manifest.
+ * sell in villages, customers and champions buy at the factory gate, and
+ * organisations buy in bulk from suppliers, hubs and riders. Every step goes
+ * through the same services the field app uses; anomalies are deliberate and
+ * in the manifest.
  */
 import { acceptPickup, adminCreatePickup, confirmBatchReady, confirmReceipt, confirmRelease, createOrgSale, deliverOrgSale, startHandover } from "@/lib/services/orders";
 import { tzDay } from "@/lib/util/time";
 import type { Hub, OrgBuyer, Person, Product, World } from "./world";
-import { pay, type Plan } from "./supply";
+import { enrolCustomer, pay, startCustomerPlan, type Plan } from "./supply";
 
 const CHECKS = { quantityOk: true, sealOk: true };
 
@@ -53,6 +51,15 @@ export async function championCollects(w: World, hub: Hub, champion: Person, pro
   w.tick(3, 10);
   await confirmReceipt(champion.actor, orderId, CHECKS);
   return orderId;
+}
+
+/** A customer enrolled and served by a rider (village drop) or by a supplier user (factory gate): a plan like any other. */
+export async function directPlan(w: World, seller: Person, product: Product, day: number): Promise<Plan> {
+  const c = await enrolCustomer(w, seller);
+  w.tick(5, 30);
+  const plan = await startCustomerPlan(w, c, product, day);
+  w.manifest.count(seller.actor.role === "BOSS_RIDER" ? "paths.village_drops" : "paths.factory_gate_customers");
+  return plan;
 }
 
 /** Bulk sale to an organisation, paid in full then delivered; or left unpaid on purpose. */
@@ -98,6 +105,15 @@ export async function directDay(w: World, plans: Plan[], day: number, totalDays:
   if ((await w.sellerStock(rider, disposable.id)) < 6 && (day >= 2 || totalDays > 1000)) {
     await attempt("riderStockPickup", async () => void (await riderStockPickup(w, rider, disposable, rng.int(20, 40))));
   }
+  // Village drops: one every other working day once the rider holds stock.
+  if ((await w.sellerStock(rider, disposable.id)) >= 1 && (rng.chance(0.5) || w.once("villageDrop.first"))) {
+    await attempt("villageDrop", async () => void plans.push(await directPlan(w, rider, disposable, day)));
+  }
+  // Factory-gate customers: a couple over the run.
+  if (rng.chance(0.25) || w.once("factoryGate.first")) {
+    const supplierUser = area0.suppliers[0]!.users[0]!;
+    await attempt("factoryGateCustomer", async () => void plans.push(await directPlan(w, supplierUser, disposable, day)));
+  }
   // A champion collects her own stock once.
   if (day >= 3 && w.once("championCollects")) {
     await attempt("championCollects", async () => void (await championCollects(w, hub, hub.champions[hub.champions.length - 1]!, disposable, rng.int(8, 15))));
@@ -110,36 +126,27 @@ export async function directDay(w: World, plans: Plan[], day: number, totalDays:
     if (day >= 5 && (rng.chance(0.12) || w.once("orgSale.hub"))) {
       if ((await w.hubStock(hub, disposable.id)) >= 10) await attempt("orgSale.hub", async () => void (await orgSale(w, hub.manager, rng.pick(orgs), disposable, rng.int(5, 10))));
     }
-    // The rider's own stock goes to organisations (a village pharmacy, a school), never to a customer.
-    if (day >= 6 && (await w.sellerStock(rider, disposable.id)) >= 5 && (rng.chance(0.3) || w.once("orgSale.rider"))) {
+    if (day >= 6 && (await w.sellerStock(rider, disposable.id)) >= 5 && w.once("orgSale.rider")) {
       await attempt("orgSale.rider", async () => void (await orgSale(w, rider, rng.pick(orgs), disposable, 5)));
     }
     if (day >= totalDays - 5 && totalDays < 1000 && w.once("orgSale.unpaid")) {
       await attempt("orgSale.unpaid", async () => void (await orgSale(w, area0.suppliers[0]!.users[0]!, rng.pick(orgs), w.product(), rng.int(10, 30), "unpaid")));
     }
   }
-  // A local seller's handover whose code was never confirmed (last days only).
-  if (day >= totalDays - 2 && totalDays < 1000 && w.once("handover.codeUnconfirmed")) {
-    await attempt("handover.codeUnconfirmed", async () => {
-      let target: Plan | undefined;
-      for (const p of plans) {
-        const champion = p.customer.champion;
-        if (p.handedOver || !p.installments.length || champion.actor.role !== "FIELD_CHAMPION" || w.busy.has(champion.actor.userId)) continue;
-        if ((await w.sellerStock(champion, p.product.id)) >= 1) {
-          target = p;
-          break;
-        }
-      }
-      if (!target) throw new Error("no open plan whose local seller holds the product");
-      const seller = target.customer.champion;
+  // A village-drop handover whose code was never confirmed (last days only).
+  if (day >= totalDays - 2 && totalDays < 1000 && w.once("villageDrop.codeUnconfirmed")) {
+    await attempt("villageDrop.codeUnconfirmed", async () => {
+      const target = plans.find((p) => !p.handedOver && p.customer.champion === rider && p.installments.length > 0);
+      if (!target) throw new Error("no open village-drop plan");
+      if ((await w.sellerStock(rider, target.product.id)) < 1) throw new Error("rider holds no stock for the handover");
       target.installments = [];
       await pay(w, target.orderId, "success");
       target.paidTzs = target.totalTzs;
       target.nextPaymentDay = null;
       w.tick(10, 40);
-      await startHandover(seller.actor, target.orderId);
+      await startHandover(rider.actor, target.orderId);
       target.handedOver = true; // frozen: the code is never entered
-      w.manifest.anomaly("HANDOVER_CODE_UNCONFIRMED", "a local seller sent the handover code; the customer never confirmed", { orderRef: target.ref });
+      w.manifest.anomaly("VILLAGE_DROP_CODE_UNCONFIRMED", "rider sent the handover code on a village drop; the customer never confirmed", { orderRef: target.ref });
     });
   }
 }

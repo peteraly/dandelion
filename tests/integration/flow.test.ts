@@ -89,7 +89,12 @@ describe("A/B: supplier → rider pickup", () => {
     const intents = await intentsFor(pickupId);
     expect(intents).toHaveLength(1);
     expect(intents[0]!.status).toBe("PAYMENT_PENDING");
-    expect(intents[0]!.payeeAccount).toBe(SEED.supplier.payee);
+    // Founders' route (Prompt L §2.1): the rider pays Dandelion's collection account, credited to the supplier.
+    expect(intents[0]!.payeeAccount).toBe("TILL-DANDELION-001");
+    expect(intents[0]!.collectedByPlatform).toBe(true);
+    expect(intents[0]!.payeeUserId).toBe((await userByPhone(SEED.supplier.phone)).id);
+    // Dandelion's fee on supplier → delivery partner sales is fixed on the order.
+    expect(o.platformFeeTzs).toBe(50);
     expect(intents[0]!.amountRule).toBe("EXACT_REMAINING");
   });
 

@@ -156,6 +156,17 @@ export const SETTING_DEFAULTS = {
   seedNotice: "",
   /** The guided walkthrough's progress and the orders it drives (lib/demo/journey.ts). */
   demoJourney: "",
+  /**
+   * Where buyers pay (Prompt L §2): "PLATFORM" — Dandelion's collection account, credited to the seller's balance,
+   * paid out by admins on request — or "DIRECT" — the seller's own number. Founders chose PLATFORM (2026-10-01).
+   */
+  paymentRoute: "PLATFORM",
+  /** Dandelion's collection account (till). Empty in production until two admins set it: payments then refuse. */
+  platformPayeeAccount: "",
+  /** Dandelion's operating fee per sale, TZS, on supplier → delivery partner and delivery partner → customer. 0 = none. */
+  platformFeeTzs: 50,
+  /** The smallest withdrawal a member can ask for, TZS. */
+  withdrawalMinTzs: 1000,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

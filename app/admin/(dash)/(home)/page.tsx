@@ -19,6 +19,8 @@ import { formatTzs } from "@/lib/money";
 /** Most urgent first: a second signature blocks another admin; money questions come before stock. */
 const NEEDS = [
   ["pendingApprovals", "/admin/approvals"],
+  ["payoutsToSend", "/admin/payouts"],
+  ["payoutsToApprove", "/admin/payouts"],
   ["paymentsReview", "/admin/exceptions"],
   ["openExceptions", "/admin/exceptions"],
   ["reconFlags", "/admin/reconciliation"],

@@ -67,9 +67,8 @@ describe("policy: rider", () => {
     expect(can(otherRider, "order.view", o(pickup))).toBe(false);
     expect(can(otherRider, "order.view_delivery_code", o(delivery))).toBe(false);
     expect(can(rider, "order.view", o(transfer))).toBe(false);
-    // Safeguarding (founders, 2026-10-01): only local sellers hold customers; riders, hub keepers and suppliers never do.
-    expect(can(rider, "customer.create")).toBe(false);
-    expect(can(rider, "order.start_plan", { type: "customer", customer: { championId: rider.userId } })).toBe(false);
+    // Riders may enrol customers for village drops (prompt §8.8); hub managers never sell to customers.
+    expect(can(rider, "customer.create")).toBe(true);
     expect(can(hub, "customer.create")).toBe(false);
   });
 });
@@ -78,7 +77,7 @@ describe("policy: direct sale paths (prompt §8.8)", () => {
   const villageDrop: OrderResource = { kind: "RIDER_TO_CUSTOMER", sellerUserId: "rid", buyerUserId: null, supplierId: "S1", hubId: null, customerChampionId: "rid" };
   const factoryGate: OrderResource = { kind: "SUPPLIER_TO_HUB", sellerUserId: "sup", buyerUserId: "hub", supplierId: "S1", hubId: "H1" };
   const orgSale: OrderResource = { kind: "HUB_TO_ORG", sellerUserId: "hub", buyerUserId: null, supplierId: "S1", hubId: "H1" };
-  it("a village drop made before the safeguarding rule can still be finished by its rider; nobody else touches it", () => {
+  it("a rider sells and hands over on a village drop; nobody else touches it", () => {
     expect(can(rider, "order.view", o(villageDrop))).toBe(true);
     expect(can(rider, "order.start_handover", o(villageDrop))).toBe(true);
     expect(can(rider, "order.complete_handover", o(villageDrop))).toBe(true);

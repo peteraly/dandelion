@@ -37,7 +37,7 @@
     "paid": "Paid",
     "remaining": "Remaining",
     "margin": "Your margin",
-    "marginNote": "Sale price minus purchase price. Shown for your records; nothing is paid out by the app.",
+    "marginNote": "Sale price minus purchase price, for your records. The money from your sales goes to your Dandelion balance; withdraw it from your wallet.",
     "offline": "You are offline. Only notes can be saved.",
     "online": "Back online",
     "role": "Role",
@@ -148,7 +148,7 @@
       },
       "awaiting_payment": {
         "title": "Pay the supplier via mobile money",
-        "explain": "Pay the exact approved amount to the supplier's account with the reference shown. Then tell us you have paid."
+        "explain": "Pay the exact approved amount to the account shown (Dandelion's collection account), with the reference shown. Dandelion credits the supplier. Then tell us you have paid."
       },
       "waiting_supplier_release": {
         "title": "Waiting for the supplier to confirm release",
@@ -192,7 +192,7 @@
       },
       "stock_accepted": {
         "title": "Confirm payment to delivery partner via mobile money",
-        "explain": "Pay the exact approved amount to the delivery partner's account with the reference shown."
+        "explain": "Pay the exact approved amount to the account shown (Dandelion's collection account), with the reference shown. Dandelion credits the delivery partner."
       },
       "rider_payment_pending": {
         "title": "Payment being verified with provider",
@@ -260,7 +260,7 @@
       },
       "stock_awaiting_payment": {
         "title": "Pay the hub via mobile money",
-        "explain": "Pay the exact approved amount to the hub's account with the reference shown."
+        "explain": "Pay the exact approved amount to the account shown (Dandelion's collection account), with the reference shown. Dandelion credits the hub."
       },
       "stock_payment_pending": {
         "title": "Payment being verified with provider",
@@ -499,6 +499,36 @@
       "by": "by {role}",
       "empty": "Nothing recorded yet.",
       "system": "the system"
+    },
+    "wallet": {
+      "title": "My wallet",
+      "intro": "Money from your sales, held by Dandelion. You choose when to withdraw; an admin sends it to your payout number.",
+      "available": "Available to withdraw",
+      "onHold": "On hold",
+      "pending": "Waiting to be sent",
+      "withdrawn": "Withdrawn so far",
+      "fees": "Dandelion fees so far",
+      "howItWorks": "A sale's money is on hold until the goods are handed over, then it is available. Dandelion keeps a small fee on some sales to run the service.",
+      "ask": "Withdraw",
+      "direct": "Buyers pay you directly in this area; there is nothing to withdraw here.",
+      "waiting": "Your withdrawal is waiting for the admins. You can ask again once it is sent.",
+      "noPayout": "No payout number is registered for you yet. Ask an admin.",
+      "belowMin": "You can withdraw once you have at least {min} available.",
+      "amount": "Amount (TZS)",
+      "amountHint": "Between {min} and {max}.",
+      "payoutTo": "Sent to your registered payout number {number}.",
+      "submit": "Ask to withdraw",
+      "history": "Withdrawals",
+      "none": "No withdrawals yet.",
+      "withdraw": "Withdraw",
+      "open": "My wallet",
+      "withdrawalRequested": "Asked. An admin will approve it and another will send it; you will get a text.",
+      "states": {
+        "REQUESTED": "Waiting for approval",
+        "APPROVED": "Approved, being sent",
+        "SENT": "Sent",
+        "REJECTED": "Turned down"
+      }
     }
   },
   "problems": {
@@ -606,7 +636,8 @@
       "passkeys": "Passkeys",
       "present": "Presenter view",
       "exitPresent": "Exit presenter view",
-      "journey": "Walkthrough: one sale"
+      "journey": "Walkthrough: one sale",
+      "payouts": "Payouts"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -897,8 +928,7 @@
         "HUB_TO_ORG": "Hubs sell to organisations",
         "RIDER_TO_ORG": "Delivery partners sell to organisations"
       },
-      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only.",
-      "safeguarding": "Delivery partners and supplier staff never sell directly to customers, in any area: every hand-over to a girl or woman goes through a local seller, or to a school or organisation. This is the founders' safeguarding rule; no switch here can change it."
+      "decision": "Which paths a real area allows is the founders' decision (prompt §8.8.6). Until decided, real areas stay ladder-only."
     },
     "navGroups": {
       "overview": "Watch",
@@ -1015,7 +1045,8 @@
       "passkeys": "Sign in with one tap on this device instead of a code.",
       "demo": "The ten-minute investor walk-through, with the controls to run it.",
       "demoControls": "Simulate payments and time in the demo district.",
-      "journey": "Follow one sale from the customer's first text to the factory refilling the hub, with everyone's phone on screen."
+      "journey": "Follow one sale from the customer's first text to the factory refilling the hub, with everyone's phone on screen.",
+      "payouts": "Members' money in Dandelion's account; approve and send withdrawals (two admins)."
     },
     "home": {
       "title": "Your district today",
@@ -1067,6 +1098,14 @@
         "alerts24h": {
           "title": "Security alerts (24 h)",
           "hint": "Unusual sign-ins or refused actions worth a look."
+        },
+        "payoutsToSend": {
+          "title": "Withdrawals to send",
+          "hint": "Approved by one admin; a different admin sends the money and records the reference."
+        },
+        "payoutsToApprove": {
+          "title": "Withdrawals to approve",
+          "hint": "Members asked for their money. Check and approve, or turn down with a reason."
         }
       },
       "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}",
@@ -1234,6 +1273,54 @@
     "menu": {
       "open": "Menu",
       "close": "Close menu"
+    },
+    "payouts": {
+      "title": "Payouts",
+      "intro": "Every buyer pays Dandelion's collection account. Members' money waits here until they ask to withdraw; one admin approves, a different admin sends it and records the provider's reference.",
+      "routePlatform": "Payments go to Dandelion's account {account}. Fee: {fee} per sale on supplier → delivery partner and delivery partner → customer.",
+      "routeDirect": "Buyers pay sellers directly (no collection account).",
+      "summary": "The collection account",
+      "tiles": {
+        "inAccount": "Should be in the account",
+        "owed": "Members' money",
+        "fees": "Dandelion's fees",
+        "paidOut": "Paid out so far"
+      },
+      "tilesHint": {
+        "inAccount": "Collected minus paid out. Check it against the provider's statement.",
+        "owed": "Available, waiting to be sent, and on hold until hand-over.",
+        "fees": "From finished sales; funds the operation.",
+        "paidOut": "Sent to members, ever."
+      },
+      "waitingTitle": "Waiting: {approve} to approve, {send} to send",
+      "waitingHint": "Approve if the member is owed the money. Send from the collection account with the provider's tools, then type the provider's reference here.",
+      "noneWaiting": "Nothing waiting.",
+      "to": "to",
+      "approve": "Approve",
+      "reject": "Turn down",
+      "reasonPlaceholder": "Reason (the member is told)",
+      "needsOther": "You approved this one. A different admin must send it.",
+      "providerRef": "Provider's reference",
+      "send": "Mark as sent",
+      "simulate": "Simulate sending (test only)",
+      "membersTitle": "Members' balances",
+      "membersHint": "Who has money in the account, most owed first.",
+      "member": "Member",
+      "available": "Available",
+      "onHold": "On hold",
+      "pending": "Waiting",
+      "withdrawn": "Withdrawn",
+      "overdrawn": "Overdrawn",
+      "recentTitle": "Recent payouts",
+      "noneRecent": "No payouts yet.",
+      "sentRef": "Provider ref",
+      "states": {
+        "SENT": "Sent",
+        "REJECTED": "Turned down"
+      },
+      "approved": "Approved. A different admin sends it.",
+      "sent": "Recorded as sent; the member got a text.",
+      "rejected": "Turned down; the member got a text and the money is available again."
     }
   },
   "public": {
@@ -1278,7 +1365,8 @@
       "STAKEHOLDER_ACTIVATED": "Stakeholder activated",
       "PRICE_LIST_UPDATED": "Price list updated",
       "DONOR_FUNDING_APPROVED": "Donor funding approved",
-      "DAILY_RECONCILIATION": "Daily reconciliation"
+      "DAILY_RECONCILIATION": "Daily reconciliation",
+      "PAYOUT_SENT": "Payout sent to a member"
     },
     "anchored": "Recorded on the public ledger",
     "pending": "Waiting to be recorded on the public ledger",
@@ -1321,6 +1409,9 @@
     "handoverCode": "Habari {name}. Your handover code is {code}. Read it to your local seller only when you receive your product.",
     "receipt": "Habari {name}. Receipt {receiptNo}: your order has been handed over. Your record: {link}",
     "margin": "Habari {name}. Sale {ref} is complete. Your margin on this sale: {amount}. This is for your records; the app does not pay out money.",
+    "marginPlatform": "Habari {name}. Sale {ref} is complete. {credited} is now in your Dandelion balance (your margin on this sale: {amount}). Withdraw it from the app when you choose.",
+    "payoutSent": "Habari {name}. {amount} has been sent to your payout number. Reference {ref}.",
+    "payoutRejected": "Habari {name}. Your withdrawal {ref} of {amount} was not sent. The amount is back in your balance; an admin will contact you.",
     "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
     "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} × {quantity} follows. Record: {link}",
     "orgReceipt": "{name}: {product} × {quantity} delivered. Receipt {receiptNo}. Record: {link}"
@@ -1439,7 +1530,17 @@
     "journey_no_supplier": "No supplier or delivery partner is available for the walkthrough.",
     "journey_not_started": "Start a walkthrough first.",
     "journey_people_changed": "Someone in this walkthrough is no longer active. Start a new walkthrough.",
-    "journey_hub_short": "The hub could not set aside the units. Start a new walkthrough."
+    "journey_hub_short": "The hub could not set aside the units. Start a new walkthrough.",
+    "setting_value_invalid": "That value is not allowed for this setting.",
+    "withdrawal_too_small": "That amount is below the minimum withdrawal.",
+    "withdrawal_exceeds_available": "That is more than is available to withdraw.",
+    "withdrawal_pending": "A withdrawal is already waiting. Ask again once it is sent.",
+    "no_payout_account": "No payout number is registered. An admin must add one.",
+    "withdrawal_not_requested": "This withdrawal is no longer waiting for approval.",
+    "withdrawal_not_approved": "This withdrawal must be approved first.",
+    "payout_needs_second_admin": "You approved this withdrawal. A different admin must send it.",
+    "withdrawal_finished": "This withdrawal is already finished.",
+    "platform_payee_not_set": "Dandelion's collection account is not set. Two admins must set it in Settings."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
@@ -1505,7 +1606,7 @@
       "noEdges": "Nothing in flight.",
       "organisations": "Organisations",
       "earned": "earned {tzs}",
-      "direct": "Dashed edges are direct paths (rider stock, factory gate, organisations)."
+      "direct": "Dashed edges are direct paths (village drops, factory gate, organisations)."
     },
     "status": {
       "active": "active",
@@ -1561,7 +1662,8 @@
         "STAKEHOLDER_ACTIVATED": "Stakeholder activated",
         "PRICE_LIST_UPDATED": "Price list updated",
         "DONOR_FUNDING_APPROVED": "Donor funding approved",
-        "DAILY_RECONCILIATION": "Daily reconciliation"
+        "DAILY_RECONCILIATION": "Daily reconciliation",
+        "PAYOUT_SENT": "Payout sent to a member"
       },
       "security": {
         "ACCOUNT_LOCKED": "Account locked",
@@ -1610,6 +1712,9 @@
         "exception_resolved": "Problem resolution executed",
         "export_csv": "CSV exported",
         "message_send": "Message sent",
+        "payout_approve": "Withdrawal approved",
+        "payout_reject": "Withdrawal turned down",
+        "payout_send": "Withdrawal sent",
         "pickup_create": "Factory pickup assigned",
         "pricelist_draft": "Price list drafted",
         "recon_flag_resolve": "Reconciliation flag resolved",

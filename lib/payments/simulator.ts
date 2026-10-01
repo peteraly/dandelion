@@ -65,10 +65,11 @@ export async function orderPaymentTarget(orderRef: string): Promise<{ orderId: s
   const db = getDb();
   const order = await db.query.orders.findFirst({ where: eq(s.orders.ref, orderRef) });
   if (!order) throw new Error("order not found");
-  const { paidTotals } = await import("@/lib/services/payments");
+  const { openIntent, paidTotals, payeeFor } = await import("@/lib/services/payments");
   const t = await paidTotals(db, order);
-  const seller = await db.query.users.findFirst({ where: eq(s.users.id, order.sellerUserId) });
-  return { orderId: order.id, accountReference: order.paymentRef, payeeAccount: seller?.payeeAccount ?? "", remainingTzs: t.remainingTzs };
+  // The payer pays where the app told them to: the open intent's payee (the collection account under PLATFORM).
+  const payeeAccount = (await openIntent(db, order.id))?.payeeAccount ?? (await payeeFor(db, order).catch(() => null))?.payeeAccount ?? "";
+  return { orderId: order.id, accountReference: order.paymentRef, payeeAccount, remainingTzs: t.remainingTzs };
 }
 
 /**

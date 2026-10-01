@@ -122,20 +122,30 @@ describe("demo profile", () => {
     expect(manifest.counts["suppliers.second_user_enrolled"]).toBe(1);
   });
 
-  it("walks every open direct sale path of prompt §8.8 — factory gate for sellers, rider stock, organisations — and never sells to a customer except through a local seller", async () => {
-    for (const key of ["orders.SUPPLIER_TO_CHAMPION", "orders.SUPPLIER_TO_ORG", "orders.HUB_TO_ORG", "orders.RIDER_TO_ORG", "paths.rider_stock_pickups", "paths.organisation_deliveries"]) {
+  it("money goes through Dandelion's account: sellers are credited, withdrawals are approved by one admin and sent by another (Prompt L §2)", async () => {
+    const intents = await db().execute<{ platform: string; direct: string }>(sql`select count(*) filter (where collected_by_platform)::text as platform, count(*) filter (where not collected_by_platform)::text as direct from payment_intents`);
+    expect(Number(intents.rows[0]!.platform)).toBeGreaterThan(0);
+    expect(Number(intents.rows[0]!.direct)).toBe(0);
+    const fees = await db().execute<{ n: string }>(sql`select count(*)::text as n from orders where platform_fee_tzs > 0 and kind in ('SUPPLIER_TO_RIDER', 'RIDER_TO_CUSTOMER')`);
+    expect(Number(fees.rows[0]!.n)).toBeGreaterThan(0);
+    const states = await distinct("withdrawals", "state");
+    for (const st of ["REQUESTED", "APPROVED", "SENT", "REJECTED"]) expect(states.has(st), st).toBe(true);
+    const twoAdmins = await db().execute<{ n: string }>(sql`select count(*)::text as n from withdrawals where state = 'SENT' and approved_by = sent_by`);
+    expect(twoAdmins.rows[0]!.n).toBe("0");
+    expect(manifest.counts["payouts.sent"] ?? 0).toBeGreaterThan(0);
+  });
+
+  it("walks every direct sale path of prompt §8.8: village drops, factory gate, organisations", async () => {
+    for (const key of ["orders.RIDER_TO_CUSTOMER", "orders.SUPPLIER_TO_CUSTOMER", "orders.SUPPLIER_TO_CHAMPION", "orders.SUPPLIER_TO_ORG", "orders.HUB_TO_ORG", "paths.rider_stock_pickups", "paths.organisation_deliveries"]) {
       expect(manifest.counts[key] ?? 0, key).toBeGreaterThanOrEqual(1);
     }
-    // Safeguarding (Prompt J §3.5): no delivery partner or supplier sale to a customer anywhere in the dataset.
-    const closed = await db().execute<{ n: string }>(sql`select count(*)::text as n from orders where kind in ('RIDER_TO_CUSTOMER', 'SUPPLIER_TO_CUSTOMER')`);
-    expect(closed.rows[0]!.n).toBe("0");
     // A women-owned pharmacy buys in each area (business buyers, founders' decision of 2026-10-01).
     const pharmacies = await db().execute<{ n: string }>(sql`select count(*)::text as n from organisations where kind = 'PHARMACY' and women_owned and active`);
     expect(Number(pharmacies.rows[0]!.n)).toBeGreaterThanOrEqual(1);
     expect(manifest.counts["approvals.AREA_SALES_CHANGE"]).toBeGreaterThanOrEqual(1);
     const orgs = await db().execute<{ n: string }>(sql`select count(*)::text as n from organisations where active group by service_area_id`);
     for (const r of orgs.rows) expect(Number(r.n)).toBeGreaterThanOrEqual(2);
-    for (const kind of ["ORG_ORDER_UNPAID", "HANDOVER_CODE_UNCONFIRMED"]) expect(manifest.anomalies.some((a) => a.kind === kind), kind).toBe(true);
+    for (const kind of ["ORG_ORDER_UNPAID", "VILLAGE_DROP_CODE_UNCONFIRMED"]) expect(manifest.anomalies.some((a) => a.kind === kind), kind).toBe(true);
     const states = await distinct("batches", "custody_state");
     expect(states.has("WITH_RIDER")).toBe(true);
     expect(states.has("DELIVERED_TO_ORG")).toBe(true);

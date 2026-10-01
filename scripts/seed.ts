@@ -164,6 +164,8 @@ export async function seed(): Promise<MinimalSeedResult | null> {
 
     // Marks this database as seeded; the content guard and the simulated-data banner read it.
     await putSetting(tx, "seedProfile", "minimal", adminId);
+    // Dandelion's collection account for the test dataset (Prompt L §2.1); production sets its own through two admins.
+    await putSetting(tx, "platformPayeeAccount", "TILL-DANDELION-001", adminId);
     console.log("[seed] done (minimal)");
     return { areaId: area!.id, supplierId: supplier!.id, hubId: hub!.id, productIds: { kit: kit!.id, disposable: disposable!.id }, adminIds: [admins[0]!.id, admins[1]!.id] };
   });

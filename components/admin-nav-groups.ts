@@ -12,7 +12,7 @@ const GROUPS: [string, [string, string][]][] = [
   ["overview", [["home", "/admin"], ["ecosystem", "/admin/ecosystem"], ["brief", "/admin/brief"]]],
   ["operate", [["approvals", "/admin/approvals"], ["orders", "/admin/orders"], ["exceptions", "/admin/exceptions"], ["inventory", "/admin/inventory"], ["messages", "/admin/messages"]]],
   ["people", [["stakeholders", "/admin/stakeholders"], ["suppliers", "/admin/suppliers"], ["organisations", "/admin/organisations"], ["areas", "/admin/areas"], ["prices", "/admin/prices"]]],
-  ["money", [["reconciliation", "/admin/reconciliation"], ["statements", "/admin/statements"], ["ledger", "/admin/ledger"], ["exports", "/admin/exports"]]],
+  ["money", [["payouts", "/admin/payouts"], ["reconciliation", "/admin/reconciliation"], ["statements", "/admin/statements"], ["ledger", "/admin/ledger"], ["exports", "/admin/exports"]]],
   ["admin", [["settings", "/admin/settings"], ["logs", "/admin/logs"], ["data", "/admin/data-requests"], ["passkeys", "/admin/passkeys"]]],
 ];
 

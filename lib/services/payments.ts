@@ -7,8 +7,8 @@ import type { DbOrTx, Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { amountRuleFor } from "@/lib/domain/orders";
 import { PURPOSE_BY_ORDER_KIND } from "@/lib/domain/types";
-import { paymentProviderId } from "@/lib/env";
-import { DomainError } from "./core";
+import { appEnv, paymentProviderId } from "@/lib/env";
+import { DomainError, getSetting } from "./core";
 
 export type Order = typeof s.orders.$inferSelect;
 export type Intent = typeof s.paymentIntents.$inferSelect;
@@ -60,17 +60,35 @@ export async function latestIntent(db: DbOrTx, orderId: string): Promise<Intent 
   });
 }
 
+/** Test collection account used outside production when none is set, so previews and tests never stall. */
+export const TEST_PLATFORM_PAYEE = "TILL-DANDELION-TEST";
+
+/**
+ * Where the buyer pays for `order` (Prompt L §2.1): Dandelion's collection account when the route is PLATFORM, the
+ * seller's registered payee otherwise. Never user input. Production with no collection account set refuses.
+ */
+export async function payeeFor(db: DbOrTx, order: Pick<Order, "sellerUserId">): Promise<{ payeeAccount: string; collectedByPlatform: boolean; sellerId: string }> {
+  const seller = await db.query.users.findFirst({ where: eq(s.users.id, order.sellerUserId) });
+  if (!seller) throw new DomainError("seller_has_no_payee_account");
+  if ((await getSetting("paymentRoute", db)) === "PLATFORM") {
+    const account = String(await getSetting("platformPayeeAccount", db)) || (appEnv() === "production" ? "" : TEST_PLATFORM_PAYEE);
+    if (!account) throw new DomainError("platform_payee_not_set");
+    return { payeeAccount: account, collectedByPlatform: true, sellerId: seller.id };
+  }
+  if (!seller.payeeAccount) throw new DomainError("seller_has_no_payee_account");
+  return { payeeAccount: seller.payeeAccount, collectedByPlatform: false, sellerId: seller.id };
+}
+
 /**
  * Make sure the order has one PENDING intent for the remaining balance.
- * Payee is the seller's registered payee account — never user input.
+ * Payee: Dandelion's collection account or the seller's registered payee (payeeFor) — never user input.
  */
 export async function ensureOpenIntent(tx: Tx, order: Order): Promise<Intent> {
   const existing = await openIntent(tx, order.id);
   if (existing) return existing;
   const totals = await paidTotals(tx, order);
   if (totals.remainingTzs <= 0) throw new DomainError("already_fully_paid");
-  const seller = await tx.query.users.findFirst({ where: eq(s.users.id, order.sellerUserId) });
-  if (!seller?.payeeAccount) throw new DomainError("seller_has_no_payee_account");
+  const payee = await payeeFor(tx, order);
   const [intent] = await tx
     .insert(s.paymentIntents)
     .values({
@@ -79,8 +97,9 @@ export async function ensureOpenIntent(tx: Tx, order: Order): Promise<Intent> {
       provider: paymentProviderId(),
       payerUserId: order.buyerUserId,
       payerCustomerId: order.customerId,
-      payeeUserId: seller.id,
-      payeeAccount: seller.payeeAccount,
+      payeeUserId: payee.sellerId,
+      payeeAccount: payee.payeeAccount,
+      collectedByPlatform: payee.collectedByPlatform,
       amountTzs: totals.remainingTzs,
       amountRule: amountRuleFor(order.kind),
       status: "PAYMENT_PENDING",

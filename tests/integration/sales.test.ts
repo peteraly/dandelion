@@ -1,28 +1,38 @@
 /**
  * Prompt §8.8 on a real database: paths beyond the ladder are refused until
- * two admins switch them on for the area; delivery partners and supplier staff
- * never sell to a customer (safeguarding, Prompt J §3.5); an organisation buys
- * in bulk and takes custody, a rider keeps stock and sells it to an
- * organisation, and nobody sees an order they are not party to.
+ * two admins switch them on for the area; then a customer buys at the factory
+ * gate, an organisation buys in bulk and takes custody, a rider keeps stock
+ * and sells it in a village, and nobody sees an order they are not party to.
  */
 import { eq, sql } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { SEED } from "@/scripts/seed";
-import { actors, customerFor, ids, lastSms, order, userByPhone } from "./helpers";
-import { acceptPickup, adminCreatePickup, cancelOrgSale, confirmBatchReady, confirmReceipt, confirmRelease, createOrgSale, deliverOrgSale, startPlan } from "@/lib/services/orders";
+import { actors, ids, lastSms, order, userByPhone } from "./helpers";
+import { acceptPickup, adminCreatePickup, cancelOrgSale, completeHandover, confirmBatchReady, confirmReceipt, confirmRelease, createOrgSale, deliverOrgSale, startHandover, startPlan } from "@/lib/services/orders";
 import { createCustomer, verifyCustomerPhone } from "@/lib/services/customers";
 import { createOrganisation, requestOrganisationActivation, organisationDetail, updateOrganisation } from "@/lib/services/organisations";
 import { allowedSalesFor, directSalesFor, requestAreaSales } from "@/lib/services/areas";
 import { decideApproval } from "@/lib/services/approvals";
 import { draftPriceList } from "@/lib/services/pricing";
 import { simulate } from "@/lib/payments/simulator";
+import { earningsFor } from "@/lib/services/earnings";
 import { recentOrdersFor } from "@/lib/services/orders";
+import { codeMatches } from "@/lib/auth/secrets";
 import { tzDay } from "@/lib/util/time";
-import { PolicyError, type Actor } from "@/lib/policy";
+import type { Actor } from "@/lib/policy";
 
+const EDUCATION_REUSABLE = { wash: true, dry: true, store: true, whenNotToUse: true, whenToSeekCare: true };
+const EDUCATION_DISPOSABLE = { safeUse: true, disposal: true };
 const CHECKS = { quantityOk: true, sealOk: true };
+
+async function handoverCode(): Promise<string> {
+  const sms = await lastSms("HANDOVER_CODE");
+  const m = sms?.body.match(/\b(\d{6})\b/);
+  if (!m) throw new Error("no handover code");
+  return m[1]!;
+}
 
 async function enrol(seller: Actor, name: string, phone: string): Promise<string> {
   const { customerId, challengeId } = await createCustomer(seller, { displayName: name, phone, consentMessages: true, consentReminders: true }, "test-device", "127.0.0.1");
@@ -40,43 +50,57 @@ describe("sale paths beyond the ladder", () => {
     orgId = (await createOrganisation(admin, { name: "Tumaini School (TEST)", kind: "SCHOOL", serviceAreaId: area.id, contactName: "Head teacher (TEST)", contactPhone: "+255700009950" })).organisationId;
   });
 
-  it("is ladder-only until two admins switch a path on; the closed customer paths never switch on", async () => {
-    const { area } = await ids();
+  it("is ladder-only until two admins switch a path on", async () => {
+    const { area, kit } = await ids();
     const supplier = await actors.supplier();
     expect(await allowedSalesFor(getDb(), area.id)).toEqual(["SUPPLIER_TO_RIDER", "RIDER_TO_HUB", "HUB_TO_CHAMPION", "CHAMPION_TO_CUSTOMER"]);
+    const customerId = await enrol(supplier, "Factory-gate customer (TEST)", "+255700009951");
+    await expect(startPlan(supplier, customerId, kit.id)).rejects.toMatchObject({ code: "sale_not_allowed" });
     expect(await directSalesFor(getDb(), supplier, area.id)).toEqual({ toCustomers: false, toOrganisations: false });
 
     const admin = await actors.adminA();
-    // Asking for the closed paths too: they are dropped, the rest go to the second admin.
     const { requestId } = await requestAreaSales(admin, area.id, ["SUPPLIER_TO_CUSTOMER", "SUPPLIER_TO_ORG", "HUB_TO_ORG", "RIDER_TO_CUSTOMER", "RIDER_TO_ORG", "SUPPLIER_TO_CHAMPION"]);
     await expect(decideApproval(admin, requestId, "APPROVE")).rejects.toMatchObject({ code: "self_approval" });
     await expect(requestAreaSales(admin, area.id, [])).rejects.toMatchObject({ code: "area_sales_pending" });
     expect((await decideApproval(await actors.adminB(), requestId, "APPROVE")).status).toBe("EXECUTED");
     const allowed = await allowedSalesFor(getDb(), area.id);
-    expect(allowed).toContain("SUPPLIER_TO_ORG");
-    expect(allowed).toContain("RIDER_TO_ORG");
-    expect(allowed).not.toContain("SUPPLIER_TO_CUSTOMER");
-    expect(allowed).not.toContain("RIDER_TO_CUSTOMER");
+    expect(allowed).toContain("SUPPLIER_TO_CUSTOMER");
     expect(allowed).not.toContain("SUPPLIER_TO_HUB");
-    expect(await directSalesFor(getDb(), supplier, area.id)).toEqual({ toCustomers: false, toOrganisations: true });
+    expect(await directSalesFor(getDb(), supplier, area.id)).toEqual({ toCustomers: true, toOrganisations: true });
   });
 
-  it("safeguarding: a supplier or a delivery partner can never enrol or sell to a customer, even if an area's record says so", async () => {
-    const { area, kit } = await ids();
+  it("factory gate: a customer buys from the supplier at the area's customer price; custody goes supplier → customer", async () => {
+    const { kit } = await ids();
     const supplier = await actors.supplier();
-    const rider = await actors.rider();
-    await expect(enrol(supplier, "Factory-gate customer (TEST)", "+255700009951")).rejects.toThrow(PolicyError);
-    await expect(enrol(rider, "Village customer (TEST)", "+255700009952")).rejects.toThrow(PolicyError);
-    // A local seller's customer is hers alone: nobody else can start a plan for her.
-    const customer = await customerFor(SEED.champions[0]!.phone);
-    await expect(startPlan(supplier, customer.id, kit.id)).rejects.toThrow(PolicyError);
-    await expect(startPlan(rider, customer.id, kit.id)).rejects.toThrow(PolicyError);
-    // Even an area record from before the rule, with the closed paths in it, does not reopen them.
-    await getDb().update(s.serviceAreas).set({ allowedSales: ["SUPPLIER_TO_CUSTOMER", "RIDER_TO_CUSTOMER", "SUPPLIER_TO_ORG", "HUB_TO_ORG", "RIDER_TO_ORG", "SUPPLIER_TO_CHAMPION"] }).where(eq(s.serviceAreas.id, area.id));
-    const allowed = await allowedSalesFor(getDb(), area.id);
-    expect(allowed).not.toContain("SUPPLIER_TO_CUSTOMER");
-    expect(allowed).not.toContain("RIDER_TO_CUSTOMER");
-    expect(await directSalesFor(getDb(), rider, area.id)).toEqual({ toCustomers: false, toOrganisations: true });
+    const customer = (await getDb().query.customers.findFirst({ where: eq(s.customers.displayName, "Factory-gate customer (TEST)") }))!;
+    const { orderId } = await startPlan(supplier, customer.id, kit.id);
+    const o = await order(orderId);
+    expect(o.kind).toBe("SUPPLIER_TO_CUSTOMER");
+    expect(o.totalTzs).toBe(SEED.prices.customer); // one customer price per area, whoever sells
+    expect(o.unitCostTzs).toBe(0);
+    const paid = await simulate("success", o.ref);
+    expect(paid.outcomes).toContain("CONFIRMED");
+    expect((await order(orderId)).state).toBe("FULLY_PAID");
+    await startHandover(supplier, orderId);
+    const pending = await order(orderId);
+    expect(pending.state).toBe("HANDOVER_PENDING");
+    const code = await handoverCode();
+    expect(codeMatches(`handover:${orderId}`, code, pending.handoverCodeHash!)).toBe(true);
+    await completeHandover(supplier, orderId, code, EDUCATION_REUSABLE);
+    const done = await order(orderId);
+    expect(done.state).toBe("COMPLETED");
+    const batch = (await getDb().query.batches.findFirst({ where: eq(s.batches.id, done.batchId!) }))!;
+    expect(batch.custodyState).toBe("HANDED_TO_CUSTOMER");
+    expect(batch.supplierId).toBe(supplier.supplierId);
+    const events = await getDb().query.custodyEvents.findMany({ where: eq(s.custodyEvents.batchId, batch.id) });
+    expect(events.map((e) => e.event)).toEqual(["SPLIT_FOR_CUSTOMER", "CUSTOMER_HANDOVER"]);
+    // The parent lot was registered at the moment of sale and is now empty.
+    const parent = (await getDb().query.batches.findFirst({ where: eq(s.batches.id, batch.parentBatchId!) }))!;
+    expect(parent.quantity).toBe(0);
+    expect(parent.custodyState).toBe("AVAILABLE_AT_SUPPLIER");
+    // The seller earned the whole customer price.
+    const e = await earningsFor(getDb(), supplier.userId);
+    expect(e.receivedWeekTzs).toBeGreaterThanOrEqual(SEED.prices.customer);
   });
 
   it("organisation: activated by two admins, pays one exact amount at the organisation price, then the seller delivers and the lot ends", async () => {
@@ -133,16 +157,16 @@ describe("sale paths beyond the ladder", () => {
     expect((await order(second.orderId)).state).toBe("CANCELLED");
   });
 
-  it("rider stock: a rider keeps a pickup as own stock and sells it to an organisation, never to a customer", async () => {
+  it("village drop: a rider keeps a pickup as own stock and sells one unit to a customer they enrolled", async () => {
     const { supplier: supplierRow, disposable } = await ids();
     const admin = await actors.adminA();
     const supplier = await actors.supplier();
     const riderUser = await userByPhone(SEED.riders[1]!.phone);
     const rider = await actors.rider2();
-    // A pickup with no hub behind it: the rider's own stock (needs the rider-to-organisation path — switched on above).
+    // A pickup with no hub behind it: the rider's own stock (needs a direct rider path in the area — switched on above).
     const { orderId: pickupId } = await adminCreatePickup(admin, { supplierId: supplierRow.id, productId: disposable.id, buyerUserId: riderUser.id, quantity: 6, pickupDate: tzDay() });
     expect((await order(pickupId)).hubId).toBeNull();
-    await confirmBatchReady(supplier, pickupId, "SEAL-RS");
+    await confirmBatchReady(supplier, pickupId, "SEAL-VD");
     await acceptPickup(rider, pickupId);
     expect((await simulate("success", (await order(pickupId)).ref)).outcomes).toContain("CONFIRMED");
     await confirmRelease(supplier, pickupId);
@@ -156,16 +180,19 @@ describe("sale paths beyond the ladder", () => {
     const deliveries = await getDb().execute<{ n: string }>(sql`select count(*)::text as n from orders where parent_order_id = ${pickupId}`);
     expect(deliveries.rows[0]!.n).toBe("0");
 
-    // Never to a customer (safeguarding); to an organisation, paid in full first.
-    await expect(enrol(rider, "Village customer (TEST)", "+255700009953")).rejects.toThrow(PolicyError);
-    const { orderId } = await createOrgSale(rider, { organisationId: orgId, productId: disposable.id, quantity: 2 });
+    const customerId = await enrol(rider, "Village customer (TEST)", "+255700009952");
+    const { orderId } = await startPlan(rider, customerId, disposable.id);
     const o = await order(orderId);
-    expect(o.kind).toBe("RIDER_TO_ORG");
-    expect(o.totalTzs).toBe(4000 * 2);
+    expect(o.kind).toBe("RIDER_TO_CUSTOMER");
+    expect(o.totalTzs).toBe(4500);
+    expect(o.unitCostTzs).toBe(3000);
     expect((await simulate("success", o.ref)).outcomes).toContain("CONFIRMED");
-    await deliverOrgSale(rider, orderId);
+    await startHandover(rider, orderId);
+    const code = await handoverCode();
+    await completeHandover(rider, orderId, code, EDUCATION_DISPOSABLE);
     expect((await order(orderId)).state).toBe("COMPLETED");
-    expect((await getDb().query.batches.findFirst({ where: eq(s.batches.id, lot.id) }))!.quantity).toBe(4);
+    const riderLot = (await getDb().query.batches.findFirst({ where: eq(s.batches.id, lot.id) }))!;
+    expect(riderLot.quantity).toBe(5);
     // The rider's list shows both the pickup and the sale; another rider sees neither.
     const mine = await recentOrdersFor(rider);
     expect(mine.some((x) => x.id === orderId)).toBe(true);

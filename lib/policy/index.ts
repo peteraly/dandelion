@@ -87,6 +87,10 @@ export const ACTIONS = [
   "exception.report",
   "note.create",
   "account.lock_self",
+  // wallets (Prompt L §2): a member sees their own balance and asks to withdraw; admins approve and send
+  "wallet.view",
+  "wallet.withdraw",
+  "admin.payout.decide",
   // supplier
   "order.confirm_batch_ready",
   "supplier.home.view",
@@ -152,9 +156,7 @@ export function isOrderParty(a: Actor, o: OrderResource): boolean {
 const sellerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).seller === a.role;
 const buyerRole = (a: Actor, o: OrderResource) => saleFor(o.kind).buyer === a.role;
 /** Roles that may enrol customers and sell to them: on the ladder the champion; on direct paths riders and suppliers (the area switch is checked in the service). */
-// Only local sellers hold customers (safeguarding, lib/domain/sales.ts CLOSED_KINDS): delivery partners and supplier
-// staff never enrol, see or sell to a customer.
-const SELLS_TO_CUSTOMERS: readonly Role[] = ["FIELD_CHAMPION"];
+const SELLS_TO_CUSTOMERS: readonly Role[] = ["FIELD_CHAMPION", "BOSS_RIDER", "SUPPLIER"];
 const SELLS_TO_ORGS: readonly Role[] = ["SUPPLIER", "HUB_MANAGER", "BOSS_RIDER"];
 
 const orderRule =
@@ -206,6 +208,10 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   },
   "note.create": (a) => a.role !== "SUPER_ADMIN",
   "account.lock_self": () => true,
+  // Only field members have a balance; nobody can move money but admins (founders, 2026-10-01).
+  "wallet.view": (a) => a.role !== "SUPER_ADMIN",
+  "wallet.withdraw": (a) => a.role !== "SUPER_ADMIN",
+  "admin.payout.decide": adminOnly,
 
   "order.confirm_batch_ready": orderRule((a, o) => isRole(a, "SUPPLIER") && FACTORY_PICKUP_KINDS.includes(o.kind)),
   "supplier.home.view": (a) => isRole(a, "SUPPLIER") && a.supplierId !== null,

@@ -40,6 +40,7 @@ import {
   PRODUCT_CATEGORIES,
   ORGANISATION_KINDS,
   ROAD_TYPES,
+  WITHDRAWAL_STATES,
   type OrderKind,
 } from "@/lib/domain/types";
 
@@ -75,6 +76,7 @@ export const anchorStatusEnum = pgEnum("anchor_status", ["BUILT", "SUBMITTED", "
 export const jobStatusEnum = pgEnum("job_status", ["QUEUED", "RUNNING", "DONE", "RETRY", "DEAD"]);
 export const localeEnum = pgEnum("locale", ["sw", "en"]);
 export const roadTypeEnum = pgEnum("road_type", ROAD_TYPES);
+export const withdrawalStateEnum = pgEnum("withdrawal_state", WITHDRAWAL_STATES);
 
 // ---------- reference data ----------
 export const serviceAreas = pgTable("service_areas", {
@@ -488,12 +490,18 @@ export const orders = pgTable(
     receiverConfirmedAt: ts("receiver_confirmed_at"),
     educationConfirmedAt: ts("education_confirmed_at"),
     createdBy: uuid("created_by").notNull().references(() => users.id),
+    /**
+     * Dandelion's operating fee on this sale, fixed when the order is made (Prompt L §2.3): taken from the seller's
+     * credit when the platform collects. Immutable (guard in 0008).
+     */
+    platformFeeTzs: integer("platform_fee_tzs").notNull().default(0),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
     completedAt: ts("completed_at"),
   },
   (t) => [
     check("order_amounts", sql`${t.quantity} > 0 AND ${t.unitPriceTzs} >= 0 AND ${t.totalTzs} = ${t.unitPriceTzs} * ${t.quantity} AND ${t.unitCostTzs} >= 0`),
+    check("order_platform_fee", sql`${t.platformFeeTzs} >= 0 AND ${t.platformFeeTzs} <= ${t.totalTzs}`),
     // Every order has exactly one kind of buyer: a stakeholder, a customer or an organisation (the services pick which per kind).
     check("order_has_buyer", sql`(${t.buyerUserId} IS NOT NULL)::int + (${t.customerId} IS NOT NULL)::int + (${t.organisationId} IS NOT NULL)::int = 1`),
     index("orders_seller_idx").on(t.sellerUserId, t.state),
@@ -538,11 +546,14 @@ export const paymentIntents = pgTable(
     reviewReason: text("review_reason"),
     payerClaimedAt: ts("payer_claimed_at"),
     confirmedAt: ts("confirmed_at"),
+    /** Paid into Dandelion's collection account and credited to the payee's balance (Prompt L §2.1). Immutable. */
+    collectedByPlatform: boolean("collected_by_platform").notNull().default(false),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
   (t) => [
     index("payment_intents_status_confirmed_idx").on(t.status, t.confirmedAt),
+    index("payment_intents_payee_platform_idx").on(t.payeeUserId, t.collectedByPlatform, t.status),
     check("intent_amount_positive", sql`${t.amountTzs} > 0 AND (${t.confirmedAmountTzs} IS NULL OR ${t.confirmedAmountTzs} > 0)`),
     check(
       "confirmed_needs_provider_ref",
@@ -552,6 +563,40 @@ export const paymentIntents = pgTable(
     foreignKey({ columns: [t.provider, t.providerTxRef], foreignColumns: [providerTxDedupe.provider, providerTxDedupe.providerTxRef] }),
     index("payment_intents_order_idx").on(t.orderId),
     index("payment_intents_status_idx").on(t.status),
+  ],
+);
+
+/**
+ * A member's withdrawal from their balance (Prompt L §2.2). The member asks; one admin approves; a different admin
+ * sends the money from the collection account and records the provider's reference. Never deleted; amounts and the
+ * payout number are fixed at the request (guard in 0008).
+ */
+export const withdrawals = pgTable(
+  "withdrawals",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    /** Human reference for texts, the ledger and the provider ("WD-7K3P2Q"). */
+    ref: text("ref").notNull().unique(),
+    userId: uuid("user_id").notNull().references(() => users.id),
+    amountTzs: integer("amount_tzs").notNull(),
+    /** The member's registered payout number at the time of the request; never typed by the member. */
+    payeeAccount: text("payee_account").notNull(),
+    state: withdrawalStateEnum("state").notNull().default("REQUESTED"),
+    approvedBy: uuid("approved_by").references(() => users.id),
+    approvedAt: ts("approved_at"),
+    sentBy: uuid("sent_by").references(() => users.id),
+    sentAt: ts("sent_at"),
+    providerRef: text("provider_ref"),
+    decidedReason: text("decided_reason"),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    check("withdrawal_amount_positive", sql`${t.amountTzs} > 0`),
+    check("withdrawal_two_admins", sql`${t.sentBy} IS NULL OR ${t.approvedBy} IS NULL OR ${t.sentBy} <> ${t.approvedBy}`),
+    check("withdrawal_sent_has_ref", sql`${t.state} <> 'SENT' OR (${t.providerRef} IS NOT NULL AND ${t.sentBy} IS NOT NULL AND ${t.sentAt} IS NOT NULL)`),
+    index("withdrawals_user_idx").on(t.userId, t.state),
+    index("withdrawals_state_idx").on(t.state),
   ],
 );
 

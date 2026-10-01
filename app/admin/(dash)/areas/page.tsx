@@ -43,9 +43,6 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
       <h1 className="text-2xl font-bold">{t("title")}</h1>
       <p className="text-sm text-stone-600">{t("intro")}</p>
       <p className="text-sm text-stone-600">{t("decision")}</p>
-      <p className="rounded-xl border border-brand-200 bg-brand-50 p-3 text-sm text-brand-900" data-testid="safeguarding-rule">
-        {t("safeguarding")}
-      </p>
       <Notice error={error} ok={ok} okNamespace="admin.areas" />
       {rows.map((a) => (
         <Card key={a.id} data-testid="area-card">

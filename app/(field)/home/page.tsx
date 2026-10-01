@@ -8,6 +8,7 @@ import { homeFor } from "@/lib/services/home";
 import { supplierHome, type SupplierHome } from "@/lib/services/suppliers";
 import { directSalesFor, sellerAreaId } from "@/lib/services/areas";
 import { earningsFor, type Earnings } from "@/lib/services/earnings";
+import { myWallet, type Wallet } from "@/lib/services/wallets";
 import { getDb } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { rowForOrder, type ActionKey } from "@/lib/domain/workflows";
@@ -48,6 +49,7 @@ export default async function HomePage() {
   const supplier = actor.role === "SUPPLIER" ? await supplierHome(actor) : null;
   const direct = await directSalesFor(getDb(), actor, await sellerAreaId(actor));
   const earnings = await earningsFor(getDb(), actor.userId);
+  const wallet = await myWallet(actor);
 
   return (
     <>
@@ -71,6 +73,7 @@ export default async function HomePage() {
         <p className="mb-1 text-xs uppercase tracking-wide text-stone-500">{t("common.nextAction")}</p>
         <LinkButton href={actionHref(view.action, view.order?.id ?? null)}>{t(`home.action.${view.action}`)}</LinkButton>
       </div>
+      {wallet.platformCollects ? <WalletCard wallet={wallet} locale={locale} /> : null}
       <EarningsCard earnings={earnings} locale={locale} />
       {supplier ? <SupplierCards data={supplier} locale={locale} /> : null}
       {others.length > 0 || (view.extras.riderStockUnits ?? 0) > 0 ? (
@@ -211,6 +214,28 @@ async function SupplierCards({ data, locale }: { data: SupplierHome; locale: "sw
 }
 
 /** Earned = received − paid, provider-confirmed only (prompt §8.8.1). Every field role sees their own. */
+/** Dandelion holds the money from sales (Prompt L §2): what can be withdrawn now, what waits for a hand-over. */
+async function WalletCard({ wallet, locale }: { wallet: Wallet; locale: "sw" | "en" }) {
+  const t = await getTranslations("field.wallet");
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3" data-testid="wallet-card">
+      <div>
+        <p className="text-xs uppercase tracking-wide text-stone-500">{t("available")}</p>
+        <p className="text-2xl font-bold text-green-900" data-testid="wallet-card-available">
+          {formatTzs(wallet.availableTzs, locale)}
+        </p>
+        <p className="text-xs text-stone-600">
+          {t("onHold")} {formatTzs(wallet.onHoldTzs, locale)}
+          {wallet.pendingWithdrawalTzs > 0 ? ` · ${t("pending")} ${formatTzs(wallet.pendingWithdrawalTzs, locale)}` : ""}
+        </p>
+      </div>
+      <Link href="/wallet" className="btn btn-secondary w-auto px-4" data-testid="wallet-link">
+        {wallet.availableTzs >= wallet.minTzs && wallet.pendingWithdrawalTzs === 0 ? t("withdraw") : t("open")}
+      </Link>
+    </Card>
+  );
+}
+
 async function EarningsCard({ earnings, locale }: { earnings: Earnings; locale: "sw" | "en" }) {
   const t = await getTranslations("field.earnings");
   return (

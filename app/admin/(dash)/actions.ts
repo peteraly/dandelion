@@ -17,6 +17,9 @@ import { approveEducationPack } from "@/lib/services/ai-gateway";
 import { createSupplier, requestSupplierActivation, setSupplierProduct, updateSupplier, type SupplierInputT } from "@/lib/services/suppliers";
 import { createOrganisation, requestOrganisationActivation, updateOrganisation, type OrganisationInputT } from "@/lib/services/organisations";
 import { requestAreaSales, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
+import { approveWithdrawal, rejectWithdrawal, sendWithdrawal } from "@/lib/services/wallets";
+import { humanCode } from "@/lib/crypto/random";
+import { appEnv } from "@/lib/env";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { ROAD_TYPES, type OrderKind, type RoadType } from "@/lib/domain/types";
 import { idempotent, DomainError } from "@/lib/services/core";
@@ -319,3 +322,22 @@ export async function updateAreaRainsAction(fd: FormData): Promise<void> {
   await act("/admin/areas", () => once(actor, fd, "updateAreaRains", () => updateAreaRains(actor, areaId, months).then(() => ({}))), "/admin/areas", "rainsSaved");
 }
 
+
+// ---------- payouts (Prompt L §2.2): one admin approves, a different admin sends ----------
+
+export async function approveWithdrawalAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  await act("/admin/payouts", () => once(actor, fd, "approveWithdrawal", async () => (await approveWithdrawal(actor, str(fd, "withdrawalId")), null)), "/admin/payouts", "approved");
+}
+
+export async function sendWithdrawalAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  // Outside production the provider's reference can be simulated; in production the admin types the real one.
+  const providerRef = bool(fd, "simulate") && appEnv() !== "production" ? `SIM-${humanCode(8)}` : str(fd, "providerRef");
+  await act("/admin/payouts", () => once(actor, fd, "sendWithdrawal", async () => (await sendWithdrawal(actor, str(fd, "withdrawalId"), { providerRef }), null)), "/admin/payouts", "sent");
+}
+
+export async function rejectWithdrawalAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  await act("/admin/payouts", () => once(actor, fd, "rejectWithdrawal", async () => (await rejectWithdrawal(actor, str(fd, "withdrawalId"), { reason: str(fd, "reason") }), null)), "/admin/payouts", "rejected");
+}

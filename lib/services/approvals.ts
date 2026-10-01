@@ -8,6 +8,7 @@
 import { now } from "@/lib/clock";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { z } from "zod";
+import { PAYMENT_ROUTES } from "@/lib/domain/types";
 import { getDb, type Tx } from "@/lib/db/client";
 import * as s from "@/lib/db/schema";
 import { canDecide, evaluateApproval, type DualApprovalProof } from "@/lib/domain/approval";
@@ -231,6 +232,10 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       const key = p.key as SettingKey;
       if (typeof SETTING_DEFAULTS[key] !== typeof p.value) throw new DomainError("setting_type_mismatch");
       if (key === "approvalThreshold" && (p.value as number) < 2) throw new DomainError("threshold_too_low");
+      // Money settings (Prompt L §2): only real routes, a sane fee and minimum, a payout-style account number.
+      if (key === "paymentRoute" && !(PAYMENT_ROUTES as readonly string[]).includes(p.value as string)) throw new DomainError("setting_value_invalid");
+      if ((key === "platformFeeTzs" || key === "withdrawalMinTzs") && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 100_000)) throw new DomainError("setting_value_invalid");
+      if (key === "platformPayeeAccount" && !/^[A-Za-z0-9-]{4,32}$/.test(p.value as string)) throw new DomainError("setting_value_invalid");
       await putSetting(tx, key, p.value, approverId);
       return;
     }

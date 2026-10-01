@@ -12,7 +12,7 @@ import { encryptString } from "@/lib/crypto/envelope";
 import { phoneBlindIndex } from "@/lib/crypto/blind-index";
 import { isProduction, smsProviderId } from "@/lib/env";
 
-export type SmsPurpose = "OTP" | "ENROLL_LINK" | "PICKUP" | "CUSTOMER_PLAN" | "CUSTOMER_PAID" | "HANDOVER_CODE" | "RECEIPT" | "MARGIN" | "NOTICE" | "ORG_SALE";
+export type SmsPurpose = "OTP" | "ENROLL_LINK" | "PICKUP" | "CUSTOMER_PLAN" | "CUSTOMER_PAID" | "HANDOVER_CODE" | "RECEIPT" | "MARGIN" | "NOTICE" | "ORG_SALE" | "PAYOUT_SENT" | "PAYOUT_REJECTED";
 
 export interface SmsProvider {
   readonly id: string;

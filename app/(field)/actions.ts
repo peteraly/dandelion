@@ -11,6 +11,7 @@ import { createCustomer, resendCustomerOtp, verifyCustomerPhone } from "@/lib/se
 import { syncOfflineNotes } from "@/lib/services/notes";
 import { lockUser } from "@/lib/services/users";
 import { recordDecision } from "@/lib/services/ai-gateway";
+import { requestWithdrawal } from "@/lib/services/wallets";
 import type { Actor } from "@/lib/policy";
 import { PolicyError } from "@/lib/policy";
 
@@ -235,3 +236,9 @@ export async function cancelOrgSaleAction(fd: FormData): Promise<void> {
   await act(orderPath(id), () => once(actor, fd, "cancelOrgSale", async () => (await orders.cancelOrgSale(actor, id), null)), orderPath(id));
 }
 
+
+/** A member asks to withdraw from their balance (Prompt L §2.2); admins approve and send. */
+export async function requestWithdrawalAction(fd: FormData): Promise<void> {
+  const actor = await me();
+  await act("/wallet", () => once(actor, fd, "requestWithdrawal", async () => (await requestWithdrawal(actor, { amountTzs: Number(str(fd, "amountTzs")) }), null)), "/wallet", "withdrawalRequested");
+}
