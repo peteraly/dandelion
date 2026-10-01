@@ -16,7 +16,7 @@ import { runAnchor, confirmSubmittedAnchors } from "@/lib/ledger/anchor";
 import { approveEducationPack } from "@/lib/services/ai-gateway";
 import { createSupplier, requestSupplierActivation, setSupplierProduct, updateSupplier, type SupplierInputT } from "@/lib/services/suppliers";
 import { createOrganisation, requestOrganisationActivation, updateOrganisation, type OrganisationInputT } from "@/lib/services/organisations";
-import { addMeetingPoint, requestAreaSales, setMeetingPointActive, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
+import { addMeetingPoint, requestAreaSales, setMeetingPointActive, setMeetingPointWhen, updateAreaRains, updateHubRoad } from "@/lib/services/areas";
 import { approveWithdrawal, rejectWithdrawal, sendWithdrawal } from "@/lib/services/wallets";
 import { humanCode } from "@/lib/crypto/random";
 import { appEnv } from "@/lib/env";
@@ -324,7 +324,12 @@ export async function updateAreaRainsAction(fd: FormData): Promise<void> {
 
 export async function addMeetingPointAction(fd: FormData): Promise<void> {
   const actor = await admin();
-  await act("/admin/areas", () => once(actor, fd, "addMeetingPoint", () => addMeetingPoint(actor, { serviceAreaId: str(fd, "serviceAreaId"), name: str(fd, "name") })), "/admin/areas", "placeAdded");
+  await act("/admin/areas", () => once(actor, fd, "addMeetingPoint", () => addMeetingPoint(actor, { serviceAreaId: str(fd, "serviceAreaId"), name: str(fd, "name"), when: str(fd, "when") })), "/admin/areas", "placeAdded");
+}
+
+export async function setMeetingPointWhenAction(fd: FormData): Promise<void> {
+  const actor = await admin();
+  await act("/admin/areas", () => once(actor, fd, "setMeetingPointWhen", () => setMeetingPointWhen(actor, str(fd, "meetingPointId"), str(fd, "when")).then(() => ({}))), "/admin/areas", "placeSaved");
 }
 
 export async function setMeetingPointActiveAction(fd: FormData): Promise<void> {

@@ -133,9 +133,15 @@ describe("demo profile", () => {
     expect(states.has("OPEN")).toBe(true);
     // Every accepted request is a delivery partner's plan with the customer who asked.
     const mismatched = await db().execute<{ n: string }>(
-      sql`select count(*)::text as n from customer_requests r join orders o on o.id = r.order_id where r.state = 'ACCEPTED' and (o.customer_id <> r.customer_id or o.seller_user_id <> r.accepted_by or o.kind <> 'RIDER_TO_CUSTOMER')`,
+      sql`select count(*)::text as n from customer_requests r join orders o on o.id = r.order_id where r.state = 'ACCEPTED' and (o.customer_id <> r.customer_id or o.seller_user_id <> r.accepted_by or o.kind not in ('RIDER_TO_CUSTOMER', 'CHAMPION_TO_CUSTOMER'))`,
     );
     expect(mismatched.rows[0]!.n).toBe("0");
+    // A request for a woman local seller only ever went to one.
+    expect(manifest.counts["shop.womenOnly"] ?? 0).toBeGreaterThan(0);
+    const wrongSeller = await db().execute<{ n: string }>(sql`select count(*)::text as n from customer_requests r join users u on u.id = r.accepted_by where r.women_only and u.role <> 'FIELD_CHAMPION'`);
+    expect(wrongSeller.rows[0]!.n).toBe("0");
+    const timed = await db().execute<{ n: string }>(sql`select count(*)::text as n from meeting_points where when_text is not null`);
+    expect(Number(timed.rows[0]!.n)).toBeGreaterThan(0);
   });
 
   it("money goes through Dandelion's account: sellers are credited, withdrawals are approved by one admin and sent by another (Prompt L §2)", async () => {

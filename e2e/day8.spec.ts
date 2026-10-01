@@ -649,7 +649,7 @@ test("demo polish: the guide is demo-only, the presenter view drops the sidebar,
   expect(await page.getByTestId("nav-demo-guide").count()).toBe(0);
   // Sidebar groups (behind the menu button on a phone) and the presenter view.
   await page.getByTestId("admin-menu-toggle").click();
-  await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Watch");
+  await expect(page.getByRole("navigation", { name: "Admin" })).toContainText("Today");
   await page.getByTestId("present-link").click();
   await expect(page).toHaveURL(/\/admin\/present/);
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -974,9 +974,10 @@ test("shop: a customer joins with her phone, orders to a public meeting point, a
   // The delivery partner who holds kits sees her request on his home screen and accepts it.
   const rider = await fieldLogin(browser, SEED.riders[0]!.phone, SEED.riders[0]!.pin);
   await english(rider.page);
-  const req = rider.page.getByTestId("shop-request-row").first();
-  await expect(req).toContainText("Market gate (TEST)");
-  await req.getByTestId("shop-request-accept").click();
+  // Requests are grouped by meeting point, with the place's usual time, so one trip serves several.
+  const here = rider.page.getByTestId("shop-request-place").filter({ hasText: "Market gate (TEST)" });
+  await expect(here).toBeVisible();
+  await here.getByTestId("shop-request-row").first().getByTestId("shop-request-accept").click();
   await expect(rider.page).toHaveURL(/\/orders\/[0-9a-f-]+\?ok=requestAccepted/);
   await expect(rider.page.getByTestId("shop-meeting")).toContainText("Market gate (TEST)");
   const saleRef = await currentOrderRef(rider.page);
@@ -1005,8 +1006,27 @@ test("shop: a customer joins with her phone, orders to a public meeting point, a
   await page.goto("/shop");
   await expect(page.getByTestId("shop-order-row").first()).toHaveAttribute("data-order-state", "COMPLETED");
   await expect(page.getByTestId("shop-order")).toBeVisible(); // she can order again
+  // The private "report a problem" is on her order; the seller never sees who reported.
+  await page.getByTestId("shop-report").first().locator("summary").click();
+  await page.getByLabel(/asked for more money/).check();
+  await page.getByRole("button", { name: "Send to Dandelion" }).click();
+  await expect(page).toHaveURL(/ok=reported/);
   await page.getByTestId("shop-sign-out").click();
   await expect(page).toHaveURL(/ok=signedOut/);
   await expect(page.getByTestId("shop-join")).toBeVisible();
+
+  // The public impact page: totals only.
+  await page.goto("/");
+  await page.getByTestId("impact-link").click();
+  await expect(page.getByTestId("impact-money")).toBeVisible();
+  await expect(page.getByTestId("impact-handovers")).toBeVisible();
   await c.close();
+
+  // The admins: shop health per area, and the to-do list sends them there.
+  const a = await adminLogin(browser, SEED.adminA);
+  await english(a.page);
+  await a.page.goto("/admin/shop");
+  await expect(a.page.getByTestId("shop-area").first()).toContainText("Test Village (TEST)");
+  await expect(a.page.getByTestId("shop-accepted").first()).toContainText("%");
+  await a.ctx.close();
 });

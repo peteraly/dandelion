@@ -21,7 +21,7 @@ import { hubRoads } from "@/lib/services/replenishment";
 import { DIRECT_KINDS } from "@/lib/domain/sales";
 import { ROAD_TYPES } from "@/lib/domain/types";
 import { flags, type SearchParams } from "@/lib/actions";
-import { addMeetingPointAction, requestAreaSalesAction, setMeetingPointActiveAction, updateAreaRainsAction, updateHubRoadAction } from "../actions";
+import { addMeetingPointAction, requestAreaSalesAction, setMeetingPointActiveAction, setMeetingPointWhenAction, updateAreaRainsAction, updateHubRoadAction } from "../actions";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const monthName = (m: number, locale: string) => new Intl.DateTimeFormat(locale === "sw" ? "sw-TZ" : "en-GB", { month: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2026, m - 1, 15)));
@@ -76,13 +76,24 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
 
           <div className="mt-4 border-t border-stone-200 pt-3" data-testid="area-places">
             <h3 className="font-semibold">{tp("title")}</h3>
-            <p className="mb-2 text-sm text-stone-600">{a.allowedSales.includes("RIDER_TO_CUSTOMER") ? tp("intro") : tp("shopOff")}</p>
-            <ul className="mb-2 flex flex-wrap gap-2">
+            <p className="mb-2 text-sm text-stone-600">{tp("intro")} {a.allowedSales.includes("RIDER_TO_CUSTOMER") ? tp("ridersOn") : tp("ridersOff")}</p>
+            <ul className="mb-2 flex flex-col gap-2">
               {places
                 .filter((p) => p.serviceAreaId === a.id)
                 .map((p) => (
-                  <li key={p.id} className="flex items-center gap-1 rounded-full border border-stone-200 py-1 pl-3 pr-1 text-sm" data-testid="meeting-point" data-active={p.active}>
-                    <span className={p.active ? "" : "text-stone-400 line-through"}>{p.name}</span>
+                  <li key={p.id} className="flex flex-wrap items-center gap-2 rounded-xl border border-stone-200 p-2 text-sm" data-testid="meeting-point" data-active={p.active}>
+                    <span className={`min-w-0 flex-1 ${p.active ? "font-medium" : "text-stone-400 line-through"}`}>
+                      {p.name}
+                      <span className="block text-xs font-normal text-stone-500">{p.whenText ?? tp("noWhen")}</span>
+                    </span>
+                    <form action={setMeetingPointWhenAction} className="flex items-center gap-1">
+                      <IdemKey />
+                      <input type="hidden" name="meetingPointId" value={p.id} />
+                      <input name="when" className="field w-48 py-1 text-xs" maxLength={60} defaultValue={p.whenText ?? ""} placeholder={tp("whenPlaceholder")} aria-label={tp("when")} />
+                      <button type="submit" className="rounded-full px-2 py-0.5 text-xs text-brand-800 underline">
+                        {tp("saveWhen")}
+                      </button>
+                    </form>
                     <form action={setMeetingPointActiveAction}>
                       <IdemKey />
                       <input type="hidden" name="meetingPointId" value={p.id} />
@@ -100,6 +111,10 @@ export default async function AreasPage({ searchParams }: { searchParams: Search
               <label className="text-sm">
                 <span className="label">{tp("name")}</span>
                 <input name="name" className="field" minLength={3} maxLength={60} required placeholder={tp("placeholder")} />
+              </label>
+              <label className="text-sm">
+                <span className="label">{tp("when")}</span>
+                <input name="when" className="field" maxLength={60} placeholder={tp("whenPlaceholder")} />
               </label>
               <button type="submit" className="btn btn-secondary w-auto px-4 text-sm">
                 {tp("add")}

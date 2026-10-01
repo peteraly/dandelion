@@ -117,9 +117,17 @@ export async function directDay(w: World, plans: Plan[], day: number, totalDays:
       if (plan) plans.push(plan);
     });
   }
-  // On the last day one shop request is left waiting for a delivery partner.
+  // Some ask for a woman local seller; one of the first hub's local sellers who holds the product takes it.
+  const localSeller = hub.champions.find((c) => !w.busy.has(c.actor.userId));
+  if (localSeller && day >= 3 && (await w.sellerStock(localSeller, disposable.id)) >= 1 && (rng.chance(0.2) || w.once("shop.womenOnly.first"))) {
+    await attempt("shopOrderWomenOnly", async () => {
+      const plan = await shopOrder(w, localSeller, disposable, day, { womenOnly: true });
+      if (plan) plans.push(plan);
+    });
+  }
+  // On the last day one shop request is left waiting for a seller.
   if (day >= totalDays - 1 && totalDays < 1000 && w.once("shop.waiting")) {
-    await attempt("shopWaiting", async () => void (await shopOrder(w, rider, disposable, day, false)));
+    await attempt("shopWaiting", async () => void (await shopOrder(w, rider, disposable, day, { accept: false })));
   }
   // Factory-gate customers: a couple over the run.
   if (rng.chance(0.25) || w.once("factoryGate.first")) {

@@ -122,6 +122,8 @@ export const EXCEPTION_TYPES = [
   "SUSPECTED_THEFT",
   "WASH_CONCERN",
   "RECONCILIATION_MISMATCH",
+  /** A customer reported, from the shop, that something about her order or hand-over made her feel unsafe (Prompt L §3). */
+  "SAFETY_CONCERN",
   "OTHER",
 ] as const;
 export type ExceptionType = (typeof EXCEPTION_TYPES)[number];

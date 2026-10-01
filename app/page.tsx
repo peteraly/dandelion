@@ -56,6 +56,9 @@ export default async function LandingPage() {
         )}
       </Card>
       <nav className="flex flex-col gap-2">
+        <Link href="/impact" className="btn btn-secondary" data-testid="impact-link">
+          {t("impactLink")}
+        </Link>
         <Link href="/safety" className="btn btn-secondary">
           {t("safety")}
         </Link>

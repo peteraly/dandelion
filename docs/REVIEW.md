@@ -132,6 +132,17 @@ Founder feedback: the role picker is clear, the admin portal is not; the map mus
 | Seller's stock in the product picker | **done** | `app/(field)/customers/[id]/page.tsx`: units held per product, in-stock first, plain warning otherwise; the hand-over still refuses without stock. |
 | H1–H8 | **not started** | More walkthroughs, phone view anywhere, stalled-plan rules (after approval), demand on the admin home, zone charges (after decision), cards for tables on phones, customer follow-up, payment route (G1). |
 
+## Prompt L (money, the shop, a marketplace where every side wins) — status
+
+| Item | Status | Notes |
+| --- | --- | --- |
+| Money (Phase 1) | **built** | Dandelion collects every payment; balances held until hand-over; 50 TZS fee on supplier → delivery partner and delivery partner → customer; wallets; one admin approves, another sends (ADR-039). |
+| Shop (Phase 2) | **built** | Self sign-up by phone and code (enumeration-safe), public meeting points, one order at a time, 48 h lapse, accepted by a seller in the area who holds the product (ADR-040). |
+| Marketplace review | **built / written** | Women local sellers take shop orders; "woman seller only"; seller alerts; meeting-point times and grouped requests; order again; private safety reports; Shop health; `/impact`; SMS alphabet filter. Verdicts on every idea in `docs/PROMPT_L_MARKETPLACE.md` §1.5. |
+| Fee vs running cost | **open** | About 11–14 SMS parts per shop sale against a 50 TZS fee (§1.4); founders' decision §3.1. |
+| Safeguarding leads, texts on safety reports, second admin for people | **open** | Founders to name the leads (§3.5); Prompt K, K3. |
+| Offline hand-over, USSD, carrier leg, funder viewers | **not started** | §3.7, in that order of value. |
+
 ## Prompt K (access and governance) — status
 
 | Item | Status | Notes |
@@ -211,6 +222,9 @@ Running every scenario through the real services surfaced three things about the
 - **AI cost accounting** uses configurable per-1K-token prices with placeholder defaults (ADR-021); the budget check is only as accurate as those numbers.
 - **Live-model behaviour is untested.** Evals prove the deterministic layer (scrubbing, guards, schema checks, injection handling) with `FakeLlm`; they cannot prove what the model will say. Enable on a preview first and read `ai_interaction_log`.
 - **`x-invoke-path`** is not a stable Next.js header; the language toggle now returns to the referer instead.
+- **Shop on a shared phone.** A shop session lasts up to a week (a day idle); anyone holding her unlocked phone in that time sees her orders. "Sign out" is on every shop page; a shorter limit costs an SMS code per visit.
+- **Shop orders in the live demo** are created and accepted in the seeded history only; a visitor's own shop order waits until someone plays a seller (open demo role switch) and accepts it.
+- **SMS counts are estimates** from the templates; the real bill depends on the gateway (G3) and on names and links in each message.
 - **Vercel-specific behaviour** (cron auth header, `waitUntil` lifetime, static IPs) must be verified against current docs during Milestone 3.
 
 ## What I would want a reviewer to look at first

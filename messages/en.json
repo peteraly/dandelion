@@ -533,11 +533,13 @@
     },
     "shopRequests": {
       "title": "Customers waiting near you ({n})",
-      "hint": "They ordered in the shop and chose a public meeting point. Accept only what you can bring today.",
+      "hint": "They ordered in the shop and chose a public meeting point. Accept only what you can bring; several at one place can go in one trip.",
       "place": "Meet at {place}",
       "noStock": "You do not hold this product.",
       "accept": "Accept",
-      "meetAt": "Shop order {ref} — meet at {place}. Hand over only after payment is confirmed, with her code."
+      "meetAt": "Shop order {ref} — meet at {place}. Hand over only after payment is confirmed, with her code.",
+      "waitingHere": "{n} waiting",
+      "womenOnly": "She asked for a woman local seller."
     }
   },
   "problems": {
@@ -601,6 +603,10 @@
       "draft": "DRAFT — requires review by a qualified health advisor",
       "body": "Do not diagnose or give medical advice. Encourage the customer to visit the nearest health facility or dispensary. If symptoms are severe, help them seek care urgently.",
       "helpline": "Support: {phone}"
+    },
+    "SAFETY_CONCERN": {
+      "label": "A customer felt unsafe",
+      "instruction": "Reported by the customer from the shop. Call her back and follow the safeguarding steps."
     }
   },
   "admin": {
@@ -646,7 +652,8 @@
       "present": "Presenter view",
       "exitPresent": "Exit presenter view",
       "journey": "Walkthrough: one sale",
-      "payouts": "Payouts"
+      "payouts": "Payouts",
+      "shop": "Shop health"
     },
     "approvals": {
       "title": "Approvals inbox",
@@ -942,11 +949,11 @@
       "placeSaved": "Meeting point saved."
     },
     "navGroups": {
-      "overview": "Watch",
-      "operate": "Day to day",
+      "overview": "Today",
+      "operate": "Shop & stock",
       "people": "People & places",
       "money": "Money & proof",
-      "admin": "Admin"
+      "admin": "Settings & records"
     },
     "demo": {
       "title": "Demo guide",
@@ -1044,7 +1051,7 @@
       "stakeholders": "The people who run the district: delivery partners, hub keepers, local sellers, suppliers. Invite, pause or remove.",
       "suppliers": "Factories and wholesalers: products, lead times and quality.",
       "organisations": "Schools, NGOs and groups that buy in bulk.",
-      "areas": "Service areas, which sale paths are switched on in each, and who earns what.",
+      "areas": "Service areas, which sale paths are on, meeting points and their usual times.",
       "prices": "The prices every sale uses. Changes need two admins.",
       "reconciliation": "Does every payment in the app match what the provider says? Flags show where it does not.",
       "statements": "Import the provider's statement and compare it line by line with the app.",
@@ -1057,7 +1064,8 @@
       "demo": "The ten-minute investor walk-through, with the controls to run it.",
       "demoControls": "Simulate payments and time in the demo district.",
       "journey": "Follow one sale from the customer's first text to the factory refilling the hub, with everyone's phone on screen.",
-      "payouts": "Members' money in Dandelion's account; approve and send withdrawals (two admins)."
+      "payouts": "Members' money in Dandelion's account; approve and send withdrawals (two admins).",
+      "shop": "Customers' orders in each area: taken, how fast, lapsed, who waits now."
     },
     "home": {
       "title": "Your district today",
@@ -1117,6 +1125,14 @@
         "payoutsToApprove": {
           "title": "Withdrawals to approve",
           "hint": "Members asked for their money. Check and approve, or turn down with a reason."
+        },
+        "safetyReports": {
+          "title": "Customers reported feeling unsafe",
+          "hint": "From the shop. Call her back today and follow the safeguarding steps."
+        },
+        "customersWaiting": {
+          "title": "Customers waiting more than 12 hours",
+          "hint": "Nobody has taken their order. Call a seller with stock nearby."
         }
       },
       "seedError": "The full demo district could not be built on the last deployment, so the small starter dataset is shown instead. Send this line to whoever maintains the app: {reason}",
@@ -1335,14 +1351,53 @@
     },
     "places": {
       "title": "Meeting points for shop orders",
-      "intro": "Customers who order in the shop choose one of these places; the delivery partner hands over there.",
-      "shopOff": "The shop opens here once \"delivery partner → customer\" is switched on for this area (above). You can add places now.",
+      "intro": "Customers who order in the shop choose one of these places; the seller hands over there. Women local sellers take shop orders in every area.",
       "retire": "Retire",
       "restore": "Restore",
       "name": "New place",
       "placeholder": "e.g. Market gate, Dispensary",
       "add": "Add place",
-      "rule": "Named public places only — a market, a dispensary, a school gate. Never a home, never map coordinates."
+      "rule": "Named public places only — a market, a dispensary, a school gate. Never a home, never map coordinates.",
+      "ridersOn": "Delivery partners take them here too.",
+      "ridersOff": "Delivery partners take them here once \"delivery partner → customer\" is switched on (above).",
+      "when": "Usual days and times",
+      "whenPlaceholder": "e.g. Thursdays 10–12 (market day)",
+      "saveWhen": "Save",
+      "noWhen": "No usual time set"
+    },
+    "shop": {
+      "title": "Shop health",
+      "intro": "Is each area's shop working? Last {days} days: orders, how many a seller took and how fast, how many lapsed unanswered (demand nobody met), who came back, and who holds stock.",
+      "open": "Shop open",
+      "closed": "Shop closed",
+      "sellersBoth": "Local sellers and delivery partners take orders",
+      "sellersWomen": "Local sellers take orders",
+      "noPlaces": "Add a public meeting point in Areas to open the shop here.",
+      "hours": "{n} h",
+      "oldest": "oldest {h}",
+      "verdict": {
+        "healthy": "Working: orders are taken quickly.",
+        "quiet": "No orders yet. Tell girls and women about the shop: schools, clinics, women's groups.",
+        "unmet": "Many orders lapse unanswered. More sellers need stock here, or set usual times at the meeting points so orders can be brought together.",
+        "slow": "Customers wait more than a day. Call sellers with stock nearby; consider a market-day time at the busiest meeting point.",
+        "noSellers": "Nobody here holds stock for shop orders. Arrange a restock for a local seller or a delivery partner."
+      },
+      "stat": {
+        "requests": "Orders",
+        "accepted": "Taken",
+        "median": "Time to be taken",
+        "expired": "Lapsed (unmet)",
+        "waiting": "Waiting now",
+        "sellers": "Sellers with stock",
+        "repeat": "Came back",
+        "womenOnly": "Asked for a woman seller"
+      },
+      "waitingTitle": "Customers waiting ({n})",
+      "waitingHint": "Oldest first. Admins cannot take an order; call a seller with stock near the meeting point.",
+      "noneWaiting": "Nobody is waiting.",
+      "womenOnly": "woman seller only",
+      "placesLink": "Meeting points and their times (Areas)",
+      "reportsLink": "Customers' reports (Problems)"
     }
   },
   "public": {
@@ -1370,7 +1425,8 @@
     "safetyReusable": "Reusable products are offered only where the customer has access to clean water, soap, privacy, a place to wash, a place to dry products thoroughly, and safe storage. Reusable materials must be washed and dried after use.",
     "safetyDisposable": "Disposable products are offered where reusables are unsuitable because of water scarcity, lack of privacy, poor washing or drying conditions, or customer preference. Local sellers explain safe use and disposal.",
     "safetySource": "Source: pilot handbook §11, citing UNICEF guidance on menstrual hygiene products.",
-    "shopCta": "Order pads"
+    "shopCta": "Order pads",
+    "impactLink": "Our impact, live"
   },
   "verify": {
     "title": "Record check",
@@ -1435,10 +1491,11 @@
     "marginPlatform": "Habari {name}. Sale {ref} is complete. {credited} is now in your Dandelion balance (your margin on this sale: {amount}). Withdraw it from the app when you choose.",
     "payoutSent": "Habari {name}. {amount} has been sent to your payout number. Reference {ref}.",
     "payoutRejected": "Habari {name}. Your withdrawal {ref} of {amount} was not sent. The amount is back in your balance; an admin will contact you.",
-    "orgSale": "{name}: order {reference} — {product} × {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
-    "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} × {quantity} follows. Record: {link}",
-    "orgReceipt": "{name}: {product} × {quantity} delivered. Receipt {receiptNo}. Record: {link}",
-    "shopAccepted": "Habari {name}. Your order {ref} was accepted by delivery partner {seller}. Meet at {place}. How to pay is in the next SMS and in the shop. Read your hand-over code only when you have received your order."
+    "orgSale": "{name}: order {reference} - {product} x {quantity}, {amount}. Pay the full amount by mobile money to {payee} with reference {reference}. Delivery follows the provider's confirmation. Record: {link}",
+    "orgPaid": "{name}: payment for order {reference} confirmed by the provider ({amount}). Delivery of {product} x {quantity} follows. Record: {link}",
+    "orgReceipt": "{name}: {product} x {quantity} delivered. Receipt {receiptNo}. Record: {link}",
+    "shopAccepted": "Habari {name}. Your order {ref} was accepted by {seller}. Meet at {place}. How to pay is in the next SMS and in the shop. Read your hand-over code only when you have received your order.",
+    "shopAlert": "Habari {name}. A customer is waiting at {place} (order {ref}). Open the app to accept it if you can bring it."
   },
   "errors": {
     "unknown": "Something went wrong. Try again or contact support.",
@@ -1572,7 +1629,8 @@
     "request_taken": "Another delivery partner has already accepted this order.",
     "request_other_area": "This order is in another area.",
     "request_no_stock": "You do not hold this product. Restock first.",
-    "meeting_point_exists": "This area already has a place with that name."
+    "meeting_point_exists": "This area already has a place with that name.",
+    "request_women_only": "She asked for a woman local seller to hand this over."
   },
   "demo": {
     "banner": "SIMULATED DATA — generated for testing; no district is running.",
@@ -1930,13 +1988,13 @@
   },
   "shop": {
     "title": "Pads near you",
-    "hero": "Join with your phone, choose a public meeting point, and a delivery partner in your area brings your pack there. You pay by mobile money; you get your pack when payment is confirmed.",
+    "hero": "Join with your phone, choose a public meeting point, and a local seller or delivery partner in your area brings your pack there. You pay by mobile money; you get your pack when payment is confirmed.",
     "join": "Join",
     "signIn": "Sign in",
     "howTitle": "How it works",
     "how": {
       "1": "Join with your name and phone, and choose a public meeting point near you — a market, a dispensary gate, a school gate.",
-      "2": "Choose a product. A delivery partner in your area accepts your order.",
+      "2": "Choose a product. A woman local seller or a delivery partner in your area accepts your order — or ask for a woman local seller only.",
       "3": "Pay by mobile money with the reference you receive. Pay in parts or in full; there is no debt and no late fee.",
       "4": "Meet at your place. Read your hand-over code only when you hold your pack. You get a receipt by SMS."
     },
@@ -1957,7 +2015,7 @@
     "myOrders": "My orders",
     "noOrders": "No orders yet.",
     "states": {
-      "OPEN": "Waiting for a delivery partner",
+      "OPEN": "Waiting for a seller",
       "ACCEPTED": "Accepted",
       "CANCELLED": "Cancelled",
       "EXPIRED": "Not taken in time"
@@ -1969,10 +2027,10 @@
       "stopped": "Stopped"
     },
     "meetAt": "Meet at {place}",
-    "waiting": "Waiting for a delivery partner in your area to accept.",
+    "waiting": "Waiting for a seller in your area to accept.",
     "cancel": "Cancel order",
-    "expired": "No delivery partner could take this order in two days. Please order again.",
-    "acceptedBy": "Delivery partner: {name}",
+    "expired": "Nobody could take this order in two days. Please order again.",
+    "acceptedBy": "Accepted by {name}",
     "payNow": "Pay {amount} by mobile money to {payee} with reference {reference}.",
     "paidSoFar": "Confirmed so far: {paid} of {total}.",
     "payNote": "Only pay to this number with this reference. Nobody from Dandelion will ask you for cash or for your PIN.",
@@ -2012,6 +2070,47 @@
     "signedOut": "You are signed out.",
     "requested": "Order sent. A delivery partner in your area will accept it.",
     "cancelled": "Order cancelled.",
-    "placeSaved": "Meeting point saved."
+    "placeSaved": "Meeting point saved.",
+    "womenOnly": "Hand-over by a woman local seller only",
+    "womenOnlyHint": "Delivery partners will not see this order. It may take longer.",
+    "womenOnlyChosen": "You asked for a woman local seller.",
+    "orderAgain": "Order again",
+    "reported": "Thank you for telling us. An admin will follow up; the seller is not told who reported.",
+    "report": {
+      "open": "Report a problem",
+      "what": "What happened?",
+      "unsafe": "I felt unsafe, or someone behaved badly",
+      "money": "I was asked for more money, or for cash",
+      "other": "Something else (the product, the place, the time)",
+      "note": "Tell us more (optional)",
+      "private": "Only Dandelion's admins see this. The seller is not told who reported it.",
+      "send": "Send to Dandelion"
+    }
+  },
+  "impact": {
+    "title": "Our impact",
+    "intro": "What has been delivered, how fast, and where the money went — live, for anyone to see. District totals only: numbers under 10 are hidden so nobody can be picked out.",
+    "delivered": "Delivered",
+    "handoversAll": "Hand-overs to customers, all time",
+    "handovers30": "Last 30 days",
+    "category": {
+      "REUSABLE": "Reusable (washable pads, cups)",
+      "DISPOSABLE": "Disposable (incl. biodegradable)"
+    },
+    "orgPacks": "Packs delivered to schools, clinics and organisations",
+    "median": "Usual time from order to hand-over",
+    "days": "{n} days",
+    "sellers": "Active local sellers and delivery partners",
+    "areas": "Areas served",
+    "money": "Where the money went",
+    "paidByBuyers": "Paid by buyers into Dandelion's account",
+    "paidOut": "Paid out to sellers, partners and suppliers",
+    "fees": "Dandelion's operating fees",
+    "moneyNote": "Buyers pay Dandelion's account; each seller's share is held until the goods are handed over, then paid out when they ask. Dandelion is a non-profit and keeps a small fee per sale to run the service.",
+    "record": "The public record",
+    "recordNone": "No batch of events has been written to the public record yet.",
+    "recordLine": "{events} events in {anchors} batches written to a public blockchain, so the history cannot be quietly changed.",
+    "recordNote": "Only fingerprints of events go on the public record — never names, phone numbers or places. Every receipt has its own private link to check it.",
+    "privacy": "No names, phone numbers, places or individual incomes are shown here."
   }
 }

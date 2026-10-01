@@ -11,7 +11,7 @@ export function PlaceSelect({ areas, id, defaultValue, label }: { areas: ShopAre
         <optgroup key={a.id} label={`${a.name} (${a.region})`}>
           {a.places.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name}
+              {p.when ? `${p.name} — ${p.when}` : p.name}
             </option>
           ))}
         </optgroup>

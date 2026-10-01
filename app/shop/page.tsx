@@ -12,7 +12,7 @@ import { shopAreas, shopHome, type ShopOrderRow } from "@/lib/services/shop";
 import { formatTzs } from "@/lib/money";
 import { formatDateTime } from "@/lib/util/time";
 import { flags, type SearchParams } from "@/lib/actions";
-import { cancelRequestAction, requestOrderAction, setShopPlaceAction, signOutShopAction } from "./actions";
+import { cancelRequestAction, reportProblemAction, requestOrderAction, setShopPlaceAction, signOutShopAction } from "./actions";
 import { PlaceSelect } from "./place-select";
 
 export const dynamic = "force-dynamic";
@@ -125,6 +125,15 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
             <Field label={t("place")} htmlFor="meetingPointId" hint={t("placeHint")}>
               <PlaceSelect areas={[home.home]} id="meetingPointId" defaultValue={customer.meetingPointId} />
             </Field>
+            {home.home.ridersSell ? (
+              <label className="check" data-testid="shop-women-only">
+                <input type="checkbox" name="womenOnly" value="true" className="mt-0.5" />
+                <span>
+                  {t("womenOnly")}
+                  <span className="block text-xs text-stone-500">{t("womenOnlyHint")}</span>
+                </span>
+              </label>
+            ) : null}
             <PrimaryButton>{t("submit")}</PrimaryButton>
           </form>
         </Card>
@@ -134,8 +143,9 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
         <h2 className="mb-2 font-semibold">{t("myOrders")}</h2>
         {home.orders.length === 0 ? <p className="text-sm text-stone-500">{t("noOrders")}</p> : null}
         <ul className="flex flex-col gap-3">
-          {home.orders.map((o) => (
-            <OrderRow key={o.id} o={o} locale={locale} />
+          {home.orders.map((o, i) => (
+            // "Order again" on her latest finished order: same product, same place, one tap.
+            <OrderRow key={o.id} o={o} locale={locale} reorder={i === 0 && home.canOrder && !!home.home?.products.some((p) => p.id === o.productId) && !!home.home?.places.some((p) => p.id === o.meetingPointId)} />
           ))}
         </ul>
       </Card>
@@ -156,7 +166,7 @@ export default async function ShopPage({ searchParams }: { searchParams: SearchP
   );
 }
 
-async function OrderRow({ o, locale }: { o: ShopOrderRow; locale: "sw" | "en" }) {
+async function OrderRow({ o, locale, reorder }: { o: ShopOrderRow; locale: "sw" | "en"; reorder: boolean }) {
   const t = await getTranslations("shop");
   const tzs = (n: number) => formatTzs(n, locale);
   const step = o.order ? orderStep(o.order) : null;
@@ -169,7 +179,9 @@ async function OrderRow({ o, locale }: { o: ShopOrderRow; locale: "sw" | "en" })
         <Badge tone={step === "done" ? "green" : TONE[o.state]}>{step ? t(`steps.${step}`) : t(`states.${o.state}`)}</Badge>
       </div>
       <p className="text-sm text-stone-600">
-        {t("meetAt", { place: o.placeName })} · {formatDateTime(o.createdAt, locale)}
+        {t("meetAt", { place: o.placeName })}
+        {o.placeWhen ? ` (${o.placeWhen})` : ""} · {formatDateTime(o.createdAt, locale)}
+        {o.womenOnly ? <span className="block text-xs">{t("womenOnlyChosen")}</span> : null}
       </p>
       {o.state === "OPEN" ? (
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
@@ -201,7 +213,39 @@ async function OrderRow({ o, locale }: { o: ShopOrderRow; locale: "sw" | "en" })
           ) : null}
           {step === "done" ? <p className="text-green-900">{t("handedOver")}</p> : null}
           {step === "stopped" ? <p className="text-stone-600">{t("stopped")}</p> : null}
+          <details className="text-sm" data-testid="shop-report">
+            <summary className="cursor-pointer text-stone-600 underline">{t("report.open")}</summary>
+            <form action={reportProblemAction} className="mt-2 flex flex-col gap-2">
+              <IdemKey />
+              <input type="hidden" name="requestId" value={o.id} />
+              <fieldset className="flex flex-col gap-1">
+                <legend className="label">{t("report.what")}</legend>
+                {(["unsafe", "money", "other"] as const).map((c, i) => (
+                  <label key={c} className="check">
+                    <input type="radio" name="category" value={c} defaultChecked={i === 0} className="mt-0.5" />
+                    <span>{t(`report.${c}`)}</span>
+                  </label>
+                ))}
+              </fieldset>
+              <textarea name="note" className="field" rows={3} maxLength={500} aria-label={t("report.note")} placeholder={t("report.note")} />
+              <p className="text-xs text-stone-500">{t("report.private")}</p>
+              <button type="submit" className="btn btn-secondary">
+                {t("report.send")}
+              </button>
+            </form>
+          </details>
         </div>
+      ) : null}
+      {reorder && o.state !== "OPEN" && (!o.order || orderStep(o.order) === "done" || orderStep(o.order) === "stopped") ? (
+        <form action={requestOrderAction} className="mt-2">
+          <IdemKey />
+          <input type="hidden" name="productId" value={o.productId} />
+          <input type="hidden" name="meetingPointId" value={o.meetingPointId} />
+          {o.womenOnly ? <input type="hidden" name="womenOnly" value="true" /> : null}
+          <button type="submit" className="btn btn-secondary w-auto px-4 text-sm" data-testid="shop-reorder">
+            {t("orderAgain")}
+          </button>
+        </form>
       ) : null}
     </li>
   );

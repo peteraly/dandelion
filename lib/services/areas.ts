@@ -114,9 +114,17 @@ export async function updateAreaRains(actor: Actor, serviceAreaId: string, month
  * Where a delivery partner hands over a shop order: named public places only — a market, a dispensary gate, a school
  * gate. Never coordinates or a home address (§3.9). A girl meets her delivery partner where other people are.
  */
+const WhenText = z
+  .string()
+  .trim()
+  .max(60)
+  .transform((v) => v || null);
+
 export const MeetingPointInput = z.object({
   serviceAreaId: z.uuid(),
   name: z.string().trim().min(3).max(60),
+  /** When a seller is usually there, in plain words ("Thursdays 10:00–12:00, market day"); optional. */
+  when: WhenText.optional(),
 });
 
 export async function meetingPointsFor(db: DbOrTx, serviceAreaId?: string, includeInactive = false) {
@@ -135,9 +143,21 @@ export async function addMeetingPoint(actor: Actor, raw: z.input<typeof MeetingP
     if (!area) throw new DomainError("not_found");
     const clash = await tx.query.meetingPoints.findFirst({ where: and(eq(s.meetingPoints.serviceAreaId, area.id), sql`lower(${s.meetingPoints.name}) = lower(${input.name})`) });
     if (clash) throw new DomainError("meeting_point_exists");
-    const [row] = await tx.insert(s.meetingPoints).values(input).returning({ id: s.meetingPoints.id });
-    await logAdminAction(tx, actor.userId, "area.place.add", { type: "service_area", id: area.id }, { name: input.name });
+    const [row] = await tx.insert(s.meetingPoints).values({ serviceAreaId: area.id, name: input.name, whenText: input.when ?? null }).returning({ id: s.meetingPoints.id });
+    await logAdminAction(tx, actor.userId, "area.place.add", { type: "service_area", id: area.id }, { name: input.name, when: input.when ?? null });
     return { meetingPointId: row!.id };
+  });
+}
+
+/** Set when a seller is usually at a place, so orders there can be brought together in one trip (market day). */
+export async function setMeetingPointWhen(actor: Actor, meetingPointId: string, raw: string): Promise<void> {
+  authorize(actor, "admin.area.places");
+  const whenText = WhenText.parse(raw);
+  await withTx(async (tx) => {
+    const mp = await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, meetingPointId) });
+    if (!mp) throw new DomainError("not_found");
+    await tx.update(s.meetingPoints).set({ whenText }).where(eq(s.meetingPoints.id, meetingPointId));
+    await logAdminAction(tx, actor.userId, "area.place.update", { type: "service_area", id: mp.serviceAreaId }, { name: mp.name, before: mp.whenText, when: whenText });
   });
 }
 

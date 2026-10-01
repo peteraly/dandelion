@@ -23,7 +23,7 @@ import { createCustomerSession } from "@/lib/auth/customer-session";
 import { getSmsProvider } from "@/lib/sms";
 import { tr } from "@/lib/i18n/server-translator";
 import { firstName } from "@/lib/util/names";
-import { DomainError, withTx, isUniqueViolation } from "./core";
+import { DomainError, getSetting, withTx, isUniqueViolation } from "./core";
 import { allowedSalesFor } from "./areas";
 import { activePriceItem } from "./pricing";
 import { createPlanInTx } from "./orders";
@@ -42,25 +42,44 @@ export interface ShopProduct {
   priceTzs: number;
 }
 
+export interface ShopPlace {
+  id: string;
+  name: string;
+  /** When someone is usually there ("Thursdays 10:00–12:00, market day"), or null. */
+  when: string | null;
+}
+
 export interface ShopArea {
   id: string;
   name: string;
   region: string;
-  places: { id: string; name: string }[];
+  places: ShopPlace[];
   products: ShopProduct[];
+  /** Delivery partners may take orders here (the area's "delivery partner → customer" switch); local sellers always may. */
+  ridersSell: boolean;
 }
 
-/** Areas where the shop is open: delivery partners may sell to customers there, and there is a place and a product. */
+/**
+ * Areas where the shop is open: a named public place, a product with a price, and someone who can take orders —
+ * a woman local seller at one of the area's hubs (always allowed: it is the handbook ladder), or delivery partners
+ * where two admins switched that on.
+ */
 export async function shopAreas(db: DbOrTx = getDb()): Promise<ShopArea[]> {
   const areas = await db.query.serviceAreas.findMany({ where: eq(s.serviceAreas.active, true), orderBy: s.serviceAreas.name });
   const out: ShopArea[] = [];
   for (const a of areas) {
-    if (!(await allowedSalesFor(db, a.id)).includes("RIDER_TO_CUSTOMER")) continue;
+    const ridersSell = (await allowedSalesFor(db, a.id)).includes("RIDER_TO_CUSTOMER");
+    const [sellers] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(s.users)
+      .innerJoin(s.hubs, eq(s.hubs.id, s.users.hubId))
+      .where(and(eq(s.users.role, "FIELD_CHAMPION"), eq(s.users.status, "ACTIVE"), eq(s.hubs.serviceAreaId, a.id), eq(s.hubs.active, true)));
+    if (!ridersSell && !Number(sellers?.n ?? 0)) continue;
     const places = await db.query.meetingPoints.findMany({ where: and(eq(s.meetingPoints.serviceAreaId, a.id), eq(s.meetingPoints.active, true)), orderBy: s.meetingPoints.name });
     if (!places.length) continue;
     const products = await areaProducts(db, a.id);
     if (!products.length) continue;
-    out.push({ id: a.id, name: a.name, region: a.region, places: places.map((p) => ({ id: p.id, name: p.name })), products });
+    out.push({ id: a.id, name: a.name, region: a.region, places: places.map((p) => ({ id: p.id, name: p.name, when: p.whenText })), products, ridersSell });
   }
   return out;
 }
@@ -227,9 +246,12 @@ export async function expireShopRequests(db: DbOrTx = getDb()): Promise<number> 
   return rows.length;
 }
 
-export const ShopRequestSchema = z.object({ productId: z.uuid(), meetingPointId: z.uuid() }).strict();
+export const ShopRequestSchema = z.object({ productId: z.uuid(), meetingPointId: z.uuid(), womenOnly: z.boolean().default(false) }).strict();
 
-/** Ask for one pack at a meeting point. One order at a time: an open request or a plan not yet handed over. */
+/**
+ * Ask for one pack at a meeting point. One order at a time: an open request or a plan not yet handed over. The sellers
+ * in her area who hold it are told by SMS (as many as settings.shopAlertSellers), so a request is answered quickly.
+ */
 export async function requestOrder(customer: { id: string }, raw: z.input<typeof ShopRequestSchema>): Promise<{ requestId: string; ref: string }> {
   const input = ShopRequestSchema.parse(raw);
   await expireShopRequests();
@@ -244,14 +266,49 @@ export async function requestOrder(customer: { id: string }, raw: z.input<typeof
     const { place, area } = await openPlace(tx, input.meetingPointId);
     if (!area.products.some((p) => p.id === input.productId)) throw new DomainError("product_unavailable");
     const ref = await uniqueRequestRef(tx);
+    // Where delivery partners do not sell, only local sellers see the request anyway.
+    const womenOnly = input.womenOnly && area.ridersSell;
     const [row] = await tx
       .insert(s.customerRequests)
-      .values({ ref, customerId: c.id, serviceAreaId: area.id, meetingPointId: place.id, productId: input.productId })
+      .values({ ref, customerId: c.id, serviceAreaId: area.id, meetingPointId: place.id, productId: input.productId, womenOnly })
       .returning({ id: s.customerRequests.id });
     // Her usual place, offered first next time.
     await tx.update(s.customers).set({ serviceAreaId: area.id, meetingPointId: place.id, updatedAt: now() }).where(eq(s.customers.id, c.id));
+    await alertSellers(tx, { ref, productId: input.productId, womenOnly, place, area });
     return { requestId: row!.id, ref };
   });
+}
+
+/** The sellers who could take this order now: in the area, holding the product, most stock first. */
+async function sellersFor(db: DbOrTx, q: { serviceAreaId: string; productId: string; womenOnly: boolean; ridersSell: boolean }) {
+  const held = sql<number>`coalesce(sum(${s.batches.quantity}), 0)::int`;
+  const champions = await db
+    .select({ id: s.users.id, displayName: s.users.displayName, phoneEnc: s.users.phoneEnc, locale: s.users.preferredLocale, held })
+    .from(s.users)
+    .innerJoin(s.hubs, eq(s.hubs.id, s.users.hubId))
+    .innerJoin(s.batches, and(eq(s.batches.custodianUserId, s.users.id), eq(s.batches.custodyState, "WITH_CHAMPION"), eq(s.batches.productId, q.productId)))
+    .where(and(eq(s.users.role, "FIELD_CHAMPION"), eq(s.users.status, "ACTIVE"), eq(s.hubs.serviceAreaId, q.serviceAreaId)))
+    .groupBy(s.users.id);
+  const riders =
+    q.ridersSell && !q.womenOnly
+      ? await db
+          .select({ id: s.users.id, displayName: s.users.displayName, phoneEnc: s.users.phoneEnc, locale: s.users.preferredLocale, held })
+          .from(s.users)
+          .innerJoin(s.batches, and(eq(s.batches.custodianUserId, s.users.id), eq(s.batches.custodyState, "WITH_RIDER"), eq(s.batches.productId, q.productId)))
+          .where(and(eq(s.users.role, "BOSS_RIDER"), eq(s.users.status, "ACTIVE"), eq(s.users.serviceAreaId, q.serviceAreaId)))
+          .groupBy(s.users.id)
+      : [];
+  return [...champions, ...riders].filter((x) => Number(x.held) > 0).sort((a, b) => Number(b.held) - Number(a.held));
+}
+
+async function alertSellers(tx: Tx, r: { ref: string; productId: string; womenOnly: boolean; place: typeof s.meetingPoints.$inferSelect; area: ShopArea }): Promise<void> {
+  const max = Number(await getSetting("shopAlertSellers", tx));
+  if (max <= 0) return;
+  for (const seller of (await sellersFor(tx, { serviceAreaId: r.area.id, productId: r.productId, womenOnly: r.womenOnly, ridersSell: r.area.ridersSell })).slice(0, max)) {
+    // Never the product's name, and never the customer's: the phone may be shared.
+    const body = tr(seller.locale, "sms.shopAlert", { name: firstName(seller.displayName), ref: r.ref, place: r.place.name });
+    await getSmsProvider().send(await decryptString(seller.phoneEnc), body, "SHOP_ALERT", tx);
+  }
 }
 
 async function uniqueRequestRef(tx: Tx): Promise<string> {
@@ -286,6 +343,10 @@ export interface ShopOrderRow {
   createdAt: Date;
   productName: string;
   placeName: string;
+  placeWhen: string | null;
+  productId: string;
+  meetingPointId: string;
+  womenOnly: boolean;
   sellerName: string | null;
   order: null | {
     state: string;
@@ -307,7 +368,7 @@ export async function shopHome(customer: ShopCustomerLike) {
   const rows: ShopOrderRow[] = [];
   for (const r of requests) {
     const product = await db.query.products.findFirst({ where: eq(s.products.id, r.productId), columns: { name: true } });
-    const place = await db.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId), columns: { name: true } });
+    const place = await db.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId), columns: { name: true, whenText: true } });
     const seller = r.acceptedBy ? await db.query.users.findFirst({ where: eq(s.users.id, r.acceptedBy), columns: { displayName: true } }) : undefined;
     let order: ShopOrderRow["order"] = null;
     if (r.orderId) {
@@ -316,7 +377,20 @@ export async function shopHome(customer: ShopCustomerLike) {
       const intent = await openIntent(db, o.id);
       order = { state: o.state, totalTzs: o.totalTzs, paidTzs: t.confirmedTzs, remainingTzs: t.remainingTzs, paymentRef: o.paymentRef, payee: intent?.payeeAccount ?? null };
     }
-    rows.push({ id: r.id, ref: r.ref, state: r.state, createdAt: r.createdAt, productName: product?.name ?? "", placeName: place?.name ?? "", sellerName: seller ? firstName(seller.displayName) : null, order });
+    rows.push({
+      id: r.id,
+      ref: r.ref,
+      state: r.state,
+      createdAt: r.createdAt,
+      productName: product?.name ?? "",
+      placeName: place?.name ?? "",
+      placeWhen: place?.whenText ?? null,
+      productId: r.productId,
+      meetingPointId: r.meetingPointId,
+      womenOnly: r.womenOnly,
+      sellerName: seller ? firstName(seller.displayName) : null,
+      order,
+    });
   }
   const busy = rows.some((r) => r.state === "OPEN" || (r.order && OPEN_PLAN_STATES.includes(r.order.state as (typeof OPEN_PLAN_STATES)[number])));
   return { areas, home, orders: rows, canOrder: !busy && areas.length > 0 };
@@ -324,48 +398,69 @@ export async function shopHome(customer: ShopCustomerLike) {
 
 type ShopCustomerLike = Pick<typeof s.customers.$inferSelect, "id" | "serviceAreaId" | "meetingPointId">;
 
-// ---------- delivery partners ----------
+// ---------- sellers: delivery partners and women local sellers ----------
 
-/** Open shop requests in a delivery partner's area, with whether they hold the product. */
+/**
+ * Where a seller takes shop orders, and whether they may: a local seller at her hub's area (always — it is the
+ * handbook ladder); a delivery partner in his own area, where two admins switched that on.
+ */
+async function sellerShopArea(db: DbOrTx, actor: Actor): Promise<string | null> {
+  if (actor.role === "FIELD_CHAMPION") {
+    const hub = actor.hubId ? await db.query.hubs.findFirst({ where: eq(s.hubs.id, actor.hubId) }) : undefined;
+    return hub?.active ? hub.serviceAreaId : null;
+  }
+  const me = await db.query.users.findFirst({ where: eq(s.users.id, actor.userId), columns: { serviceAreaId: true } });
+  if (!me?.serviceAreaId || !(await allowedSalesFor(db, me.serviceAreaId)).includes("RIDER_TO_CUSTOMER")) return null;
+  return me.serviceAreaId;
+}
+
+/**
+ * Open shop requests in a seller's area, grouped by meeting point (so one trip on market day serves several), with
+ * whether they hold the product. Delivery partners never see a request she asked a woman local seller to bring.
+ */
 export async function openRequestsFor(actor: Actor) {
   authorize(actor, "order.accept_request");
   await expireShopRequests();
   const db = getDb();
-  const me = await db.query.users.findFirst({ where: eq(s.users.id, actor.userId), columns: { serviceAreaId: true } });
-  if (!me?.serviceAreaId || !(await allowedSalesFor(db, me.serviceAreaId)).includes("RIDER_TO_CUSTOMER")) return [];
+  const areaId = await sellerShopArea(db, actor);
+  if (!areaId) return [];
   const rows = await db
-    .select({ r: s.customerRequests, product: s.products.name, place: s.meetingPoints.name, customer: s.customers.displayName })
+    .select({ r: s.customerRequests, product: s.products.name, place: s.meetingPoints.name, when: s.meetingPoints.whenText, customer: s.customers.displayName })
     .from(s.customerRequests)
     .innerJoin(s.products, eq(s.products.id, s.customerRequests.productId))
     .innerJoin(s.meetingPoints, eq(s.meetingPoints.id, s.customerRequests.meetingPointId))
     .innerJoin(s.customers, eq(s.customers.id, s.customerRequests.customerId))
-    .where(and(eq(s.customerRequests.state, "OPEN"), eq(s.customerRequests.serviceAreaId, me.serviceAreaId)))
-    .orderBy(s.customerRequests.createdAt)
-    .limit(20);
-  const held = await heldByRider(db, actor.userId);
+    .where(and(eq(s.customerRequests.state, "OPEN"), eq(s.customerRequests.serviceAreaId, areaId), actor.role === "FIELD_CHAMPION" ? sql`true` : eq(s.customerRequests.womenOnly, false)))
+    .orderBy(s.meetingPoints.name, s.customerRequests.createdAt)
+    .limit(30);
+  const held = await heldBy(db, actor);
   return rows.map((x) => ({
     id: x.r.id,
     ref: x.r.ref,
     createdAt: x.r.createdAt,
     productName: x.product,
     placeName: x.place,
+    placeWhen: x.when,
+    womenOnly: x.r.womenOnly,
     customerName: firstName(x.customer),
     inStock: (held.get(x.r.productId) ?? 0) > 0,
   }));
 }
 
-async function heldByRider(db: DbOrTx, userId: string): Promise<Map<string, number>> {
+/** What a seller holds, by product: a local seller's own stock, a delivery partner's stock on the road. */
+async function heldBy(db: DbOrTx, actor: Pick<Actor, "userId" | "role">): Promise<Map<string, number>> {
   const rows = await db
     .select({ productId: s.batches.productId, n: sql<number>`coalesce(sum(${s.batches.quantity}), 0)::int` })
     .from(s.batches)
-    .where(and(eq(s.batches.custodianUserId, userId), eq(s.batches.custodyState, "WITH_RIDER")))
+    .where(and(eq(s.batches.custodianUserId, actor.userId), eq(s.batches.custodyState, actor.role === "FIELD_CHAMPION" ? "WITH_CHAMPION" : "WITH_RIDER")))
     .groupBy(s.batches.productId);
   return new Map(rows.map((r) => [r.productId, Number(r.n)]));
 }
 
 /**
- * A delivery partner takes a request: it must be open, in their area, and they must hold the product. The sale
- * becomes an ordinary plan with them as the seller; she is told who is coming, where, and how to pay.
+ * A seller takes a request: it must be open, in their area, they must hold the product, and a request for a woman
+ * local seller goes to one. The sale becomes an ordinary plan with them as the seller; she is told who is coming,
+ * where, and how to pay.
  */
 export async function acceptCustomerRequest(actor: Actor, requestId: string): Promise<{ orderId: string }> {
   authorize(actor, "order.accept_request");
@@ -375,9 +470,10 @@ export async function acceptCustomerRequest(actor: Actor, requestId: string): Pr
     if (!r) throw new DomainError("not_found");
     if (r.state !== "OPEN") throw new DomainError(r.state === "ACCEPTED" ? "request_taken" : "request_not_open");
     if (r.createdAt.getTime() < nowMs() - SHOP_REQUEST_HOURS * 3_600_000) throw new DomainError("request_not_open");
-    const me = await tx.query.users.findFirst({ where: eq(s.users.id, actor.userId) });
-    if (!me || me.serviceAreaId !== r.serviceAreaId) throw new DomainError("request_other_area");
-    if (!((await heldByRider(tx, actor.userId)).get(r.productId) ?? 0)) throw new DomainError("request_no_stock");
+    if (r.womenOnly && actor.role !== "FIELD_CHAMPION") throw new DomainError("request_women_only");
+    if ((await sellerShopArea(tx, actor)) !== r.serviceAreaId) throw new DomainError("request_other_area");
+    if (!((await heldBy(tx, actor)).get(r.productId) ?? 0)) throw new DomainError("request_no_stock");
+    const me = (await tx.query.users.findFirst({ where: eq(s.users.id, actor.userId) }))!;
     const customer = await tx.query.customers.findFirst({ where: eq(s.customers.id, r.customerId) });
     if (!customer || customer.status !== "ACTIVE" || !customer.phoneVerifiedAt) throw new DomainError("not_found");
     const place = (await tx.query.meetingPoints.findFirst({ where: eq(s.meetingPoints.id, r.meetingPointId) }))!;
@@ -394,10 +490,43 @@ export async function acceptCustomerRequest(actor: Actor, requestId: string): Pr
   });
 }
 
+// ---------- safety ----------
+
+export const ShopReportSchema = z
+  .object({
+    requestId: z.uuid(),
+    category: z.enum(["unsafe", "money", "other"]),
+    note: z.string().trim().max(500).default(""),
+  })
+  .strict();
+
+const REPORT_TYPE = { unsafe: "SAFETY_CONCERN", money: "WRONG_AMOUNT", other: "OTHER" } as const;
+
+/**
+ * She tells Dandelion something went wrong with an accepted order — she felt unsafe, she was asked for more money or
+ * cash, or anything else. It goes to the admins' problems inbox, never to the seller. At most three a day.
+ */
+export async function reportShopProblem(customer: { id: string }, raw: z.input<typeof ShopReportSchema>): Promise<{ ref: string }> {
+  const input = ShopReportSchema.parse(raw);
+  return withTx(async (tx) => {
+    const r = await tx.query.customerRequests.findFirst({ where: and(eq(s.customerRequests.id, input.requestId), eq(s.customerRequests.customerId, customer.id)) });
+    if (!r?.orderId) throw new DomainError("not_found");
+    const [recent] = await tx
+      .select({ n: sql<number>`count(*)::int` })
+      .from(s.exceptions)
+      .innerJoin(s.customerRequests, eq(s.customerRequests.orderId, s.exceptions.orderId))
+      .where(and(eq(s.customerRequests.customerId, customer.id), sql`${s.exceptions.note} like '[shop]%'`, gte(s.exceptions.createdAt, new Date(nowMs() - 24 * 3_600_000))));
+    if (Number(recent?.n ?? 0) >= 3) throw new DomainError("rate_limited");
+    const ref = `EX-${humanCode(6)}`;
+    await tx.insert(s.exceptions).values({ ref, type: REPORT_TYPE[input.category], orderId: r.orderId, reportedBy: null, note: `[shop] ${r.ref}: ${input.note || "—"}`.slice(0, 600) });
+    return { ref };
+  });
+}
+
 /** The shop request behind a plan, for the delivery partner's order page (where to meet). */
-export async function shopRequestForOrder(db: DbOrTx, orderId: string): Promise<{ ref: string; placeName: string } | null> {
+export async function shopRequestForOrder(db: DbOrTx, orderId: string): Promise<{ ref: string; placeName: string; placeWhen: string | null } | null> {
   const rows = await db
-    .select({ ref: s.customerRequests.ref, placeName: s.meetingPoints.name })
+    .select({ ref: s.customerRequests.ref, placeName: s.meetingPoints.name, placeWhen: s.meetingPoints.whenText })
     .from(s.customerRequests)
     .innerJoin(s.meetingPoints, eq(s.meetingPoints.id, s.customerRequests.meetingPointId))
     .where(eq(s.customerRequests.orderId, orderId))

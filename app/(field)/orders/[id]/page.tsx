@@ -359,7 +359,7 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       ) : null}
       {shop ? (
         <p className="rounded-xl bg-sky-50 p-3 text-sky-950" data-testid="shop-meeting">
-          {t("field.shopRequests.meetAt", { ref: shop.ref, place: shop.placeName })}
+          {t("field.shopRequests.meetAt", { ref: shop.ref, place: shop.placeWhen ? `${shop.placeName} (${shop.placeWhen})` : shop.placeName })}
         </p>
       ) : null}
       <Card>

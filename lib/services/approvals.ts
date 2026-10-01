@@ -236,6 +236,7 @@ async function execute(tx: Tx, req: ApprovalRequest, proof: DualApprovalProof, a
       if (key === "paymentRoute" && !(PAYMENT_ROUTES as readonly string[]).includes(p.value as string)) throw new DomainError("setting_value_invalid");
       if ((key === "platformFeeTzs" || key === "withdrawalMinTzs") && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 100_000)) throw new DomainError("setting_value_invalid");
       if (key === "platformPayeeAccount" && !/^[A-Za-z0-9-]{4,32}$/.test(p.value as string)) throw new DomainError("setting_value_invalid");
+      if (key === "shopAlertSellers" && (!Number.isInteger(p.value) || (p.value as number) < 0 || (p.value as number) > 10)) throw new DomainError("setting_value_invalid");
       await putSetting(tx, key, p.value, approverId);
       return;
     }

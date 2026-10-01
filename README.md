@@ -239,6 +239,18 @@ Founders, 2026-10-01: all money stays in the ecosystem and only admins move it. 
 - **Payouts** (`/admin/payouts`, Money): the collection account at a glance (should be in the account, members' money, Dandelion's fees, paid out) and the withdrawals waiting. **One admin approves, a different admin sends** the money with the provider's own tools and records its reference (outside production a "simulate" button fills it in); the member gets a text; the ledger records `PAYOUT_SENT`. The database refuses to rewrite a fee, a collection flag or a withdrawal's terms, refuses the same admin approving and sending, and keeps withdrawals forever (migration `0008_platform_wallets`).
 - **Before real money:** the payment route still needs the legal opinion of gate G1 (National Payment Systems Act, Bank of Tanzania) — collecting and paying out on behalf of others may need a licence.
 
+## Shop: customers join and order themselves (Prompt L)
+
+Girls, women and anyone else join at **`/shop`** like a delivery app — a name they choose, a phone, a **public meeting point** and consent, then a code by SMS. Joining never reveals whether a number already has an account; shop sessions (`customer_sessions`, cookie `csid`) end after a day idle and a week at most.
+
+- **Ordering**: one pack at a time, to a meeting point in her area; she can cancel; an order nobody takes lapses after 48 h. She can ask for a **woman local seller only**. "Order again" repeats her last order in one tap.
+- **Who takes it**: women local sellers at the area's hubs (always — the handbook ladder) and delivery partners where two admins switched on *delivery partner → customer*. Up to `shopAlertSellers` (3) sellers holding the product get an SMS; they see "Customers waiting near you", grouped by meeting point with its usual time, and accept from their own stock. The sale becomes an ordinary plan paid to Dandelion's account and handed over with her code (`lib/services/shop.ts`).
+- **Meeting points** (Areas): named public places only, with an optional usual day and time ("Thursdays 10–12, market day"); never addresses or coordinates.
+- **Safety**: "Report a problem" on an accepted order goes to the admins' problems (`SAFETY_CONCERN` first on the admin home), never to the seller.
+- **Shop health** (`/admin/shop`): per area — orders, share taken, time to be taken, lapsed (unmet demand), waiting now, sellers with stock, who came back — with one sentence on what to do (`lib/services/marketplace.ts`).
+- **Impact** (`/impact`, public): hand-overs, packs to organisations, time to hand-over, money in / paid out / fees, the public record; counts under 10 hidden.
+- **SMS cost**: every SMS is reduced to the basic SMS alphabet before sending; a shop sale costs about 11–14 SMS parts (see `docs/PROMPT_L_MARKETPLACE.md` §1.4).
+
 ## Restock suggestions (Stock page)
 
 Buyers pull sales; hubs are stocked ahead of demand. For every hub and product, `lib/domain/replenishment.ts` turns the last 14 days' sales, stock on hand, stock on the way and the lead time into a reorder point and a suggested pickup (packs of 10). The Stock page lists them with **Assign pickup**, which opens the pickup form filled in; the demo's live engine orders by them. A person always decides.

@@ -167,6 +167,11 @@ export const SETTING_DEFAULTS = {
   platformFeeTzs: 50,
   /** The smallest withdrawal a member can ask for, TZS. */
   withdrawalMinTzs: 1000,
+  /**
+   * How many sellers in the area who hold the product get an SMS when a customer orders in the shop (Prompt L §3).
+   * More means faster answers and more SMS cost; 0 = none (they see requests when they open the app).
+   */
+  shopAlertSellers: 3,
 } as const;
 
 export type SettingKey = keyof typeof SETTING_DEFAULTS;

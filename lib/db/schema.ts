@@ -325,6 +325,8 @@ export const meetingPoints = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
     name: text("name").notNull(),
+    /** When someone is usually there, in plain words — "Thursdays 10:00–12:00 (market day)" — so orders can be brought together. */
+    whenText: text("when_text"),
     active: boolean("active").notNull().default(true),
     createdAt: createdAt(),
   },
@@ -386,6 +388,8 @@ export const customerRequests = pgTable(
     serviceAreaId: uuid("service_area_id").notNull().references(() => serviceAreas.id),
     meetingPointId: uuid("meeting_point_id").notNull().references(() => meetingPoints.id),
     productId: uuid("product_id").notNull().references(() => products.id),
+    /** She asked for a woman local seller to hand it over (safeguarding, founders' decision of 2026-10-01): delivery partners do not see it. */
+    womenOnly: boolean("women_only").notNull().default(false),
     state: customerRequestStateEnum("state").notNull().default("OPEN"),
     acceptedBy: uuid("accepted_by").references(() => users.id),
     acceptedAt: ts("accepted_at"),

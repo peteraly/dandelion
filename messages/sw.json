@@ -534,11 +534,13 @@
     },
     "shopRequests": {
       "title": "Wateja wanaosubiri karibu nawe ({n})",
-      "hint": "Waliagiza dukani na kuchagua mahali pa wazi pa kukutana. Kubali tu unachoweza kufikisha leo.",
+      "hint": "Waliagiza dukani na kuchagua mahali pa wazi pa kukutana. Kubali tu unachoweza kufikisha; oda kadhaa za mahali pamoja zinaweza kwenda kwa safari moja.",
       "place": "Kutana {place}",
       "noStock": "Huna bidhaa hii.",
       "accept": "Kubali",
-      "meetAt": "Oda ya duka {ref} — kutana {place}. Kabidhi tu baada ya malipo kuthibitishwa, kwa msimbo wake."
+      "meetAt": "Oda ya duka {ref} — kutana {place}. Kabidhi tu baada ya malipo kuthibitishwa, kwa msimbo wake.",
+      "waitingHere": "{n} wanasubiri",
+      "womenOnly": "Aliomba muuzaji mwanamke wa mtaani."
     }
   },
   "problems": {
@@ -602,6 +604,10 @@
       "draft": "RASIMU — inahitaji mapitio ya mshauri wa afya aliyehitimu",
       "body": "Usitoe uchunguzi au ushauri wa kitabibu. Mhimize mteja kutembelea kituo cha afya au zahanati iliyo karibu. Dalili zikiwa kali, msaidie kupata huduma haraka.",
       "helpline": "Msaada: {phone}"
+    },
+    "SAFETY_CONCERN": {
+      "label": "Mteja alihisi si salama",
+      "instruction": "Imeripotiwa na mteja kutoka dukani. Mpigie simu na ufuate hatua za ulinzi."
     }
   },
   "admin": {
@@ -647,7 +653,8 @@
       "present": "Mwonekano wa mtangazaji",
       "exitPresent": "Ondoka mwonekano wa mtangazaji",
       "journey": "Fuatilia mauzo moja",
-      "payouts": "Malipo kwa washiriki"
+      "payouts": "Malipo kwa washiriki",
+      "shop": "Hali ya duka"
     },
     "approvals": {
       "title": "Kikasha cha idhini",
@@ -943,11 +950,11 @@
       "placeSaved": "Mahali pa kukutana pamehifadhiwa."
     },
     "navGroups": {
-      "overview": "Tazama",
-      "operate": "Kila siku",
+      "overview": "Leo",
+      "operate": "Duka na mzigo",
       "people": "Watu na maeneo",
       "money": "Pesa na ushahidi",
-      "admin": "Usimamizi"
+      "admin": "Mipangilio na kumbukumbu"
     },
     "demo": {
       "title": "Mwongozo wa onyesho",
@@ -1045,7 +1052,7 @@
       "stakeholders": "Watu wanaoendesha wilaya: wasafirishaji, watunza vituo, wauzaji wa mtaani, wasambazaji. Alika, simamisha au ondoa.",
       "suppliers": "Viwanda na wauzaji wa jumla: bidhaa, muda wa kuandaa na ubora.",
       "organisations": "Shule, mashirika na vikundi vinavyonunua kwa wingi.",
-      "areas": "Maeneo ya huduma, njia za mauzo zilizowashwa katika kila moja, na nani anapata nini.",
+      "areas": "Maeneo ya huduma, njia za mauzo zilizowashwa, maeneo ya kukutana na muda wao wa kawaida.",
       "prices": "Bei zinazotumiwa na kila mauzo. Mabadiliko yanahitaji wasimamizi wawili.",
       "reconciliation": "Je, kila malipo katika programu yanalingana na anachosema mtoa huduma? Alama zinaonyesha pasipolingana.",
       "statements": "Leta taarifa ya mtoa huduma na uilinganishe mstari kwa mstari na programu.",
@@ -1058,7 +1065,8 @@
       "demo": "Maelezo ya dakika kumi kwa wawekezaji, pamoja na vidhibiti vya kuyaendesha.",
       "demoControls": "Iga malipo na muda katika wilaya ya onyesho.",
       "journey": "Fuatilia mauzo moja kuanzia ujumbe wa kwanza wa mteja hadi kiwanda kujaza kituo, simu ya kila mtu ikionekana.",
-      "payouts": "Pesa za washiriki kwenye akaunti ya Dandelion; idhinisha na tuma maombi ya kutoa (admin wawili)."
+      "payouts": "Pesa za washiriki kwenye akaunti ya Dandelion; idhinisha na tuma maombi ya kutoa (admin wawili).",
+      "shop": "Oda za wateja kila eneo: zilizochukuliwa, kwa haraka gani, zilizopitwa na muda, nani anasubiri sasa."
     },
     "home": {
       "title": "Wilaya yako leo",
@@ -1118,6 +1126,14 @@
         "payoutsToApprove": {
           "title": "Maombi ya kutoa ya kuidhinisha",
           "hint": "Washiriki wameomba pesa zao. Kagua na uidhinishe, au kataa kwa sababu."
+        },
+        "safetyReports": {
+          "title": "Wateja waliripoti kuhisi si salama",
+          "hint": "Kutoka dukani. Mpigie simu leo na ufuate hatua za ulinzi."
+        },
+        "customersWaiting": {
+          "title": "Wateja wanaosubiri zaidi ya saa 12",
+          "hint": "Hakuna aliyechukua oda yao. Mpigie muuzaji mwenye mzigo karibu."
         }
       },
       "seedError": "Wilaya kamili ya onyesho haikuweza kujengwa kwenye usambazaji uliopita, kwa hiyo data ndogo ya mwanzo inaonyeshwa badala yake. Tuma mstari huu kwa anayetunza programu: {reason}",
@@ -1336,14 +1352,53 @@
     },
     "places": {
       "title": "Maeneo ya kukutana kwa oda za duka",
-      "intro": "Wateja wanaoagiza dukani huchagua mojawapo ya maeneo haya; msambazaji hukabidhi hapo.",
-      "shopOff": "Duka linafunguliwa hapa \"msambazaji → mteja\" ikiwashwa kwa eneo hili (juu). Unaweza kuongeza maeneo sasa.",
+      "intro": "Wateja wanaoagiza dukani huchagua mojawapo ya maeneo haya; muuzaji hukabidhi hapo. Wauzaji wanawake wa mtaani huchukua oda za duka katika kila eneo.",
       "retire": "Ondoa",
       "restore": "Rudisha",
       "name": "Mahali papya",
       "placeholder": "mf. Geti la soko, Zahanati",
       "add": "Ongeza mahali",
-      "rule": "Maeneo ya wazi yenye majina tu — soko, zahanati, geti la shule. Kamwe si nyumba, kamwe si viwianishi vya ramani."
+      "rule": "Maeneo ya wazi yenye majina tu — soko, zahanati, geti la shule. Kamwe si nyumba, kamwe si viwianishi vya ramani.",
+      "ridersOn": "Wasambazaji nao huzichukua hapa.",
+      "ridersOff": "Wasambazaji watazichukua hapa \"msambazaji → mteja\" ikiwashwa (juu).",
+      "when": "Siku na saa za kawaida",
+      "whenPlaceholder": "mf. Alhamisi 4–6 asubuhi (siku ya gulio)",
+      "saveWhen": "Hifadhi",
+      "noWhen": "Hakuna muda wa kawaida"
+    },
+    "shop": {
+      "title": "Hali ya duka",
+      "intro": "Je, duka la kila eneo linafanya kazi? Siku {days} zilizopita: oda, ngapi muuzaji alichukua na kwa haraka gani, ngapi zilipitwa na muda bila kujibiwa (mahitaji yasiyotimizwa), nani alirudi, na nani ana mzigo.",
+      "open": "Duka liko wazi",
+      "closed": "Duka limefungwa",
+      "sellersBoth": "Wauzaji wa mtaani na wasambazaji huchukua oda",
+      "sellersWomen": "Wauzaji wa mtaani huchukua oda",
+      "noPlaces": "Ongeza mahali pa wazi pa kukutana kwenye Maeneo ili kufungua duka hapa.",
+      "hours": "saa {n}",
+      "oldest": "ya zamani zaidi {h}",
+      "verdict": {
+        "healthy": "Linafanya kazi: oda zinachukuliwa haraka.",
+        "quiet": "Bado hakuna oda. Waambie wasichana na wanawake kuhusu duka: shule, zahanati, vikundi vya wanawake.",
+        "unmet": "Oda nyingi zinapitwa na muda bila kujibiwa. Wauzaji zaidi wanahitaji mzigo hapa, au weka muda wa kawaida kwenye maeneo ya kukutana ili oda ziletwe pamoja.",
+        "slow": "Wateja wanasubiri zaidi ya siku moja. Wapigie wauzaji wenye mzigo karibu; fikiria muda wa siku ya gulio mahali penye shughuli nyingi.",
+        "noSellers": "Hakuna mtu hapa mwenye mzigo kwa oda za duka. Panga kujaza mzigo kwa muuzaji wa mtaani au msambazaji."
+      },
+      "stat": {
+        "requests": "Oda",
+        "accepted": "Zilizochukuliwa",
+        "median": "Muda wa kuchukuliwa",
+        "expired": "Zilizopitwa (hazikutimizwa)",
+        "waiting": "Wanasubiri sasa",
+        "sellers": "Wauzaji wenye mzigo",
+        "repeat": "Waliorudi",
+        "womenOnly": "Waliomba muuzaji mwanamke"
+      },
+      "waitingTitle": "Wateja wanaosubiri ({n})",
+      "waitingHint": "Wa zamani zaidi kwanza. Admin hawezi kuchukua oda; mpigie muuzaji mwenye mzigo karibu na mahali pa kukutana.",
+      "noneWaiting": "Hakuna anayesubiri.",
+      "womenOnly": "muuzaji mwanamke tu",
+      "placesLink": "Maeneo ya kukutana na muda wao (Maeneo)",
+      "reportsLink": "Ripoti za wateja (Matatizo)"
     }
   },
   "public": {
@@ -1371,7 +1426,8 @@
     "safetyReusable": "Bidhaa zinazotumika tena zinatolewa tu pale mteja anapoweza kupata maji safi, sabuni, faragha, mahali pa kuosha, mahali pa kukausha bidhaa kabisa, na uhifadhi salama. Vifaa vinavyotumika tena lazima vioshwe na kukaushwa baada ya kutumika.",
     "safetyDisposable": "Bidhaa za kutupwa zinatolewa pale zinazotumika tena hazifai kwa sababu ya uhaba wa maji, ukosefu wa faragha, mazingira duni ya kuosha au kukausha, au upendeleo wa mteja. Wauzaji wa mtaani wanaeleza matumizi salama na utupaji.",
     "safetySource": "Chanzo: kitabu cha mwongozo wa jaribio §11, kikinukuu mwongozo wa UNICEF kuhusu bidhaa za usafi wa hedhi.",
-    "shopCta": "Agiza pedi"
+    "shopCta": "Agiza pedi",
+    "impactLink": "Matokeo yetu, moja kwa moja"
   },
   "verify": {
     "title": "Ukaguzi wa rekodi",
@@ -1436,10 +1492,11 @@
     "marginPlatform": "Habari {name}. Mauzo {ref} yamekamilika. {credited} sasa ziko kwenye salio lako la Dandelion (faida yako kwenye mauzo haya: {amount}). Toa pesa kupitia programu utakapotaka.",
     "payoutSent": "Habari {name}. {amount} zimetumwa kwenye namba yako ya malipo. Kumbukumbu {ref}.",
     "payoutRejected": "Habari {name}. Ombi lako la kutoa pesa {ref} la {amount} halikutumwa. Kiasi kimerudi kwenye salio lako; admin atawasiliana nawe.",
-    "orgSale": "{name}: oda {reference} — {product} × {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
-    "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} × {quantity} kunafuata. Rekodi: {link}",
-    "orgReceipt": "{name}: {product} × {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}",
-    "shopAccepted": "Habari {name}. Oda yako {ref} imekubaliwa na msambazaji {seller}. Kutana {place}. Jinsi ya kulipa iko kwenye SMS inayofuata na dukani. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako."
+    "orgSale": "{name}: oda {reference} - {product} x {quantity}, {amount}. Lipa kiasi kamili kwa pesa za simu kwa {payee} ukitumia rejea {reference}. Kupeleka kunafuata uthibitisho wa mtoa huduma. Rekodi: {link}",
+    "orgPaid": "{name}: malipo ya oda {reference} yamethibitishwa na mtoa huduma ({amount}). Kupeleka {product} x {quantity} kunafuata. Rekodi: {link}",
+    "orgReceipt": "{name}: {product} x {quantity} zimepelekwa. Risiti {receiptNo}. Rekodi: {link}",
+    "shopAccepted": "Habari {name}. Oda yako {ref} imekubaliwa na {seller}. Kutana {place}. Jinsi ya kulipa iko kwenye SMS inayofuata na dukani. Soma msimbo wako wa makabidhiano pale tu unapopokea oda yako.",
+    "shopAlert": "Habari {name}. Mteja anasubiri {place} (oda {ref}). Fungua programu uikubali kama unaweza kuifikisha."
   },
   "errors": {
     "unknown": "Kuna hitilafu. Jaribu tena au wasiliana na msaada.",
@@ -1573,7 +1630,8 @@
     "request_taken": "Msambazaji mwingine ameshakubali oda hii.",
     "request_other_area": "Oda hii iko eneo lingine.",
     "request_no_stock": "Huna bidhaa hii. Ongeza mzigo kwanza.",
-    "meeting_point_exists": "Eneo hili tayari lina mahali penye jina hilo."
+    "meeting_point_exists": "Eneo hili tayari lina mahali penye jina hilo.",
+    "request_women_only": "Aliomba muuzaji mwanamke wa mtaani akabidhi hii."
   },
   "demo": {
     "banner": "DATA YA MFANO — imetengenezwa kwa majaribio; hakuna wilaya inayofanya kazi.",
@@ -1931,13 +1989,13 @@
   },
   "shop": {
     "title": "Pedi karibu nawe",
-    "hero": "Jiunge kwa simu yako, chagua mahali pa wazi pa kukutana, na msambazaji wa eneo lako atakuletea pakiti yako huko. Unalipa kwa pesa za simu; unapokea pakiti malipo yakithibitishwa.",
+    "hero": "Jiunge kwa simu yako, chagua mahali pa wazi pa kukutana, na muuzaji wa mtaani au msambazaji wa eneo lako atakuletea pakiti yako huko. Unalipa kwa pesa za simu; unapokea pakiti malipo yakithibitishwa.",
     "join": "Jiunge",
     "signIn": "Ingia",
     "howTitle": "Inavyofanya kazi",
     "how": {
       "1": "Jiunge kwa jina na simu yako, na uchague mahali pa wazi pa kukutana karibu nawe — sokoni, getini mwa zahanati, getini mwa shule.",
-      "2": "Chagua bidhaa. Msambazaji wa eneo lako anakubali oda yako.",
+      "2": "Chagua bidhaa. Muuzaji mwanamke wa mtaani au msambazaji wa eneo lako anakubali oda yako — au omba muuzaji mwanamke wa mtaani tu.",
       "3": "Lipa kwa pesa za simu ukitumia kumbukumbu utakayopokea. Lipa kwa awamu au yote; hakuna deni wala faini ya kuchelewa.",
       "4": "Kutana mahali ulipochagua. Soma msimbo wako wa makabidhiano pale tu unaposhika pakiti yako. Utapokea risiti kwa SMS."
     },
@@ -1958,7 +2016,7 @@
     "myOrders": "Oda zangu",
     "noOrders": "Bado hakuna oda.",
     "states": {
-      "OPEN": "Inasubiri msambazaji",
+      "OPEN": "Inasubiri muuzaji",
       "ACCEPTED": "Imekubaliwa",
       "CANCELLED": "Imeghairiwa",
       "EXPIRED": "Haikuchukuliwa kwa wakati"
@@ -1970,10 +2028,10 @@
       "stopped": "Imesimamishwa"
     },
     "meetAt": "Kutana {place}",
-    "waiting": "Inasubiri msambazaji wa eneo lako aikubali.",
+    "waiting": "Inasubiri muuzaji wa eneo lako aikubali.",
     "cancel": "Ghairi oda",
-    "expired": "Hakuna msambazaji aliyeweza kuchukua oda hii ndani ya siku mbili. Tafadhali agiza tena.",
-    "acceptedBy": "Msambazaji: {name}",
+    "expired": "Hakuna aliyeweza kuchukua oda hii ndani ya siku mbili. Tafadhali agiza tena.",
+    "acceptedBy": "Imekubaliwa na {name}",
     "payNow": "Lipa {amount} kwa pesa za simu kwenda {payee} ukitumia kumbukumbu {reference}.",
     "paidSoFar": "Imethibitishwa hadi sasa: {paid} kati ya {total}.",
     "payNote": "Lipa kwa namba hii tu na kumbukumbu hii. Hakuna mtu wa Dandelion atakayekuomba pesa taslimu au PIN yako.",
@@ -2013,6 +2071,47 @@
     "signedOut": "Umetoka.",
     "requested": "Oda imetumwa. Msambazaji wa eneo lako ataikubali.",
     "cancelled": "Oda imeghairiwa.",
-    "placeSaved": "Mahali pa kukutana pamehifadhiwa."
+    "placeSaved": "Mahali pa kukutana pamehifadhiwa.",
+    "womenOnly": "Makabidhiano na muuzaji mwanamke wa mtaani tu",
+    "womenOnlyHint": "Wasambazaji hawataiona oda hii. Inaweza kuchukua muda zaidi.",
+    "womenOnlyChosen": "Uliomba muuzaji mwanamke wa mtaani.",
+    "orderAgain": "Agiza tena",
+    "reported": "Asante kwa kutuambia. Admin atafuatilia; muuzaji haambiwi nani aliripoti.",
+    "report": {
+      "open": "Ripoti tatizo",
+      "what": "Nini kilitokea?",
+      "unsafe": "Nilihisi si salama, au mtu alitenda vibaya",
+      "money": "Niliombwa pesa zaidi, au pesa taslimu",
+      "other": "Kitu kingine (bidhaa, mahali, muda)",
+      "note": "Tueleze zaidi (si lazima)",
+      "private": "Ni admin wa Dandelion tu wanaoona hili. Muuzaji haambiwi nani aliripoti.",
+      "send": "Tuma kwa Dandelion"
+    }
+  },
+  "impact": {
+    "title": "Matokeo yetu",
+    "intro": "Kilichofikishwa, kwa haraka gani, na pesa zilikwenda wapi — moja kwa moja, kwa yeyote kuona. Jumla za wilaya tu: namba chini ya 10 zinafichwa ili mtu yeyote asitambulike.",
+    "delivered": "Kilichofikishwa",
+    "handoversAll": "Makabidhiano kwa wateja, tangu mwanzo",
+    "handovers30": "Siku 30 zilizopita",
+    "category": {
+      "REUSABLE": "Zinazotumika tena (pedi za kufua, vikombe)",
+      "DISPOSABLE": "Za kutupwa (pamoja na zinazooza)"
+    },
+    "orgPacks": "Pakiti zilizofikishwa shuleni, zahanati na mashirika",
+    "median": "Muda wa kawaida kutoka oda hadi makabidhiano",
+    "days": "siku {n}",
+    "sellers": "Wauzaji wa mtaani na wasambazaji walio hai",
+    "areas": "Maeneo yanayohudumiwa",
+    "money": "Pesa zilikwenda wapi",
+    "paidByBuyers": "Zilizolipwa na wanunuzi kwenye akaunti ya Dandelion",
+    "paidOut": "Zilizolipwa kwa wauzaji, wasambazaji na wazalishaji",
+    "fees": "Ada za uendeshaji za Dandelion",
+    "moneyNote": "Wanunuzi hulipa akaunti ya Dandelion; sehemu ya kila muuzaji hushikiliwa hadi bidhaa ikabidhiwe, kisha hulipwa wanapoomba. Dandelion si ya faida na huchukua ada ndogo kwa kila mauzo kuendesha huduma.",
+    "record": "Kumbukumbu ya umma",
+    "recordNone": "Bado hakuna kundi la matukio lililoandikwa kwenye kumbukumbu ya umma.",
+    "recordLine": "Matukio {events} katika makundi {anchors} yameandikwa kwenye blockchain ya umma, ili historia isibadilishwe kimya kimya.",
+    "recordNote": "Ni alama za vidole vya matukio tu zinazoenda kwenye kumbukumbu ya umma — kamwe si majina, namba za simu au maeneo. Kila risiti ina kiungo chake cha siri cha kuihakiki.",
+    "privacy": "Hakuna majina, namba za simu, maeneo wala mapato ya mtu binafsi yanayoonyeshwa hapa."
   }
 }

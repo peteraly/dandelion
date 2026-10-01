@@ -150,7 +150,8 @@ export function isOrderParty(a: Actor, o: OrderResource): boolean {
     case "HUB_MANAGER":
       return a.hubId !== null && o.hubId === a.hubId && (buyer || seller);
     case "FIELD_CHAMPION":
-      return buyer || (seller && (!isPlanKind(o.kind) || o.customerChampionId === a.userId));
+      // A plan with her own customer, or with a shop customer (no seller owns her) whose order she accepted.
+      return buyer || (seller && (!isPlanKind(o.kind) || o.customerChampionId === a.userId || o.customerChampionId === null));
     default:
       return false;
   }
@@ -235,8 +236,9 @@ const RULES: Record<Action, (a: Actor, r: Resource) => boolean> = {
   "customer.create": (a) => SELLS_TO_CUSTOMERS.includes(a.role),
   "customer.view": (a, r) => isAdmin(a) || (SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId),
   "order.start_plan": (a, r) => SELLS_TO_CUSTOMERS.includes(a.role) && r.type === "customer" && r.customer.championId === a.userId,
-  // Shop requests (Prompt L §3) go to delivery partners in the customer's area; the area and stock are checked in the service.
-  "order.accept_request": (a) => isRole(a, "BOSS_RIDER"),
+  // Shop requests (Prompt L §3) go to women local sellers and delivery partners in the customer's area; area, stock and
+  // "a woman local seller only" are checked in the service.
+  "order.accept_request": (a) => isRole(a, "BOSS_RIDER") || isRole(a, "FIELD_CHAMPION"),
   "order.expect_payment": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
   "order.start_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),
   "order.complete_handover": orderRule((a, o) => isPlanKind(o.kind) && sellerRole(a, o)),

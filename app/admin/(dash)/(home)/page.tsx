@@ -14,16 +14,19 @@ import { adminNavGroups } from "@/components/admin-nav-groups";
 import { requireAdmin } from "@/lib/auth/current";
 import { liveSummary, priorities } from "@/lib/services/admin";
 import { getSetting } from "@/lib/services/core";
+import { marketplaceNeeds } from "@/lib/services/marketplace";
 import { formatTzs } from "@/lib/money";
 
-/** Most urgent first: a second signature blocks another admin; money questions come before stock. */
+/** Most urgent first: a customer who felt unsafe; a second signature blocks another admin; money before stock. */
 const NEEDS = [
+  ["safetyReports", "/admin/exceptions"],
   ["pendingApprovals", "/admin/approvals"],
   ["payoutsToSend", "/admin/payouts"],
   ["payoutsToApprove", "/admin/payouts"],
   ["paymentsReview", "/admin/exceptions"],
   ["openExceptions", "/admin/exceptions"],
   ["reconFlags", "/admin/reconciliation"],
+  ["customersWaiting", "/admin/shop"],
   ["lowStockHubs", "/admin/inventory"],
   ["deliveriesInspection", "/admin/orders"],
   ["alerts24h", "/admin/logs"],
@@ -33,8 +36,9 @@ export default async function AdminHome() {
   const { actor, session } = await requireAdmin();
   const t = await getTranslations("admin.home");
   const locale = (await getLocale()) as "sw" | "en";
-  const [p, live, groups, seedError, seedNotice] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups(), getSetting("demoSeedError"), getSetting("seedNotice")]);
-  const needs = NEEDS.map(([k, href]) => ({ k, href, n: p[k] })).filter((x) => x.n > 0);
+  const [p, live, groups, seedError, seedNotice, shop] = await Promise.all([priorities(actor), liveSummary(actor), adminNavGroups(), getSetting("demoSeedError"), getSetting("seedNotice"), marketplaceNeeds()]);
+  const counts = { ...p, ...shop };
+  const needs = NEEDS.map(([k, href]) => ({ k, href, n: counts[k] })).filter((x) => x.n > 0);
   const stats: [string, string][] = [
     ["road", String(live.road)],
     ["leaving", String(live.leaving)],

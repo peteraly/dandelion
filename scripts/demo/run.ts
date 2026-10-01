@@ -21,6 +21,7 @@ import { buildWorld, importStatementForLastWeek } from "@/lib/demo/admin";
 import { nightly, runDay, summary } from "@/lib/demo/day";
 import { advanceLiveChains } from "@/lib/demo/live";
 import { payoutsRound } from "@/lib/demo/payouts";
+import { shopSafetyReports } from "@/lib/demo/shop";
 
 /** Live steps run once the history is in, so the first visitor finds deliveries already under way. */
 const LIVE_WARM_UP_HOURS = 6;
@@ -88,6 +89,9 @@ export async function runDemoSeed(): Promise<DemoRunResult> {
         // Members withdraw part of their balances; two admins send most, one is turned down, two wait (Prompt L §2).
         clock.advanceTo(atEat(dayStart, 18, 45));
         await payoutsRound(w);
+        // Customers' safety reports from the shop: one followed up and closed, one waiting (Prompt L §3).
+        clock.advanceTo(atEat(dayStart, 19, 0));
+        await shopSafetyReports(w);
       }
       await nightly(w, dayStart);
       if (day % 7 === 6) console.log(`[demo] week ${Math.floor(day / 7) + 1} done (${plans.length} plans, ${w.customers.length} customers, ${Math.round((Date.now() - started) / 1000)}s)`);

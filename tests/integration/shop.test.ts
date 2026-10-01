@@ -15,11 +15,13 @@ import { PolicyError } from "@/lib/policy";
 import { simulate } from "@/lib/payments/simulator";
 import { tzDay } from "@/lib/util/time";
 import { loadCustomerSession, revokeCustomerSession } from "@/lib/auth/customer-session";
-import { requestAreaSales, addMeetingPoint, setMeetingPointActive } from "@/lib/services/areas";
+import { requestAreaSales, addMeetingPoint, setMeetingPointActive, setMeetingPointWhen } from "@/lib/services/areas";
 import { decideApproval } from "@/lib/services/approvals";
 import { acceptPickup, adminCreatePickup, completeHandover, confirmBatchReady, confirmReceipt, confirmRelease, startHandover } from "@/lib/services/orders";
 import { balanceFor } from "@/lib/services/wallets";
-import { acceptCustomerRequest, cancelShopRequest, expireShopRequests, finishShopSignIn, joinShop, openRequestsFor, requestOrder, shopAreas, shopHome, startShopSignIn } from "@/lib/services/shop";
+import { acceptCustomerRequest, cancelShopRequest, expireShopRequests, finishShopSignIn, joinShop, openRequestsFor, reportShopProblem, requestOrder, shopAreas, shopHome, startShopSignIn } from "@/lib/services/shop";
+import { putSetting } from "@/lib/services/core";
+import { marketplaceHealth, marketplaceNeeds, publicImpact } from "@/lib/services/marketplace";
 import { actors, ids, lastSms, order, rejectsWithPg, userByPhone } from "./helpers";
 
 const OPTS = { deviceId: null, ip: "127.0.0.1", openDemo: false };
@@ -31,6 +33,11 @@ async function codeFor(phone: string): Promise<string | null> {
   return rows[0]?.body.match(/\b(\d{6})\b/)?.[1] ?? null;
 }
 
+async function smsCount(purpose: string): Promise<number> {
+  const r = await getDb().execute<{ n: string }>(sql`select count(*)::text as n from sms_outbox where purpose = ${purpose}`);
+  return Number(r.rows[0]!.n);
+}
+
 async function signIn(challengeId: string, phone: string) {
   return finishShopSignIn(challengeId, (await codeFor(phone))!);
 }
@@ -40,18 +47,26 @@ let customerId: string;
 let requestId: string;
 let orderId: string;
 
-describe("shop: customers join, order to a meeting point, a delivery partner accepts", () => {
+describe("shop: customers join, order to a meeting point, a seller in her area accepts", () => {
+  let ladderOnly: Awaited<ReturnType<typeof shopAreas>>;
   beforeAll(async () => {
+    // Women local sellers take shop orders on the ladder, before any switch; delivery partners once two admins agree.
+    ladderOnly = await shopAreas();
     const { area } = await ids();
-    const { requestId: approval } = await requestAreaSales(await actors.adminA(), area.id, ["RIDER_TO_CUSTOMER"]);
+    const { requestId: approval } = await requestAreaSales(await actors.adminA(), area.id, ["RIDER_TO_CUSTOMER", "SUPPLIER_TO_CHAMPION"]);
     await decideApproval(await actors.adminB(), approval, "APPROVE", "Shop pilot in the test area");
     placeId = (await getDb().query.meetingPoints.findFirst({ where: eq(s.meetingPoints.name, "Market gate (TEST)") }))!.id;
   });
 
   afterEach(() => setClock(null));
 
-  it("is open only where delivery partners may sell to customers, with named places and the area's prices", async () => {
+  it("is open wherever someone can take orders, with named places, their usual times and the area's prices", async () => {
+    expect(ladderOnly).toHaveLength(1);
+    expect(ladderOnly[0]!.ridersSell).toBe(false);
+    await setMeetingPointWhen(await actors.adminA(), placeId, "  Thursdays 10–12 (market day) ");
     const [area] = await shopAreas();
+    expect(area!.ridersSell).toBe(true);
+    expect(area!.places.find((p) => p.id === placeId)!.when).toBe("Thursdays 10–12 (market day)");
     expect(area!.places.map((p) => p.name).sort()).toEqual(["Dispensary gate (TEST)", "Market gate (TEST)"]);
     expect(area!.products.map((p) => p.priceTzs).sort()).toEqual([4500, SEED.prices.customer].sort());
     // Only admins manage places; a place with the same name is refused; a retired place is not offered.
@@ -109,9 +124,11 @@ describe("shop: customers join, order to a meeting point, a delivery partner acc
     const rider = await actors.rider();
     const waiting = await openRequestsFor(rider);
     expect(waiting).toHaveLength(1);
-    expect(waiting[0]).toMatchObject({ customerName: "Neema", placeName: "Market gate (TEST)", inStock: false });
+    expect(waiting[0]).toMatchObject({ customerName: "Neema", placeName: "Market gate (TEST)", placeWhen: "Thursdays 10–12 (market day)", inStock: false });
     await expect(acceptCustomerRequest(rider, requestId)).rejects.toMatchObject({ code: "request_no_stock" });
-    await expect(openRequestsFor(await actors.champion())).rejects.toThrow(PolicyError);
+    // Local sellers at the area's hub see it too; supplier staff and hub keepers do not take shop orders.
+    expect((await openRequestsFor(await actors.champion()))[0]).toMatchObject({ id: requestId, inStock: false });
+    await expect(openRequestsFor(await actors.hub())).rejects.toThrow(PolicyError);
     await expect(acceptCustomerRequest(await actors.supplier(), requestId)).rejects.toThrow(PolicyError);
   });
 
@@ -157,6 +174,58 @@ describe("shop: customers join, order to a meeting point, a delivery partner acc
     expect(home.orders[0]!.order!.state).toBe("COMPLETED");
   });
 
+  it("a request for a woman local seller is hidden from delivery partners and taken by a local seller who holds it", async () => {
+    const { supplier, disposable } = await ids();
+    const champion = await actors.champion();
+    // The local seller collects her own stock at the factory gate.
+    const pickupId = (await adminCreatePickup(await actors.adminA(), { supplierId: supplier.id, productId: disposable.id, buyerUserId: champion.userId, quantity: 4, pickupDate: tzDay() })).orderId;
+    await confirmBatchReady(await actors.supplier(), pickupId, "SEAL-SHOP-2");
+    await acceptPickup(champion, pickupId);
+    await simulate("success", (await order(pickupId)).ref);
+    await confirmRelease(await actors.supplier(), pickupId);
+    await confirmReceipt(champion, pickupId, { quantityOk: true, sealOk: true });
+
+    const alertsBefore = await smsCount("SHOP_ALERT");
+    const r = await requestOrder({ id: customerId }, { productId: disposable.id, meetingPointId: placeId, womenOnly: true });
+    // Sellers who hold it are told: the local seller (women only, so not the delivery partner, who also holds it).
+    expect(await smsCount("SHOP_ALERT")).toBe(alertsBefore + 1);
+    expect((await lastSms("SHOP_ALERT"))!.body).not.toMatch(/Neema|\b(pads?|pedi|disposable)\b/i);
+    const rider = await actors.rider();
+    expect((await openRequestsFor(rider)).map((x) => x.id)).not.toContain(r.requestId);
+    await expect(acceptCustomerRequest(rider, r.requestId)).rejects.toMatchObject({ code: "request_women_only" });
+    const seen = (await openRequestsFor(champion)).find((x) => x.id === r.requestId)!;
+    expect(seen).toMatchObject({ womenOnly: true, inStock: true });
+    const { orderId: planId } = await acceptCustomerRequest(champion, r.requestId);
+    const o = await order(planId);
+    expect(o).toMatchObject({ kind: "CHAMPION_TO_CUSTOMER", sellerUserId: champion.userId, customerId, platformFeeTzs: 0 });
+    // She works the plan like any other: paid, handed over with the customer's code.
+    await simulate("success", o.ref);
+    await startHandover(champion, planId);
+    await completeHandover(champion, planId, (await lastSms("HANDOVER_CODE"))!.body.match(/\b(\d{6})\b/)![1]!, EDUCATION_DISPOSABLE);
+    expect((await order(planId)).state).toBe("COMPLETED");
+    // With alerts switched off (settings, two admins), nobody is texted.
+    await putSetting(getDb(), "shopAlertSellers", 0, null);
+    const quiet = await requestOrder({ id: customerId }, { productId: disposable.id, meetingPointId: placeId });
+    expect(await smsCount("SHOP_ALERT")).toBe(alertsBefore + 1);
+    await cancelShopRequest({ id: customerId }, quiet.requestId);
+    await putSetting(getDb(), "shopAlertSellers", 3, null);
+  });
+
+  it("she can report a problem on an accepted order privately to the admins; at most three a day", async () => {
+    const accepted = (await getDb().query.customerRequests.findFirst({ where: and(eq(s.customerRequests.customerId, customerId), eq(s.customerRequests.state, "ACCEPTED")) }))!;
+    const { ref } = await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "unsafe", note: "He asked me to come to his house" });
+    const ex = (await getDb().query.exceptions.findFirst({ where: eq(s.exceptions.ref, ref) }))!;
+    expect(ex).toMatchObject({ type: "SAFETY_CONCERN", orderId: accepted.orderId, reportedBy: null, status: "OPEN" });
+    expect(ex.note).toContain(accepted.ref);
+    // Not on someone else's order; not on a request nobody accepted.
+    const other = await joinShop({ displayName: "Zawadi", phone: "+255700009803", meetingPointId: placeId, consentMessages: true, consentReminders: false }, OPTS);
+    const zawadi = (await signIn(other.challengeId, "+255700009803")).customerId;
+    await expect(reportShopProblem({ id: zawadi }, { requestId: accepted.id, category: "other" })).rejects.toMatchObject({ code: "not_found" });
+    await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "money" });
+    await reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "other" });
+    await expect(reportShopProblem({ id: customerId }, { requestId: accepted.id, category: "other" })).rejects.toMatchObject({ code: "rate_limited" });
+  });
+
   it("she can cancel a request nobody took; nobody else can; unanswered requests lapse after two days", async () => {
     const { disposable } = await ids();
     const first = await requestOrder({ id: customerId }, { productId: disposable.id, meetingPointId: placeId });
@@ -183,6 +252,34 @@ describe("shop: customers join, order to a meeting point, a delivery partner acc
     await expect(acceptCustomerRequest(await actors.rider2(), r.requestId)).rejects.toMatchObject({ code: "request_other_area" });
     expect(await openRequestsFor(await actors.rider2())).toHaveLength(0);
     await cancelShopRequest({ id: customerId }, r.requestId);
+  });
+
+  it("admins see each area's shop health and who is waiting; the public sees totals with small numbers hidden", async () => {
+    const { disposable } = await ids();
+    const waiting = await requestOrder({ id: customerId }, { productId: disposable.id, meetingPointId: placeId });
+    await expect(marketplaceHealth(await actors.rider())).rejects.toThrow(PolicyError);
+    const h = await marketplaceHealth(await actors.adminA());
+    const area = h.areas.find((a) => a.shopOpen)!;
+    expect(area).toMatchObject({ ridersSell: true, places: 2, waitingNow: 1, womenOnly: 1, verdict: expect.any(String) });
+    expect(area.accepted).toBeGreaterThanOrEqual(2);
+    expect(area.expired).toBeGreaterThanOrEqual(1);
+    expect(area.acceptedPct).toBeGreaterThan(0);
+    expect(area.sellersWithStock).toBeGreaterThanOrEqual(2); // the delivery partner and the local seller
+    expect(area.repeatBuyers).toBe(1); // Neema came back
+    expect(h.waiting.map((w) => w.ref)).toContain(waiting.ref);
+    // The admin home's to-do list: her safety report, and an order nobody took for more than 12 hours.
+    expect(await marketplaceNeeds()).toMatchObject({ safetyReports: 1, customersWaiting: 0 });
+    setClock(new Date(Date.now() + 13 * 3_600_000));
+    expect((await marketplaceNeeds()).customersWaiting).toBe(1);
+    setClock(null);
+    await cancelShopRequest({ id: customerId }, waiting.requestId);
+
+    const pub = await publicImpact();
+    expect(pub.handovers.all).toBeNull(); // fewer than 10 so far
+    expect(pub.money.paidByBuyersTzs).toBeGreaterThan(0);
+    expect(pub.money.feesTzs).toBeGreaterThanOrEqual(100);
+    expect(pub.money.paidOutToMembersTzs).toBeNull(); // nobody's income can be worked out
+    expect(JSON.stringify(pub)).not.toMatch(/Neema|\+255/);
   });
 
   it("the database refuses to rewrite or delete a request", async () => {

@@ -71,6 +71,13 @@
       "when": 1790822325053,
       "tag": "0009_customer_shop",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790833908733,
+      "tag": "0010_shop_marketplace",
+      "breakpoints": true
     }
   ]
 }
