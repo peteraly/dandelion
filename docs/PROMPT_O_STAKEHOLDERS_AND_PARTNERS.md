@@ -24,14 +24,20 @@ partners: nobody becomes a partner before a Board-approved agreement (Article 35
 ### 1.1 The goal everything points at (draft for the founders to confirm)
 
 > By **[December 2027]**, **[250]** female students, pregnant students and young mothers in **[Town]** and
-> **[Village]**, Tanga Region, stay in school or return to it. Each has hygiene essentials every month, school
-> supplies and lunch, confidential support when she needs it, and a path to skills and income. The work is run
-> safely, every hand-over is proven, and no single funder pays for all of it.
+> **[Village]**, Tanga Region, stay in school or return to it, and **[50]** young women complete skills training and
+> start earning, through a job, an internship or a small business. Supplies, lunch, essentials and confidential
+> support clear the way. The work is run safely, every hand-over is proven, and no single funder pays for all of it.
+
+Our focus is education and economic opportunity: girls' human capital, meaning their learning, skills and health.
+Essentials are the means, never the headline.
 
 How we will know (one line each in the monthly report, counts only):
 
-- girls enrolled and attending, each term;
+- girls enrolled and attending, each term, and girls who finished the school year;
 - student mothers who returned to school, and stayed;
+- young women who started and completed skills training;
+- internships, jobs and small businesses started, and income earned;
+- girls and young mothers with a mentor;
 - essentials handed over on time, with a receipt for each;
 - referrals made, and referrals completed;
 - local women earning from the work, and what they earned;
@@ -137,8 +143,8 @@ So we go in this order, and we never skip a step to reach money faster.
 | --- | --- | --- | --- |
 | **0 Get legitimate** | Now until registration | Board, members, Registrar, bank, auditor, safeguarding lead, PDPC | Registered; bank account open; Safeguarding Policy adopted |
 | **1 Permission and listening** | Months 1–2 | Region and district officials, ward and village leaders, head teachers, parents, girls, peer NGOs | Letter of introduction; two schools agreed; girls and parents heard |
-| **2 Services and supply** | Months 2–3 | Clinics, MSI and UMATI, help lines, social welfare, police desks, legal aid, return-to-school, suppliers, mobile money, local women | Referral paths agreed; prices agreed; first women trained and checked |
-| **3 First money, start small** | Months 3–6 | Small funders, friends and diaspora, local businesses, brands (in-kind), training and employers | 50 girls served for a month, then 250 |
+| **2 Learning, earning and services lined up** | Months 2–3 | Colleges, employers, mentors, return-to-school, clinics, MSI and UMATI, help lines, social welfare, police desks, legal aid, suppliers, mobile money, local women | Training places and internships offered; mentors checked; referral paths and prices agreed; first women trained |
+| **3 First money, start small** | Months 3–6 | Small funders, friends and diaspora, local businesses, brands (in-kind) | 50 girls supported and the first young women in training, then 250 |
 | **4 Prove, learn, grow** | Months 6–12 and after | Larger funders and UN, ministries, researchers, last-mile networks, media | Six monthly reports; a second funder; a decision to grow or fix |
 
 ### 1.5 Every stakeholder: capacity, what they want, what we offer, what we ask
@@ -182,7 +188,8 @@ So we go in this order, and we never skip a step to reach money faster.
 | **Social welfare officers** (District social welfare office) | Referral partners; lead on child protection cases | Vulnerable children identified and supported | Referrals and help with follow-up | A named contact and a joint procedure for cases | Joint case reviews | 2 | They lead child protection cases, not us |
 | **Legal aid** (LHRC, TAWLA, WLAC, local paralegals) | Referral partners | Reach women and girls who need legal help (violence, child maintenance) | Referrals | A referral contact in Tanga and a short rights session | Regular legal clinics near our schools | 2 | Only with the girl's consent, unless the law requires otherwise |
 | **Return to school and alternative education** (Institute of Adult Education (SEQUIP alternative pathway), Folk Development Colleges) | Referral partners | Girls who left school enrolling and finishing | Referrals, plus essentials and childcare links so they can attend | How a young mother in Tanga enrols, and a contact | A joint plan for every young mother we serve | 2 | Check current enrolment rules locally |
-| **Training and employers** (VETA, digital skills programmes, local employers, women's savings groups) | Trainers and employers | Trainees who finish; reliable workers; community standing | Motivated young women, supported while they train | [5] training places or internships | Hiring; mentoring | 3 | Fair pay; no unpaid 'internships' for young mothers who need income |
+| **Vocational colleges and training providers** (VETA, Folk Development Colleges, digital and business skills programmes) | Trainers | Young women who enrol and finish their courses | Motivated trainees, and help with what makes them drop out: essentials, baby-care, follow-up | [5] training places and one contact person | Courses shaped with us for jobs that exist locally | 2 | Check fees and entry rules for young mothers |
+| **Employers and businesses** (Local employers, Tanga businesses, savings groups, business mentors) | Employers and hosts | Reliable, motivated workers; local talent; standing in the community | Young women ready to learn, supported while they start | [2] internships, a job placement, or one day of job shadowing | Hiring; mentoring young entrepreneurs | 2 | Fair pay; no unpaid internships for young mothers who need income |
 
 #### Delivery and supply
 
@@ -193,6 +200,7 @@ So we go in this order, and we never skip a step to reach money faster.
 | **Pad, diaper and hygiene makers** (Kasole Secrets, AFRIpads, Days for Girls, Softcare, diaper makers) | Suppliers and in-kind donors | Sales, new markets, brand trust, impact stories | Steady orders paid on agreed terms, demand by area, feedback | An NGO price for 250 reusable kits or 3,000 packs delivered to Tanga | Donate the first 50 kits for a 3-month trial | 2 | TBS mark; no marketing to girls without consent |
 | **School supplies and food suppliers** (Wholesalers, local farmers, food vendors) | Suppliers | Steady orders, fair prices, prompt payment | Steady local orders | Prices for [250] school packs and a daily lunch per student | Term contracts | 2 | Food safety; buy local where possible |
 | **Mobile money and SMS** (M-Pesa, Airtel Money, Mixx by Yas, HaloPesa; an SMS gateway) | Infrastructure suppliers; possible sponsors | Transactions, new users, community standing | Users and transactions | An NGO account, the tariffs, and an SMS sender ID | Fee-free payments for girls, as their community support | 2 | Texts never name the product |
+| **Mentors** (Women professionals, university students and graduates aged 18 or over) | Implementers, volunteers | To give back, to share what they learned, to be part of something real | Training, a clear role, and girls who want to learn from them | Mentor [5] girls or young mothers for one term | Lead a mentoring circle; recruit other mentors | 2 | Background checks and the code of conduct; meet in safe, public or school settings |
 
 #### Money and knowledge
 
@@ -238,6 +246,7 @@ Each relationship needs one named owner, so nothing is promised twice or forgott
 | --- | --- | --- |
 | Government, ward and village leaders, community and faith leaders | Chairperson, with the Tanzanian directors | Local standing and language |
 | Girls, schools and young mothers | Secretary (Youth and Student Representative) | The girls' voice in the Foundation |
+| Employers, colleges and mentors | [A director with business or education networks] | Learning and earning are the core of the work |
 | Funders abroad, banks, the auditor, financial reports | Treasurer | Finance role under the constitution |
 | Health, social welfare, legal aid, help lines | The safeguarding lead, once appointed | Referrals are safeguarding work |
 | Suppliers, mobile money, local women | The Executive Director, once appointed | Day-to-day operations |

@@ -22,6 +22,9 @@ fill in. Article numbers refer to the constitution, so every promise on the site
   illustrations. Get written consent for any adult who appears. Fill in every image's alt text.
 - **No invented quotes or partners.** List an organisation only after the Board has approved an agreement with it
   (Article 35(2)). The only quote on the site comes from the constitution itself. No partner logos until then.
+- **Lead with learning and earning.** The Foundation's aim is education, skills, work and income: girls' human
+  capital. Pads, diapers, lunch and health support are the practical help that clears the way, never the headline.
+  All eight objectives in Article 10 still appear on the site (see the table at the end of this document).
 - **Speak to types of partners, never about a named one.** The site says "if your goal is…, we can…". What each
   named organisation wants, and how we could help it, stays in the private partner spreadsheet (columns AA–AD). See
   "How we talk about partnerships" at the end of this document.
@@ -72,46 +75,51 @@ Turn off the Squarespace cart (Commerce settings). Nothing is sold or paid on th
 ## Home (`/`)
 
 **Headline** (replaces "TREINE NO SEU TEMPO.")
-IN SCHOOL. IN DIGNITY. ON HER WAY.
-*(Alternative: NO GIRL LEFT BEHIND.)*
+EVERY GIRL LEARNING. EVERY YOUNG WOMAN EARNING.
+*(Alternatives: FROM THE CLASSROOM TO A LIVING. · NO GIRL LEFT BEHIND.)*
 
 **Subheadline** (replaces "SOMOS UMA ACADEMIA…")
-DANDELION FOUNDATION MEETS THE EVERYDAY NEEDS OF VULNERABLE GIRLS AND YOUNG WOMEN IN TANZANIA, ESPECIALLY PREGNANT
-STUDENTS AND YOUNG MOTHERS, AND CONNECTS THEM TO THE SUPPORT, SKILLS AND WORK THAT HELP THEM THRIVE.
+DANDELION FOUNDATION HELPS VULNERABLE GIRLS AND YOUNG WOMEN IN TANZANIA, ESPECIALLY PREGNANT STUDENTS AND YOUNG
+MOTHERS, FINISH THEIR EDUCATION AND BUILD THE SKILLS AND INCOME TO SHAPE THEIR OWN FUTURES.
 
 **Swahili line** (add under the subheadline; check before publishing)
-Tunawasaidia wasichana na wanawake vijana, hasa wanafunzi wajawazito na mama vijana, kubaki shuleni na kujenga maisha
-bora.
+Tunawasaidia wasichana na wanawake vijana, hasa wanafunzi wajawazito na mama vijana, kumaliza masomo yao na kujenga
+ujuzi na kipato cha kujitegemea.
 
 **Body** (replaces "A Klipsan Fitness é uma academia…")
-Poverty, hunger, a lack of pads, pregnancy and stigma push too many girls out of school, and too many young mothers
-into hardship. Dandelion Foundation works with girls, families, schools, communities and government to meet their
-immediate needs first: hygiene essentials, baby-care items, school supplies and lunches, and confidential pregnancy
-testing with someone to talk to. Then we help them take the next step: back into the classroom, into training, and
-into work that pays.
+What a girl learns, and the skills she builds, stay with her for life and lift her family with her. Yet poverty,
+hunger, pregnancy and stigma push too many girls in Tanzania out of school, and leave too many young mothers without a
+way to earn. Dandelion Foundation works with girls, families, schools, employers, communities and government to keep
+girls learning, to open a way back to school after pregnancy, and to build the skills, confidence and connections
+that lead to decent work and an income of their own. Practical help, from school supplies and lunch to hygiene and
+baby-care essentials, clears the everyday barriers in the way.
 
 **Buttons:** What we do → What we do page · Get involved → Get involved page
 
-**Section: WHAT WE PROVIDE** (replaces "COMODIDADES")
-Practical help first, so girls can keep learning, and a path to a secure future after that.
+**Section: HOW WE HELP** (replaces "COMODIDADES")
+Learning and earning come first. Practical help clears the way.
 
-| Column 1 (replaces Instalações modernas … Ringue de boxe) | Column 2 (replaces Sucos … Armários) |
+| Column 1: LEARN (replaces Instalações modernas … Ringue de boxe) | Column 2: EARN (replaces Sucos … Armários) |
 | --- | --- |
-| Sanitary pads and hygiene essentials | A way back to school after pregnancy |
-| Diapers and baby-care items for young mothers | Skills training, mentors and internships |
-| Confidential pregnancy testing, with someone to talk to | Paid work for local women in our programmes |
-| School supplies and school lunches | Links to clinics, social welfare and legal aid |
+| Support to stay in school | Vocational and digital skills |
+| A way back to school after pregnancy | Money skills and help to start a business |
+| School supplies and school lunches | Internships and jobs with local employers |
+| Mentors and role models | Paid work in our own programmes |
+
+Line under the columns: **And so nothing stands in the way:** hygiene and baby-care essentials, confidential health
+support, and links to social welfare and legal aid.
 
 **Section: PARTNER WITH US** (replaces "AGENDAR UMA VISITA")
 We are a new organisation, starting small in Tanga Region. We would rather do a few things well, with proof, than
-promise more than we can deliver. If you are working to keep girls in school, to reach young mothers others miss, or
-to see exactly what your support achieved, tell us what you are working towards. We will tell you honestly whether we
-can help. Every partnership is agreed in writing, and we report back on what it achieved.
+promise more than we can deliver. If you are working to keep girls in school, to help young mothers earn a living, or
+to invest in young women's skills and futures, tell us what you are working towards. We will tell you honestly
+whether we can help. Every partnership is agreed in writing, and we report back on what it achieved.
 
 Form: First name (required) · Last name (required) · Email (required) · **Organisation** (required, replaces "Data")
-· **How would you like to work with us?** (drop-down): Fund our work / Give products (pads, diapers, school
-supplies) / Refer girls or young mothers / Offer a service (health, counselling, legal aid, training) / Offer
-internships or jobs / Volunteer / Become a member / Something else · Button: **Send**
+· **How would you like to work with us?** (drop-down): Offer internships or jobs / Offer training places / Mentor
+girls or young mothers / Fund our work / Refer girls or young mothers / Offer a service (health, counselling, legal
+aid) / Give products (school supplies, pads, diapers) / Volunteer / Become a member / Something else · Button:
+**Send**
 Note under the form: Please don't use this form to share anything about a girl's health. If someone needs help now,
 call 199 or 116 (free, day and night).
 
@@ -130,68 +138,94 @@ DAR ES SALAAM — Head office · Usalama Street, Magomeni Ward, Kinondoni Distri
 **Title:** WHAT WE DO
 
 **Intro** (replaces "Tudo começa com uma ideia…")
-We meet immediate needs first, so girls can stay in school, and then help them build the skills and income for a
-secure future. Every programme follows our Safeguarding Policy. Health services are provided by qualified health
-workers or through licensed clinics.
+Our work has one aim: girls and young women who finish their education and build skills and an income of their own.
+We work in three ways. **Learn:** keeping girls in school and helping young mothers return. **Earn:** skills,
+mentors, internships, jobs and small businesses. **Clear the way:** the practical and health support that keeps them
+going. Every programme follows our Safeguarding Policy, and health services are provided by qualified health workers
+or through licensed clinics.
 
-**Section heading:** OUR PROGRAMMES (replaces "DESTAQUE-SE")
+Ten blocks under four section headings (replacing "DESTAQUE-SE"). The template has five blocks; duplicate them as
+needed. Each block replaces a class: title / "Administrada por" (With) / schedule line / text / button.
 
-Seven blocks. The template has five; duplicate a block for 6 and 7. Each block replaces a class: title /
-"Administrada por" (With) / schedule line / text / button.
+### LEARN
 
-1. **HYGIENE ESSENTIALS**
-   With: trusted local women, trained and paid by the Foundation · Starting [month year] in Tanga Region
-   Sanitary pads, reusable pads, soap and underwear, brought to a public place near her, such as a school or
-   dispensary gate, never to her home. Free when a partner or donor covers the cost; otherwise at a fair local price,
-   paid by mobile money. Her text messages never name the product, and every hand-over gets a receipt, so supporters
-   can see exactly what arrived.
-   Button: **Support a girl** → Get involved
-
-2. **BABY-CARE FOR YOUNG MOTHERS**
-   With: trusted local women · Starting [month year]
-   Diapers and essential baby-care items for student mothers and young mothers facing hardship, so a young mother
-   can go to class or to work knowing her baby has what it needs.
-   Button: **Support a young mother** → Get involved
-
-3. **PREGNANCY TESTING AND SOMEONE TO TALK TO**
-   With: qualified health workers and licensed clinics · Free help lines open now, day and night
-   Confidential pregnancy testing with counselling and emotional support, following Tanzania's laws and national
-   health guidelines. Our aim is help at any hour of the day or night. Until we can offer that ourselves, these free
-   lines are always open: **199** (Afya Call Centre, Ministry of Health) and **116** (Child Helpline). MSI Tanzania
-   offers confidential counselling on **0800 753 333**. What you tell us stays private, except where the law
-   requires us to act to keep a child safe.
-   Button: **Get help now** → Safeguarding page
-
-4. **SCHOOL SUPPLIES AND LUNCH**
-   With: schools and sponsors · Starting [month year]
-   Exercise books, pens and other school supplies, and a school lunch for female students in need, so that poverty
-   and hunger don't keep them out of the classroom.
+1. **STAYING IN SCHOOL**
+   With: schools, families and sponsors · Starting [month year] in Tanga Region
+   School supplies, a daily school lunch, and one contact teacher in each school who knows which girls need support.
+   When a girl starts missing class, we work with her family and her school to solve what is keeping her away, before
+   she drops out.
    Button: **Sponsor a student** → Get involved
 
-5. **A WAY BACK TO SCHOOL, AND HELP NEARBY**
-   With: schools, health facilities, social welfare officers and legal aid
-   Tanzania now allows girls who become mothers to return to school. We help them and their families take that step
-   and stay. We also connect girls and young mothers to clinics, social welfare, free legal aid and programmes that
-   build an income, checking every service before we refer anyone to it.
+2. **A WAY BACK TO SCHOOL**
+   With: schools, alternative education programmes and families
+   Tanzania now allows girls who become mothers to return to school. We help each young mother and her family plan
+   the return: the right school or alternative pathway, baby-care so she can attend, and someone to call when it gets
+   hard.
    Button: **Partner with us** → Get involved
 
-6. **SKILLS, MENTORS AND WORK**
-   With: trainers, mentors and employers
-   Vocational, digital, money-management and life-skills training, mentoring, internships and help to start a small
-   business. We also employ and train women in our own programmes: the local women who bring essentials to girls
-   earn from every hand-over.
-   Button: **Offer training or a job** → Get involved
+3. **MENTORS AND ROLE MODELS**
+   With: women professionals, university students and graduates, all checked and trained
+   Regular mentoring for girls and young mothers by women who show what is possible: study habits, confidence,
+   choosing a course or a career, and planning the next step.
+   Button: **Become a mentor** → Get involved
 
-7. **SPEAKING UP TOGETHER**
-   With: families, schools, communities and government
-   We raise awareness and speak up for the rights, dignity and continued education of girls and young women,
-   including pregnant students and young mothers.
-   Button: **Join us** → Get involved
+### EARN
+
+4. **SKILLS FOR WORK**
+   With: vocational colleges and training partners
+   Vocational, digital, money-management and life-skills training for young women and young mothers, chosen with
+   them, for work that exists where they live.
+   Button: **Offer training places** → Get involved
+
+5. **INTERNSHIPS, JOBS AND SMALL BUSINESSES**
+   With: local employers, business mentors and savings groups
+   Internships and job placements with local employers, and help to start and grow a small business: a simple plan,
+   money skills, and links to savings groups.
+   Button: **Offer an internship or a job** → Get involved
+
+6. **WORK IN OUR OWN PROGRAMMES**
+   With: Dandelion Foundation · Starting [month year]
+   We employ and train women in our own work. Local women bring school and hygiene essentials to girls nearby and are
+   paid for every hand-over, with a receipt that proves it: a first job, a reference and an income.
+   Button: **Apply** → form below
+
+### CLEAR THE WAY
+
+7. **HYGIENE AND BABY-CARE ESSENTIALS**
+   With: trusted local women, trained and paid by the Foundation
+   Sanitary pads and hygiene items for girls, and diapers and baby-care items for young mothers, so that nobody misses
+   class or training for lack of them. Brought to a public place near her, such as a school or dispensary gate, never
+   to her home. Free when a partner or donor covers the cost; otherwise at a fair local price, paid by mobile money.
+   Her messages never name the product, and every hand-over gets a receipt.
+   Button: **Support a girl** → Get involved
+
+8. **HEALTH SUPPORT AND SOMEONE TO TALK TO**
+   With: qualified health workers and licensed clinics · Free help lines open now, day and night
+   Confidential pregnancy testing with counselling and emotional support, following Tanzania's laws and national
+   health guidelines. Our aim is help at any hour. Until we can offer that ourselves, these free lines are always
+   open: **199** (Afya Call Centre, Ministry of Health) and **116** (Child Helpline). MSI Tanzania offers confidential
+   counselling on **0800 753 333**. What you tell us stays private, except where the law requires us to act to keep a
+   child safe.
+   Button: **Get help now** → Safeguarding page
+
+9. **HELP NEARBY**
+   With: health facilities, social welfare officers and legal aid
+   We connect girls and young mothers to clinics, social welfare and free legal aid, checking every service before we
+   refer anyone to it, and only with her consent.
+   Button: **Partner with us** → Get involved
+
+### SPEAK UP
+
+10. **SPEAKING UP TOGETHER**
+    With: families, schools, communities and government
+    We raise awareness and speak up for the rights, dignity and continued education of girls and young women,
+    including pregnant students and young mothers.
+    Button: **Join us** → Get involved
 
 **Section: WORK WITH US IN YOUR COMMUNITY** (replaces "Faça uma aula por nossa conta")
-Are you a woman aged 18 or over in [Town] or [Village] who wants to earn by bringing essentials to girls and young
-women nearby? We train you, pay you for your work by mobile money, and stand behind you. Everyone who works with
-girls is checked, trained and agrees to our code of conduct.
+Are you a woman aged 18 or over in [Town] or [Village] looking for work? We are hiring local women to bring school
+and hygiene essentials to girls and young women nearby. We train you, pay you by mobile money for every hand-over, and
+stand behind you. Everyone who works with girls is checked, trained and agrees to our code of conduct.
 
 Form: First name · Last name · **Phone** (required) · Email (optional) · **Where do you live?** (drop-down): [Town] /
 [Village] / Somewhere else · **Are you 18 or over?** (Yes / No) · Button: **Send**
@@ -202,7 +236,8 @@ Form: First name · Last name · **Phone** (required) · Email (optional) · **W
 
 **Intro** (add a text block above the cards)
 Dandelion Foundation is a non-profit, non-partisan and non-religious organisation, founded by Tanzanians and
-Americans who believe that no girl should be left behind. We are being registered as an international
+Americans who believe that investing in girls' education, skills and health pays back to their families, their
+communities and Tanzania for generations. We are being registered as an international
 non-governmental organisation in Tanzania, with our head office in Dar es Salaam and a Board with a Tanzanian
 majority. We serve every girl and young woman who needs us, without discrimination. We are new, so we are starting
 small, learning from the organisations already doing this work, and sharing what we learn, including what doesn't
@@ -213,8 +248,14 @@ A Tanzania where every girl and young woman, including pregnant students and you
 completes her education and has the skills and economic opportunity to thrive.
 
 **OUR MISSION**
-To meet the immediate needs of vulnerable girls and young women, including pregnant students and young mothers, and
-to connect them with the skills, work and services that help them stay in school and build secure futures.
+We help vulnerable girls and young women, including pregnant students and young mothers, complete their education
+and build the skills and income to shape their own futures. We remove the everyday barriers that push them out of
+school, and connect them to training, work and the services that support them.
+
+**WHY EDUCATION AND OPPORTUNITY**
+School supplies, lunch, pads and diapers matter because they keep a girl in class and a young mother in training.
+But they are the means, not the goal. Our goal is a young woman who finishes her education, has skills employers
+value, earns an income and can support herself and her family. That is what lasts.
 
 **WHAT GUIDES US**
 Equality · Inclusion · Compassion · Confidentiality · Accountability · Integrity · Respect for human rights ·
@@ -281,65 +322,67 @@ CONTACT [email] · [phone]
 ## Get involved (`/get-involved`, replaces "Loja" `/shop`)
 
 **Intro** (add a text block)
-There are many ways to help. We will open donations as soon as our registration and our bank account in the
-Foundation's name are complete. Leave your details and we will tell you first. Meanwhile you can partner with us,
-give products, volunteer or become a member.
+Invest in a young woman's future: her education, her skills and her first income. We will open donations as soon
+as our registration and our bank account in the Foundation's name are complete. Leave your details and we will
+tell you first. Meanwhile you can offer an internship or a job, mentor, partner with us, give products, volunteer
+or become a member.
 
 Six cards (each replaces a template product; remove prices until giving opens):
 
 | Template | Replace with | Line | Button |
 | --- | --- | --- | --- |
-| Sucos frescos | Hygiene essentials for one girl for a year | TZS [amount] (about US$ [amount]) | Tell me when giving opens |
-| Barras de proteína | Baby-care for a young mother for a month | TZS [amount] | Tell me when giving opens |
-| Camiseta esportiva | School supplies and lunch for one term | TZS [amount] | Tell me when giving opens |
-| Proteína em pó | Training for a young mother | TZS [amount] | Tell me when giving opens |
-| Vale-presente | Give products: pads, diapers, school supplies | Quality-checked products only | Contact us |
-| Camiseta da Klipsan | Volunteer or intern with us | Background checks for anyone working with girls | Apply |
+| Sucos frescos | A school year for one girl | Supplies, lunch and essentials · TZS [amount] (about US$ [amount]) | Tell me when giving opens |
+| Barras de proteína | Skills training for a young mother | TZS [amount] | Tell me when giving opens |
+| Camiseta esportiva | Back to school for a young mother | Baby-care and support for one term · TZS [amount] | Tell me when giving opens |
+| Proteína em pó | Offer an internship or a job | For employers and businesses | Contact us |
+| Vale-presente | Become a mentor | Women aged 18 or over, checked and trained | Apply |
+| Camiseta da Klipsan | Give products or volunteer | School supplies, pads, diapers; quality-checked | Contact us |
 
 **Section: WORKING TOGETHER** (add one block per partner type: three short lines each)
 Intro: Good partnerships help both sides reach their goals. Here is what we can offer, and the small first step we
 would ask for. We are new, so we start with one step and build from there.
 
 1. **Girls and young mothers**
-   If you want to stay in school, keep your privacy and build an income of your own,
-   we can bring essentials close to you, connect you to help in confidence, and open a way back to school and work.
+   If you want to finish school, learn skills and earn an income of your own,
+   we can help you stay in or return to school, find training, a mentor and work, and clear the barriers in the way.
    We ask you to tell us what works and what doesn't. Nothing about you without you.
 2. **Schools**
    If you want better attendance, fewer drop-outs and support for student mothers coming back,
-   we can provide supplies, lunches and discreet hygiene essentials, and help with the return to school.
+   we can provide supplies, lunches and discreet essentials, mentoring, and help with the return to school.
    We ask for one contact teacher and your guidance on which students need support, with families' agreement.
-3. **Government and councils**
-   If you want girls to stay in school and the return-to-school policy to work in your district,
+3. **Employers and businesses**
+   If you need reliable, motivated young people, and want to grow local talent,
+   we can introduce young women and young mothers who are ready to learn, and support them while they start.
+   We ask for [2] internships, a job placement or one day of job shadowing to begin.
+4. **Vocational colleges and training providers**
+   If you want more young women to enrol and finish their courses,
+   we can bring motivated trainees and help with what makes them drop out: essentials, baby-care and follow-up.
+   We ask for [5] places and one contact person.
+5. **Government and councils**
+   If you want girls to stay in school, the return-to-school policy to work, and more young women in skills and work,
    we can work within national guidelines, with your approval, and share what we learn by area, never about any one
    person.
-   We ask for an introduction to the schools and services in your district.
-4. **Health and support services**
+   We ask for an introduction to the schools, colleges and services in your district.
+6. **Funders**
+   If you invest in girls' education, skills and economic opportunity, and want to see exactly what it achieved,
+   we can report what each investment made possible: attendance, returns to school, training completed, income
+   earned, with a receipt for every hand-over and the cost per girl.
+   We ask for a first, small grant tied to clear milestones, or simply your advice.
+7. **Health and support services**
    If you want young people to reach your confidential, youth-friendly services,
    we can refer girls and young mothers to you, follow your procedures, and share counts only, never personal details.
    We ask for one referral contact and, where you can, a session for the girls we serve.
-5. **Organisations working with girls**
+8. **Organisations working with girls**
    If you want to reach more girls without duplicating effort, and keep support going after a project ends,
-   we can bring local delivery, follow-up and referrals to areas you already serve or can't yet reach.
+   we can bring local follow-up, mentoring and referrals to areas you already serve or can't yet reach.
    We ask to agree who does what, and to share materials that already work.
-6. **Makers and suppliers**
+9. **Makers and suppliers**
    If you want new customers in towns and villages, and proof that your products reach girls,
    we can place steady orders, pay on agreed terms, and share demand and feedback by area.
    We ask for a fair NGO price and quality-checked products.
-7. **Funders**
-   If you want to know exactly what your support achieved, and to back local leadership,
-   we can show a receipt for every hand-over, the cost per girl, and the local women who earned from the work.
-   We ask for a first, small grant tied to clear milestones, or simply your advice.
-8. **Women's networks and last-mile businesses**
-   If you want more income for your agents and new customers,
-   we can bring products and customers your agents can serve.
-   We ask to test it together in one area first.
-9. **Employers and training programmes**
-   If you want motivated, reliable young people, and to make a difference,
-   we can introduce young women and young mothers ready to learn, and support them while they train.
-   We ask for training places, internships or jobs.
 10. **Families and community leaders**
-    If you want your daughters safe, respected and learning,
-    we can bring paid work to local women and respect for every family.
+    If you want your daughters safe, respected, learning and able to earn,
+    we can bring training, mentors and paid work to young women and respect for every family.
     We ask for your trust, and your voice in what we do.
 
 Note under the blocks: We never share a girl's personal information with any partner, we never let a partner use our
@@ -347,13 +390,16 @@ work for advertising to girls without consent, and we avoid giveaways that put l
 
 **Section: WORK WITH US** (form)
 Tell us who you are and how you would like to work together. We will reply within a week.
-Form: First name · Last name · Email · **Organisation** · **I'm interested in** (check boxes): Funding / Giving
-products / Referring girls / Offering a service / Training, internships or jobs / Volunteering / Membership / Not sure
-yet · Button: **Send**
+Form: First name · Last name · Email · **Organisation** · **I'm interested in** (check boxes): Internships or jobs /
+Training places / Mentoring / Funding / Referring girls / Offering a service / Giving products / Volunteering /
+Membership / Not sure yet · Button: **Send**
 
 **FAQs** (add an accordion block)
 - **Are you a registered organisation?** We are being registered as an international non-governmental organisation
   under Tanzania's NGO Act. We will publish our registration number here as soon as we have it.
+- **Why do you also provide pads, diapers and lunch?** Because a girl can't learn when she is hungry or missing
+  class every month, and a young mother can't train if her baby lacks the basics. Essentials are the means;
+  education, skills and income are the goal.
 - **Do girls pay for help?** Many of our services are free to girls in need, paid for by partners and donors. Where a
   girl buys essentials herself, she pays a fair local price, never more.
 - **Is information about girls kept private?** Yes. We use it only to support her, and we protect health information
@@ -365,14 +411,13 @@ yet · Button: **Send**
 
 ## Gift page (template: `/shop/p/protein-bars-heaks`)
 
-**Title:** Hygiene essentials for one girl for a year
+**Title:** A school year for one girl
 **Line:** TZS [amount] (about US$ [amount]) — giving opens after registration
-**Description:** Pads and hygiene items for a full school year, brought by a trusted local woman to a public place
-near the girl.
+**Description:** Everything one girl needs to stay in class for a full school year, and someone watching out for her.
 
-- [What is in the kit: for example reusable pads, soap and underwear] (confirm with the supplier)
-- Quality-checked products, with the TBS mark where it applies
-- Never delivered to her home; her messages never name the product
+- School supplies for the year and a daily school lunch ([confirm the cost per term with the school])
+- Hygiene essentials every month, brought by a trusted local woman to a public place near her
+- A contact teacher who knows she needs support, and a mentor
 - A receipt for every hand-over, so you can see it arrived
 - Your gift goes only to our mission; every payment we make is approved by two officers
 
@@ -419,6 +464,21 @@ Children's Desk at the nearest police station.
 **This website**
 Our forms are for adults and organisations. We ask only for what we need, never for health information, and we never
 sell or share your details.
+
+---
+
+## Where each objective appears (for the founders, not for the website)
+
+| Article 10 objective | On the site |
+| --- | --- |
+| (1) Diapers and baby-care for young mothers | What we do 7; Get involved card 3 |
+| (2) Hygiene necessities, including pads | What we do 7; gift page |
+| (3) Confidential pregnancy testing, counselling and support | What we do 8; Safeguarding page |
+| (4) School supplies and school lunches | What we do 1; gift page |
+| (5) Links to health, social welfare, legal aid, re-entry and economic programmes | What we do 2 and 9 |
+| (6) Skills, mentoring, internships, enterprise and jobs, including in our own programmes | What we do 3–6; Working together 3–4 |
+| (7) Awareness and advocacy | What we do 10 |
+| (8) Raising resources and working with partners | Get involved; Working together |
 
 ---
 
