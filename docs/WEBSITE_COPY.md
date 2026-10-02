@@ -1,252 +1,472 @@
-# Website copy — Squarespace site (pilot: one city, one village)
+# Website copy — Dandelion Foundation (Squarespace)
 
-Founders, 2026-10-01: replace the Squarespace template text ("Klipsan Fitness", Portuguese) with Dandelion's use case,
-page by page. Placeholders in **[brackets]** are for the founders to fill in. The ordering, payments, hand-over codes
-and safeguarding all happen in the Dandelion app; the website explains, recruits partners and sellers, and links to
-the app.
+Founders, 2026-10-02: copy for the Foundation's website, page by page, based on the constitution adopted for
+registration under the Non-Governmental Organizations Act, Cap. 56. It replaces the pilot-only copy of 2026-10-01 and
+the Squarespace template text ("Klipsan Fitness", Portuguese). Placeholders in **[brackets]** are for the founders to
+fill in. Article numbers refer to the constitution, so every promise on the site can be traced to it.
 
 ## Before you paste
 
+- **Registration status.** Until the Registrar issues the certificate, the site says "being registered". Afterwards,
+  add the registration number to the footer and the About page.
+- **No donations yet.** Open giving only once the Foundation is registered and has a bank account in its own name
+  (Articles 4 and 33(3)). Until then every "Give" button opens an interest form ("Tell me when giving opens").
+- **No US tax receipts.** Don't say gifts are tax-deductible in the US unless a US partner organisation with that
+  status exists (Article 35).
+- **Don't promise 24/7 testing yet.** The constitution says day-and-night support "as far as the resources of the
+  Organization allow" (Article 10(3)). The copy says it's our aim, and lists the free lines that are open now.
+- **Safeguarding comes first.** The Board adopts the Safeguarding and Child Protection Policy before any service
+  reaches a girl directly (Article 30(1)). Link the policy from the Safeguarding page once it's adopted.
+- **Never collect anything about a girl's health on the website.** Forms are for adults and organisations only.
+- **Photos.** No identifiable girls, pregnant students or young mothers. Use hands, products, public places or
+  illustrations. Get written consent for any adult who appears. Fill in every image's alt text.
+- **No invented quotes or partners.** List an organisation only after the Board has approved an agreement with it
+  (Article 35(2)). The only quote on the site comes from the constitution itself. No partner logos until then.
+- **Speak to types of partners, never about a named one.** The site says "if your goal is…, we can…". What each
+  named organisation wants, and how we could help it, stays in the private partner spreadsheet (columns AA–AD). See
+  "How we talk about partnerships" at the end of this document.
+- **Board names and photos** only with each person's agreement. Use the spelling in the constitution everywhere.
+- **Check before publishing:** the free help lines (199 Afya Call Centre, 116 Child Helpline, MSI Tanzania
+  0800 753 333), the town and village names in Tanga Region, the start month, and the contact email and phone.
+- **Swahili lines:** ask a Swahili-speaking founder to check them before publishing.
 - **Site language:** Settings → Language & Region → English (or Kiswahili). This changes the system text such as
-  "Pular para conteúdo" (Skip to content) and the form labels "(obrigatório)" (required).
-- **No orders or payments on Squarespace.** Turn off the cart (Commerce settings) or make the Shop a normal page;
-  every "Order" button links to the app: **[app link]/shop**.
-- **Never collect anything about a girl's health on the website.** Forms are for organisations, sellers and partners.
-- **Photos:** no identifiable girls or customers. Use products, public places or illustrations. Fill in every image's
-  alt text (the template's are empty).
-- **No invented quotes or partners.** List an organisation only once you have agreed to work together; use a real
-  quote only with written permission.
-- **Check before publishing:** MSI Tanzania's toll-free number (0800 753 333, from its website), product pack sizes,
-  prices for each area, and the pilot start month.
+  "Pular para conteúdo" (Skip to content) and "(obrigatório)" (required).
 
 ---
+
+## Site map
+
+| Template page | New page | New URL |
+| --- | --- | --- |
+| Home | Home | `/` |
+| Aulas (`/classes-overview`) | What we do | `/what-we-do` |
+| Instrutores (`/instructors`) | About us | `/about` |
+| Localizações (`/locations`) | Where we work | `/where-we-work` |
+| Loja (`/shop`) | Get involved | `/get-involved` |
+| (new page, footer link) | Safeguarding and privacy | `/safeguarding` |
+
+Turn off the Squarespace cart (Commerce settings). Nothing is sold or paid on the website.
 
 ## Site header (every page)
 
 | Template | Replace with |
 | --- | --- |
-| Dandelion | Dandelion |
-| Aulas | How it works |
-| Instrutores | Partners |
-| Localizações | Where we work |
-| Loja | Shop |
-| Entre para nossa academia (button) | Partner with us (link to the Partners page form) |
+| Dandelion | Dandelion Foundation |
+| Aulas · Instrutores · Localizações · Loja | About us · What we do · Where we work · Get involved |
+| Entre para nossa academia (button) | Partner with us (links to Get involved) |
 
 ## Site footer (every page)
 
 | Template | Replace with |
 | --- | --- |
-| FIQUE POR DENTRO | PARTNER UPDATES |
-| Cadastre-se e seja o primeiro… | For organisations, funders and suppliers: a short monthly note on deliveries, what we are learning, and where we go next. We never share your details. |
+| FIQUE POR DENTRO | NEWS FROM DANDELION |
+| Cadastre-se e seja o primeiro… | A short note every few months on what we are doing and learning. We never share your details. |
 | Endereço de e-mail / Cadastre-se | Email address / Sign up |
-| Suporte · Termos e Condições · Política de Privacidade · Perguntas frequentes | Help · Terms · Privacy · Safety · FAQs (Privacy and Safety link to the app's pages) |
-| CONTATO e-mail@exemplo.com (055) 99855-5555 | CONTACT [email] · [phone] · WhatsApp [number] |
-| KLIPSAN | DANDELION — Free help, day and night: 199 (health) · 116 (child helpline) |
+| Suporte · Termos e Condições · Política de Privacidade · Perguntas frequentes | About us · Safeguarding and privacy · Get involved · FAQs |
+| CONTATO e-mail@exemplo.com (055) 99855-5555 | CONTACT · Usalama Street, Magomeni Ward, Kinondoni District, Dar es Salaam · P.O. Box 144, Dar es Salaam · [email] · [phone] · WhatsApp [number] |
+| KLIPSAN | DANDELION FOUNDATION · Non-profit, non-partisan, non-religious · Being registered as an international non-governmental organisation under the Non-Governmental Organizations Act, Cap. 56, Tanzania (after registration: Registration No. [number]) |
+| (add a line) | Need help now? Free, day and night: 199 (health) · 116 (child helpline) |
 
 ---
 
 ## Home (`/`)
 
 **Headline** (replaces "TREINE NO SEU TEMPO.")
-CLOSE TO HOME. ON HER TERMS.
+IN SCHOOL. IN DIGNITY. ON HER WAY.
+*(Alternative: NO GIRL LEFT BEHIND.)*
 
 **Subheadline** (replaces "SOMOS UMA ACADEMIA…")
-MENSTRUAL AND HYGIENE ESSENTIALS FOR GIRLS AND YOUNG WOMEN, BROUGHT BY TRUSTED LOCAL WOMEN AND PAID WITH MOBILE MONEY.
+DANDELION FOUNDATION MEETS THE EVERYDAY NEEDS OF VULNERABLE GIRLS AND YOUNG WOMEN IN TANZANIA, ESPECIALLY PREGNANT
+STUDENTS AND YOUNG MOTHERS, AND CONNECTS THEM TO THE SUPPORT, SKILLS AND WORK THAT HELP THEM THRIVE.
 
-**Swahili line** (add under the subheadline)
-Pedi na mahitaji ya usafi, karibu nawe. Agiza kwa simu, kutana mahali pa wazi, lipa kwa pesa za simu.
+**Swahili line** (add under the subheadline; check before publishing)
+Tunawasaidia wasichana na wanawake vijana, hasa wanafunzi wajawazito na mama vijana, kubaki shuleni na kujenga maisha
+bora.
 
 **Body** (replaces "A Klipsan Fitness é uma academia…")
-Dandelion is a pilot in [City] and [Village], Tanzania. A girl or young woman orders by phone and chooses a public
-meeting point near her: a market, a dispensary gate, a school gate. A local seller brings her pack there. She pays by
-mobile money, in parts or in full, with no debt and no late fees. Her texts never name the product, and we never ask
-for her address. Every hand-over gets a receipt, so the schools, organisations and funders who support her can see
-exactly what reached her.
+Poverty, hunger, a lack of pads, pregnancy and stigma push too many girls out of school, and too many young mothers
+into hardship. Dandelion Foundation works with girls, families, schools, communities and government to meet their
+immediate needs first: hygiene essentials, baby-care items, school supplies and lunches, and confidential pregnancy
+testing with someone to talk to. Then we help them take the next step: back into the classroom, into training, and
+into work that pays.
 
-**Buttons:** Order pads → [app link]/shop · Partner with us → Partners page
+**Buttons:** What we do → What we do page · Get involved → Get involved page
 
-**Section: WHAT DANDELION OFFERS** (replaces "COMODIDADES")
-Everything girls and young women need close to home, and one place for the people and organisations who support
-them. Something missing in your area? Tell us.
+**Section: WHAT WE PROVIDE** (replaces "COMODIDADES")
+Practical help first, so girls can keep learning, and a path to a secure future after that.
 
 | Column 1 (replaces Instalações modernas … Ringue de boxe) | Column 2 (replaces Sucos … Armários) |
 | --- | --- |
-| Pads and hygiene packs | Public meeting points, never home addresses |
-| Diapers for young mothers (coming soon) | Pay by mobile money, in parts or in full |
-| Pregnancy tests, sealed and discreet (coming soon) | Free 24/7 help: 199 and 116 |
-| Start-of-term school packs (coming soon) | A receipt for every hand-over |
-| A checked list of local help | Monthly reminders, only if she asks |
+| Sanitary pads and hygiene essentials | A way back to school after pregnancy |
+| Diapers and baby-care items for young mothers | Skills training, mentors and internships |
+| Confidential pregnancy testing, with someone to talk to | Paid work for local women in our programmes |
+| School supplies and school lunches | Links to clinics, social welfare and legal aid |
 
 **Section: PARTNER WITH US** (replaces "AGENDAR UMA VISITA")
-Do you run a school, an NGO, a clinic, a business or a fund that supports girls and young women in [City] or
-[Village]? Buy packs for the girls you work with, fund deliveries, supply products or list your service. You will see
-every delivery with its receipt.
+We are a new organisation, starting small in Tanga Region. We would rather do a few things well, with proof, than
+promise more than we can deliver. If you are working to keep girls in school, to reach young mothers others miss, or
+to see exactly what your support achieved, tell us what you are working towards. We will tell you honestly whether we
+can help. Every partnership is agreed in writing, and we report back on what it achieved.
 
 Form: First name (required) · Last name (required) · Email (required) · **Organisation** (required, replaces "Data")
-· **How would you like to work with us?** (drop-down): Buy packs for girls in our programme / Fund deliveries /
-Supply products / List a support service / Become a local seller / Something else · Button: **Send**
-Note under the form: Please don't use this form to order or to share anything about a girl's health. Girls order in
-the Dandelion app.
+· **How would you like to work with us?** (drop-down): Fund our work / Give products (pads, diapers, school
+supplies) / Refer girls or young mothers / Offer a service (health, counselling, legal aid, training) / Offer
+internships or jobs / Volunteer / Become a member / Something else · Button: **Send**
+Note under the form: Please don't use this form to share anything about a girl's health. If someone needs help now,
+call 199 or 116 (free, day and night).
 
-**Quote** (replaces the Alejandro Jimenez quote) — *draft for the founders to edit and approve; later replace with a
-real seller or partner quote, with written permission*
-"No girl should miss school because of her period, or because she became a mother." — [Founder name], co-founder,
-Dandelion
+**Quote** (replaces the Alejandro Jimenez quote)
+"Every girl and woman has the right to live in dignity, free from violence, exploitation, discrimination and abuse."
+— From the founding constitution of Dandelion Foundation
 
 **Location blocks** (replace BROOKLYN / LOS ANGELES)
-[CITY] — Pilot area · Orders open [month year] · Help: [phone]
-[VILLAGE] — Pilot area · Orders open [month year] · Help: [phone]
+TANGA REGION — First programmes · Starting [month year] in [Town] and [Village]
+DAR ES SALAAM — Head office · Usalama Street, Magomeni Ward, Kinondoni District
 
 ---
 
-## How it works (`/how-it-works`, replaces "Aulas" `/classes-overview`)
+## What we do (`/what-we-do`, replaces "Aulas" `/classes-overview`)
 
-**Title:** HOW IT WORKS
+**Title:** WHAT WE DO
 
 **Intro** (replaces "Tudo começa com uma ideia…")
-Dandelion connects girls and young women with trusted local women who carry essentials, and with the services and
-organisations around them. Here is what the pilot offers, who brings it and when.
+We meet immediate needs first, so girls can stay in school, and then help them build the skills and income for a
+secure future. Every programme follows our Safeguarding Policy. Health services are provided by qualified health
+workers or through licensed clinics.
 
-**Section heading:** WHAT YOU CAN GET (replaces "DESTAQUE-SE")
+**Section heading:** OUR PROGRAMMES (replaces "DESTAQUE-SE")
 
-Five blocks (each replaces a class: title / "Administrada por" / schedule / text / button):
+Seven blocks. The template has five; duplicate a block for 6 and 7. Each block replaces a class: title /
+"Administrada por" (With) / schedule line / text / button.
 
-1. **PADS AND HYGIENE PACKS**
-   Brought by: women local sellers and delivery partners in your area
-   Order any time · Hand-over within a day of full payment
-   Disposable or reusable pads, menstrual cups, soap and underwear from approved makers. Choose a public meeting
-   point, pay by mobile money in parts or in full, and read your hand-over code only when the pack is in your hands.
-   If a seller can't come in time, your order passes to the next seller with your payment, and you never pay twice.
-   Button: **Order now** → [app link]/shop
+1. **HYGIENE ESSENTIALS**
+   With: trusted local women, trained and paid by the Foundation · Starting [month year] in Tanga Region
+   Sanitary pads, reusable pads, soap and underwear, brought to a public place near her, such as a school or
+   dispensary gate, never to her home. Free when a partner or donor covers the cost; otherwise at a fair local price,
+   paid by mobile money. Her text messages never name the product, and every hand-over gets a receipt, so supporters
+   can see exactly what arrived.
+   Button: **Support a girl** → Get involved
 
-2. **DIAPERS FOR YOUNG MOTHERS** — coming soon
-   Brought by: women local sellers
-   Small, affordable packs for young mothers, especially those going back to school. Schools and organisations can
-   pay for them so the mother receives them free, still delivered by her local seller.
-   Button: **Partner with us**
+2. **BABY-CARE FOR YOUNG MOTHERS**
+   With: trusted local women · Starting [month year]
+   Diapers and essential baby-care items for student mothers and young mothers facing hardship, so a young mother
+   can go to class or to work knowing her baby has what it needs.
+   Button: **Support a young mother** → Get involved
 
-3. **PREGNANCY TESTS AND SOMEONE TO TALK TO** — tests coming soon · help lines open now
-   Brought by: local sellers (tests, once licensed) · Afya Call Centre 199, Child Helpline 116, MSI Tanzania (help)
-   Sealed, registered pregnancy tests, delivered like any order in a plain bag, with nothing in the text that names
-   them. If you want to talk to someone now: call 199 (Ministry of Health, free, day and night) or 116 (Child
-   Helpline, free, day and night). MSI Tanzania offers confidential pregnancy counselling on its toll-free line,
-   0800 753 333.
-   Button: **Get help now** → app Safety page
+3. **PREGNANCY TESTING AND SOMEONE TO TALK TO**
+   With: qualified health workers and licensed clinics · Free help lines open now, day and night
+   Confidential pregnancy testing with counselling and emotional support, following Tanzania's laws and national
+   health guidelines. Our aim is help at any hour of the day or night. Until we can offer that ourselves, these free
+   lines are always open: **199** (Afya Call Centre, Ministry of Health) and **116** (Child Helpline). MSI Tanzania
+   offers confidential counselling on **0800 753 333**. What you tell us stays private, except where the law
+   requires us to act to keep a child safe.
+   Button: **Get help now** → Safeguarding page
 
-4. **START-OF-TERM SCHOOL PACKS** — coming soon
-   Brought by: local sellers · paid by families, schools or bursary programmes
-   Exercise books, pens, a geometry set and hygiene items in one pack, ready before term starts. Schools and
-   programmes can buy packs for their students and see each one delivered.
-   Button: **Partner with us**
+4. **SCHOOL SUPPLIES AND LUNCH**
+   With: schools and sponsors · Starting [month year]
+   Exercise books, pens and other school supplies, and a school lunch for female students in need, so that poverty
+   and hunger don't keep them out of the classroom.
+   Button: **Sponsor a student** → Get involved
 
-5. **LOCAL HELP, CHECKED**
-   Run by: Dandelion's safeguarding leads
-   Where to go near you: the police gender and children's desk, a youth-friendly clinic, free legal aid and the
-   day-and-night help lines. Every entry is checked by our safeguarding leads before it appears.
-   Button: **See help near you** → app Safety page
+5. **A WAY BACK TO SCHOOL, AND HELP NEARBY**
+   With: schools, health facilities, social welfare officers and legal aid
+   Tanzania now allows girls who become mothers to return to school. We help them and their families take that step
+   and stay. We also connect girls and young mothers to clinics, social welfare, free legal aid and programmes that
+   build an income, checking every service before we refer anyone to it.
+   Button: **Partner with us** → Get involved
 
-**Section: BECOME A LOCAL SELLER** (replaces "Faça uma aula por nossa conta")
-Are you a woman aged 18 or over in [City] or [Village] who wants to earn by bringing essentials to girls and young
-women nearby? Sellers buy stock at the local price, sell at the area's price and keep the difference. You will be
-trained, and every sale is paid by mobile money before you hand anything over, so nobody owes you money. Two admins
-approve every new seller.
+6. **SKILLS, MENTORS AND WORK**
+   With: trainers, mentors and employers
+   Vocational, digital, money-management and life-skills training, mentoring, internships and help to start a small
+   business. We also employ and train women in our own programmes: the local women who bring essentials to girls
+   earn from every hand-over.
+   Button: **Offer training or a job** → Get involved
 
-Form: First name · Last name · **Phone** (required) · Email (optional) · **Where would you sell?** (drop-down):
-[City] / [Village] · **Are you 18 or over?** (Yes / No) · Button: **Send**
+7. **SPEAKING UP TOGETHER**
+   With: families, schools, communities and government
+   We raise awareness and speak up for the rights, dignity and continued education of girls and young women,
+   including pregnant students and young mothers.
+   Button: **Join us** → Get involved
+
+**Section: WORK WITH US IN YOUR COMMUNITY** (replaces "Faça uma aula por nossa conta")
+Are you a woman aged 18 or over in [Town] or [Village] who wants to earn by bringing essentials to girls and young
+women nearby? We train you, pay you for your work by mobile money, and stand behind you. Everyone who works with
+girls is checked, trained and agrees to our code of conduct.
+
+Form: First name · Last name · **Phone** (required) · Email (optional) · **Where do you live?** (drop-down): [Town] /
+[Village] / Somewhere else · **Are you 18 or over?** (Yes / No) · Button: **Send**
 
 ---
 
-## Partners (`/partners`, replaces "Instrutores" `/instructors`)
+## About us (`/about`, replaces "Instrutores" `/instructors`)
 
 **Intro** (add a text block above the cards)
-Dandelion is shared ground for everyone working with girls and young women in [City] and [Village]. Each partner
-brings something and gets something back. We list an organisation here only once we have agreed to work together.
+Dandelion Foundation is a non-profit, non-partisan and non-religious organisation, founded by Tanzanians and
+Americans who believe that no girl should be left behind. We are being registered as an international
+non-governmental organisation in Tanzania, with our head office in Dar es Salaam and a Board with a Tanzanian
+majority. We serve every girl and young woman who needs us, without discrimination. We are new, so we are starting
+small, learning from the organisations already doing this work, and sharing what we learn, including what doesn't
+work.
 
-Six cards (each replaces an instructor: name / specialty / add one sentence):
+**OUR VISION**
+A Tanzania where every girl and young woman, including pregnant students and young mothers, lives in dignity,
+completes her education and has the skills and economic opportunity to thrive.
 
-1. **MAKERS AND SUPPLIERS** — Sell more, get paid up front
-   New buyers in town and village, paid by mobile money before stock leaves, and monthly demand by area. We ask for
-   fair prices, small packs and the TBS mark.
-2. **SCHOOLS AND NGOs** — Reach every girl, with proof
-   Buy packs for the girls in your programme; local sellers deliver; you see a receipt for each hand-over and your
-   cost per girl. No giveaways that put local sellers out of business.
-3. **FUNDERS** — See where every shilling went
-   Fund orders for girls who can't pay, or deliveries to far villages. A monthly report from our records shows every
-   delivery, with receipts you can check.
-4. **HEALTH AND SUPPORT SERVICES** — Reach the girls you serve
-   Help lines, clinics, counsellors and legal aid: we show your service when someone needs it, follow your referral
-   and safeguarding rules, and share counts only, never personal details.
-5. **GOVERNMENT AND COUNCILS** — Useful data at no cost
-   Access, prices and unmet demand by area, never about any one person. We work with district approval and follow
-   national guidelines.
-6. **WOMEN'S NETWORKS AND APPS** — Income and reach
-   Programmes that train young women: your graduates can earn as Dandelion sellers. Apps and networks: your users
-   can order and get delivery through us.
+**OUR MISSION**
+To meet the immediate needs of vulnerable girls and young women, including pregnant students and young mothers, and
+to connect them with the skills, work and services that help them stay in school and build secure futures.
 
-**Section: WORK WITH US** (replaces "PROCURA TREINAMENTO PESSOAL?")
-Tell us who you are and how you would like to work together. We will reply within a week.
+**WHAT GUIDES US**
+Equality · Inclusion · Compassion · Confidentiality · Accountability · Integrity · Respect for human rights ·
+Community participation
 
-Form: First name · Last name · Email · **Organisation** (add) · **I'm interested in** (check boxes, replace the
-training goals): Buying packs for girls in our programme / Funding deliveries / Supplying products / Listing a
-support service / Training or referring women as sellers / Sharing data or research / Not sure yet · **When would you
-like to start?** (drop-down, replaces the training frequency): During the pilot / Within 3 months / Later this year /
-Just exploring · Button: **Send**
+**OUR BOARD** (six cards replace the instructors: name / role / one sentence)
+Use names and photos only with each person's agreement.
+
+1. **[Name]** — Chairperson
+2. **[Name]** — Secretary; Youth and Student Representative
+3. **[Name]** — Treasurer
+4. **[Name]** — Director
+5. **[Name]** — Director
+6. **Could this be you?** — Become a member. Anyone aged 18 or over who shares our mission, in Tanzania or abroad.
+
+Add one sentence per person in their own words, for example why they care about this work.
+
+**HOW WE ARE RUN** (add a text block under the cards)
+- Our members meet every year to elect our officers and approve our plans, budget and audited accounts.
+- A Board of Directors with a Tanzanian majority sets our policies and oversees our work.
+- Every payment needs the approval of two officers, and nobody may approve a payment to themselves.
+- An independent auditor checks our accounts every year, and we file our reports with the Registrar of NGOs.
+- Anyone with a personal interest in a decision declares it and stays out of that decision.
+- Our money goes only to our mission. No member ever receives a profit, a loan or a guarantee from the Foundation.
+- Partners and funders support our work; decisions stay with our members and our Board.
+
+**Section: BECOME A MEMBER** (replaces "PROCURA TREINAMENTO PESSOAL?")
+Membership is open to anyone aged 18 or over who supports our vision and mission, in Tanzania or abroad. Members vote
+at our annual meeting, can stand for office and take part in our work. Your application goes to our Secretary. The
+Board can admit you straight away, and your membership is confirmed at the next General Meeting. The General Meeting
+sets a small entry fee and a yearly fee.
+
+Form: First name · Last name · Email · Phone · **Country** · **Why would you like to join?** (text, replaces the
+training goals) · **Are you 18 or over?** (Yes / No) · Button: **Apply to join**
 
 ---
 
 ## Where we work (`/where-we-work`, replaces "Localizações" `/locations`)
 
 **Intro** (add a text block)
-We start small, in one city and one village, to get every detail right before opening anywhere else.
+Our work can reach every part of Tanzania. We are starting small, in Tanga Region, to get every detail right before
+we grow.
 
 **Block 1** (replaces BROOKLYN)
-[CITY]
-Pilot area · Orders open [month year]
-Hand-overs at named public meeting points, such as a market gate or a dispensary gate. Never at homes.
+TANGA REGION
+[Town] and [Village] · First programmes start [month year]
+Hand-overs happen at public places, such as a school or dispensary gate, never at homes.
 CONTACT [email] · [phone] · WhatsApp [number]
 
 **Block 2** (replaces LOS ANGELES)
-[VILLAGE]
-Pilot area · Orders open [month year]
-Hand-overs at public meeting points on market days and weekdays; times are shown in the app.
-CONTACT [email] · [phone] · WhatsApp [number]
+DAR ES SALAAM
+Head office · Usalama Street, Magomeni Ward, Kinondoni District · P.O. Box 144, Dar es Salaam
+CONTACT [email] · [phone]
 
-**Closing line:** Want Dandelion in your area next? Tell us. → Partners page form
+**Below the blocks:**
+- **Zanzibar:** we will work in Zanzibar only after receiving the approvals Zanzibar's laws require.
+- **Friends in the United States:** some of our founders live in the United States. We are exploring a US partner
+  organisation to support our work. Until it exists, we can't issue US tax receipts.
+
+**Closing line:** Would you like us in your community next? Tell us. → Get involved form
 
 ---
 
-## Shop (`/shop`, replaces "Loja")
+## Get involved (`/get-involved`, replaces "Loja" `/shop`)
 
 **Intro** (add a text block)
-Order in the Dandelion app. Prices are set for each area and shown in the app before you order. No subscriptions,
-no automatic deductions, no debt.
+There are many ways to help. We will open donations as soon as our registration and our bank account in the
+Foundation's name are complete. Leave your details and we will tell you first. Meanwhile you can partner with us,
+give products, volunteer or become a member.
 
-Six products (each replaces a template product; no "per month"):
+Six cards (each replaces a template product; remove prices until giving opens):
 
-| Template | Replace with | Price line | Button |
+| Template | Replace with | Line | Button |
 | --- | --- | --- | --- |
-| Sucos frescos | Disposable pads | TZS [price] a pack | Order in the app |
-| Barras de proteína | Reusable pads | TZS [price] | Order in the app |
-| Camiseta esportiva | Menstrual cup | TZS [price] | Order in the app |
-| Proteína em pó | Diapers, small pack | Coming soon | Partner with us |
-| Vale-presente | Sponsor packs for girls (for organisations and funders) | From TZS [price] a pack | Partner with us |
-| Camiseta da Klipsan | Pregnancy test | Coming soon | Get help now |
+| Sucos frescos | Hygiene essentials for one girl for a year | TZS [amount] (about US$ [amount]) | Tell me when giving opens |
+| Barras de proteína | Baby-care for a young mother for a month | TZS [amount] | Tell me when giving opens |
+| Camiseta esportiva | School supplies and lunch for one term | TZS [amount] | Tell me when giving opens |
+| Proteína em pó | Training for a young mother | TZS [amount] | Tell me when giving opens |
+| Vale-presente | Give products: pads, diapers, school supplies | Quality-checked products only | Contact us |
+| Camiseta da Klipsan | Volunteer or intern with us | Background checks for anyone working with girls | Apply |
 
-## Product page (template: `/shop/p/protein-bars-heaks`)
+**Section: WORKING TOGETHER** (add one block per partner type: three short lines each)
+Intro: Good partnerships help both sides reach their goals. Here is what we can offer, and the small first step we
+would ask for. We are new, so we start with one step and build from there.
 
-**Title:** Disposable pads
-**Price line:** TZS [price] a pack — the price for your area is shown in the app
-**Description:** Soft, absorbent pads from approved makers, delivered by a local seller to a public meeting point
-near you.
+1. **Girls and young mothers**
+   If you want to stay in school, keep your privacy and build an income of your own,
+   we can bring essentials close to you, connect you to help in confidence, and open a way back to school and work.
+   We ask you to tell us what works and what doesn't. Nothing about you without you.
+2. **Schools**
+   If you want better attendance, fewer drop-outs and support for student mothers coming back,
+   we can provide supplies, lunches and discreet hygiene essentials, and help with the return to school.
+   We ask for one contact teacher and your guidance on which students need support, with families' agreement.
+3. **Government and councils**
+   If you want girls to stay in school and the return-to-school policy to work in your district,
+   we can work within national guidelines, with your approval, and share what we learn by area, never about any one
+   person.
+   We ask for an introduction to the schools and services in your district.
+4. **Health and support services**
+   If you want young people to reach your confidential, youth-friendly services,
+   we can refer girls and young mothers to you, follow your procedures, and share counts only, never personal details.
+   We ask for one referral contact and, where you can, a session for the girls we serve.
+5. **Organisations working with girls**
+   If you want to reach more girls without duplicating effort, and keep support going after a project ends,
+   we can bring local delivery, follow-up and referrals to areas you already serve or can't yet reach.
+   We ask to agree who does what, and to share materials that already work.
+6. **Makers and suppliers**
+   If you want new customers in towns and villages, and proof that your products reach girls,
+   we can place steady orders, pay on agreed terms, and share demand and feedback by area.
+   We ask for a fair NGO price and quality-checked products.
+7. **Funders**
+   If you want to know exactly what your support achieved, and to back local leadership,
+   we can show a receipt for every hand-over, the cost per girl, and the local women who earned from the work.
+   We ask for a first, small grant tied to clear milestones, or simply your advice.
+8. **Women's networks and last-mile businesses**
+   If you want more income for your agents and new customers,
+   we can bring products and customers your agents can serve.
+   We ask to test it together in one area first.
+9. **Employers and training programmes**
+   If you want motivated, reliable young people, and to make a difference,
+   we can introduce young women and young mothers ready to learn, and support them while they train.
+   We ask for training places, internships or jobs.
+10. **Families and community leaders**
+    If you want your daughters safe, respected and learning,
+    we can bring paid work to local women and respect for every family.
+    We ask for your trust, and your voice in what we do.
 
-- [8] pads per pack (confirm with the maker)
-- From TBS-certified makers only
-- Order by phone; texts never name the product
-- Pay by mobile money, in parts or in full: no debt, no late fees
-- Hand-over within a day of full payment, or the next seller brings it
-- Read your hand-over code only when the pack is in your hands
-- A monthly reminder only if you switch it on
+Note under the blocks: We never share a girl's personal information with any partner, we never let a partner use our
+work for advertising to girls without consent, and we avoid giveaways that put local sellers out of business.
 
-**Remove** the quantity selector. **Button** ("Assinar") → **Order in the app** → [app link]/shop
+**Section: WORK WITH US** (form)
+Tell us who you are and how you would like to work together. We will reply within a week.
+Form: First name · Last name · Email · **Organisation** · **I'm interested in** (check boxes): Funding / Giving
+products / Referring girls / Offering a service / Training, internships or jobs / Volunteering / Membership / Not sure
+yet · Button: **Send**
 
-Copy this page for each product and change the title, price and the first two points.
+**FAQs** (add an accordion block)
+- **Are you a registered organisation?** We are being registered as an international non-governmental organisation
+  under Tanzania's NGO Act. We will publish our registration number here as soon as we have it.
+- **Do girls pay for help?** Many of our services are free to girls in need, paid for by partners and donors. Where a
+  girl buys essentials herself, she pays a fair local price, never more.
+- **Is information about girls kept private?** Yes. We use it only to support her, and we protect health information
+  most carefully. The law may require us to act if a child is at risk of serious harm.
+- **Can I give from outside Tanzania?** Yes, once giving opens. US tax receipts will be possible only through a US
+  partner organisation.
+- **Can I volunteer with girls?** Yes. Everyone who works with girls is background-checked, trained and agrees to our
+  code of conduct.
+
+## Gift page (template: `/shop/p/protein-bars-heaks`)
+
+**Title:** Hygiene essentials for one girl for a year
+**Line:** TZS [amount] (about US$ [amount]) — giving opens after registration
+**Description:** Pads and hygiene items for a full school year, brought by a trusted local woman to a public place
+near the girl.
+
+- [What is in the kit: for example reusable pads, soap and underwear] (confirm with the supplier)
+- Quality-checked products, with the TBS mark where it applies
+- Never delivered to her home; her messages never name the product
+- A receipt for every hand-over, so you can see it arrived
+- Your gift goes only to our mission; every payment we make is approved by two officers
+
+**Remove** the quantity selector. **Button** ("Assinar") → **Tell me when giving opens**
+
+Copy this page for each gift card and change the title, amount and the first two points.
+
+---
+
+## Safeguarding and privacy (`/safeguarding`, new page linked from the footer)
+
+**Title:** SAFEGUARDING AND PRIVACY
+
+**Intro**
+Every girl's safety, dignity and best interests come first in everything we do.
+
+**Zero tolerance**
+We have zero tolerance for abuse, exploitation, harassment or neglect of any girl or young woman we serve.
+
+**Our Safeguarding and Child Protection Policy**
+Our Board adopts this policy before we deliver any service directly to girls, and reviews it at least every two
+years. It binds everyone: members, Board, staff, volunteers and partners. It includes background checks for anyone
+working with children, a code of conduct, safe procedures for counselling and pregnancy testing, a confidential way
+to raise concerns, and protection for anyone who reports a concern in good faith.
+[Link to the policy once adopted]
+
+**Confidentiality**
+Information about a girl is private and used only to support her. We may share it only where the law requires it, or
+where it is needed to protect a child or another person from serious harm. Whenever it is safe, we tell her first.
+We collect, store and protect personal information, especially health information, under Tanzania's personal data
+protection law.
+
+**Health services**
+Pregnancy testing and other health services are given by qualified health workers or through licensed health
+facilities, following Tanzania's health laws and guidelines.
+
+**Raise a concern**
+If you are worried about how anyone connected to Dandelion Foundation has treated a girl or young woman, tell us:
+[safeguarding email] · [phone]. You can stay anonymous. Nobody will be punished for reporting a concern in good
+faith.
+If a child is in danger now, call **116** (Child Helpline, free, day and night) or go to the Police Gender and
+Children's Desk at the nearest police station.
+
+**This website**
+Our forms are for adults and organisations. We ask only for what we need, never for health information, and we never
+sell or share your details.
+
+---
+
+## How we talk about partnerships (for the founders, not for the website)
+
+Every partner has its own mission, goals and pressures: a target to hit, a report to write, a budget to spend well,
+a reputation to protect. We learn those first from the partner spreadsheet (mission, top plans for 2026–2030, how we
+could help), then offer one specific thing that helps them get what they want, and ask for one small thing back.
+Being new is not a weakness if we are honest about it: a small, careful partner that reports well is easy to say yes
+to.
+
+**The right way**
+
+- **Start with their goal, in their words.** "Your 2026–2030 plan aims to keep more girls in school in Tanga…"
+  Read their plan before writing; never ask them to explain what is already on their website.
+- **Offer before asking.** Lead with what we can do for them, then one small, specific ask with a number, a place
+  and a date.
+- **Be honest about our stage.** We are new, being registered, and starting in one town and one village in Tanga
+  Region. Say so plainly, then say what we can already do.
+- **Use their measures.** Schools count attendance, government counts girls kept in school, clinics count young
+  people reached, funders count cost per girl, suppliers count sales. Say which of these we can help move, and how
+  we will show it.
+- **Propose a small first step.** One school, one session, 50 kits, three months, then a short report. Small yeses
+  build trust.
+- **Show how they will know it worked.** A receipt for every hand-over, a monthly one-page report, counts by area.
+- **Name our limits.** No girl's personal data leaves us. No advertising to girls without consent. No giveaways that
+  put local sellers out of business. Partners support our work; our members and Board decide.
+- **Keep it short and warm.** Five or six sentences, one ask, signed by a named person. Follow up once after a
+  week.
+
+**The wrong way**
+
+- Telling an organisation what it wants ("We know you need…"), or showing off how much we researched them.
+- Generic questions they have already answered publicly ("What are your top initiatives?").
+- Big promises a new organisation can't keep: "24/7 support", "thousands of girls", "we will help you reach your
+  2030 targets".
+- Calling anyone a partner, or using their name or logo, before an agreement exists.
+- Asking for money in the first message to someone who doesn't know us yet.
+- Jargon and hype: "leverage", "synergy", "disrupt", "AI-powered platform".
+- Criticising other organisations, or suggesting we do their work better.
+- Offering anything about the girls we serve as a trade: their stories, photos or data.
+- Copy-paste mass emails with the wrong name, the wrong organisation or a leftover draft at the bottom.
+
+**Before and after**
+
+> *Before:* "We would love to learn more about your current work and priorities for 2026–2030."
+>
+> *After:* "Your plan to reach more young people with youth-friendly services in Tanga matches what we are starting
+> there. We support 250 female students in [school]. Could your team run one session for them in [month], with the
+> school's and parents' agreement? In return, we'll refer students who need your services, and share counts (never
+> names) so you can see the reach."
