@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.2: strategy, operations and coordination)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.3: strategy, operations and coordination; messaging guide)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -391,6 +391,63 @@ themselves would read it. The copy above already includes every fix marked "fixe
 
 **Still true after the fixes:** the biggest risk is not the wording but delivery. The first pilot must work, be
 measured honestly, and be published, including what went wrong.
+
+### 1.8 Messaging guide: what to learn from institutional foundations, and what not to copy (2026-10-05)
+
+Reviewed from published descriptions of the World Economic Forum, the Rockefeller Foundation and the Gates Foundation
+(their own websites could not be opened from the build environment).
+
+**What they do well**
+
+| Pattern | Example from their published materials | What Dandelion does |
+| --- | --- | --- |
+| One timeless mission sentence | Rockefeller: "promoting the well-being of humanity throughout the world", unchanged since 1913. WEF: "Committed to improving the state of the world" | One sentence from our constitution's vision, kept for years |
+| A plain line saying what kind of organisation they are | WEF: "the International Organization for Public-Private Cooperation". Rockefeller: "a pioneering philanthropy" | "A Tanzanian-led strategy and operations organisation for women and girls" |
+| A few dated, measurable goals | Gates: three goals for 2045. The School Meals Accelerator: 100 million more children by 2030 | Two or three goals for Tanga Region by 2030, set only when we can measure them |
+| Authority from publishing evidence | Gates' yearly Goalkeepers report; WEF's flagship reports | One recurring brief from our own data and listening, e.g. a yearly "Tanga brief" |
+| Convening, with clear roles | WEF: a platform "for meaningful connection" between leaders | "We bring together the partners each initiative needs, each with a clear role" |
+| Announcements that are concrete | Partner, amount, place and target in one line | News only when something real happens: an agreement signed, a pilot started |
+| Calls to action that invite, not ask | Explore, read, engage | Explore our approach · Read the brief · Start a conversation |
+| Governance stated plainly | WEF: "independent, impartial … highest standards of governance and integrity" | Board, two-officer approvals, audit, conflicts, Transparency page |
+| Data with a human story | Statistics paired with a named person, with consent | Adults' stories with consent; girls never identifiable |
+
+**Do**
+- Keep one mission sentence and one identity line, and repeat them everywhere.
+- Set a few dated goals, scaled to Tanga, and report against them every year, including misses.
+- Build authority by publishing: one honest brief beats ten opinion pieces.
+- Use concrete verbs and nouns: keep girls in school, train, employ, deliver, verify.
+- Make Tanzanian leadership, places and voices visible.
+- Name partners, amounts and places only when agreed and true.
+- Pair every number with its definition and source.
+- Give serious partners one clear path to engage, and explain how initiatives are funded.
+- Keep it short: one idea per block, white space, strong photographs of places and adults who consented.
+- Offer key pages in Swahili.
+
+**Don't**
+- Borrow their scale: "improving the state of the world" from an organisation that is still being registered reads
+  as hubris. Match claims to what exists.
+- Copy their names, branded terms or phrases ("Big Bets", "Goalkeepers", "public-private cooperation"), or imply any
+  association with them.
+- Slide into conference language: "ecosystem", "synergy", "leverage", "holistic", "catalytic", "transformative",
+  "stakeholder capitalism", "disrupt".
+- Describe girls as "beneficiaries", "voiceless" or "vulnerable" on public pages; show agency and choice instead. (The
+  constitution's legal terms stay in the constitution.)
+- Use saviour framing: no "rescue", "save", or images of visitors helping.
+- Cover pages in SDG logos; one line of alignment is enough.
+- Publish targets you cannot measure, or an empty Insights page.
+- Hide engagement so well that funders cannot find the way in.
+- Take political positions; the Foundation is non-partisan.
+- Lead with technology. Blockchain and apps are tools; results and people come first.
+
+**Before and after**
+
+| Before | After |
+| --- | --- |
+| "By bridging critical resource gaps, we help students thrive." | "We keep girls in school by solving what keeps them out: hunger, missing supplies, pregnancy and stigma." |
+| "Empowering vulnerable, voiceless girls." | "Working with girls and young mothers on the futures they choose." |
+| "Join us to transform lives across East Africa." | "We are starting in Tanga Region. If your work connects with ours, let's talk." |
+| "Health, Safety & 24/7 Support." | "Free help lines, day and night: 199 and 116." |
+| "A world-class platform for impact." | "A small team, working with schools, government and partners in Tanga, measuring what changes." |
 
 ---
 
