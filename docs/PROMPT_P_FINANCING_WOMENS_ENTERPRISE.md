@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.0)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.1, red-teamed)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -25,12 +25,13 @@ the full website copy. Part 2 is a reusable prompt. Part 3 lists the founders' d
 > way, and keeps girls in school so the next generation is ready to lead them, starting in Tanga, Tanzania, with
 > every shilling tracked from funder to result.**
 
-Our role is **the trusted bridge**: we research what a community needs and can sustain, prepare and fund the
+Our role is **a trusted bridge**: we research what a community needs and can sustain, prepare and fund the
 enterprise, build it with local partners, verify every result, and hand it over once it stands on its own.
 
 **Two engines, one loop.** Women's enterprises supply what our partner schools need (meals, uniforms, hygiene
 essentials). Schools keep girls learning. Girls and young mothers train and become the next workers and owners. The
-Foundation's own programmes are the first steady buyer, so each enterprise has customers from the start.
+Foundation's programmes can be one early buyer, but never the only one: each enterprise must sell to others too, or
+it is a subsidy, not a business (see §1.7, finding 3).
 
 ### 1.2 What large funders look for, and how we show it
 
@@ -63,9 +64,20 @@ Board approves it.
 | **Processing local crops** (Tanga's sisal; fruit; seaweed on the coast — to study) | Processors, buyers, exporters | Equipment, training | Processors, farmers | Prices, technical skills; a longer horizon |
 | **Childcare centres run as small businesses** | Young mothers in school or training, employers | Space, equipment, training, registration | Carers | Affordability; day-care rules |
 
-**We fund an enterprise only if:** there is local demand and a steady buyer; it can cover its running costs within
-[12–24] months; it is run by women and keeps places for young mothers; it uses local skills and materials where it
-can; it can be copied elsewhere; and it meets our safeguarding rules.
+**We fund an enterprise only if:** there is local demand and at least one steady buyer other than the Foundation; it
+has a target date, agreed per model, to cover its running costs; it is run by women aged 18 or over, with training
+places for young mothers; it has every permit its model needs (food, childcare, product standards, business
+licence); it uses local skills and materials where it can; it can be copied elsewhere; and it meets our safeguarding
+rules, including a "do no harm" check on the women's workload, safety at home and childcare.
+
+**Rules for the loop:** by hand-over, at least [half] of an enterprise's sales come from buyers other than the
+Foundation. The Foundation buys only at fair market prices, against written quotes. No Board member, officer, member
+or their relatives may own, run or be paid by a funded enterprise unless the Board approves it in their absence
+(Article 24). Assets bought with grants are transferred under a written agreement: used only for the enterprise, not
+sold for [3] years, and returned if the enterprise closes.
+
+**How we count jobs:** paid work of at least [X] hours a week, held for at least six months, earning at least
+[amount]. Part-time sellers are counted separately. We publish these definitions with every result.
 
 ### 1.4 How money can come in (and what the Foundation must not do)
 
@@ -77,6 +89,11 @@ can; it can be copied elsewhere; and it meets our safeguarding rules.
 | **Recoverable grants and programme-related investments** | US foundations can fund charitable projects that may repay | Needs the US partner organisation; repayments cannot become lending to the public without a licence |
 | **Co-investment in larger enterprises** | Impact investors invest directly in an enterprise company; the Foundation provides training and verification | The Foundation itself offers no financial returns |
 | **Development finance institutions** | Usually large tickets to companies or governments | Position as the local implementing and verification partner, not a borrower |
+
+**Also:** the Foundation does not arrange investments for others; investors deal directly with an enterprise and
+their own advisers. Trading income may be taxable in Tanzania, and an NGO that trades may need business licences:
+get Tanzanian tax and legal advice, and consider a separate trading company owned by the Foundation. In the United
+States, many states require charity registration before anyone solicits donations there.
 
 **The Foundation must not:** promise financial returns (it is a non-profit, Article 7); lend to the public without a
 Bank of Tanzania licence (the Microfinance Act, 2018, licenses non-deposit-taking lenders; partner with licensed
@@ -92,6 +109,12 @@ lenders, SACCOS and savings groups instead); or let any partner or funder contro
 - **"Invest" with returns.** Use "fund" or "partner" for the Foundation. Gifts are not investments.
 - **"Registered".** Say "being registered" until the certificate is issued.
 - **Partner names or logos** before a Board-approved agreement; **invented numbers**; **photos of identifiable girls**.
+- **"Partner schools"** before each school and the District Education Officer have agreed in writing.
+- **Present-tense claims about systems not yet live** (audits, payments, the sealed record). Say what the constitution
+  requires and what is being tested.
+- **"24/7 support".** The current site's pillar says "Health, Safety & 24/7 Support"; replace it, because the
+  constitution allows day-and-night support only as far as resources allow.
+- **"Investment" anywhere next to "gifts are not investments".** Use "funding".
 
 ---
 
@@ -108,21 +131,21 @@ Turn off the Squarespace cart (the "0" in the header). Set the site language to 
 #### Home
 
 **Headline** (replaces "Equal access and Independence for all girls and women")
-ONE INVESTMENT. LASTING WORK FOR WOMEN.
-*(Alternatives: CAPITAL THAT TAKES ROOT. · EQUAL ACCESS. LASTING INDEPENDENCE.)*
+FUNDED ONCE. RUN BY WOMEN. BUILT TO LAST.
+*(Alternatives: WORK THAT LASTS, FOR WOMEN AND GIRLS. · EQUAL ACCESS. LASTING INDEPENDENCE.)*
 
 **Subheadline** (replaces "SOMOS UMA ACADEMIA…")
-WE FINANCE AND BUILD WOMEN-RUN ENTERPRISES THAT CREATE JOBS AND PAY THEIR OWN WAY, AND WE KEEP GIRLS IN SCHOOL SO THE
-NEXT GENERATION CAN LEAD THEM. STARTING IN TANGA, TANZANIA. BUILT TO GROW ACROSS EAST AFRICA.
+WE HELP WOMEN BUILD ENTERPRISES THAT CREATE JOBS AND CAN PAY THEIR OWN WAY, AND WE KEEP GIRLS IN SCHOOL SO THE NEXT
+GENERATION CAN LEAD THEM. STARTING IN TANGA, TANZANIA.
 
 **Body** (replaces the current paragraph)
-Dandelion Foundation is a non-profit that turns one-time investments into lasting livelihoods for women and girls. We
-research what a community needs and can sustain, fund the equipment, training and first months of a women-run
-enterprise, and stay alongside it until it stands on its own: a production unit, a school kitchen, a tailoring
-workshop, a local distribution business. Each enterprise starts with a steady buyer, often our partner schools in
-Tanga City and Tanga Rural. At the same time we keep girls and young mothers in school, with supplies, meals,
-essentials and mentoring, so the next generation is ready to run what we build. Every shilling is tracked from the
-funder to the result, and every result is verified.
+Dandelion Foundation is a new non-profit that turns one-time funding into lasting livelihoods for women and girls.
+We research what a community needs and can sustain, fund the equipment, training and early running costs of a
+women-run enterprise, and support it until it can stand on its own. We look first for models with steady local
+buyers, such as school kitchens, tailoring workshops and local production of everyday essentials. Alongside this, we
+keep girls and young mothers in school with supplies, meals, essentials and mentoring, so the next generation is
+ready to lead. We are built so that every shilling can be traced from the funder to the result. Our model is
+designed to grow across East Africa, one proven step at a time.
 
 **Buttons:** How it works · Partner with us
 
@@ -134,25 +157,33 @@ Women earning. Girls learning. Each one strengthens the other.
 | Women-run enterprises, funded once | School retention and nutrition |
 | Skills, business training and mentoring | Hygiene and baby-care essentials |
 | Steady buyers for what they make | Health, safety and support |
-| Jobs for young mothers | Links to local services, and community advocacy |
+| Training for young mothers, and jobs from age 18 | Links to local services, and community advocacy |
 
-Line under the columns: **How they connect:** our enterprises supply our partner schools, the schools keep girls
-learning, and those girls become the next trained workers and owners.
+Line under the columns: **How they connect:** our enterprises can supply the schools we work with, the schools keep
+girls learning, and those girls become the next trained workers and owners. Every enterprise also sells beyond our
+own programmes, so it can stand on its own.
 
 **Section: HOW WE WORK** (add a five-step block)
 1. **Research.** We study local demand, costs and skills before any money moves.
-2. **Fund.** One investment covers equipment, training and the first months of running costs.
+2. **Fund.** One grant covers equipment, training and early running costs.
 3. **Build.** Local partners and our team set up the enterprise with the women who will run it.
 4. **Verify.** Every payment, sale and result is recorded and checked.
-5. **Hand over.** Once it pays its own way, the women run it, and we move to the next.
+5. **Hand over.** When it can pay its own way, the women run it, and we keep supporting them for [3] years.
 
 **Section: WHY PARTNERS TRUST US** (add a short list)
 - A Board with a Tanzanian majority, accountable to our members
-- Two officers approve every payment; no cash; an independent audit every year
-- Every result backed by a receipt, in a record that cannot be quietly changed
-- Research first, small pilots, then growth only with evidence
-- A Safeguarding Policy that protects every girl and woman we work with
+- Our constitution requires two officers to approve every payment, and an independent audit every year
+- No cash: payments by bank and mobile money only
+- A receipt for every payment and hand-over, kept in a tamper-evident record (built, and being tested before launch)
+- Research first, small pilots, and growth only with evidence
+- A Safeguarding Policy, adopted before any programme starts
 - We are new, and we say so: we will publish what works and what doesn't
+
+**Section: WHERE WE ARE NOW** (add; update it every quarter)
+- Being registered as an international non-governmental organisation in Tanzania; head office in Dar es Salaam
+- Working with [number] schools in [official district names], Tanga Region (only once agreed in writing)
+- Preparing our first pilot: [one enterprise model] in [ward], from [month year]
+- Our first results will be published here
 
 **Section: PARTNER WITH US** (replaces "get Involved")
 We work with foundations, development finance institutions, companies, governments and community partners who want
@@ -170,11 +201,11 @@ Technical or training partnership / Buying from our enterprises / Something else
 "Every girl and woman has the right to live in dignity, free from violence, exploitation, discrimination and abuse."
 — From the founding constitution of Dandelion Foundation
 
-**Locations** (replace the two "12834 Fitness Ln." blocks; add the third and fourth)
-- **TANGA CITY** — Partner schools and first enterprises · [ward or area] · Starting [month year]
-- **TANGA RURAL (EAST)** — Partner schools and first enterprises · [ward or village] · Starting [month year]
+**Locations** (replace the two "12834 Fitness Ln." blocks; add the third)
+- **TANGA CITY** — Schools and first enterprise · [ward] · Starting [month year]
+- **[OFFICIAL DISTRICT NAME], TANGA REGION** (replaces "Tanga Rural (East)"; use the official district and ward
+  names that officials and funders will look up) — Schools and first enterprise · [ward or village]
 - **DAR ES SALAAM** — Head office · Usalama Street, Magomeni Ward, Kinondoni District · P.O. Box 144
-- **UNITED STATES** — Liaison (in formation)
 
 **Images:** fill in every alt text (the six `alt=" "` lines). Use hands at work, machines, products, schools from
 outside, landscapes. No identifiable girls.
@@ -187,7 +218,7 @@ outside, landscapes. No identifiable girls.
 - **CONTACT** (replaces e-mail@exemplo.com · (055) 99855-5555): [email] · [phone] · Usalama Street, Magomeni Ward,
   Kinondoni District, Dar es Salaam · P.O. Box 144
 - **DANDELION FOUNDATION** (replaces KLIPSAN): A non-profit being registered as an international non-governmental
-  organisation in Tanzania. Gifts are not investments and earn no financial return.
+  organisation in Tanzania. We do not offer financial returns, and we are not yet accepting donations.
 
 #### How it works
 
@@ -200,30 +231,35 @@ who know what works, and the women who build the enterprises.
 1. **Research.** Before any money moves, we study local demand, prices, skills, materials and buyers, with local
    partners and the women themselves. We write a costed plan with a date by which the enterprise should cover its own
    running costs.
-2. **Fund.** One investment covers what the enterprise cannot pay for itself at the start: equipment, training,
+2. **Fund.** One grant covers what the enterprise cannot pay for itself at the start: equipment, training,
    licences, first materials and a few months of running costs. Each plan is approved by our Board.
 3. **Build.** Our team and local partners set up the enterprise with the women who will run it, and connect it to a
    steady buyer.
 4. **Verify.** Every payment, sale and hand-over is recorded with a receipt. Funders receive a short report each
    month or quarter, matched against bank and mobile-money statements.
-5. **Hand over.** When the enterprise pays its own way, the women run it. We stay in touch, learn from it, and use the
-   playbook to start the next one.
+5. **Hand over.** When the enterprise can pay its own way, the women run it under a written agreement that keeps the
+   equipment in use for its purpose. We keep supporting them for [3] years, learn from it, and use the playbook to
+   start the next one.
 
-**What we look for in an enterprise:** local demand and a steady buyer; running costs covered within [12–24] months;
-led by women, with places for young mothers; local skills and materials where possible; can be copied elsewhere;
-safe for everyone involved.
+**What we look for in an enterprise:** local demand and steady buyers beyond the Foundation; a realistic date to cover
+running costs; led by women aged 18 or over, with training places for young mothers; every permit in place; local
+skills and materials where possible; can be copied elsewhere; safe for everyone involved, including at home.
+
+**How we count results:** a job is paid work of at least [X] hours a week, held for at least six months, earning at
+least [amount]; part-time sellers are counted separately. We publish every definition with every number.
 
 **How every shilling is tracked:** funds arrive by bank or mobile money into the Foundation's own accounts. Each
 amount is tagged to the funder and purpose. Payments go out by mobile money or bank only, each approved by two
-officers and each tied to a receipt. A fingerprint of our records is sealed on a public blockchain every hour, so
-nobody, including us, can quietly change the history. Funders can check any receipt without seeing anyone's personal
-details.
+officers and each tied to a receipt. Our records are sealed so that any later change can be detected (this system is
+built and being tested before launch). Sealing shows that a record was not changed; receipts, reconciliation with
+bank and mobile-money statements, and an independent audit check that it was true in the first place. Funders can
+check any receipt without seeing anyone's personal details.
 
 #### Programs
 
 **Title:** PROGRAMS
 
-**Women earning** — enterprises under study for our first pilots in Tanga:
+**Women earning** — enterprises under study; we will start with one, prove it, then add the next:
 - **Community production units** that make hygiene products locally, sold to schools and organisations.
 - **School kitchens** that cook healthy school meals with food from local women farmers.
 - **Tailoring workshops** that make school uniforms and reusable products.
@@ -246,14 +282,31 @@ Each runs with training, mentoring and business support, and a steady buyer from
 
 **Title:** WHERE WE WORK
 
-We start in Tanga Region, Tanzania, with partner schools in Tanga City and Tanga Rural, and grow only where we have
+We start in Tanga Region, Tanzania, with schools in Tanga City and [official district name], and grow only where we have
 the approvals, partners and evidence to do it well. Our model is built to be copied across East Africa.
 
-- **TANGA CITY** — [ward or area] · Partner schools and first enterprises · Starting [month year]
-- **TANGA RURAL (EAST)** — [ward or village] · Partner schools and first enterprises · Starting [month year]
+- **TANGA CITY** — [ward] · Schools and first enterprise · Starting [month year]
+- **[OFFICIAL DISTRICT NAME], TANGA REGION** — [ward or village] · Schools and first enterprise · Starting [month year]
 - **DAR ES SALAAM** — Head office · Usalama Street, Magomeni Ward, Kinondoni District · P.O. Box 144
-- **UNITED STATES** — Liaison (in formation). Until our US partner organisation exists, we cannot issue US tax
-  receipts.
+
+**Friends in the United States:** some of our founders live in the United States, and we are exploring a US partner
+organisation. Until it exists, we cannot accept US tax-deductible gifts.
+
+#### About (new page; add "About" to the menu)
+
+**Title:** WHO WE ARE
+Dandelion Foundation was founded by Tanzanians and Americans, with a Board that has a Tanzanian majority and is
+accountable to our members. [One paragraph on why the founders started it, in their own words.]
+
+**Board** (names and photos only with each person's agreement): [Name], Chairperson · [Name], Secretary; Youth and
+Student Representative · [Name], Treasurer · [Name], Director · [Name], Director
+
+**Our team on the ground:** [names and roles, as people join]
+
+**How we are governed:** our constitution, Board, members' annual meeting, two-officer approval of payments, yearly
+independent audit, conflict-of-interest rules, and a Safeguarding Policy. Link to the Transparency page.
+
+Make Tanzanian leadership and local staff visible in words and photos. Avoid images of visitors "helping".
 
 #### Contact
 
@@ -275,6 +328,35 @@ What we publish, and when:
 - Results: enterprises funded, jobs created and sustained, girls supported, cost per result (each quarter)
 - What didn't work, and what we changed
 
+### 1.7 Red team (2026-10-05)
+
+Read as a funder's due-diligence team, a Tanzanian regulator, a journalist, a peer organisation and the women
+themselves would read it. The copy above already includes every fix marked "fixed".
+
+| # | Finding | Who would catch it | Fix |
+| --- | --- | --- | --- |
+| 1 | The headline said "investment" while the footer said "gifts are not investments" | Regulators, lawyers | Fixed: "Funded once. Run by women. Built to last."; "funding" throughout |
+| 2 | Present-tense claims about things that don't exist yet: audits, payments, a sealed record, enterprises we "stay alongside" | Due diligence ("show me") | Fixed: say what the constitution requires and what is being tested; new "Where we are now" section |
+| 3 | The loop was circular: donor money buys the equipment, then donor money buys the product. That is a subsidy, not a business | Sharp funders | Fixed: at least [half] of sales from other buyers by hand-over; fair-price purchases against quotes |
+| 4 | Insiders could benefit (a founder's relative running an enterprise; assets passing to members) | Auditors, Registrar | Fixed: conflict rule (Article 24); written asset-transfer agreements |
+| 5 | "Jobs for young mothers": many young mothers are under 18 | Child-protection reviewers | Fixed: training for young mothers, jobs from 18 |
+| 6 | Women's enterprise can add workload, cause conflict at home, or be captured by group leaders | Gender specialists | Fixed: a "do no harm" check per enterprise; childcare built in |
+| 7 | "Partner schools" named without written agreements or district permission | District officials | Fixed: say "schools we work with" only once agreed in writing |
+| 8 | "Tanga Rural (East)" is not an official name | Officials, funders checking | Fixed: use official district and ward names |
+| 9 | "United States liaison (in formation)" lists something that doesn't exist; soliciting US donations may need state registration | US regulators | Fixed: "Friends in the United States" note; no US fundraising until the entity and registrations exist |
+| 10 | "Nobody can change history" overclaims what the sealed record proves | Technical reviewers | Fixed: "any later change can be detected"; truth is checked by receipts, reconciliation and audit |
+| 11 | "Pay their own way within 12–24 months" is a promise many small enterprises miss | Evaluators | Fixed: a target date per model; failures published |
+| 12 | Jobs can be inflated by counting occasional sellers | Evaluators | Fixed: published job definition |
+| 13 | Six models plus girls' programmes plus technology is too much for a new team | Every funder | Fixed in copy ("we will start with one"); decide which one (Part 3) |
+| 14 | Trading income may be taxed, and may need licences; arranging investments for others may be regulated | Tax authority, securities regulators | Fixed in §1.4: tax and legal advice; consider a trading company; we don't arrange investments |
+| 15 | The current site still says "24/7 Support" | Anyone who calls at night | Fixed: replaced; help lines listed instead |
+| 16 | No "who we are" page; funders fund people first | Every funder | Fixed: new About page; Tanzanian leadership visible |
+| 17 | English only | Schools, district, the women | Open: add Swahili versions of Home, How it works and Contact |
+| 18 | Aiming at "billions" first wastes effort: large funds rarely fund a new organisation directly | Strategy | Open: start with catalytic funders (family foundations, women's funds, local companies), then bring larger funders in as co-funders once results exist |
+
+**Still true after the fixes:** the biggest risk is not the wording but delivery. The first pilot must work, be
+measured honestly, and be published, including what went wrong.
+
 ---
 
 ## Part 2 — The prompt (reusable)
@@ -295,7 +377,9 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
 > Rules: plain, confident, specific sentences; no jargon or hype. Never promise financial returns; never say we
 > operate outside Tanzania yet; never say "registered" before the certificate; never name a partner without a signed,
 > Board-approved agreement; never invent a number; never use identifiable images or stories of girls. Say that we are
-> new, and that we grow only with evidence. Align with the SDGs (1, 4, 5, 8), Tanzania's Vision 2050 and Agenda 2063
+> new, and that we grow only with evidence. Use "funding", never "investment", for money to the Foundation. Describe
+> systems that are not live yet as "required by our constitution" or "being tested". Jobs are counted only by the
+> published definition. Jobs are for women aged 18 or over. Align with the SDGs (1, 4, 5, 8), Tanzania's Vision 2050 and Agenda 2063
 > where it is true.
 
 ---
@@ -311,3 +395,8 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
 5. **Who owns each enterprise:** a women's group, a cooperative or a social enterprise company, with legal advice.
 6. **No lending in-house:** partner with licensed lenders, SACCOS and savings groups (Microfinance Act, 2018).
 7. **The Transparency page:** agree what will be published and when.
+8. **One model first:** choose the single enterprise model for the first pilot (red team finding 13).
+9. **Tax and legal advice** on trading income, business licences and a possible trading company (finding 14).
+10. **Official names:** the district and ward names, and written agreements with schools and the district (7, 8).
+11. **Swahili:** who translates and checks Home, How it works and Contact (17).
+12. **First funders:** a list of five catalytic funders to approach before larger ones (18).
