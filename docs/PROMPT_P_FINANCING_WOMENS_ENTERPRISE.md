@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.7: the direct on-the-ground partner; connect, build, prove; facts bank)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.8: investor, implementer and tracker, on the ground; facts bank)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -788,6 +788,88 @@ permits, community engagement, operations and evidence, with ethics approval, co
 | 34 | Field work brings safety and liability questions | Staff safety plan, insurance, safeguarding and incident reporting, ready before the first field contract |
 | 35 | "Direct" can sound like bypassing local organisations, and an international NGO can be challenged on how local it is | Lead with Tanzanian leadership; partner community groups fairly; never present their work as ours |
 
+### 1.13 Investor, implementer and tracker, in partnership (v1.8, 2026-10-05)
+
+Founders: *"Update it to be positioning where we are the investors and implementers and trackers [and] tech,
+partnering with local stakeholders and government and international organisations."*
+
+**Identity line (use everywhere):** Dandelion Foundation invests in, implements and tracks projects that expand
+opportunity for women and girls in Tanzania, on the ground and in partnership with communities, government and
+international organisations.
+
+**Hero** (replaces the v1.7 hero)
+WE INVEST. WE BUILD. WE TRACK EVERY RESULT.
+Tanzanian-led and on the ground, we put capital to work in projects for women and girls, run them with local
+partners, and follow every shilling from investment to impact.
+Buttons: **How we work** · **Partner with us**
+*(Alternatives: FROM INVESTMENT TO IMPACT, ON THE GROUND IN TANZANIA. · INVEST. IMPLEMENT. TRACK.)*
+
+**HOW WE DELIVER IMPACT**
+- **Invest.** We put the funds entrusted to us to work in projects that can grow and last: grants, equipment and
+  co-funding alongside partners. We stay committed until each project stands on its own.
+- **Implement.** We build and run projects on the ground with communities, local government and local organisations:
+  consent, permits, hiring and training, logistics and payments.
+- **Track.** Our own technology follows every shilling and every result, from investment to impact, with a receipt
+  for each step. *(Built; in testing before launch.)*
+Across all three: **we partner** with local stakeholders, government and international organisations.
+
+**HOW WE INVEST** (published as a short investment policy)
+- **What we invest in:** projects for women and girls in Tanzania that meet local demand, can cover their own costs,
+  create lasting jobs or keep girls learning, and can be copied elsewhere.
+- **How:** grants, equipment and asset transfers, and co-funding with partners. Equity or repayable funding only
+  where the law allows and after legal advice.
+- **How long:** we stay committed through set-up and early running, with milestones, and hand over when the project
+  stands on its own.
+- **If a project fails:** assets bought with entrusted funds return under a written agreement and go to the next
+  project; we publish what we learned.
+- **Who decides:** our Board approves every investment; anyone with a conflict of interest stays out.
+
+**HOW WE IMPLEMENT**
+Site checks and feasibility · Community engagement and consent · Liaison with local government, and permits · Local
+hiring, training and supervision · Procurement, logistics and payments · Safeguarding and data protection
+
+**HOW WE TRACK**
+Every payment and every hand-over gets a receipt. Every amount is tagged to the funder and the project. Records are
+reconciled with bank and mobile-money statements and sealed so that any later change can be detected. Partners see
+the same results on the same schedule, and anyone can check a receipt without seeing personal details.
+
+**WHO WE PARTNER WITH**
+- **Communities and local organisations:** they shape each project and share in running it, with fair roles and pay.
+- **Government:** we work within national plans and at the invitation of regional and district authorities.
+- **International organisations, foundations and investors:** they fund the pool, co-fund projects, or invest
+  directly in enterprises alongside us, with shared tracking.
+Named partners appear only once agreed in writing.
+
+**HOLDING OURSELVES TO ACCOUNT** (because we invest, implement and track)
+- Independent checks: spot checks by someone outside the implementing team, and a yearly independent audit
+- Open methods: how we measure and verify is published before each project starts
+- Partners can verify any receipt themselves
+- Results published, including what didn't work
+
+**For investors and funders** (replaces the v1.7 page intro)
+Three ways to work with us:
+1. **Fund the pool:** give to the Foundation's pooled fund for Tanga projects *(in formation; a grant fund, with no
+   financial return)*.
+2. **Co-fund a project:** fund a specific project alongside us, with shared tracking and reporting.
+3. **Invest directly:** invest in an enterprise yourself, with your own advisers, while we implement and track on
+   the ground.
+We do not give investment advice, take a share of others' investments, or offer returns on gifts.
+Button: **Start a conversation**
+
+**Status line** (under the hero, update quarterly): Being registered in Tanzania · Pooled fund in formation · First
+projects in Tanga Region from [month year]
+
+**Red-team findings for this positioning (36–41)**
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| 36 | "Investor" implies capital in hand; there is no bank account or fund yet | "The funds entrusted to us"; "pooled fund in formation"; no fund size until real |
+| 37 | Lending and equity have legal limits (Microfinance Act 2018 for lending; NGO and charity rules) | Grants, equipment and asset transfers first; equity or repayable funding only after legal advice |
+| 38 | Investing, implementing and tracking our own work is grading our own homework | Independent spot checks, published methods, partners verify receipts, yearly audit |
+| 39 | An investor must say when it exits and what happens on failure | Milestones, hand-over terms, asset return on failure, lessons published |
+| 40 | "Our own technology" is built but not live with real money | "In testing before launch" until registration, payment routing and the contract audit are done |
+| 41 | Claiming government or international partners without agreement | Named only once agreed in writing; government work at its invitation |
+
 ---
 
 ## Part 2 — The prompt (reusable)
@@ -846,3 +928,8 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
     can be visited (finding 32).
 23. **Capacity:** how many projects the field team can run at once (33).
 24. **Field safety and insurance** before the first field contract (34).
+25. **Invest · Implement · Track:** confirm the hero and the three roles.
+26. **The pooled fund:** its name, rules and who approves each investment; a grant fund with no financial return.
+27. **A short investment policy** to publish (what, how, how long, if it fails, who decides).
+28. **Who does independent spot checks** of projects we invest in and implement (finding 38).
+29. **Legal advice** on equity or repayable funding before offering either (37).
