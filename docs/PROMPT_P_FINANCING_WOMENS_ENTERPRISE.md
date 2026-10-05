@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.5: strategy, operations and coordination; WEF-style register; facts bank)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.6: connect, build, prove; WEF-style register; facts bank)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -636,6 +636,98 @@ appear only once agreed in writing.
 | SEQUIP: US$500M for secondary education, including pathways back for young mothers | World Bank, 2020 |
 | Mastercard Foundation Young Africa Works: 30 million young people in dignified work by 2030, 70% women | Mastercard Foundation |
 
+### 1.11 Connect, build, prove: matching capital and research to work on the ground (v1.6, 2026-10-05)
+
+Founders: *"We also just want to help connect investors with scalable projects or existing projects and research to
+the ground, and actually be working, building."*
+
+**The role, in three verbs.** Dandelion Foundation **connects** capital, proven projects and new research with the
+places that need them; **builds** with communities, government and local partners on the ground; and **proves**
+what works with verified results. The initiatives (Learning, Livelihoods, Wellbeing, Shared Systems) are where this
+happens.
+
+#### Who it serves, and what each gets
+
+| Who | What they need | What we do |
+| --- | --- | --- |
+| **Investors and funders** | Credible, scalable opportunities in Tanzania, and someone on the ground they trust | Map opportunities, verify them in the field, brief them honestly, and help build what they choose to back |
+| **Existing projects that work elsewhere** | A local partner to adapt and run them in a new place | Local partners, permissions, operations and evidence in Tanga |
+| **Researchers and innovators** | A real setting to pilot, with ethics and community consent | A field partner: permits, community engagement, operations, data handled lawfully |
+| **Communities and government** | Projects that fit local plans, and that stay | Projects shaped with them, aligned with district priorities, handed over well |
+
+#### How it works (the pipeline)
+1. **Scout** — find projects, models and research that could serve women and girls in Tanzania.
+2. **Assess** — check them on the ground: demand, costs, partners, permits, risks, and fit with local plans.
+3. **Match** — introduce opportunities to investors and funders whose goals they serve, with an honest brief.
+4. **Build** — work with the project, the community and local partners to set it up and run it.
+5. **Prove** — verify results and publish them, including what didn't work.
+6. **Scale** — help the next place adopt what worked.
+
+#### The rules that keep this safe (red-team findings 27–31)
+- **We connect; we don't sell investments.** We give no investment advice, do not arrange or sell investments, and
+  never hold investors' money. Investors decide with their own advisers. Introductions are free. Any fee for field
+  verification or implementation is a flat, disclosed fee for work done, never a share of money raised, and only
+  after legal advice in Tanzania and the United States (transaction-based fees can make an introducer a regulated
+  broker or adviser).
+- **We say when we are not neutral.** If we will also build or run a project, the brief says so, and its
+  verification is reviewed by someone independent of that work.
+- **No guarantees.** Every brief states the risks; our verification is evidence, not a promise of results.
+- **Conflicts declared.** Any Board member, officer or member who invests in, works for or benefits from a pipeline
+  project declares it and stays out of related decisions (Article 24).
+- **Research done with communities, not on them.** Research permits and ethics approval in Tanzania before any
+  study, informed consent, local benefit agreed upfront, results shared back with the community.
+- **Start small.** Three to five opportunities in Tanga, each tied to one of our initiatives.
+- **Confidentiality.** Projects' business information is shared only with their agreement.
+
+#### How this work is funded (without asking outright)
+- Grants for pipeline and field verification from funders who want better opportunities to back
+- Technical assistance contracts: many investment funds and development finance programmes budget for local
+  implementation and support
+- Research partnerships, where Dandelion is the local implementing partner on a funded study
+- Flat fees for verification or implementation services, once legal advice confirms the structure
+
+#### Site copy changes
+
+**Hero** (replaces the v1.5 hero)
+CONNECTING CAPITAL, IDEAS AND COMMUNITIES TO BUILD LASTING OPPORTUNITY FOR WOMEN AND GIRLS IN TANZANIA.
+Link: **More about the Foundation**
+
+**HOW WE DELIVER IMPACT** (replaces Initiatives · Convenings · Partners)
+- **Connect.** We link investors, funders, proven projects and new research with the places and people who need
+  them.
+- **Build.** We work on the ground with communities, government and local partners to set up and run what works.
+- **Prove.** We verify every result and publish what we learn, including what didn't work.
+Below: **Our initiatives** (as in v1.5) and **Convenings** (as in v1.5).
+
+**New section on Home: OPPORTUNITIES WE ARE EXPLORING** (generic until each project agrees to be named)
+- Locally made hygiene products, produced by women in Tanzania
+- Plant-fibre materials research, including Tanga's sisal
+- Local school food supply for school meals programmes
+- Clean energy for women-run small enterprises, as Tanzania expands electricity access
+
+**New page: FOR INVESTORS AND FUNDERS**
+We help investors and funders find credible opportunities in Tanzania that serve women and girls and can grow. We map
+what exists, check it on the ground, share an honest brief, and, where you choose to back a project, help build it
+and verify results. We don't give investment advice or handle investors' money; you decide with your own advisers.
+Button: **Start a conversation**
+
+**New page: FOR PROJECTS AND RESEARCHERS**
+Have a project that works elsewhere, or research ready for the field? We can help bring it to Tanga: local partners,
+permits, community engagement, operations and evidence. We work with communities, not on them: ethics approval,
+consent and local benefit come first. Button: **Bring us a project**
+
+**Footer, "Engage with us" adds:** Find an opportunity · Bring us a project
+
+**Disclaimer** (footer of the investor page and on every brief): Dandelion Foundation is a not-for-profit. We do not
+provide investment advice, arrange or sell investments, or hold investors' money. Information is shared in good faith
+and is not a guarantee of results.
+
+#### Private pipeline list (for the founders; never on the site without each organisation's written agreement)
+Candidates already researched in this project: compostable pad production with an established Tanzanian producer
+(UhuruPads, Arusha) and its technology partner's micro-factory model (Aakar Innovations); sisal-based pad research
+(the PlantPad consortium); school meals supply aligned with the national school feeding budget and the new School
+Meals Accelerator; clean energy for small enterprises aligned with Tanzania's Mission 300 energy compact.
+
 ---
 
 ## Part 2 — The prompt (reusable)
@@ -686,3 +778,7 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
 16. **The first Insights brief** and who writes it; keep the page hidden until then.
 17. **A letter of invitation** from the Tanga regional or district authorities before describing any coordination
     role there (finding 19).
+18. **Connect, build, prove:** confirm the three verbs and the new hero.
+19. **Legal advice before any fee** linked to investors or projects (Tanzania and the United States).
+20. **The first three to five opportunities** to scout in Tanga, each tied to an initiative.
+21. **Who reviews verification independently** when Dandelion also builds the project.
