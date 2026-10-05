@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.1, red-teamed)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.2: strategy, operations and coordination)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -21,9 +21,12 @@ the full website copy. Part 2 is a reusable prompt. Part 3 lists the founders' d
 
 ### 1.1 The position in one sentence
 
-> **Dandelion Foundation turns one-time investments into women-run enterprises that create jobs and pay their own
-> way, and keeps girls in school so the next generation is ready to lead them, starting in Tanga, Tanzania, with
-> every shilling tracked from funder to result.**
+> **Dandelion Foundation is a strategy and operations organisation: it designs and coordinates initiatives that help
+> women and girls in Tanzania learn, earn and lead, bringing together the communities, government, enterprises and
+> global partners who each hold part of the answer, and running the operations on the ground.**
+
+*Updated 2026-10-05 (v1.2): founders' direction — "we are the strategy and operations and coordinate everything, not
+overtly telling them to give us money." Women-run enterprises are now one initiative (Livelihoods) among four.*
 
 Our role is **a trusted bridge**: we research what a community needs and can sustain, prepare and fund the
 enterprise, build it with local partners, verify every result, and hand it over once it stands on its own.
@@ -118,167 +121,184 @@ lenders, SACCOS and savings groups instead); or let any partner or funder contro
 
 ---
 
-### 1.6 Website copy
+### 1.6 Website copy (v1.2: strategy, operations and coordination)
 
-Turn off the Squarespace cart (the "0" in the header). Set the site language to English so system text such as
-"Pular para conteúdo" (Skip to content) and "(obrigatório)" (required) translates.
+**The role.** Dandelion Foundation is a strategy and operations organisation. It designs initiatives with the people
+closest to a problem, brings together the partners each initiative needs, runs the day-to-day operations on the
+ground, and measures what changes, openly. The site does not ask for money. It shows the approach, the initiatives
+and the evidence, and invites a conversation; funding follows from partnership.
+
+**The voice.** Calm, evidence-led, specific, with short sentences and plain words. Learn from the qualities of
+institutional foundations (clarity, evidence, convening, long horizons) without copying any organisation's name,
+branding, phrases or claims of scale, and without implying any association with them.
+
+Turn off the Squarespace cart (the "0"). Set the site language to English so "Pular para conteúdo" and
+"(obrigatório)" translate.
 
 #### Header (every page)
 - Logo: **Dandelion Foundation**
-- Menu: How it works · Programs · Where we work · Contact
-- Button (replaces "Entre para nossa academia"): **Partner with us**
+- Menu (replaces How it works · Programs · Where we work · Contact): About · Our approach · Initiatives · Insights ·
+  Where we work · Contact. Hide Insights until the first brief is published.
+- Button (replaces "Entre para nossa academia"): **Work with us**
 
 #### Home
 
 **Headline** (replaces "Equal access and Independence for all girls and women")
-FUNDED ONCE. RUN BY WOMEN. BUILT TO LAST.
-*(Alternatives: WORK THAT LASTS, FOR WOMEN AND GIRLS. · EQUAL ACCESS. LASTING INDEPENDENCE.)*
+WOMEN AND GIRLS LEARNING, EARNING AND LEADING.
+*(Alternatives: OPPORTUNITY THAT LASTS, FOR WOMEN AND GIRLS. · EQUAL ACCESS. LASTING INDEPENDENCE.)*
 
 **Subheadline** (replaces "SOMOS UMA ACADEMIA…")
-WE HELP WOMEN BUILD ENTERPRISES THAT CREATE JOBS AND CAN PAY THEIR OWN WAY, AND WE KEEP GIRLS IN SCHOOL SO THE NEXT
-GENERATION CAN LEAD THEM. STARTING IN TANGA, TANZANIA.
+DANDELION FOUNDATION DESIGNS AND COORDINATES INITIATIVES THAT HELP WOMEN AND GIRLS IN TANZANIA STAY IN SCHOOL, BUILD
+SKILLS AND EARN A LIVING, TOGETHER WITH COMMUNITIES, GOVERNMENT AND PARTNERS WHO SHARE THAT GOAL.
 
 **Body** (replaces the current paragraph)
-Dandelion Foundation is a new non-profit that turns one-time funding into lasting livelihoods for women and girls.
-We research what a community needs and can sustain, fund the equipment, training and early running costs of a
-women-run enterprise, and support it until it can stand on its own. We look first for models with steady local
-buyers, such as school kitchens, tailoring workshops and local production of everyday essentials. Alongside this, we
-keep girls and young mothers in school with supplies, meals, essentials and mentoring, so the next generation is
-ready to lead. We are built so that every shilling can be traced from the funder to the result. Our model is
-designed to grow across East Africa, one proven step at a time.
+No single organisation can keep a girl in school, connect a young mother to work, and build an enterprise that
+lasts. Schools, health services, local government, employers and funders each hold part of the answer, but too often
+they work apart. Dandelion Foundation works between them. We listen to the girls, women and families we serve, design
+initiatives with them, bring together the partners each initiative needs, run the operations on the ground, and
+measure what changes, openly. We are starting in Tanga Region, Tanzania, and building each initiative so that others
+can adopt it and grow it.
 
-**Buttons:** How it works · Partner with us
+**Buttons:** Our approach · Work with us
 
-**Section: TWO ENGINES, ONE GOAL** (replaces "PILLARS")
-Women earning. Girls learning. Each one strengthens the other.
+**Section: OUR APPROACH** (replaces "PILLARS")
+We work between the people closest to a problem and the partners who can help solve it.
+1. **Understand.** We listen to girls, women, families, schools and local leaders, and study the evidence.
+2. **Design.** We shape each initiative with them, in line with Tanzania's national plans and district priorities.
+3. **Convene.** We bring together the partners each initiative needs, each with a clear role.
+4. **Operate.** We run the day-to-day work on the ground: people, logistics, payments and data.
+5. **Learn and scale.** We measure what changes, publish it, and help others adopt what works.
 
-| WOMEN EARNING (replaces column 1) | GIRLS LEARNING (replaces Sucos … Armários) |
-| --- | --- |
-| Women-run enterprises, funded once | School retention and nutrition |
-| Skills, business training and mentoring | Hygiene and baby-care essentials |
-| Steady buyers for what they make | Health, safety and support |
-| Training for young mothers, and jobs from age 18 | Links to local services, and community advocacy |
+**Section: OUR INITIATIVES** (replaces the list "School Retention & Nutrition … Armários")
+- **Learning.** Keeping girls and young mothers in school: supplies, school meals, essentials, mentoring, and a way
+  back after pregnancy. *In design · Tanga Region*
+- **Livelihoods.** Women-run enterprises that meet local demand, with training, mentoring, and paid work for women
+  aged 18 and over. *In design · first model to be chosen*
+- **Wellbeing.** Hygiene and baby-care essentials, and confidential health and safety support through qualified
+  health workers, licensed clinics and local services. *In design*
+- **Shared systems.** Tools partners can share to plan, deliver and verify: a receipt for every hand-over, payments
+  without cash, and a tamper-evident record. *Built, being tested*
 
-Line under the columns: **How they connect:** our enterprises can supply the schools we work with, the schools keep
-girls learning, and those girls become the next trained workers and owners. Every enterprise also sells beyond our
-own programmes, so it can stand on its own.
+**Section: WHAT WE BRING TO PARTNERS** (add)
+- Local knowledge and relationships, led by a Board with a Tanzanian majority
+- Strategy and design grounded in evidence and in national plans
+- Operations on the ground, from logistics to payments
+- Shared data and verification, without exposing anyone's personal details
+- Honest learning: what works, what doesn't, and why
 
-**Section: HOW WE WORK** (add a five-step block)
-1. **Research.** We study local demand, costs and skills before any money moves.
-2. **Fund.** One grant covers equipment, training and early running costs.
-3. **Build.** Local partners and our team set up the enterprise with the women who will run it.
-4. **Verify.** Every payment, sale and result is recorded and checked.
-5. **Hand over.** When it can pay its own way, the women run it, and we keep supporting them for [3] years.
-
-**Section: WHY PARTNERS TRUST US** (add a short list)
-- A Board with a Tanzanian majority, accountable to our members
-- Our constitution requires two officers to approve every payment, and an independent audit every year
-- No cash: payments by bank and mobile money only
-- A receipt for every payment and hand-over, kept in a tamper-evident record (built, and being tested before launch)
-- Research first, small pilots, and growth only with evidence
-- A Safeguarding Policy, adopted before any programme starts
-- We are new, and we say so: we will publish what works and what doesn't
-
-**Section: WHERE WE ARE NOW** (add; update it every quarter)
+**Section: WHERE WE ARE NOW** (add; update every quarter)
 - Being registered as an international non-governmental organisation in Tanzania; head office in Dar es Salaam
 - Working with [number] schools in [official district names], Tanga Region (only once agreed in writing)
-- Preparing our first pilot: [one enterprise model] in [ward], from [month year]
-- Our first results will be published here
+- Preparing our first initiatives in Tanga, starting [month year]
+- Our first insights and results will be published here
 
-**Section: PARTNER WITH US** (replaces "get Involved")
-We work with foundations, development finance institutions, companies, governments and community partners who want
-their capital to reach women and girls, and to see exactly what it achieved. Tell us what you are working towards,
-and we will tell you honestly whether we can help.
+**Section: WORK WITH US** (replaces "get Involved")
+We work with governments, multilateral organisations, foundations, companies, researchers and community
+organisations whose goals connect with ours. If you see a connection, we would welcome a conversation.
 
-Form (replaces Nome / Sobrenome / E-mail / Data):
-First name (required) · Last name (required) · Email (required) · **Organisation** (required, replaces "Data") ·
-**I represent** (drop-down): A foundation or philanthropy / A development finance institution or impact investor / A
-company / A government or multilateral agency / An NGO or community partner / A school / An individual supporter ·
-**I'm interested in** (drop-down): Funding an enterprise / Co-funding a girls' program / Pay-for-results funding /
-Technical or training partnership / Buying from our enterprises / Something else · Button: **Send**
+Form (replaces Nome / Sobrenome / E-mail / Data): First name (required) · Last name (required) · Email (required) ·
+**Organisation** (required) · **Role** (replaces "Data") · **Area of interest** (drop-down): Learning / Livelihoods /
+Wellbeing / Shared systems / Research and insights / Something else · **Message** · Button: **Start a conversation**
 
 **Quote** (replaces the Alejandro Jimenez quote)
 "Every girl and woman has the right to live in dignity, free from violence, exploitation, discrimination and abuse."
 — From the founding constitution of Dandelion Foundation
 
 **Locations** (replace the two "12834 Fitness Ln." blocks; add the third)
-- **TANGA CITY** — Schools and first enterprise · [ward] · Starting [month year]
-- **[OFFICIAL DISTRICT NAME], TANGA REGION** (replaces "Tanga Rural (East)"; use the official district and ward
-  names that officials and funders will look up) — Schools and first enterprise · [ward or village]
+- **TANGA CITY** — [ward] · First initiatives from [month year]
+- **[OFFICIAL DISTRICT NAME], TANGA REGION** — [ward or village] · First initiatives from [month year]
 - **DAR ES SALAAM** — Head office · Usalama Street, Magomeni Ward, Kinondoni District · P.O. Box 144
 
-**Images:** fill in every alt text (the six `alt=" "` lines). Use hands at work, machines, products, schools from
-outside, landscapes. No identifiable girls.
+**Images:** fill in every alt text. Use places, hands at work, classrooms from outside, meetings of adults who have
+consented. No identifiable girls.
 
 #### Footer (every page)
-- **IMPACT UPDATES** (replaces "FIQUE POR DENTRO"): A short quarterly note on enterprises funded, jobs created,
-  girls in school, and what we are learning. We never share your details. · Email address · **Sign up**
-- Links (replace Suporte · Termos · Privacidade · Perguntas frequentes): How it works · Transparency · Safeguarding ·
-  Privacy · FAQs
-- **CONTACT** (replaces e-mail@exemplo.com · (055) 99855-5555): [email] · [phone] · Usalama Street, Magomeni Ward,
-  Kinondoni District, Dar es Salaam · P.O. Box 144
+- **UPDATES** (replaces "FIQUE POR DENTRO"): Insights from our work in Tanzania, a few times a year. We never share
+  your details. · Email address · **Sign up**
+- Links: About · Our approach · Initiatives · Transparency · Safeguarding · Privacy
+- **CONTACT**: [email] · [phone] · Usalama Street, Magomeni Ward, Kinondoni District, Dar es Salaam · P.O. Box 144
 - **DANDELION FOUNDATION** (replaces KLIPSAN): A non-profit being registered as an international non-governmental
-  organisation in Tanzania. We do not offer financial returns, and we are not yet accepting donations.
+  organisation in Tanzania.
 
-#### How it works
+#### About
 
-**Title:** HOW IT WORKS
+**Title:** ABOUT US
 
-**Intro:** We are the bridge between capital and community: between funders who want lasting results, local partners
-who know what works, and the women who build the enterprises.
+**Who we are.** Dandelion Foundation is a strategy and operations organisation for women and girls in Tanzania. We
+design initiatives, coordinate the partners who deliver them, and run the operations on the ground. We were founded by
+Tanzanians and Americans, with a Board that has a Tanzanian majority and is accountable to our members. We are
+non-profit, non-partisan and non-religious.
 
-**The five steps** (as on Home, one paragraph each):
-1. **Research.** Before any money moves, we study local demand, prices, skills, materials and buyers, with local
-   partners and the women themselves. We write a costed plan with a date by which the enterprise should cover its own
-   running costs.
-2. **Fund.** One grant covers what the enterprise cannot pay for itself at the start: equipment, training,
-   licences, first materials and a few months of running costs. Each plan is approved by our Board.
-3. **Build.** Our team and local partners set up the enterprise with the women who will run it, and connect it to a
-   steady buyer.
-4. **Verify.** Every payment, sale and hand-over is recorded with a receipt. Funders receive a short report each
-   month or quarter, matched against bank and mobile-money statements.
-5. **Hand over.** When the enterprise can pay its own way, the women run it under a written agreement that keeps the
-   equipment in use for its purpose. We keep supporting them for [3] years, learn from it, and use the playbook to
-   start the next one.
+**Our vision.** A Tanzania where every girl and young woman, including pregnant students and young mothers, lives in
+dignity, completes her education and has the skills and economic opportunity to thrive.
 
-**What we look for in an enterprise:** local demand and steady buyers beyond the Foundation; a realistic date to cover
-running costs; led by women aged 18 or over, with training places for young mothers; every permit in place; local
-skills and materials where possible; can be copied elsewhere; safe for everyone involved, including at home.
+**What we are accountable for.** Our own operations, our data and reporting, the safety of everyone in our
+programmes, and telling partners the truth about results. Each partner remains accountable for its own part, as
+agreed in writing.
 
-**How we count results:** a job is paid work of at least [X] hours a week, held for at least six months, earning at
-least [amount]; part-time sellers are counted separately. We publish every definition with every number.
+**Board** (names and photos only with each person's agreement): [Name], Chairperson · [Name], Secretary; Youth and
+Student Representative · [Name], Treasurer · [Name], Director · [Name], Director
 
-**How every shilling is tracked:** funds arrive by bank or mobile money into the Foundation's own accounts. Each
-amount is tagged to the funder and purpose. Payments go out by mobile money or bank only, each approved by two
-officers and each tied to a receipt. Our records are sealed so that any later change can be detected (this system is
-built and being tested before launch). Sealing shows that a record was not changed; receipts, reconciliation with
-bank and mobile-money statements, and an independent audit check that it was true in the first place. Funders can
-check any receipt without seeing anyone's personal details.
+**How we are governed.** Our members meet each year to elect officers and approve plans and audited accounts. Our
+constitution requires two officers to approve every payment, an independent audit every year, and declared conflicts
+of interest. No partner or funder controls the Foundation.
 
-#### Programs
+**What guides us.** Equality · Inclusion · Compassion · Confidentiality · Accountability · Integrity · Respect for
+human rights · Community participation
 
-**Title:** PROGRAMS
+#### Our approach
 
-**Women earning** — enterprises under study; we will start with one, prove it, then add the next:
-- **Community production units** that make hygiene products locally, sold to schools and organisations.
-- **School kitchens** that cook healthy school meals with food from local women farmers.
-- **Tailoring workshops** that make school uniforms and reusable products.
-- **Local distribution businesses** that bring essentials and clean-energy products to communities.
-- **Processing of local crops**, such as Tanga's sisal, fruit and coastal produce.
-- **Childcare centres** that let young mothers study and work, and employ local women.
+**Title:** OUR APPROACH
+The five steps from Home, one paragraph each, then:
 
-Each runs with training, mentoring and business support, and a steady buyer from the start.
+**Working with government.** We work within Tanzania's national plans and at the invitation of regional and district
+authorities. We support their coordination; we never replace it. We share what we learn by area, never about any one
+person.
 
-**Girls learning** — keeping girls and young mothers in school:
-- **School retention and nutrition:** supplies, school lunch, and a contact teacher who notices when a girl starts
-  missing class.
-- **A way back to school** for young mothers, with baby-care so they can attend.
-- **Hygiene and baby-care essentials**, delivered privately and with a receipt.
-- **Health, safety and support:** confidential help through qualified health workers and licensed clinics. Free help
-  lines, day and night: 199 (health) and 116 (child helpline).
-- **Local resource connections and advocacy** with families, schools, communities and government.
+**How initiatives are funded.** Each initiative is designed and funded together with the partners who share its
+goals, under written agreements approved by our Board. Every partner sees the same results on the same schedule.
+Funding to the Foundation earns no financial return, and no partner controls the Foundation.
 
-#### Where we work
+**How we keep people safe.** A Safeguarding and Child Protection Policy, adopted before any initiative starts;
+background checks; a code of conduct; a confidential way to raise concerns; health services only through qualified
+health workers or licensed facilities.
+
+**How we measure.** Each initiative publishes its measures and definitions before it starts, then reports against
+them, including what didn't work.
+
+#### Initiatives
+
+**Title:** INITIATIVES
+For each initiative: the goal, why it matters, what we do, the partners it needs (by role, never by name until agreed),
+its status, and how we will measure it.
+
+- **Learning.** *Goal:* girls and young mothers stay in school and complete it. *Why:* SDG 4; Tanzania's education
+  plan and its return-to-school guidelines. *What we do:* supplies, school meals, essentials, mentoring, a contact
+  teacher in each school, support for young mothers returning. *Partners needed:* schools, district education
+  office, families, mentors, suppliers. *Status:* in design. *Measures:* attendance, returns to school, completion.
+- **Livelihoods.** *Goal:* women build enterprises and jobs that last. *Why:* SDGs 5 and 8; Vision 2050. *What we
+  do:* research local demand, set up one enterprise model at a time with the women who will run it, connect it to
+  buyers beyond the Foundation, train and mentor. *Partners needed:* training providers, employers, buyers, licensed
+  lenders and savings groups. *Status:* in design; first model to be chosen. *Measures:* jobs (published definition),
+  earnings, enterprises still running after two years.
+- **Wellbeing.** *Goal:* girls and women can reach essentials, health care and protection safely and privately.
+  *Why:* SDGs 3, 5 and 6.2. *What we do:* hygiene and baby-care essentials, confidential referrals, help lines.
+  *Partners needed:* clinics, social welfare, police gender and children's desks, legal aid. *Status:* in design.
+  *Measures:* referrals completed (counts only).
+- **Shared systems.** *Goal:* partners can plan, deliver and verify together. *Why:* SDG 17. *What we do:* a receipt
+  for every hand-over, payments without cash, a tamper-evident record, monthly reports partners can rely on.
+  *Status:* built, being tested. *Measures:* partners using it; receipts verified.
+
+#### Insights (publish only when the first brief is ready)
+
+**Title:** INSIGHTS
+Planned briefs, each published only when it is real:
+- What keeps girls in school in Tanga: what we heard (after the first listening sessions)
+- The cost of staying in school: a household view
+- Women's enterprise in Tanga: demand, buyers and barriers (from the first market study)
+- Proof at the last mile: verifying delivery without exposing personal data
+
+#### Where we work (v1.1 text, still current)
 
 **Title:** WHERE WE WORK
 
@@ -313,7 +333,7 @@ Make Tanzanian leadership and local staff visible in words and photos. Avoid ima
 **Title:** CONTACT
 For partnerships, funding and research collaborations: [email] · [phone] · WhatsApp [number]
 Head office: Usalama Street, Magomeni Ward, Kinondoni District, Dar es Salaam · P.O. Box 144
-Form as on Home. Note under the form: Please don't share anything about a girl's health here. If someone needs help
+Form as on Home, with the button **Start a conversation**. Note under the form: Please don't share anything about a girl's health here. If someone needs help
 now, call 199 or 116 (free, day and night).
 
 #### Transparency (new page, linked from the footer)
@@ -327,6 +347,7 @@ What we publish, and when:
 - Independent audited accounts (each year, from our first full financial year)
 - Results: enterprises funded, jobs created and sustained, girls supported, cost per result (each quarter)
 - What didn't work, and what we changed
+- How initiatives are funded, where funding came from, and what it achieved (each year)
 
 ### 1.7 Red team (2026-10-05)
 
@@ -354,6 +375,20 @@ themselves would read it. The copy above already includes every fix marked "fixe
 | 17 | English only | Schools, district, the women | Open: add Swahili versions of Home, How it works and Contact |
 | 18 | Aiming at "billions" first wastes effort: large funds rarely fund a new organisation directly | Strategy | Open: start with catalytic funders (family foundations, women's funds, local companies), then bring larger funders in as co-funders once results exist |
 
+
+**Added for v1.2 (the coordinating role):**
+
+| # | Finding | Who would catch it | Fix |
+| --- | --- | --- | --- |
+| 19 | A new organisation claiming to "coordinate" can offend district officials, who see coordination as their job | Government | Fixed: "we support their coordination; we never replace it"; work at the district's invitation |
+| 20 | Coordination is hard to fund and easy to doubt without delivery | Funders | Fixed: "Operate" is a core step; one concrete initiative must show results first |
+| 21 | An institutional tone without results reads as inflated | Everyone | Fixed: specifics, "Where we are now", statuses ("in design", "being tested") |
+| 22 | Sounding like large foundations can slide into implying an association with them | Lawyers, those foundations | Fixed: learn from their qualities only; never their names, branding or phrases |
+| 23 | Jargon creeps in ("ecosystem", "synergy", "holistic", "leverage") | Readers | Fixed: plain words; the reusable prompt bans them |
+| 24 | An empty Insights page is worse than none | Everyone | Fixed: hidden until the first brief is real |
+| 25 | "We coordinate everything" blurs who is accountable for what | Funders, auditors | Fixed: "What we are accountable for" on the About page; partners' roles agreed in writing |
+| 26 | With no ask anywhere, serious funders can't see how to engage | Funders | Fixed: "How initiatives are funded" on Our approach; "Start a conversation" |
+
 **Still true after the fixes:** the biggest risk is not the wording but delivery. The first pilot must work, be
 measured honestly, and be published, including what went wrong.
 
@@ -363,12 +398,13 @@ measured honestly, and be published, including what went wrong.
 
 Use this to produce an investor one-pager, a deck, a grant summary or a new website section in the same voice.
 
-> You are writing for Dandelion Foundation, a non-profit being registered in Tanzania (head office Dar es Salaam; a
-> United States liaison in formation). It turns one-time investments into women-run enterprises that create jobs and
-> pay their own way, and keeps girls and young mothers in school, starting with partner schools in Tanga City and
-> Tanga Rural. Its role is the trusted bridge between funders, local partners and the women who build the
-> enterprises: research, fund, build, verify, hand over. Every shilling is tracked from funder to result, with a
-> receipt for every payment and a tamper-evident record.
+> You are writing for Dandelion Foundation, a non-profit being registered in Tanzania (head office Dar es Salaam).
+> It is a strategy and operations organisation: it designs initiatives with the people closest to a problem, brings
+> together the partners each initiative needs, runs the operations on the ground, and measures what changes, openly.
+> Its initiatives are Learning, Livelihoods, Wellbeing and Shared systems, starting in Tanga Region. The voice is
+> calm, evidence-led and specific; it invites a conversation and never asks for money outright. Learn from the
+> qualities of institutional foundations without copying any organisation's name, branding or phrases, or implying
+> any association. Avoid "ecosystem", "synergy", "holistic" and "leverage".
 >
 > Audience: [foundation / development finance institution / impact investor / company / government]. Their goals:
 > [paste from the partner sheet]. Lead with their goal in their words, then what we can do for it, then one small,
@@ -400,3 +436,9 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
 10. **Official names:** the district and ward names, and written agreements with schools and the district (7, 8).
 11. **Swahili:** who translates and checks Home, How it works and Contact (17).
 12. **First funders:** a list of five catalytic funders to approach before larger ones (18).
+13. **Headline for v1.2:** "Women and girls learning, earning and leading." or an alternative.
+14. **Initiative names and order:** Learning, Livelihoods, Wellbeing, Shared systems.
+15. **What Dandelion is accountable for** (About page), in one sentence the Board agrees.
+16. **The first Insights brief** and who writes it; keep the page hidden until then.
+17. **A letter of invitation** from the Tanga regional or district authorities before describing any coordination
+    role there (finding 19).
