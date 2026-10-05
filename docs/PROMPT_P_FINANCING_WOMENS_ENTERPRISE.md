@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.4: strategy, operations and coordination; messaging guide; homepage outline)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.5: strategy, operations and coordination; WEF-style register; facts bank)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -519,6 +519,122 @@ international NGO in Tanzania" · "[Date] Agreement with [school or district]"
 conversation · Become a member · Newsletter · Contact) · Resources (Safeguarding · Privacy · Financial documents, once
 audited) · Offices (Dar es Salaam, head office · Tanga, field office once open) · Mission: "Every girl and young woman
 in Tanzania can learn, earn and live in dignity." · EN · SW
+
+### 1.10 Site copy in a WEF-style register, with facts from public sources (v1.5, 2026-10-05)
+
+Founders: use wording and messaging similar to the World Economic Forum, plus relevant facts from the other sources.
+The register follows WEF's homepage (a role sentence as the hero; "how we deliver impact" in three nouns; initiatives
+that turn commitments into action; insights and explainers; a clear "engage with us" menu; language editions). The
+words are our own: no WEF names, taglines or near-verbatim sentences, and no implied association. Explainers use
+public data now; our own results appear only once real. This section supersedes the wording in §1.9.
+
+#### Home
+
+**Hero** (role sentence)
+CONNECTING COMMUNITIES, GOVERNMENT AND PARTNERS TO TURN SHARED GOALS FOR WOMEN AND GIRLS INTO LASTING RESULTS.
+Link: **More about the Foundation**
+Status line under the hero: Being registered in Tanzania · First initiatives in Tanga Region from [month year]
+
+**HOW WE DELIVER IMPACT** (three tabs)
+**Initiatives** · **Convenings** · **Partners**
+
+**ABOUT THE INITIATIVES**
+We advance opportunity for women and girls in Tanzania through three initiatives and one shared platform. Our
+initiative teams turn shared commitments into coordinated action on the ground, through clear partnerships, local
+operations and evidence. Link: **More about our initiatives**
+- **Girls' Learning Initiative**: keeping girls and young mothers in school, and helping them return
+- **Women's Livelihoods Initiative**: skills, enterprise and paid work for young women
+- **Wellbeing and Safety Initiative**: essentials, health and protection, delivered with dignity
+- **Shared Systems Platform**: tools partners share to plan, deliver and verify every result
+
+**INSIGHTS** — Field notes, analysis and explainers from our work in Tanzania.
+Publish each explainer (600–800 words, sources linked) before listing it:
+- **EDUCATION** · Since 2021, young mothers in Tanzania can return to school. By March 2024 about 22,800 had, three in
+  four through alternative education. Why, and what helps them stay?
+- **LIVELIHOODS** · Nearly one in four young women in Tanzania is not in employment, education or training (23.4% of
+  women aged 15–24, against 13.7% of men). What would change that?
+- **ENERGY AND ENTERPRISE** · Tanzania plans to connect 8.3 million more households to electricity by 2030 and reach
+  75% access. What could reliable power mean for women-run enterprises?
+- **HEALTH AND DIGNITY** · About 83% of schools in Tanzania lack facilities for managing periods, and about 18% of
+  adolescent girls don't have enough pads. Why it matters for learning.
+- **GENDER EQUALITY** · Tanzania ranks 55th of 148 countries on the 2025 global gender gap index. Where is progress
+  fastest, and where slowest?
+- **SCHOOL MEALS** · Tanzania's school feeding budget rose from US$54 million to US$77.8 million in a year. Can it
+  reach the girls who need it most?
+- **TRANSPARENT FINANCE** · With about 87 million mobile-money accounts, Tanzania can trace every shilling of a girls'
+  programme. Here is how.
+
+**DISCOVER** — Find stories through our key topics:
+Girls' education · Young mothers · Women's enterprise · Energy access · Health and safety · Transparent finance
+
+**OUR IMPACT** — How we measure: **reached** (received support, with a receipt) · **changed** (a measurable
+outcome, such as staying in school or starting paid work) · **sustained** (still true a year later). Our first
+results will be published after [term, year], including what didn't work.
+
+**FIELD NOTES NEWSLETTER** — Monthly curated insights on women, girls and opportunity in Tanzania.
+**Subscribe today**
+
+**IN THE NEWS** — (add only when there is coverage)
+
+**SHARED SYSTEMS** — Explore the tools that let partners plan, deliver and verify together. **Discover more**
+
+#### Footer
+- **About us:** Who we are · Our strategy · How we work · Our leadership and governance · Our impact
+- **More from the Foundation:** Initiatives · Convenings · Partners · Insights · News releases · Picture gallery
+- **Engage with us:** Partner with us · Become a member · Sign up for news releases · Subscribe to our newsletter ·
+  Contact us
+- **Quick links:** Safeguarding · Transparency · Careers and volunteering
+- **Language editions:** EN ▪ SW
+- Dandelion Foundation · Usalama Street, Magomeni Ward, Kinondoni District, Dar es Salaam · P.O. Box 144 · A
+  not-for-profit being registered as an international non-governmental organisation in Tanzania
+
+#### Who we are
+Dandelion Foundation is a Tanzanian-led, not-for-profit platform for cooperation between communities, government,
+enterprises and international partners, in support of women and girls. Our work rests on one belief: when girls
+learn and women earn, families and communities prosper. We bring together the people closest to a challenge and the
+partners able to help, design initiatives with them, run the operations on the ground, and publish what we learn. We
+are independent, non-partisan and non-religious, and hold ourselves to clear standards of governance and integrity:
+a Board with a Tanzanian majority, two officers approving every payment, an independent audit every year, and no
+partner or funder in control.
+
+#### Our strategy (2026–2030)
+Three initiatives, one region first, results published. We start in Tanga Region, prove what works, and grow only
+with evidence and the approvals each place requires. By [2030], with partners: [number] girls stay in school or
+return to it; [number] young women in lasting paid work; [number] women-run enterprises running on their own.
+Our work contributes to SDGs 4, 5 and 8 and to Tanzania's Development Vision 2050.
+
+#### How we work
+1. **Understand** — listen to girls, women, families and schools; study the evidence.
+2. **Design** — shape initiatives with them, aligned with national plans and district priorities.
+3. **Convene** — bring partners together around clear roles, at the invitation of local authorities.
+4. **Operate** — run the work on the ground: people, logistics, payments and data.
+5. **Learn and scale** — measure, publish, and help others adopt what works.
+
+#### Convenings
+- **Tanga partner roundtable** (quarterly, from [month year], once the district agrees): schools, district offices,
+  health and social services, employers and funders review progress against shared goals.
+- **Annual learning meeting** (from [year]): results, lessons and next year's priorities, published afterwards.
+
+#### Partners — who we work with
+Government and local authorities · Schools and colleges · Health, social welfare and legal services · Employers and
+enterprises · Foundations and development partners · Researchers · Community and women's groups. Named partners
+appear only once agreed in writing.
+
+#### Facts bank (verify the year before each use)
+
+| Fact | Source |
+| --- | --- |
+| Young women aged 15–24 not in employment, education or training: 23.4% (men 13.7%); ages 15–35: 29.2% (men 21.8%) | NBS, Integrated Labour Force Survey 2020/21 (check the 2024 survey for newer figures) |
+| Girls who returned to school since 2021: about 22,800 by March 2024 (5,100 regular schools; 17,700 alternative education) | The Guardian (Tanzania), 2025; HRW, 2025 |
+| 88% of 70 young mothers studied faced stigma on returning to school | Study in Int. Journal of Adolescence and Youth, 2026 |
+| About 83% of schools lack facilities for managing periods; about 18% of adolescent girls lack enough pads | UNICEF Tanzania 2021; NIMR 2024 |
+| School feeding budget: US$54M (2023/24) → US$77.8M (2024/25), with a pledge to grow yearly | Global Child Nutrition Foundation; School Meals Coalition |
+| School Meals Accelerator: 100 million more children by 2030 (BMZ, Novo Nordisk Foundation, Rockefeller Foundation, WFP) | WFP, January 2026 |
+| Tanzania's energy compact: 8.3 million more households by 2030; access from 46% to 75% | Mission 300 summit, Dar es Salaam, January 2025 |
+| Tanzania ranks 55th of 148 on the 2025 Global Gender Gap Index; global parity 123 years away | World Economic Forum, 2025 |
+| About 87 million mobile-money subscriptions (mid-2026) | TCRA, via TanzaniaInvest |
+| SEQUIP: US$500M for secondary education, including pathways back for young mothers | World Bank, 2020 |
+| Mastercard Foundation Young Africa Works: 30 million young people in dignified work by 2030, 70% women | Mastercard Foundation |
 
 ---
 
