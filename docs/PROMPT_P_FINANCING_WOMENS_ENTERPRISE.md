@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.3: strategy, operations and coordination; messaging guide)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.4: strategy, operations and coordination; messaging guide; homepage outline)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -395,7 +395,7 @@ measured honestly, and be published, including what went wrong.
 ### 1.8 Messaging guide: what to learn from institutional foundations, and what not to copy (2026-10-05)
 
 Reviewed from published descriptions of the World Economic Forum, the Rockefeller Foundation and the Gates Foundation
-(their own websites could not be opened from the build environment).
+(their websites could not be opened from the build environment; the founders then pasted both homepages, see §1.9).
 
 **What they do well**
 
@@ -448,6 +448,77 @@ Reviewed from published descriptions of the World Economic Forum, the Rockefelle
 | "Join us to transform lives across East Africa." | "We are starting in Tanga Region. If your work connects with ours, let's talk." |
 | "Health, Safety & 24/7 Support." | "Free help lines, day and night: 199 and 116." |
 | "A world-class platform for impact." | "A small team, working with schools, government and partners in Tanga, measuring what changes." |
+
+### 1.9 What the Rockefeller Foundation and WEF homepages actually do, and a Dandelion homepage built on it
+
+The founders pasted both homepages (2026-10-05). What they show, section by section:
+
+| Their homepage does this | Rockefeller Foundation | World Economic Forum | Dandelion's version (own words, honest scale) |
+| --- | --- | --- | --- |
+| A hero of a few words: promise or role | "Big Bets, Real Results" | "Connecting leaders to make sense of global challenges and move the world forward together" | "Girls in school. Women in work. Results you can check." |
+| Constancy plus change | "Since 1913, our commitment … hasn't wavered — what's changed is how" | — | "What never changes: girls and women first. What we keep improving: how, guided by evidence." |
+| Named methods | Frontier Technology, Community-Driven Models, Decisive Data, Innovative Finance | Centres, Meetings, Stakeholders | Listen first · Run it locally · Prove every step · Fund it together |
+| Each priority: value line → size of the problem → dated target → "with partners" | Energy: 730 million without power → 1 billion people, 300 million in Africa, by 2030 | 11 Centres "convert ambition into focused action" | Three initiatives, each with a sourced Tanzania figure and a dated Tanga target |
+| Reach kept separate from outcomes | 731 million "reached" vs 3 million with "a clear, measurable outcome" | "Our Impact" page | Supported vs measurable outcome vs women earning, each defined |
+| Money discipline shown | "$30 million in catalytic capital unlocked more than $1.05 billion" | Membership and partnership as the model | Only once true: "every shilling of core funding brought in [X] from partners" |
+| Stories behind the data | Short videos and features | Spotlight analysis | Adults' stories with consent; girls never identifiable |
+| Dated, concrete news | Amount, partners, place | Press releases, "Forum in the news" | Only real events: constitution, registration, agreements |
+| A clear way in | Contact, newsletter, grants, careers | Partner with us · Become a member | Start a conversation · Become a member · Newsletter |
+| Transparency in the footer | Our Grants, Financial Documents | Leadership and governance | Transparency, Safeguarding, Financial documents (once audited) |
+| Offices and languages | Six offices, including Nairobi | EN, ES, 中文, 日本語 | Dar es Salaam head office; Tanga field office (once open); EN · SW |
+
+**Don't copy:** "Big Bets", "Real Results", "Centres", "catalytic capital", "Frontier Technology", or their sentence
+patterns word for word. Don't show "reached" numbers without outcome numbers, or totals "since our founding". Don't
+follow WEF into world-news commentary (off-mission, and political). Don't lead with AI. Don't repeat return-on-investment
+figures second-hand: cite the original study or leave them out. Don't say "beneficiary communities".
+
+#### Homepage outline (paste in this order)
+
+**Hero:** GIRLS IN SCHOOL. WOMEN IN WORK. RESULTS YOU CAN CHECK.
+Dandelion Foundation designs and coordinates initiatives with communities, government and partners in Tanzania,
+starting in Tanga Region. Buttons: **See our approach** · **Start a conversation**
+
+**WHO WE ARE**
+We are a new, Tanzanian-led organisation, built to be checked. What never changes: girls and women first. What we
+keep improving: how, guided by evidence. We work in four ways:
+- **Listen first.** Girls, women, families and schools shape what we do.
+- **Run it locally.** Our team and local partners do the work on the ground.
+- **Prove every step.** A receipt for every hand-over and payment, and results we publish.
+- **Fund it together.** Each initiative is shared by the partners whose goals it serves.
+Button: **Where we are now**
+
+**OUR INITIATIVES** (numbered; each: value line, the size of the problem, a dated target, "with partners")
+1. **Learning.** A girl who finishes school carries it for life. Since 2021, girls who become mothers may return to
+   school in Tanzania; by March 2024 about 22,800 had, most through alternative education rather than regular
+   schools. *With partners, by [2030]: [number] girls in Tanga stay in school or return to it, and [number] complete
+   the school year.* Button: **Read more**
+2. **Livelihoods.** Work that pays is the surest path to independence. [Sourced figure on young women not in
+   employment, education or training in Tanzania, from NBS or ILO data.] *With partners, by [2030]: [number] women in
+   Tanga in paid work that lasts, and [number] women-run enterprises running on their own.* Button: **Read more**
+3. **Wellbeing.** No girl should miss class, or care, for lack of the basics. About 18% of adolescent girls in
+   Tanzania do not have enough menstrual pads, and about 83% of schools lack facilities for managing periods.
+   *With partners, by [2030]: [number] girls with essentials every month, and every referral followed through.*
+   Button: **Read more**
+
+**OUR RESULTS** (three numbers, each with its definition; shown only once real)
+- **[number] girls supported** in [year]: received at least one service, with a receipt
+- **[number] girls with a measurable outcome**: stayed in school all term, or returned to school
+- **[number] women earning**: paid work of at least [X] hours a week, held for six months
+Until then: "Our first results will be published after [term, year]: what we reached, what changed, and what
+didn't."
+
+**STORIES BEHIND THE DATA** (once there are stories to tell, with consent): a head teacher, a woman running an
+enterprise, a district officer.
+
+**NEWS** (dated and real only): "[Date] Dandelion Foundation adopts its constitution" · "[Date] Registration as an
+international NGO in Tanzania" · "[Date] Agreement with [school or district]"
+
+**STAY CONNECTED:** A short update each quarter: the initiatives, the people and the results. **Subscribe**
+
+**Footer:** About (Who we are · Our approach · Leadership and governance · Transparency) · Engage (Start a
+conversation · Become a member · Newsletter · Contact) · Resources (Safeguarding · Privacy · Financial documents, once
+audited) · Offices (Dar es Salaam, head office · Tanga, field office once open) · Mission: "Every girl and young woman
+in Tanzania can learn, earn and live in dignity." · EN · SW
 
 ---
 
