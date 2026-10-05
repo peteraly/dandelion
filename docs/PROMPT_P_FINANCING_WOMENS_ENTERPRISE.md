@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.6: connect, build, prove; WEF-style register; facts bank)
+# Dandelion Foundation — Prompt P: financing women's enterprises that last, and a website that large funders trust (v1.7: the direct on-the-ground partner; connect, build, prove; facts bank)
 
 Founder direction (2026-10-05), in the founders' words:
 
@@ -728,6 +728,66 @@ Candidates already researched in this project: compostable pad production with a
 (the PlantPad consortium); school meals supply aligned with the national school feeding budget and the new School
 Meals Accelerator; clean energy for small enterprises aligned with Tanzania's Mission 300 energy compact.
 
+### 1.12 The direct on-the-ground partner (v1.7, 2026-10-05)
+
+Founders: *"We want to communicate that we are the direct on-the-ground partner."*
+
+**Identity line (use everywhere):** Dandelion Foundation is a Tanzanian-led, on-the-ground partner for investors,
+funders, projects and researchers working to expand opportunity for women and girls in Tanzania.
+
+**Hero** (replaces the v1.6 hero)
+YOUR PARTNER ON THE GROUND IN TANZANIA, FOR WOMEN AND GIRLS.
+We connect investors, funders, proven projects and research with communities in Tanga Region, and do the work
+alongside them, from the first visit to verified results.
+Buttons: **Work with us** · **What "on the ground" means**
+*(Alternative hero: ON THE GROUND IN TANZANIA. ACCOUNTABLE FOR RESULTS.)*
+
+**HOW WE DELIVER IMPACT**
+- **Connect.** We bring investors, funders, proven projects and researchers to the right places and people in
+  Tanzania.
+- **Build.** We do the work on the ground ourselves: community consent, permits, hiring and training, logistics,
+  payments and supervision.
+- **Prove.** We verify every result where it happens, and report it openly.
+
+**WHAT "ON THE GROUND" MEANS** (the proof; keep every line true)
+- **We are where the work is.** Head office in Dar es Salaam; field team in Tanga Region [from month year].
+- **Tanzanian-led.** A Board with a Tanzanian majority; a Swahili-speaking team; working relationships with schools,
+  ward and district offices (named only once agreed).
+- **We do the work, not just the paperwork.** Site visits, community meetings, local hiring and training, logistics,
+  mobile-money payments and data collection, done by our team and local partners.
+- **One accountable partner.** One point of contact, one plan, one report, with every result verified.
+- **We work with local organisations, not around them.** Community groups and local organisations are partners with
+  fair roles and fair pay.
+- **Close enough to check.** We can visit any site we work in within [X] days *(only once true)*.
+
+**WHAT WE DO ON THE GROUND FOR PARTNERS**
+Site scouting and feasibility checks · Community engagement and consent · Liaison with local government, and
+permits · Local hiring, training and supervision · Procurement, logistics and payments · Monitoring, verification
+and reporting · Safeguarding and data protection
+
+**OUR TEAM ON THE GROUND** (a new block on Home and About; real people only)
+[Name], [role], [town] · [Name], [role], [town] · Until the field team is in place: "Our Tanga field team starts
+[month year]."
+
+**For investors and funders** (replaces the v1.6 page intro)
+Your partner on the ground in Tanzania. We find and check opportunities in person, share an honest brief, and, where
+you choose to back a project, build it with the community and verify the results. One accountable partner, from the
+first visit to the final report. We don't give investment advice or handle investors' money; you decide with your own
+advisers.
+
+**For projects and researchers** (replaces the v1.6 page intro)
+Bring your project or research to the ground with a partner who is already there. We arrange local partners,
+permits, community engagement, operations and evidence, with ethics approval, consent and local benefit first.
+
+**Red-team findings for this claim (32–35)**
+
+| # | Finding | Fix |
+| --- | --- | --- |
+| 32 | "On the ground" is the first thing funders test: who, where, since when | A named team block; a dated field-team start; never claim presence before it exists |
+| 33 | A direct partner carries direct accountability; capacity is finite | Name the geography (Tanga Region) and how many projects we run at once |
+| 34 | Field work brings safety and liability questions | Staff safety plan, insurance, safeguarding and incident reporting, ready before the first field contract |
+| 35 | "Direct" can sound like bypassing local organisations, and an international NGO can be challenged on how local it is | Lead with Tanzanian leadership; partner community groups fairly; never present their work as ours |
+
 ---
 
 ## Part 2 — The prompt (reusable)
@@ -782,3 +842,7 @@ Use this to produce an investor one-pager, a deck, a grant summary or a new webs
 19. **Legal advice before any fee** linked to investors or projects (Tanzania and the United States).
 20. **The first three to five opportunities** to scout in Tanga, each tied to an initiative.
 21. **Who reviews verification independently** when Dandelion also builds the project.
+22. **The on-the-ground proof:** who is in the field team, from when, where they are based, and how quickly a site
+    can be visited (finding 32).
+23. **Capacity:** how many projects the field team can run at once (33).
+24. **Field safety and insurance** before the first field contract (34).
