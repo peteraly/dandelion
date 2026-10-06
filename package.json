@@ -25,24 +25,24 @@
     "demo:screens": "playwright test -c playwright.demo.config.ts"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^4.0.68",
-    "@neondatabase/serverless": "^1.1.0",
+    "@ai-sdk/anthropic": "^4.0.71",
+    "@neondatabase/serverless": "^1.2.0",
     "@node-rs/argon2": "^2.2.1",
     "@simplewebauthn/browser": "^14.0.0",
     "@simplewebauthn/server": "^14.0.3",
-    "ai": "^7.0.122",
+    "ai": "^7.0.127",
     "drizzle-orm": "^0.45.3",
-    "next": "16.3.6",
-    "next-intl": "^4.14.7",
-    "pg": "^8.23.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "viem": "^2.57.0",
+    "next": "16.3.8",
+    "next-intl": "^4.14.9",
+    "pg": "^8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "viem": "^2.57.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
-    "@playwright/test": "1.56.1",
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.4",
     "@types/pg": "^8.23.1",
@@ -50,11 +50,11 @@
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
     "eslint": "^9",
-    "eslint-config-next": "16.3.6",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
-    "vitest": "^5.0.2"
+    "vitest": "^5.0.3"
   },
   "engines": {
     "node": ">=20.9.0"
