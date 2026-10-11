@@ -48,6 +48,7 @@
       <input id="fx-phone" class="fx-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Your phone number">
       <button type="submit" class="fx-go" disabled>Send</button>
     </div>
+    <pre class="fx-preview" hidden></pre>
     <p class="fx-msg" aria-live="polite">Pick who you are, then add your number for full details.</p>
   </form>
   <noscript><p class="fx-noscript">This finder needs JavaScript. For free help, call 116 (Child Helpline) or 199 (Health Line).</p></noscript>
@@ -163,6 +164,10 @@
 }
 #dlfx .fx-go:disabled { background: var(--sep); color: var(--ink-2); cursor: not-allowed; }
 #dlfx .fx-msg { font-size: 16px; color: var(--ink-2); min-height: 1.35em; }
+#dlfx .fx-preview {
+  max-height: 132px; overflow: auto; margin: 0; padding: 10px 12px; border: 1px solid var(--sep); border-radius: 10px;
+  background: var(--card); color: var(--ink); font-family: inherit; font-size: 16px; line-height: 1.35; white-space: pre-wrap;
+}
 #dlfx .fx-msg.is-error { color: var(--sos); font-weight: 600; }
 #dlfx .fx-msg.is-ok { color: var(--accent); font-weight: 600; }
 #dlfx .fx-msg.is-warn { color: var(--warn); font-weight: 600; }
@@ -185,7 +190,8 @@
   if (!root || root.getAttribute('data-ready')) return;
   root.setAttribute('data-ready', '1');
 
-  var NUMBER = String((window.DLFX_CONFIG && window.DLFX_CONFIG.foundationNumber) || '').replace(/\D/g, '');
+  var CFG = window.DLFX_CONFIG || {};
+  var NUMBER = String(CFG.foundationNumber || '').replace(/\D/g, '');
   // i: id, t: opportunity, o: organisation, s: topic, g: who it is for, c: [kind, label, link] or 0
   var DATA = [
 {"i":"afya-call-centre-199-ministry-of-health","t":"Free national phone line for health advice","o":"Afya Call Centre 199 (Ministry of Health)","s":"H","g":"umytp","c":["call","199","tel:199"]},
@@ -447,6 +453,7 @@
   var phone = root.querySelector('.fx-phone');
   var go = root.querySelector('.fx-go');
   var msg = root.querySelector('.fx-msg');
+  var prevEl = root.querySelector('.fx-preview');
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -639,6 +646,12 @@
       ? 'https://wa.me/' + NUMBER + '?text=' + encodeURIComponent(text)
       : 'sms:+' + NUMBER + '?&body=' + encodeURIComponent(text);
     root.setAttribute('data-last-url', url);
+    if (CFG.preview) {                       // preview pages show the message instead of opening WhatsApp
+      prevEl.textContent = text;
+      prevEl.hidden = false;
+      status('ok', 'Preview only: this is the message ' + (channel === 'wa' ? 'WhatsApp' : 'SMS') + ' would open with. Nothing was sent.');
+      return;
+    }
     if (channel === 'wa') {
       var w = window.open(url, '_blank');
       if (!w) window.location.href = url;
