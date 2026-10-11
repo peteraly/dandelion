@@ -1,0 +1,661 @@
+<!-- START: Dandelion Opportunity Finder (Squarespace Code Block) -->
+<script>
+  /* BEFORE YOU PASTE: type the Foundation's WhatsApp number between the quotes below.
+     Use the country code with no + or spaces, for example "255712345678". Requests open WhatsApp
+     (or text messages) addressed to this number. */
+  window.DLFX_CONFIG = { foundationNumber: "" };
+</script>
+<!--
+  HOW TO ADD IT: Edit page > Add block > Code. Leave Mode on HTML, turn OFF "Display source",
+  paste ALL of this, then Save. Squarespace does not run scripts inside the editor: check the live page.
+  Swahili labels are for native review. Data checked October 2026. No outside libraries or trackers.
+-->
+<div id="dlfx" lang="en">
+  <div class="fx-top">
+    <div class="fx-titlerow">
+      <h2 class="fx-title">Find opportunities</h2>
+      <a class="fx-exit" href="https://www.google.com/" data-exit="1">Exit</a>
+    </div>
+    <p class="fx-help">Help now, free: <a href="tel:116">☎ 116</a> <span aria-hidden="true">·</span> <a href="tel:199">☎ 199</a></p>
+  </div>
+
+  <div class="fx-pick" role="group" aria-labelledby="fx-who">
+    <span class="fx-lbl" id="fx-who">I am</span>
+    <div class="fx-scroll fx-aud"></div>
+  </div>
+  <div class="fx-pick" role="group" aria-labelledby="fx-what" hidden>
+    <span class="fx-lbl" id="fx-what">For</span>
+    <div class="fx-scroll fx-topics"></div>
+  </div>
+
+  <div class="fx-results" role="region" aria-label="Results">
+    <p class="fx-count" aria-live="polite"></p>
+    <div class="fx-intro">
+      <p class="fx-intro-t">Tap who you are to see what you qualify for.</p>
+      <p class="fx-intro-sw" lang="sw">Gusa unachokuwa ili kuona fursa zinazokufaa.</p>
+    </div>
+    <ul class="fx-list"></ul>
+    <p class="fx-note">Independent list from public sources, checked October 2026. Being listed does not mean an organisation works with or endorses Dandelion Foundation.</p>
+  </div>
+
+  <form class="fx-send" novalidate>
+    <div class="fx-seg" role="radiogroup" aria-label="Send the details by">
+      <button type="button" role="radio" aria-checked="true" data-ch="wa">WhatsApp</button>
+      <button type="button" role="radio" aria-checked="false" data-ch="sms">Text (SMS)</button>
+    </div>
+    <div class="fx-row">
+      <label class="fx-vh" for="fx-phone">Your phone number</label>
+      <input id="fx-phone" class="fx-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Your phone number">
+      <button type="submit" class="fx-go" disabled>Send</button>
+    </div>
+    <p class="fx-msg" aria-live="polite">Pick who you are, then add your number for full details.</p>
+  </form>
+  <noscript><p class="fx-noscript">This finder needs JavaScript. For free help, call 116 (Child Helpline) or 199 (Health Line).</p></noscript>
+</div>
+
+<style>
+#dlfx {
+  --bg: #f2f2f7; --card: #ffffff; --ink: #111114; --ink-2: #545458; --sep: #d1d1d6; --fill: #e9e9ee;
+  --accent: #0b6b45; --accent-ink: #ffffff; --accent-soft: #e3f3ea; --sos: #b42318; --warn: #8a4b00; --focus: #0a58ca;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px; line-height: 1.35; color: var(--ink); letter-spacing: normal; text-transform: none; text-align: left;
+  -webkit-text-size-adjust: 100%;
+  display: flex; flex-direction: column; gap: 10px;
+  height: 640px; height: min(calc(100vh - 16px), 780px); height: min(calc(100svh - 16px), 780px); min-height: 520px;
+  max-width: 720px; margin: 0 auto; padding: 14px 14px 12px; overflow: hidden; box-sizing: border-box;
+  background: var(--bg); border-radius: 22px;
+}
+#dlfx *, #dlfx *::before, #dlfx *::after { box-sizing: border-box; }
+#dlfx [hidden] { display: none !important; }
+#dlfx div, #dlfx span, #dlfx p, #dlfx h2, #dlfx ul, #dlfx li, #dlfx label, #dlfx form, #dlfx strong {
+  margin: 0; padding: 0; border: 0; background: none; box-shadow: none; color: inherit; font-family: inherit; font-size: inherit;
+  line-height: inherit; font-weight: inherit; font-style: normal; letter-spacing: normal; text-transform: none; float: none;
+  width: auto; max-width: none; position: static; list-style: none; text-align: left;
+}
+#dlfx a, #dlfx button, #dlfx input {
+  font-family: inherit; font-size: inherit; line-height: inherit; letter-spacing: normal; text-transform: none; box-shadow: none;
+  background-color: transparent; background-image: none; border: 0; border-radius: 0; padding: 0; margin: 0; color: inherit;
+  -webkit-appearance: none; appearance: none;
+}
+#dlfx a:focus-visible, #dlfx button:focus-visible, #dlfx input:focus-visible, #dlfx .fx-item input:focus-visible + .fx-tick {
+  outline: 3px solid var(--focus); outline-offset: 2px;
+}
+
+/* Top */
+#dlfx .fx-top { flex: none; }
+#dlfx .fx-titlerow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#dlfx .fx-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+#dlfx .fx-exit {
+  flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  background: var(--ink-2); color: #fff; font-size: 16px; font-weight: 600; text-decoration: none;
+}
+#dlfx .fx-help { margin-top: 4px; font-size: 16px; color: var(--ink-2); }
+#dlfx .fx-help a { color: var(--sos); font-weight: 700; text-decoration: none; white-space: nowrap; padding: 4px 2px; }
+
+/* Choice rows: one line each, slide sideways */
+#dlfx .fx-pick { flex: none; display: flex; align-items: center; gap: 8px; min-width: 0; }
+#dlfx .fx-lbl { flex: none; width: 40px; font-size: 16px; font-weight: 600; color: var(--ink-2); }
+#dlfx .fx-scroll {
+  flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 4px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent);
+}
+#dlfx .fx-scroll::-webkit-scrollbar { display: none; }
+#dlfx .fx-chip {
+  flex: none; scroll-snap-align: start; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid var(--sep); background: var(--card); color: var(--ink); font-size: 16px; font-weight: 600;
+  white-space: nowrap; cursor: pointer; line-height: 1;
+}
+#dlfx .fx-chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+#dlfx .fx-chip .fx-n { font-weight: 500; opacity: .8; }
+
+/* Results: the only part that scrolls */
+#dlfx .fx-results {
+  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  background: var(--card); border-radius: 16px; border: 1px solid var(--sep);
+}
+#dlfx .fx-count {
+  position: sticky; top: 0; z-index: 1; padding: 10px 14px; font-size: 16px; font-weight: 600; color: var(--ink-2);
+  background: var(--card); border-bottom: 1px solid var(--sep);
+}
+#dlfx .fx-count:empty { display: none; }
+#dlfx .fx-intro { padding: 28px 18px; }
+#dlfx .fx-intro-t { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+#dlfx .fx-intro-sw { margin-top: 6px; font-size: 16px; color: var(--ink-2); }
+#dlfx .fx-item { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 14px; border-bottom: 1px solid var(--sep); }
+#dlfx .fx-item > label { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; cursor: pointer; }
+#dlfx .fx-item input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+#dlfx .fx-tick {
+  flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--sep); display: grid; place-items: center;
+  font-size: 14px; color: transparent; line-height: 1;
+}
+#dlfx .fx-item input:checked + .fx-tick { background: var(--accent); border-color: var(--accent); color: #fff; }
+#dlfx .fx-txt { min-width: 0; display: block; }
+#dlfx .fx-t {
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 17px; font-weight: 600; line-height: 1.3;
+}
+#dlfx .fx-o { display: block; margin-top: 2px; font-size: 16px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#dlfx .fx-c {
+  flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 999px;
+  background: var(--fill); color: var(--accent); font-size: 16px; font-weight: 600; text-decoration: none; white-space: nowrap;
+  max-width: 40%; line-height: 1.15; text-align: center;
+}
+#dlfx .fx-c.is-call { background: var(--accent-soft); white-space: normal; padding-top: 4px; padding-bottom: 4px; }
+#dlfx .fx-note { padding: 14px; font-size: 16px; color: var(--ink-2); }
+
+/* Send */
+#dlfx .fx-send { flex: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+#dlfx .fx-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px; border-radius: 10px; background: var(--fill); }
+#dlfx .fx-seg button {
+  min-height: 40px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); font-size: 16px; font-weight: 600; cursor: pointer;
+}
+#dlfx .fx-seg button[aria-checked="true"] { background: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }
+#dlfx .fx-row { display: flex; gap: 8px; }
+#dlfx .fx-phone {
+  flex: 1; min-width: 0; width: 100%; min-height: 50px; padding: 0 14px; border: 1px solid var(--sep); border-radius: 12px; background: var(--card);
+  color: var(--ink); font-size: 17px; outline-offset: 2px;
+}
+#dlfx .fx-phone[aria-invalid="true"] { border-color: var(--sos); }
+#dlfx .fx-go {
+  flex: none; min-height: 50px; min-width: 96px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink);
+  font-size: 17px; font-weight: 700; cursor: pointer;
+}
+#dlfx .fx-go:disabled { background: var(--sep); color: var(--ink-2); cursor: not-allowed; }
+#dlfx .fx-msg { font-size: 16px; color: var(--ink-2); min-height: 1.35em; }
+#dlfx .fx-msg.is-error { color: var(--sos); font-weight: 600; }
+#dlfx .fx-msg.is-ok { color: var(--accent); font-weight: 600; }
+#dlfx .fx-msg.is-warn { color: var(--warn); font-weight: 600; }
+#dlfx .fx-vh { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#dlfx .fx-noscript { padding: 16px; font-weight: 700; }
+
+@media (min-width: 640px) {
+  #dlfx { padding: 22px 22px 16px; gap: 12px; }
+  #dlfx .fx-title { font-size: 30px; }
+}
+@media (forced-colors: active) {
+  #dlfx .fx-chip[aria-pressed="true"], #dlfx .fx-seg button[aria-checked="true"] { outline: 2px solid Highlight; }
+}
+</style>
+
+<script>
+(function () {
+  'use strict';
+  var root = document.getElementById('dlfx');
+  if (!root || root.getAttribute('data-ready')) return;
+  root.setAttribute('data-ready', '1');
+
+  var NUMBER = String((window.DLFX_CONFIG && window.DLFX_CONFIG.foundationNumber) || '').replace(/\D/g, '');
+  // i: id, t: opportunity, o: organisation, s: topic, g: who it is for, c: [kind, label, link] or 0
+  var DATA = [
+{"i":"afya-call-centre-199-ministry-of-health","t":"Free national phone line for health advice","o":"Afya Call Centre 199 (Ministry of Health)","s":"H","g":"umytp","c":["call","199","tel:199"]},
+{"i":"national-child-helpline-116-c-sema","t":"Free helpline protecting children and women from violence","o":"National Child Helpline 116 (C-Sema)","s":"S","g":"umytp","c":["call","116","tel:116"]},
+{"i":"msi-tanzania-formerly-marie-stopes-tanzania","t":"Sexual and reproductive health care, especially for young and poor people","o":"MSI Tanzania (formerly Marie Stopes Tanzania)","s":"H","g":"myp","c":["call","0800 753 333","tel:0800753333"]},
+{"i":"police-gender-and-children-s-desks","t":"Police units that handle violence against women and children","o":"Police Gender and Children's Desks","s":"S","g":"umyp","c":["call","116","tel:116"]},
+{"i":"ministry-of-education-science-and-technology-moe","t":"Sets policy for schools, colleges and training","o":"Ministry of Education, Science and Technology (MoEST)","s":"E","g":"tmo","c":["read","Info","https://www.fao.org/platforms/school-food/around-the-world/africa/tanzania-mainland-and-zanzibar/en"]},
+{"i":"pharmacy-council-and-addo-drug-shops","t":"Regulates pharmacists, pharmacies and accredited drug shops","o":"Pharmacy Council and ADDO drug shops","s":"H","g":"myp","c":["read","Info","https://pmc.ncbi.nlm.nih.gov/articles/PMC9893895/"]},
+{"i":"oky-tanzania-unicef-tai-tanzania-r-labs-mingati","t":"Swahili period-tracker app made with girls","o":"Oky Tanzania (UNICEF, Tai Tanzania, R-Labs, Mingati)","s":"P","g":"uyp","c":["app","App","https://play.google.com/store/apps/details?id=com.oky"]},
+{"i":"hedhi-app-anuflo-industries","t":"Reusable menstrual products and a Swahili period app","o":"Hedhi App (AnuFlo Industries)","s":"H","g":"umyp","c":["read","Info","https://www.thecitizen.co.tz/tanzania/business/-anuflo-launches-application-to-support-menstrual-health-2718632"]},
+{"i":"tanzmed-afya-kiganjani-africa-healthtech","t":"Health app linking people to doctors, hospitals and insurers","o":"TanzMED · Afya Kiganjani (Africa Healthtech)","s":"H","g":"myp","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/tanzania-s-tanzmed-scales-digital-healthcare-as-platform-links-hospitals-doctors-and-individuals-across-africa-5331312"]},
+{"i":"panda-digital-her-initiative","t":"Helps young women earn and build businesses","o":"Panda Digital (Her Initiative)","s":"J","g":"yb","c":["read","Info","https://www.globalcitizen.org/en/content/tanzanian-feminist-gender-equality-women/"]},
+{"i":"vodacom-tanzania-m-mama","t":"Mobile network and M-Pesa; m-mama gets pregnant women to emergency care","o":"Vodacom Tanzania · m-mama","s":"H","g":"mp","c":["read","Info","https://www.vodafone.com/news/empowering-people/connecting-pregnant-women-emergency-care-rural-tanzania"]},
+{"i":"softcare-tanzania","t":"Makes pads, diapers and wipes","o":"Softcare Tanzania","s":"P","g":"mpo","c":["read","Info","https://x.com/softcaretz"]},
+{"i":"drafco-group","t":"Tanzanian maker of diapers, adult diapers and tissues","o":"Drafco Group","s":"P","g":"mpo","c":["web","Web","https://drafcogroup.co.tz/"]},
+{"i":"kasole-secrets-hedhi-salama","t":"Tanzanian pad maker that teaches menstrual health","o":"Kasole Secrets · Hedhi Salama","s":"P","g":"upto","c":["read","Info","https://vc4a.com/ventures/kasole-secrets/"]},
+{"i":"femme-international","t":"Menstrual health education and reusable products for women and girls","o":"Femme International","s":"P","g":"upto","c":["read","Info","https://dukeunicef.org/empowering-tanzanian-schools-to-improve-menstrual-health-and-hygiene/"]},
+{"i":"uhurupads","t":"Compostable pads made in Arusha by women","o":"UhuruPads","s":"P","g":"pto","c":["web","Web","https://www.uhurupads.org/"]},
+{"i":"reepads-tanzania","t":"Affordable reusable pads made in Tanzania","o":"Reepads Tanzania","s":"P","g":"po","c":["web","Web","https://reepadstanzania.com/"]},
+{"i":"hq-pads","t":"Pad importer, maker and distributor","o":"HQ Pads","s":"P","g":"po","c":["web","Web","https://hqtanzania.co.tz/"]},
+{"i":"doweicare-technology","t":"Diaper company","o":"Doweicare Technology","s":"P","g":"mo","c":["read","Info","https://www.thecitizen.co.tz/tanzania/supplement/art-of-giving-doweicare-supports-tanzanian-families-with-diapers-worth-sh-65-million-5078666"]},
+{"i":"maternity-africa-arusha","t":"Maternity care and training in Arusha","o":"Maternity Africa (Arusha)","s":"H","g":"mp","c":["web","Web","https://maternityafrica.org/"]},
+{"i":"msichana-initiative","t":"Fights for every girl's right to education","o":"Msichana Initiative","s":"E","g":"umto","c":["read","Info","https://www.girlsnotbrides.org/our-partnership/member-directory/msichana-initiative/"]},
+{"i":"camfed-tanzania","t":"Gets girls through school and into leadership","o":"Camfed Tanzania","s":"E","g":"umtoy","c":["read","Info","https://mastercardfdn.org/en/partners/camfed/"]},
+{"i":"room-to-read-tanzania","t":"Children's literacy and girls' education","o":"Room to Read Tanzania","s":"E","g":"uto","c":["web","Web","https://www.roomtoread.org/the-latest/girls-education-in-africa/"]},
+{"i":"asante-africa-foundation","t":"Education and life skills for young people in East Africa","o":"Asante Africa Foundation","s":"E","g":"uto","c":["web","Web","https://asanteafrica.org/project/materials-for-education-and-hygiene/"]},
+{"i":"brac-tanzania","t":"Helps people escape poverty, focusing on women and young people","o":"BRAC Tanzania","s":"J","g":"uybo","c":["web","Web","https://bracinternational.org/tanzania/"]},
+{"i":"moyo-wa-mwanamke-shujaa-mwst","t":"Second chances for girls who left school","o":"Moyo wa Mwanamke Shujaa (MwST)","s":"E","g":"umo","c":["read","Info","https://allafrica.com/stories/202607280238.html"]},
+{"i":"youth-alliance-for-progress-organisation-yapo","t":"Youth development organisation","o":"Youth Alliance for Progress Organisation (YAPO)","s":"E","g":"umo","c":["read","Info","https://www.col.org/news/supporting-young-mothers-return-to-learning-enabling-tanzanian-teachers-to-build-inclusive-school-environment/"]},
+{"i":"doris-mollel-foundation","t":"Care for premature babies and support for mothers","o":"Doris Mollel Foundation","s":"H","g":"mo","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/relief-for-adolescent-girls-and-young-mothers-who-dropped-out-of-school-5440296"]},
+{"i":"good-hope-moshi-mabinti-project","t":"Support for young people in Moshi","o":"Good Hope Moshi · Mabinti project","s":"E","g":"my","c":["web","Web","https://www.goodhopemoshi.org/en/projects/mabinti-project/"]},
+{"i":"hope-4-young-girls","t":"Rights and opportunities for adolescent girls and young women","o":"Hope 4 Young Girls","s":"J","g":"uyp","c":["web","Web","https://hope4younggirlstz.or.tz/"]},
+{"i":"mental-health-tanzania","t":"Mental health care and counselling","o":"Mental Health Tanzania","s":"H","g":"ymp","c":["read","Info","https://www.mhinnovation.net/organisations/mental-health-tanzania"]},
+{"i":"umati-ippf-member","t":"Sexual and reproductive health services for all","o":"UMATI (IPPF member)","s":"H","g":"uymp","c":["read","Info","https://www.ippf.org/about-us/member-associations/tanzania"]},
+{"i":"dsw-tanzania","t":"Young people's health and rights","o":"DSW Tanzania","s":"Y","g":"uy","c":["web","Web","https://www.dsw.org/en/tanzania/"]},
+{"i":"railway-children-africa-young-women-s-associatio","t":"Protects children and young people at risk on the streets","o":"Railway Children Africa (young women's associations)","s":"J","g":"yb","c":["read","Info","https://www.fondation-addax-oryx.org/en/projects/young-women-youth-associations"]},
+{"i":"maji-safi-group","t":"Water, hygiene and health education in Mara","o":"Maji Safi Group","s":"P","g":"tpo","c":["web","Web","https://majisafigroup.org/menstrual-hygiene-management/"]},
+{"i":"children-s-dignity-forum-cdf","t":"Child rights and ending child marriage","o":"Children's Dignity Forum (CDF)","s":"S","g":"upo","c":["web","Web","https://www.cdf.or.tz/tanzania-ending-child-marriage-network/"]},
+{"i":"tanzania-youth-coalition","t":"Youth voice in policy","o":"Tanzania Youth Coalition","s":"Y","g":"yo","c":["web","Web","https://www.tzyc.org/"]},
+{"i":"zanzibar-maisha-bora-foundation-wajamama","t":"Zanzibar groups for women's and children's health","o":"Zanzibar Maisha Bora Foundation · WAJAMAMA","s":"G","g":"op","c":["read","Info","https://allafrica.com/stories/202406040223.html"]},
+{"i":"plan-international-tanzania","t":"Equality for girls and children's rights","o":"Plan International Tanzania","s":"E","g":"uto","c":["read","Info","https://www.borgenmagazine.com/women-developing-countries-reusable-pads/"]},
+{"i":"save-the-children-tanzania","t":"Every child survives, learns and is protected","o":"Save the Children Tanzania","s":"E","g":"uto","c":["read","Info","https://www.savethechildren.net/tanzania/news/zanzibar-girls-reclaim-school-days-through-improved-wash"]},
+{"i":"girl-effect-tanzania","t":"Media girls trust, for health and opportunity","o":"Girl Effect Tanzania","s":"Y","g":"uyp","c":["web","Web","https://girleffect.org/tanzania/"]},
+{"i":"girl-up-tanzania-un-foundation","t":"Girl-led leadership movement","o":"Girl Up Tanzania (UN Foundation)","s":"Y","g":"ut","c":["read","Info","https://africa.unwomen.org/en/stories/news/2024/09/generation-equality-commitment-makers-in-the-spotlight-how-girl-up-is-empowering-tanzanian-girls-for-equality"]},
+{"i":"dkt-tanzania-dkt-international","t":"Affordable contraception through social marketing","o":"DKT Tanzania (DKT International)","s":"H","g":"ypo","c":["web","Web","https://www.dktinternational.org/country-programs/tanzania/"]},
+{"i":"psi-population-services-international","t":"Health products and services people choose for themselves","o":"PSI (Population Services International)","s":"H","g":"ypo","c":["read","Info","https://www.cecinfo.org/country-by-country-information/status-availability-database/countries/tanzania/"]},
+{"i":"afripads-uganda","t":"Large maker of reusable pads","o":"AFRIpads (Uganda)","s":"P","g":"po","c":["read","Info","https://embryo.asu.edu/pages/afripads"]},
+{"i":"ruby-cup-kenya","t":"Menstrual cups with buy-one-give-one","o":"Ruby Cup (Kenya)","s":"P","g":"po","c":["read","Info","https://borgenproject.org/tag/ruby-cup/"]},
+{"i":"shujaaz-inc","t":"Media brands for young people in East Africa","o":"Shujaaz Inc","s":"Y","g":"yb","c":["web","Web","https://www.shujaazinc.com/"]},
+{"i":"commonwealth-of-learning","t":"Open and distance learning for development","o":"Commonwealth of Learning","s":"E","g":"tmo","c":["web","Web","https://www.col.org/news/supporting-young-mothers-return-to-learning-enabling-tanzanian-teachers-to-build-inclusive-school-environment/"]},
+{"i":"unfpa-tanzania","t":"UN agency for sexual and reproductive health and rights","o":"UNFPA Tanzania","s":"F","g":"mo","c":["web","Web","https://tanzania.unfpa.org/en/news/unfpas-dignity-kit-making-difference-lives-mothers-kigoma-region"]},
+{"i":"world-bank-sequip","t":"World Bank project to improve secondary education","o":"World Bank · SEQUIP","s":"E","g":"mto","c":["read","Info","https://www.worldbank.org/en/news/press-release/2020/03/31/new-financing-to-make-secondary-education-safer-better-and-more-accessible-for-tanzanian-girls-and-boys"]},
+{"i":"mastercard-foundation","t":"Dignified work and education for young Africans","o":"Mastercard Foundation","s":"F","g":"yo","c":["web","Web","https://mastercardfdn.org/en/news/mastercard-foundation-camfed-and-fawe-partnership-to-accelerate-education-and-access-to-work-opportunities-for-over-70000-young-africans/"]},
+{"i":"menstrual-hygiene-day-wash-united","t":"Global day (28 May) against period stigma and poverty","o":"Menstrual Hygiene Day (WASH United)","s":"P","g":"pto","c":["web","Web","https://menstrualhygieneday.org/pedibilakodi-why-the-vat-exemption-on-menstrual-pads-should-be-kept-in-tanzania/"]},
+{"i":"ada-health","t":"App that guides people on symptoms","o":"Ada Health","s":"H","g":"yp","c":["web","Web","https://about.ada.com/press/191119-worlds-first-ai-health-guidance-app-in-swahili/"]},
+{"i":"healthy-entrepreneurs","t":"Health products for remote villages through local entrepreneurs","o":"Healthy Entrepreneurs","s":"H","g":"ybp","c":["web","Web","https://www.healthyentrepreneurs.nl/our-concept/"]},
+{"i":"solar-sister","t":"Women entrepreneurs bringing clean energy to villages","o":"Solar Sister","s":"B","g":"yb","c":["read","Info","https://wp.eepafrica.org/Portfolio/solar-sister/"]},
+{"i":"huru-international","t":"Reusable pad kits that help girls stay in school","o":"Huru International","s":"P","g":"uto","c":["read","Info","https://www.micato.com/americashare/huru-international/"]},
+{"i":"veta-vocational-education-and-training-authority","t":"Public vocational training centres across the regions","o":"VETA (Vocational Education and Training Authority)","s":"J","g":"y","c":["read","Info","https://ippmedia.com/the-guardian/business/read/veta-belgium-agency-partner-to-empower-women-2024-08-20-174643"]},
+{"i":"folk-development-colleges-fdcs","t":"Rural colleges for practical skills and adult learning","o":"Folk Development Colleges (FDCs)","s":"J","g":"yb","c":["read","Info","https://allafrica.com/stories/202601050518.html"]},
+{"i":"institute-of-adult-education-iae","t":"Second-chance secondary education and skills for young people who left school","o":"Institute of Adult Education (IAE)","s":"E","g":"umy","c":["read","Info","https://dailynews.co.tz/sequip-aep-project-enables-12000-children-to-return-to-school/"]},
+{"i":"prime-minister-s-office-labour-employment-nation","t":"National apprenticeships, internships and skills recognition","o":"Prime Minister's Office (Labour, Employment) · National Skills Development Programme","s":"J","g":"yo","c":["read","Info","https://dailynews.co.tz/apprenticeship-system-seen-as-key-to-expanding-youth-employment/"]},
+{"i":"sido-small-industries-development-organisation","t":"Training, equipment advice and loans for small industries","o":"SIDO (Small Industries Development Organisation)","s":"B","g":"by","c":["read","Info","https://ippmedia.com/the-guardian/news/local-news/read/sido-offers-16bn-loan-to-trader-groups-in-tanga-2025-02-14-081706"]},
+{"i":"neec-national-economic-empowerment-council","t":"Coordinates the government's economic empowerment funds","o":"NEEC (National Economic Empowerment Council)","s":"B","g":"bo","c":["read","Info","https://ippmedia.com/the-guardian/opinion/editorial/read/neec-right-in-focusing-on-skills-tools-even-as-special-groups-hope-for-funds"]},
+{"i":"council-loans-for-women-youth-and-people-with-di","t":"Council loans for groups of women, youth and people with disabilities","o":"Council loans for women, youth and people with disabilities (10% of own revenue)","s":"B","g":"by","c":["read","Info","https://dailynews.co.tz/tanzania-provides-135bn-in-loans-to-empower-13062-groups-of-youth-women-people-with-disabilities"]},
+{"i":"women-development-fund-ministry-of-community-dev","t":"Interest-free loans for women's groups","o":"Women Development Fund (Ministry of Community Development, Gender, Women and Special Groups)","s":"B","g":"b","c":["read","Info","https://allafrica.com/stories/202505290370.html"]},
+{"i":"tanzania-commercial-bank-tcb","t":"State-owned bank that handles group loans for women and youth","o":"Tanzania Commercial Bank (TCB)","s":"B","g":"b","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/majaliwa-urges-women-to-seize-loan-opportunities-from-tcb-4954310"]},
+{"i":"tadb-tanzania-agricultural-development-bank","t":"Farm finance and loan guarantees, with more cover for women","o":"TADB (Tanzania Agricultural Development Bank)","s":"B","g":"b","c":["read","Info","https://dailynews.co.tz/tadb-exim-bank-partner-to-boost-agri-loan/"]},
+{"i":"ministry-of-agriculture-building-a-better-tomorr","t":"Agribusiness training, land and finance for youth and women","o":"Ministry of Agriculture · Building a Better Tomorrow (BBT-YIA)","s":"A","g":"yb","c":["read","Info","https://tanzaniainvest.com/?p=30172"]},
+{"i":"ministry-of-energy-national-clean-cooking-strate","t":"National plan for clean cooking in most homes by 2034","o":"Ministry of Energy · National Clean Cooking Strategy 2024-2034","s":"N","g":"bo","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/tanzania-eyes-80-percent-clean-cooking-by-2034-with-sh130-billion-strategy-5066652"]},
+{"i":"rea-rural-energy-agency-clean-cooking-subsidies","t":"Subsidised gas cylinders and cookstoves for rural homes","o":"REA (Rural Energy Agency) · clean cooking subsidies","s":"N","g":"bp","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/govt-rolls-out-up-to-50-percent-subsidy-on-over-450-000-lpg-cylinders-in-push-for-clean-cooking-5054512"]},
+{"i":"tanzania-sisal-board-tsb","t":"Sisal training and incubation for women and youth in Tanga","o":"Tanzania Sisal Board (TSB)","s":"A","g":"by","c":["read","Info","https://ippmedia.co.tz/the-guardian/business/read/sisal-industry-embraces-local-innovations-empowerment-2025-06-24-163428"]},
+{"i":"tari-mlingano-tanzania-agricultural-research-ins","t":"Soil testing and sisal research in Tanga","o":"TARI Mlingano (Tanzania Agricultural Research Institute, Tanga)","s":"A","g":"b","c":["read","Info","https://www.africa-press.net/tanzania/community/minister-tari-plans-to-intensify-soil-food-crop-in-its-centres"]},
+{"i":"costech-tanzania-commission-for-science-and-tech","t":"Funds research and innovation","o":"COSTECH (Tanzania Commission for Science and Technology)","s":"R","g":"bo","c":["read","Info","https://www.thecitizen.co.tz/tanzania/business/crdb-costech-ink-sh2-3-billion-deal-to-support-startups-5007688"]},
+{"i":"zeea-zanzibar-economic-empowerment-agency","t":"Loans and business training in Zanzibar","o":"ZEEA (Zanzibar Economic Empowerment Agency)","s":"G","g":"by","c":["read","Info","https://dailynews.co.tz/tcb-and-zeea-sign-mou-to-drive-inclusive-development-in-zanzibar/"]},
+{"i":"tanzania-women-chamber-of-commerce-twcc","t":"Network helping women entrepreneurs trade and grow","o":"Tanzania Women Chamber of Commerce (TWCC)","s":"B","g":"b","c":["read","Info","https://www.trademarkafrica.com/press-release/tanzania-women-chamber-of-commerce-and-trademark-africa-join-forces-to-catalyse-economic-growth-for-women-traders-in-tanzania"]},
+{"i":"association-of-tanzania-employers-ate-female-fut","t":"Employers' body with a leadership programme for women","o":"Association of Tanzania Employers (ATE) · Female Future Programme","s":"J","g":"ybo","c":["web","Web","https://ate.or.tz/service/female-future/"]},
+{"i":"apps-and-girls","t":"Coding clubs and tech skills for girls and young women","o":"Apps and Girls","s":"J","g":"uyt","c":["web","Web","https://appsandgirls.com"]},
+{"i":"tanzania-data-lab-dlab","t":"Data skills training, including a Women in Data programme","o":"Tanzania Data Lab (dLab)","s":"J","g":"y","c":["read","Info","https://theodi.org/insights/projects/tanzanian-data-lab-dlab/"]},
+{"i":"sahara-ventures","t":"Business accelerator and founders' school","o":"Sahara Ventures","s":"B","g":"by","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/sahara-launches-programme-to-nurture-entrepreneurs-4703246"]},
+{"i":"kiwohede-kiota-women-health-and-development","t":"Skills training, shelter and care for girls and young women","o":"KIWOHEDE (Kiota Women Health and Development)","s":"S","g":"uymp","c":["read","Info","https://www.togetherforgirls.org/visit-kiwohede/"]},
+{"i":"uzikwasa-pangani-tanga-region","t":"Community action against violence in Pangani, Tanga Region","o":"UZIKWASA (Pangani, Tanga Region)","s":"S","g":"uypt","c":["read","Info","https://www.globalgiving.org/projects/uzikwasa1/"]},
+{"i":"mviwata-national-network-of-farmers-groups","t":"National network of small farmers' groups","o":"MVIWATA (national network of farmers' groups)","s":"A","g":"b","c":["read","Info","https://afrique-gouvernance.net/bdf_experience-113_en.html"]},
+{"i":"taha-tanzania-horticultural-association","t":"Training and buyers for horticulture farmers","o":"TAHA (Tanzania Horticultural Association)","s":"A","g":"b","c":["read","Info","https://trademarkafrica.com/projects/enhance-market-access-for-horticultural-product-taha-project/"]},
+{"i":"village-community-banks-and-savings-groups-vicob","t":"Community groups where members save and borrow together","o":"Village community banks and savings groups (VICOBA, VSLAs, SACCOs)","s":"B","g":"byp","c":["read","Info","https://news.un.org/en/audio/2016/03/610152"]},
+{"i":"ccbrt-comprehensive-community-based-rehabilitati","t":"Disability, maternity and free fistula care","o":"CCBRT (Comprehensive Community Based Rehabilitation in Tanzania)","s":"H","g":"myp","c":["web","Web","https://ccbrt.org/maternal-and-newborn-wing/"]},
+{"i":"benjamin-william-mkapa-foundation","t":"Trains and supports health workers","o":"Benjamin William Mkapa Foundation","s":"H","g":"yo","c":["read","Info","https://dailynews.co.tz/preserve-mkapas-legacy/"]},
+{"i":"mewata-medical-women-association-of-tanzania","t":"Women doctors offering breast and cervical cancer screening","o":"MEWATA (Medical Women Association of Tanzania)","s":"H","g":"ymp","c":["read","Info","https://www.uicc.org/membership/medical-women-association-tanzania"]},
+{"i":"mo-dewji-foundation","t":"University scholarships and health outreach","o":"Mo Dewji Foundation","s":"E","g":"uyo","c":["web","Web","https://modewjifoundation.org/?p=4898"]},
+{"i":"crdb-bank-foundation-imbeju","t":"Training and seed capital for women and youth","o":"CRDB Bank Foundation · IMBEJU","s":"B","g":"by","c":["web","Web","https://crdbbank.co.tz/about-us/media-center/blog-post/crdb-bank-foundation-launches-campaign-connect-small-scale-entrepreneurs-country-imbeju-program"]},
+{"i":"nmb-bank-mwanamke-jasiri","t":"Loans and money skills for women in business","o":"NMB Bank · Mwanamke Jasiri","s":"B","g":"b","c":["read","Info","https://africa.unwomen.org/en/stories/news/2024/09/generation-equality-commitment-makers-in-the-spotlight-empowering-women-transforming-futures-nmb-banks-journey-towards-gender-equality"]},
+{"i":"equity-bank-tanzania","t":"Bank offering loans for women-led businesses","o":"Equity Bank Tanzania","s":"B","g":"b","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/how-sh580-billion-fund-will-benefit-women-s-smes-3893862"]},
+{"i":"airtel-tanzania-smartwasomi-with-unicef-and-the-","t":"Free internet and learning platforms for schools","o":"Airtel Tanzania · SmartWASOMI (with UNICEF and the Ministry of Education)","s":"E","g":"tu","c":["read","Info","https://www.unicef.org/tanzania/press-releases/government-airtel-and-unicef-join-hands-accelerate-digital-learning-tanzania"]},
+{"i":"vodacom-tanzania-foundation-education-and-skills","t":"Coding camps for girls and business training for women","o":"Vodacom Tanzania Foundation (education and skills)","s":"J","g":"uybt","c":["read","Info","https://ippmedia.com/the-guardian/news/local-news/read/training-programme-empowers-girls-in-ict-2024-12-15-170745"]},
+{"i":"huawei-tanzania-seeds-for-the-future","t":"ICT training for university students","o":"Huawei Tanzania · Seeds for the Future","s":"J","g":"y","c":["read","Info","https://dailynews.co.tz/tanzanias-brightest-ict-talents-head-to-china-with-huawei/"]},
+{"i":"tanzania-breweries-tbl-ab-inbev","t":"Brewery that buys grain from local farmers","o":"Tanzania Breweries (TBL, AB InBev)","s":"A","g":"b","c":["read","Info","https://dailynews.co.tz/tbl-farmers-are-key-partners-in-progress/"]},
+{"i":"serengeti-breweries-sbl-diageo","t":"Brewery that buys grain from local farmers","o":"Serengeti Breweries (SBL, Diageo)","s":"A","g":"b","c":["read","Info","https://www.foodbusinessmea.com/tanzanian-breweries-turn-to-local-sources-of-raw-materials-to-boost-industry/"]},
+{"i":"tanga-fresh","t":"Tanga dairy that buys milk from small farmers","o":"Tanga Fresh","s":"A","g":"b","c":["read","Info","https://impactalpha.com/dairy-processor-tanga-fresh-clinches-fresh-capital-and-support-for-smallholder-farmers"]},
+{"i":"katani-limited-sisal-tanga","t":"Sisal company working with smallholders in Tanga","o":"Katani Limited (sisal, Tanga)","s":"A","g":"b","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/-sisal-production-at-korogwe-estates-to-resume-2656078"]},
+{"i":"gas-distributors-oryx-taifa-gas-manjis-lake-oil","t":"Suppliers of subsidised cooking-gas cylinders","o":"Gas distributors (Oryx, Taifa Gas, Manjis, Lake Oil)","s":"N","g":"bp","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/govt-rolls-out-up-to-50-percent-subsidy-on-over-450-000-lpg-cylinders-in-push-for-clean-cooking-5054512"]},
+{"i":"tony-elumelu-foundation","t":"Seed capital and training for African entrepreneurs","o":"Tony Elumelu Foundation","s":"B","g":"by","c":["web","Web","https://www.tonyelumelufoundation.org/?p=28248"]},
+{"i":"african-development-bank-afawa-and-the-african-g","t":"Helps banks lend to women-led businesses","o":"African Development Bank · AFAWA and the African Guarantee Fund","s":"B","g":"bo","c":["read","Info","https://findevgateway.org/news/african-development-bank-and-african-guarantee-fund-sign-110-million-agreement-with-tanzanias"]},
+{"i":"agra-value4her","t":"Network for women in agribusiness","o":"AGRA · VALUE4HER","s":"B","g":"b","c":["web","Web","https://agra.org/the-value4her-initiative/"]},
+{"i":"africa-enterprise-challenge-fund-aecf-tanzania-c","t":"Grants for businesses, including clean cooking","o":"Africa Enterprise Challenge Fund (AECF) · Tanzania Clean Cooking Project","s":"F","g":"bo","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/how-aecf-s-sh9-75bn-boost-is-powering-clean-energy-shift-5186040"]},
+{"i":"graca-machel-trust-women-creating-wealth","t":"Programmes and networks for women entrepreneurs","o":"Graça Machel Trust · Women Creating Wealth","s":"B","g":"b","c":["web","Web","https://gracamacheltrust.org/media/an-african-developmental-agenda-set-by-africans-and-delivered-by-africans/"]},
+{"i":"fsd-tanzania-financial-sector-deepening-trust-ms","t":"Finance research and grants for small businesses","o":"FSD Tanzania (Financial Sector Deepening Trust) · MSME Impact Grant Fund","s":"B","g":"byo","c":["read","Info","https://www.eeas.europa.eu/delegations/tanzania/msme-impact-grant-fund-igf-launches-support-women-and-youth-owned-or-led-enterprises-across-mainland_en"]},
+{"i":"trademark-africa-women-in-trade","t":"Helps women traders reach regional markets","o":"TradeMark Africa · Women in Trade","s":"B","g":"b","c":["web","Web","https://trademarkafrica.com/women-in-trade/"]},
+{"i":"one-acre-fund-tanzania","t":"Seeds and fertiliser on credit, with training, for farmers","o":"One Acre Fund Tanzania","s":"A","g":"bo","c":["web","Web","https://oneacrefund.org/what-we-do/countries-we-serve/tanzania"]},
+{"i":"technoserve-tanzania","t":"Business and farming programmes","o":"TechnoServe Tanzania","s":"A","g":"bo","c":["web","Web","https://technoserve.org/our-work/where-we-work/tanzania"]},
+{"i":"heifer-international-tanzania","t":"Livestock and farm programmes focused on women and youth","o":"Heifer International Tanzania","s":"A","g":"bo","c":["web","Web","https://heifer.org/our-work/where-we-work/tanzania"]},
+{"i":"aga-khan-university-dar-es-salaam","t":"Nursing, midwifery and teacher education","o":"Aga Khan University (Dar es Salaam)","s":"E","g":"ty","c":["read","Info","https://thecitizen.co.tz/tanzania/news/national/aga-khan-university-launches-programmes-to-boost-healthcare-education-in-ea-4311338"]},
+{"i":"switzerland-sdc-skills-for-employment-tanzania-s","t":"Vocational skills for youth, especially young mothers","o":"Switzerland (SDC) · Skills for Employment Tanzania (Swisscontact)","s":"J","g":"myo","c":["web","Web","https://www.deza.eda.admin.ch/en/skills-development-for-tanzanias-vulnerable-youth"]},
+{"i":"colleges-and-institutes-canada-empowerment-throu","t":"Better training for women and girls at Folk Development Colleges","o":"Colleges and Institutes Canada · Empowerment through Skills Program","s":"J","g":"yuo","c":["web","Web","https://www.collegesinstitutes.ca/programs/empowerment-through-skills-program-esp-tanzania/"]},
+{"i":"enabel-belgium-inclu-cities-in-tanga-mwanza-and-","t":"Vocational training and jobs in Tanga, Mwanza and Pemba","o":"Enabel (Belgium) · Inclu-Cities in Tanga, Mwanza and Pemba","s":"J","g":"ybo","c":["web","Web","https://open.enabel.be/en/TZA/2612/updates/inclusive-green-and-sustainable-local-economy-in-selected-cities-in-tanzania.html"]},
+{"i":"vso-tanzania","t":"Skilled volunteers for education, health and livelihoods","o":"VSO Tanzania","s":"J","g":"yo","c":["web","Web","https://www.vsointernational.org/countries/tanzania"]},
+{"i":"doctors-with-africa-cuamm","t":"Maternal and child health care in hospitals","o":"Doctors with Africa CUAMM","s":"H","g":"mp","c":["web","Web","https://www.mediciconlafrica.org/en/?p=5010"]},
+{"i":"cuso-international-with-sido","t":"Volunteer business advisers for new entrepreneurs","o":"Cuso International (with SIDO)","s":"B","g":"by","c":["web","Web","https://cusointernational.org/stories/entrepreneur-program-helps-young-women-in-tanzania/"]},
+{"i":"undp-tanzania-funguo-innovation-programme","t":"Grants for start-ups and small businesses","o":"UNDP Tanzania · FUNGUO innovation programme","s":"B","g":"bo","c":["read","Info","https://thecitizen.co.tz/tanzania/business/funguo-programme-expands-funding-to-sh6-5bn-for-high-potential-startups-5227796"]},
+{"i":"ilo-dar-es-salaam-office","t":"Apprenticeships and business training","o":"ILO (Dar es Salaam office)","s":"J","g":"byo","c":["web","Web","https://www.ilo.org/resource/news/tanzania-launches-guidelines-boost-implementation-apprenticeship-and"]},
+{"i":"un-joint-programme-on-rural-women-s-economic-emp","t":"UN programme for rural women's incomes","o":"UN Joint Programme on Rural Women's Economic Empowerment (FAO, IFAD, UN Women, WFP)","s":"B","g":"bo","c":["read","Info","https://www.wfp.org/news/un-agencies-launch-joint-programme-zanzibar-accelerate-women-empowerment"]},
+{"i":"uncdf-tanzania","t":"Finance for local development and women's savings","o":"UNCDF Tanzania","s":"B","g":"bo","c":["web","Web","https://www.uncdf.org/ield/tanzania"]},
+{"i":"ifc-anaweza-she-can","t":"Helps banks and companies serve women","o":"IFC · Anaweza ('She Can')","s":"B","g":"bo","c":["web","Web","https://www.ifc.org/en/pressroom/2023/ifc-launches-womens-economic-empowerment-program-in-tanzania"]},
+{"i":"we-fi-women-entrepreneurs-finance-initiative","t":"Global fund for women entrepreneurs' finance","o":"We-Fi (Women Entrepreneurs Finance Initiative)","s":"B","g":"bo","c":["read","Info","https://www.afdb.org/ar/documents/eoi-multinational-women-entrepreneurs-finance-initiative-we-fi-trust-fund-strengthening-access-finance-women-smes-tanzania-afawa"]},
+{"i":"japan-jica-tanshep-horticulture","t":"Market-led horticulture for farmer groups","o":"Japan (JICA) · TANSHEP horticulture","s":"A","g":"b","c":["web","Web","https://www.jica.go.jp/english/information/press/2024/20240925_31.html"]},
+{"i":"cartier-women-s-initiative","t":"Awards and coaching for women-run businesses","o":"Cartier Women's Initiative","s":"B","g":"b","c":["read","Info","https://www.richemont.com/news-media/press-releases-news/cartier-women-s-initiative-celebrates-its-20th-anniversary-and-launches-call-for-applications-for-the-2027-edition/"]},
+{"i":"ministry-of-health-mainland","t":"Runs Tanzania's public health system","o":"Ministry of Health (mainland)","s":"H","g":"mpo","c":0},
+{"i":"ministry-of-community-development-gender-women-a","t":"Leads gender equality, child protection and community development","o":"Ministry of Community Development, Gender, Women and Special Groups","s":"S","g":"bpo","c":0},
+{"i":"tanzania-bureau-of-standards-tbs","t":"Sets and certifies national product standards","o":"Tanzania Bureau of Standards (TBS)","s":"P","g":"bo","c":0},
+{"i":"tasaf-social-safety-net","t":"The government's safety net for the poorest households","o":"TASAF (social safety net)","s":"G","g":"po","c":0},
+{"i":"wazazi-nipendeni-ministry-of-health-with-jhu-ccp","t":"Safe-motherhood campaign with free pregnancy text messages","o":"Wazazi Nipendeni (Ministry of Health with JHU CCP)","s":"H","g":"mp","c":["read","Info","https://thecompassforsbc.org/project-examples/wazazi-nipendeni-text-messaging"]},
+{"i":"taarifa-app-mkuki-coalition","t":"Coalition app to report gender-based violence","o":"Taarifa app (MKUKI coalition)","s":"S","g":"uymp","c":["read","Info","https://globalvoices.org/2020/12/04/tanzania-launches-mobile-app-to-help-victims-report-gender-based-violence/"]},
+{"i":"shule-direct","t":"Free digital lessons for secondary students","o":"Shule Direct","s":"E","g":"utm","c":["app","App","https://apps.apple.com/us/app/shule-direct/id1323956808"]},
+{"i":"ubongo","t":"Swahili learning shows for children on TV, radio and phones","o":"Ubongo","s":"E","g":"tp","c":0},
+{"i":"d-tree-jamii-ni-afya-zanzibar","t":"Digital tools for community health workers","o":"D-tree (Jamii ni Afya, Zanzibar)","s":"H","g":"po","c":0},
+{"i":"femina-hip","t":"Youth media for health and life skills","o":"Femina Hip","s":"Y","g":"uyt","c":0},
+{"i":"women-s-legal-aid-centre-wlac","t":"Free legal aid for women","o":"Women's Legal Aid Centre (WLAC)","s":"S","g":"ymp","c":0},
+{"i":"tanzania-women-lawyers-association-tawla","t":"Women lawyers advancing women's and children's rights","o":"Tanzania Women Lawyers Association (TAWLA)","s":"S","g":"ymp","c":0},
+{"i":"legal-and-human-rights-centre-lhrc","t":"Legal aid and human rights monitoring","o":"Legal and Human Rights Centre (LHRC)","s":"S","g":"yp","c":0},
+{"i":"kivulini-women-s-rights-organization","t":"Prevents violence against women and girls in Mwanza","o":"Kivulini Women's Rights Organization","s":"S","g":"ymp","c":0},
+{"i":"tgnp-tanzania-gender-networking-programme","t":"Gender equality and women's rights","o":"TGNP (Tanzania Gender Networking Programme)","s":"S","g":"po","c":0},
+{"i":"tanzania-media-women-s-association-tamwa","t":"Women journalists for women's and children's rights","o":"Tanzania Media Women's Association (TAMWA)","s":"S","g":"op","c":0},
+{"i":"tanzania-girl-guides-association","t":"Girls' leadership through clubs","o":"Tanzania Girl Guides Association","s":"E","g":"ut","c":0},
+{"i":"restless-development-tanzania","t":"Youth-led development","o":"Restless Development Tanzania","s":"J","g":"yo","c":0},
+{"i":"world-vision-tanzania","t":"Well-being of children, especially the most vulnerable","o":"World Vision Tanzania","s":"E","g":"mto","c":0},
+{"i":"care-tanzania","t":"Fights poverty with women and girls at the centre","o":"CARE Tanzania","s":"B","g":"byo","c":0},
+{"i":"un-women-tanzania","t":"UN agency for gender equality","o":"UN Women Tanzania","s":"F","g":"bo","c":0},
+{"i":"procter-gamble-always-pampers","t":"Consumer goods company (Always, Pampers)","o":"Procter & Gamble (Always, Pampers)","s":"P","g":"po","c":0},
+{"i":"kimberly-clark-kotex-huggies","t":"Consumer goods company (Kotex, Huggies)","o":"Kimberly-Clark (Kotex, Huggies)","s":"P","g":"po","c":0},
+{"i":"plantpad-consortium-stanford-university-sisal-pa","t":"Research group making local, plant-based pads possible","o":"PlantPad Consortium (Stanford University) · sisal pads, with Olex Techno Enterprises (Kisumu, Kenya)","s":"P","g":"bo","c":["read","Info","https://ssir.org/articles/entry/plant-based-menstrual-pads"]},
+{"i":"nactvet-national-council-for-technical-and-vocat","t":"Accredits vocational and technical colleges and their courses","o":"NACTVET (National Council for Technical and Vocational Education and Training)","s":"J","g":"yo","c":0},
+{"i":"brela-business-registrations-and-licensing-agenc","t":"Registers businesses and issues business licences","o":"BRELA (Business Registrations and Licensing Agency)","s":"B","g":"b","c":0},
+{"i":"tantrade-tanzania-trade-development-authority","t":"Trade fairs and market links for Tanzanian products","o":"TanTrade (Tanzania Trade Development Authority)","s":"B","g":"b","c":0},
+{"i":"self-microfinance-fund","t":"Government fund that lends through microfinance groups","o":"SELF Microfinance Fund","s":"B","g":"b","c":0},
+{"i":"tanga-regional-secretariat-and-district-councils","t":"Regional government for Tanga Region and its councils","o":"Tanga Regional Secretariat and district councils","s":"G","g":"pto","c":0},
+{"i":"ndoto-hub","t":"Incubator for young women entrepreneurs","o":"Ndoto Hub","s":"B","g":"yb","c":["read","Info","https://w05.international.gc.ca/projectbrowser-banqueprojets/project-projet/details/p006220001"]},
+{"i":"tanga-paralegal-aid-scheme-for-women-and-childre","t":"Legal help for women and children in Tanga","o":"Tanga Paralegal Aid Scheme for Women and Children","s":"S","g":"ymp","c":["read","Info","https://voice.global/grantees/empowerment-influence-mobilisation-of-women-in-political-leadership/"]},
+{"i":"tanzania-midwives-association-tama","t":"Professional association of midwives","o":"Tanzania Midwives Association (TAMA)","s":"H","g":"mo","c":0},
+{"i":"absa-bank-tanzania-readytowork","t":"Free app for job, money and business skills","o":"Absa Bank Tanzania · ReadytoWork","s":"J","g":"y","c":["web","Web","https://www.absa.africa/?p=8611"]},
+{"i":"po-ralg-and-district-councils","t":"Runs regions, district councils, public schools and local health services","o":"PO-RALG and district councils","s":"G","g":"to","c":["read","Info","https://reliefweb.int/report/united-republic-tanzania/wfp-tanzania-country-brief-november-2023"]},
+{"i":"mikuyu-tanzania","t":"Community programmes, including menstrual health","o":"Mikuyu Tanzania","s":"P","g":"to","c":["web","Web","https://www.mikuyutanzania.org/mhm"]},
+{"i":"wateraid-tanzania","t":"Clean water, toilets and hygiene for everyone","o":"WaterAid Tanzania","s":"P","g":"to","c":["read","Info","https://majisafigroup.org/menstrual-hygiene-management/"]},
+{"i":"snv-tanzania-girls-in-control","t":"Development organisation for farming, energy and water","o":"SNV Tanzania · Girls in Control","s":"P","g":"to","c":["web","Web","https://www.snv.org/project/girls-control-tanzania"]},
+{"i":"global-communities-pamoja-tuwalishe","t":"Development and humanitarian work with communities","o":"Global Communities (Pamoja Tuwalishe)","s":"A","g":"to","c":["read","Info","https://tz.usembassy.gov/u-s-tanzania-partner-to-boost-literacy-rates-through-school-feeding-program/"]},
+{"i":"repssi-tanzania","t":"Psychosocial support for children and young people","o":"REPSSI Tanzania","s":"H","g":"to","c":["web","Web","https://repssi.org/countries/tanzania/"]},
+{"i":"unicef-tanzania","t":"UN agency for children's rights and well-being","o":"UNICEF Tanzania","s":"E","g":"to","c":["web","Web","https://www.unicef.org/tanzania/stories/oky-app-tanzanian-girls"]},
+{"i":"wfp-tanzania","t":"UN food agency","o":"WFP Tanzania","s":"A","g":"to","c":["read","Info","https://reliefweb.int/report/united-republic-tanzania/wfp-tanzania-country-brief-november-2023"]},
+{"i":"unesco-dar-es-salaam","t":"UN agency for education, science and culture","o":"UNESCO (Dar es Salaam)","s":"E","g":"to","c":["read","Info","https://www.unesco.org/en/articles/unesco-and-ministry-health-strengthen-youth-access-health-and-well-being-information-through-afya"]},
+{"i":"school-meals-coalition","t":"Countries working for a school meal for every child by 2030","o":"School Meals Coalition","s":"A","g":"to","c":["web","Web","https://schoolmealscoalition.org/member/tanzania"]},
+{"i":"tanzania-education-authority-tea-education-fund","t":"Public fund for school buildings, including girls' hostels","o":"Tanzania Education Authority (TEA) · Education Fund","s":"E","g":"to","c":["web","Web","https://www.tea.or.tz/about-us"]},
+{"i":"twaweza-east-africa-uwezo-learning-assessments","t":"Simple household tests of children's reading and maths","o":"Twaweza East Africa · Uwezo learning assessments","s":"R","g":"to","c":["read","Info","https://docs.edtechhub.org/lib/7KQIECHH"]},
+{"i":"aga-khan-foundation-tanzania","t":"Early learning, savings groups and farming","o":"Aga Khan Foundation Tanzania","s":"A","g":"to","c":["web","Web","https://www.akdn.org/where-we-work/eastern-africa/tanzania/early-childhood-development-tanzania"]},
+{"i":"gain-global-alliance-for-improved-nutrition-tanz","t":"Fortified, nutritious school meals","o":"GAIN (Global Alliance for Improved Nutrition) Tanzania","s":"A","g":"to","c":["web","Web","https://www.gainhealth.org/resources/reports-and-publications/lishe-shuleni-fact-sheet"]},
+{"i":"malala-fund","t":"Grants for girls' education advocates","o":"Malala Fund","s":"E","g":"to","c":["web","Web","https://malala.org/countries/tanzania"]},
+{"i":"hakielimu","t":"Quality, free education for every child","o":"HakiElimu","s":"E","g":"to","c":0},
+{"i":"tanzania-education-network-ten-met","t":"Network of education civil society groups","o":"Tanzania Education Network (TEN/MET)","s":"E","g":"to","c":0},
+{"i":"fawe-forum-for-african-women-educationalists","t":"Pan-African network for girls' and women's education","o":"FAWE (Forum for African Women Educationalists)","s":"E","g":"to","c":0},
+{"i":"tanzania-institute-of-education-tie","t":"Develops the national school curriculum and learning materials","o":"Tanzania Institute of Education (TIE)","s":"E","g":"to","c":0},
+{"i":"ministry-of-finance-vat-on-pads","t":"Manages the government's money, budget and taxes","o":"Ministry of Finance (VAT on pads)","s":"G","g":"o","c":["read","Info","https://imher.net/blog/2019/08/tanzania-vat-flip-flop/"]},
+{"i":"zanzibar-ministries-of-health-and-of-education","t":"Run Zanzibar's own health and education systems","o":"Zanzibar Ministries of Health and of Education","s":"G","g":"o","c":["read","Info","https://allafrica.com/stories/202406040223.html"]},
+{"i":"villagereach-afya-call-centre-support","t":"Makes health products and services reach the last mile","o":"VillageReach (Afya Call Centre support)","s":"H","g":"o","c":["web","Web","https://www.villagereach.org/2025/08/18/tanzanias-afya-call-center-cita/"]},
+{"i":"tanzania-menstrual-hygiene-health-coalition","t":"National network for menstrual health","o":"Tanzania Menstrual Hygiene Health Coalition","s":"P","g":"o","c":["read","Info","https://majisafigroup.org/menstrual-hygiene-management/"]},
+{"i":"tanzania-ending-child-marriage-network-tecmn","t":"Network of 100+ groups ending child marriage","o":"Tanzania Ending Child Marriage Network (TECMN)","s":"S","g":"o","c":["web","Web","https://www.cdf.or.tz/tanzania-ending-child-marriage-network/"]},
+{"i":"women-fund-tanzania-trust","t":"Tanzanian fund for women's rights groups","o":"Women Fund Tanzania Trust","s":"F","g":"o","c":["web","Web","https://wftrust.or.tz/"]},
+{"i":"tai-tanzania","t":"Youth storytelling and animation for social change","o":"Tai Tanzania","s":"Y","g":"o","c":["read","Info","https://partners.tai.or.tz/2022/05/oky-the-period-tracking-app-is-coming-to-tanzania-soon/"]},
+{"i":"african-union-school-feeding","t":"African Union policy on school meals","o":"African Union · school feeding","s":"A","g":"o","c":["web","Web","https://au.int/en/about-au-school-feeding"]},
+{"i":"us-government-usaid-closed-pepfar-usda","t":"US foreign aid","o":"US government (USAID closed, PEPFAR, USDA)","s":"F","g":"o","c":["read","Info","https://www.unaids.org/en/resources/presscentre/featurestories/2025/march/20250311_Tanzania_fs"]},
+{"i":"belgium-development-cooperation","t":"Belgium's development aid","o":"Belgium (development cooperation)","s":"F","g":"o","c":["read","Info","https://diplomatie.belgium.be/en/policy/policy-areas/highlighted/her-initiative-transforms-lives-young-women-tanzania"]},
+{"i":"segal-family-foundation","t":"Funds African-led organisations in East and Southern Africa","o":"Segal Family Foundation","s":"F","g":"o","c":["web","Web","https://www.segalfamilyfoundation.org/fellows/lydia-charles/"]},
+{"i":"king-baudouin-foundation-africa-prize","t":"Belgian foundation; its Africa Prize honours African-led change","o":"King Baudouin Foundation (Africa Prize)","s":"F","g":"o","c":["read","Info","https://www.africa.com/king-baudouin-foundation-africa-prize-awarded-to-her-initiative-a-tanzanian-organisation-that-bets-on-womens-economic-empowerment"]},
+{"i":"the-big-heart-foundation-uae","t":"UAE humanitarian foundation","o":"The Big Heart Foundation (UAE)","s":"F","g":"o","c":["read","Info","https://www.savethechildren.net/tanzania/news/zanzibar-girls-reclaim-school-days-through-improved-wash"]},
+{"i":"fondation-addax-oryx","t":"Foundation fighting poverty in Africa and the Middle East","o":"Fondation Addax & Oryx","s":"F","g":"o","c":["read","Info","https://www.fondation-addax-oryx.org/en/projects/young-women-youth-associations"]},
+{"i":"duke-unicef-innovation-accelerator","t":"Accelerator for ventures serving young people","o":"Duke-UNICEF Innovation Accelerator","s":"F","g":"o","c":["read","Info","https://www.unicefusa.org/stories/unicef-and-duke-accelerate-6-solutions-better-menstrual-health"]},
+{"i":"msi-reproductive-choices-ippf-global","t":"Global reproductive health providers","o":"MSI Reproductive Choices · IPPF (global)","s":"H","g":"o","c":["web","Web","https://www.msichoices.org/what-we-do/where-we-work/tanzania/"]},
+{"i":"girls-not-brides","t":"Global partnership to end child marriage","o":"Girls Not Brides","s":"S","g":"o","c":["web","Web","https://www.girlsnotbrides.org/our-partnership/national-partnerships-coalitions/tanzania/"]},
+{"i":"tanzania-s-elmis-government-stock-system","t":"Government system tracking public health supplies","o":"Tanzania's eLMIS (government stock system)","s":"H","g":"o","c":["read","Info","https://openlmis.org/implementation_region/tanzania/"]},
+{"i":"bank-of-tanzania-financial-inclusion-and-microfi","t":"The central bank: it sets the rules for savings and loans","o":"Bank of Tanzania (financial inclusion and microfinance rules)","s":"B","g":"o","c":["web","Web","https://www.bot.go.tz/DFDI/FinancialInclusion?lang=en"]},
+{"i":"foundation-for-civil-society-fcs","t":"Tanzanian grant-maker for civil society","o":"Foundation for Civil Society (FCS)","s":"F","g":"o","c":["web","Web","https://thefoundation.or.tz/about-us/"]},
+{"i":"repoa-policy-research-for-development","t":"Independent research on poverty, gender and growth","o":"REPOA (Policy Research for Development)","s":"R","g":"o","c":["web","Web","https://repoa.or.tz/wp-content/uploads/2026/04/Closing-the-Financial-Inclusion-Gender-Gap-to-Unlock-Womens-Entrepreneurial-Capacity-in-Tanzania_fn.pdf"]},
+{"i":"mining-companies-yearly-csr-plans-mining-act-s-1","t":"Mining companies must fund community projects each year","o":"Mining companies' yearly CSR plans (Mining Act, s. 105)","s":"F","g":"o","c":["read","Info","https://bowmanslaw.com/insights/tanzania-the-mining-corporate-social-responsibility-regulations-2023/"]},
+{"i":"eacop-east-african-crude-oil-pipeline-chongolean","t":"Oil pipeline company funding projects near its Tanga terminal","o":"EACOP (East African Crude Oil Pipeline, Chongoleani terminal, Tanga)","s":"F","g":"o","c":["web","Web","https://www.eacop.com/eacop-empowers-coastal-communities-in-tanga-through-livelihood-and-conservation-initiative/"]},
+{"i":"african-women-s-development-fund-awdf","t":"Grants for African women's organisations","o":"African Women's Development Fund (AWDF)","s":"F","g":"o","c":["read","Info","https://www.developmentaid.org/grants/view/1717667/african-womens-development-fund-awdf-open-grants-including-multi-country-grants"]},
+{"i":"east-africa-philanthropy-network-eapn","t":"Network of East African grant-makers","o":"East Africa Philanthropy Network (EAPN)","s":"F","g":"o","c":["read","Info","https://www.fundraiso.ch/en/organisations/east-africa-philanthropy-network"]},
+{"i":"touch-foundation","t":"Training for nurses and midwives in the Lake Zone","o":"Touch Foundation","s":"H","g":"o","c":["read","Info","https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5615632/"]},
+{"i":"ifad-international-fund-for-agricultural-develop","t":"UN fund for farming and rural incomes","o":"IFAD (International Fund for Agricultural Development)","s":"A","g":"o","c":["read","Info","https://thecitizen.co.tz/tanzania/supplement/success-of-tadb-smallholder-credit-guarantee-scheme-scgs--3308454"]},
+{"i":"global-financing-facility-gff","t":"Funds Tanzania's plan for mothers', children's and adolescents' health","o":"Global Financing Facility (GFF)","s":"H","g":"o","c":["web","Web","https://www.globalfinancingfacility.org/country/tanzania"]},
+{"i":"european-union-gender-transformative-action-brea","t":"EU programme for women's equality and income","o":"European Union · Gender Transformative Action ('Breaking the Glass Ceiling')","s":"F","g":"o","c":["web","Web","https://international-partnerships.ec.europa.eu/policies/global-gateway/gender-transformative-action-tanzania_en"]},
+{"i":"korea-koica","t":"Korean aid for training, health and water","o":"Korea (KOICA)","s":"F","g":"o","c":["read","Info","https://www.thecitizen.co.tz/tanzania/news/national/koica-projects-worth-sh126-billion-set-to-support-govt-development-plan-5476224"]},
+{"i":"gsma-connected-women","t":"Closing the gender gap in mobile phone use","o":"GSMA Connected Women","s":"R","g":"o","c":["web","Web","https://www.gsma.com/solutions-and-impact/connectivity-for-good/mobile-for-development/connected-women/the-commitment/"]},
+{"i":"tmda-medicines-and-medical-devices-regulator","t":"Makes sure medicines and medical devices are safe and registered","o":"TMDA (medicines and medical devices regulator)","s":"H","g":"o","c":0},
+{"i":"medical-stores-department-msd","t":"Buys, stores and delivers medicines to public health facilities","o":"Medical Stores Department (MSD)","s":"H","g":"o","c":0},
+{"i":"amref-health-africa-tanzania","t":"African-led health organisation","o":"Amref Health Africa (Tanzania)","s":"H","g":"o","c":0},
+{"i":"pathfinder-international-jhpiego-engenderhealth","t":"Reproductive and maternal health organisations","o":"Pathfinder International · Jhpiego · EngenderHealth","s":"H","g":"o","c":0},
+{"i":"zanaafrica-kenya","t":"Pads plus health education for girls","o":"ZanaAfrica (Kenya)","s":"P","g":"o","c":0},
+{"i":"who-tanzania","t":"UN health agency","o":"WHO Tanzania","s":"H","g":"o","c":0},
+{"i":"unhcr-tanzania","t":"UN refugee agency","o":"UNHCR Tanzania","s":"F","g":"o","c":0},
+{"i":"global-partnership-for-education","t":"Global fund for education in lower-income countries","o":"Global Partnership for Education","s":"E","g":"o","c":0},
+{"i":"global-fund","t":"Fights HIV, TB and malaria","o":"Global Fund","s":"H","g":"o","c":0},
+{"i":"gates-foundation","t":"Saves and improves lives; will close by 2045","o":"Gates Foundation","s":"F","g":"o","c":0},
+{"i":"children-s-investment-fund-foundation-ciff","t":"Foundation for children's and adolescents' lives","o":"Children's Investment Fund Foundation (CIFF)","s":"F","g":"o","c":0},
+{"i":"uk-fcdo-canada-sweden-germany-ireland-bilateral-","t":"Governments' aid programmes","o":"UK FCDO, Canada, Sweden, Germany, Ireland (bilateral donors)","s":"F","g":"o","c":0},
+{"i":"days-for-girls-international","t":"Menstrual health kits and education","o":"Days for Girls International","s":"P","g":"o","c":0},
+{"i":"aidonic-unicef-aidlink-algorand-aid-trust-portal","t":"Digital tools that track aid to the people who receive it","o":"AIDONIC, UNICEF AidLink, Algorand Aid Trust Portal","s":"R","g":"o","c":["web","Web","https://www.aidonic.io/"]},
+{"i":"sopact-upmetrics-sureimpact","t":"AI-assisted reporting software for nonprofits and funders","o":"Sopact, UpMetrics, SureImpact","s":"R","g":"o","c":["web","Web","https://www.sopact.com/use-case/impact-reporting-software"]},
+{"i":"nimr-national-institute-for-medical-research","t":"Health research and research ethics approval","o":"NIMR (National Institute for Medical Research)","s":"H","g":"o","c":0},
+{"i":"ifakara-health-institute","t":"Tanzanian health research institute","o":"Ifakara Health Institute","s":"H","g":"o","c":0},
+{"i":"village-enterprise","t":"One-time grants plus training to start small businesses","o":"Village Enterprise","s":"B","g":"o","c":["read","Info","https://poverty-action.org/alleviating-poverty-integrated-microenterprise-program"]},
+{"i":"british-international-investment-bii-2x-challeng","t":"UK investor that set gender criteria for investments","o":"British International Investment (BII) · 2X Challenge","s":"F","g":"o","c":["web","Web","https://www.bii.co.uk/en/our-impact/our-impact-specialisms/gender-equality/"]},
+{"i":"food4education-kenya","t":"Ends classroom hunger with affordable school lunches","o":"Food4Education (Kenya)","s":"A","g":"o","c":["web","Web","https://food4education.org/our-work/"]},
+{"i":"mary-s-meals","t":"One good meal every school day for hungry children","o":"Mary's Meals","s":"A","g":"o","c":["read","Info","https://en.wikipedia.org/wiki/Mary%27s_Meals"]},
+{"i":"national-diaper-bank-network-us","t":"US network of diaper banks","o":"National Diaper Bank Network (US)","s":"P","g":"o","c":0},
+{"i":"kasha","t":"Discreet delivery of women's health products by women agents","o":"Kasha","s":"P","g":"o","c":["read","Info","https://businessfightspoverty.org/a-transformative-journey-kashas-mission-to-provide-equal-health-access-to-all-women/"]},
+{"i":"living-goods","t":"Community health workers who save lives and earn","o":"Living Goods","s":"H","g":"o","c":["web","Web","https://livinggoods.org/"]},
+{"i":"educate","t":"Practical skills built into secondary schools","o":"Educate!","s":"E","g":"o","c":["read","Info","https://www.globalinnovation.fund/investments/educate"]}
+];
+
+  // Swahili labels: for native review.
+  var AUD = [
+    { k: 'u', en: 'Student under 18', sw: 'Mwanafunzi chini ya miaka 18' },
+    { k: 'm', en: 'Student mother / pregnant', sw: 'Mama mwanafunzi au mjamzito' },
+    { k: 'y', en: 'Woman 18+, skills or work', sw: 'Ujuzi na kazi, miaka 18+' },
+    { k: 'b', en: 'Business or farming', sw: 'Biashara au kilimo' },
+    { k: 't', en: 'School or teacher', sw: 'Mkuu wa shule au mwalimu' },
+    { k: 'o', en: 'NGO or funder', sw: 'Shirika au mfadhili' },
+    { k: 'p', en: 'General public', sw: 'Jamii kwa ujumla' }
+  ];
+  var TOPIC = { H: 'Health', S: 'Safety and legal help', P: 'Periods and hygiene', E: 'Education', J: 'Skills and jobs',
+    B: 'Business and money', A: 'Farming and food', N: 'Clean energy', Y: 'Youth and media', F: 'Funding',
+    G: 'Government', R: 'Research and data' };
+  var TOPIC_ORDER = 'HSJBEPANYFGR';
+
+  var who = {}, topic = '', ticked = {}, channel = 'wa', shown = [];
+  var audEl = root.querySelector('.fx-aud');
+  var topicRow = root.querySelectorAll('.fx-pick')[1];
+  var topicEl = root.querySelector('.fx-topics');
+  var listEl = root.querySelector('.fx-list');
+  var countEl = root.querySelector('.fx-count');
+  var introEl = root.querySelector('.fx-intro');
+  var form = root.querySelector('.fx-send');
+  var phone = root.querySelector('.fx-phone');
+  var go = root.querySelector('.fx-go');
+  var msg = root.querySelector('.fx-msg');
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function chip(label, pressed, extra) {
+    var b = el('button', 'fx-chip');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    b.appendChild(document.createTextNode(label));
+    if (extra != null) b.appendChild(el('span', 'fx-n', extra));
+    return b;
+  }
+
+  AUD.forEach(function (a) {
+    var b = chip(a.en, false);
+    b.setAttribute('data-k', a.k);
+    b.setAttribute('title', a.sw);
+    b.setAttribute('aria-description', a.sw);
+    audEl.appendChild(b);
+  });
+
+  function reveal(b) {                       // keep a tapped chip fully in view inside its sliding row
+    var s = b.parentNode, r = b.getBoundingClientRect(), sr = s.getBoundingClientRect();
+    if (r.left < sr.left) s.scrollLeft -= (sr.left - r.left) + 8;
+    else if (r.right > sr.right - 24) s.scrollLeft += (r.right - sr.right) + 32;
+  }
+  function matchesWho(d) { var ks = Object.keys(who); return ks.some(function (k) { return d.g.indexOf(k) !== -1; }); }
+
+  function drawTopics() {
+    var pool = DATA.filter(matchesWho);
+    var counts = {};
+    pool.forEach(function (d) { counts[d.s] = (counts[d.s] || 0) + 1; });
+    if (topic && !counts[topic]) topic = '';
+    while (topicEl.firstChild) topicEl.removeChild(topicEl.firstChild);
+    var all = chip('All', !topic, String(pool.length));
+    all.setAttribute('data-s', '');
+    topicEl.appendChild(all);
+    TOPIC_ORDER.split('').forEach(function (s) {
+      if (!counts[s]) return;
+      var b = chip(TOPIC[s], topic === s, String(counts[s]));
+      b.setAttribute('data-s', s);
+      topicEl.appendChild(b);
+    });
+  }
+
+  function contactLink(c, org) {
+    var isCall = c[0] === 'call';
+    var a = el('a', 'fx-c' + (isCall ? ' is-call' : ''));
+    a.href = c[2];
+    if (isCall) {
+      a.textContent = '☎ ' + c[1];
+      a.setAttribute('aria-label', 'Call ' + c[1] + ', ' + org);
+    } else {
+      a.textContent = c[1] + ' ↗';
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.setAttribute('aria-label', c[1] + ' for ' + org + ' (opens in a new tab)');
+    }
+    return a;
+  }
+
+  function drawList() {
+    var any = Object.keys(who).length > 0;
+    introEl.hidden = any;
+    topicRow.hidden = !any;
+    while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
+    shown = any ? DATA.filter(function (d) { return matchesWho(d) && (!topic || d.s === topic); }) : [];
+    Object.keys(ticked).forEach(function (id) { if (!shown.some(function (d) { return d.i === id; })) delete ticked[id]; });
+    var frag = document.createDocumentFragment();
+    shown.forEach(function (d) {
+      var li = el('li', 'fx-item');
+      var lab = el('label');
+      var cb = el('input');
+      cb.type = 'checkbox';
+      cb.value = d.i;
+      cb.checked = !!ticked[d.i];
+      cb.setAttribute('aria-label', 'Choose: ' + d.t + ', ' + d.o);
+      var tick = el('span', 'fx-tick', '✓');
+      tick.setAttribute('aria-hidden', 'true');
+      var txt = el('span', 'fx-txt');
+      txt.appendChild(el('span', 'fx-t', d.t));
+      txt.appendChild(el('span', 'fx-o', d.o));
+      lab.appendChild(cb); lab.appendChild(tick); lab.appendChild(txt);
+      li.appendChild(lab);
+      if (d.c) li.appendChild(contactLink(d.c, d.o));
+      frag.appendChild(li);
+    });
+    listEl.appendChild(frag);
+    var n = shown.length;
+    countEl.textContent = any ? (n + (n === 1 ? ' result' : ' results') + ' · tick to choose') : '';
+    root.querySelector('.fx-results').scrollTop = 0;
+    status();
+  }
+
+  function pickedItems() {
+    var ids = Object.keys(ticked);
+    return ids.length ? shown.filter(function (d) { return ticked[d.i]; }) : shown;
+  }
+  function status(kind, text) {
+    var any = Object.keys(who).length > 0 && shown.length > 0;
+    go.disabled = !any;
+    msg.className = 'fx-msg' + (kind ? ' is-' + kind : '');
+    if (text) { msg.textContent = text; return; }
+    if (!any) { msg.textContent = 'Pick who you are, then add your number for full details.'; return; }
+    var n = Object.keys(ticked).length;
+    var base = n ? ('We will send details of the ' + n + ' you ticked.') : ('We will send details of all ' + shown.length + ' results.');
+    if (who.u) base = 'Under 18? Use a parent\'s or teacher\'s number. ' + base;
+    msg.textContent = base;
+  }
+
+  audEl.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.fx-chip');
+    if (!b) return;
+    var k = b.getAttribute('data-k');
+    var on = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    reveal(b);
+    if (on) who[k] = 1; else delete who[k];
+    drawTopics();
+    drawList();
+  });
+  topicEl.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('.fx-chip');
+    if (!b) return;
+    topic = b.getAttribute('data-s') || '';
+    Array.prototype.forEach.call(topicEl.querySelectorAll('.fx-chip'), function (c) {
+      c.setAttribute('aria-pressed', c === b ? 'true' : 'false');
+    });
+    reveal(b);
+    drawList();
+  });
+  listEl.addEventListener('change', function (e) {
+    if (!e.target || e.target.type !== 'checkbox') return;
+    if (e.target.checked) ticked[e.target.value] = 1; else delete ticked[e.target.value];
+    status();
+  });
+  root.querySelector('.fx-seg').addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('button');
+    if (!b) return;
+    channel = b.getAttribute('data-ch');
+    Array.prototype.forEach.call(this.querySelectorAll('button'), function (x) {
+      x.setAttribute('aria-checked', x === b ? 'true' : 'false');
+    });
+  });
+  phone.addEventListener('input', function () { phone.removeAttribute('aria-invalid'); if (msg.className.indexOf('is-error') !== -1) status(); });
+
+  // Accepts 0712 345 678, 712345678, +255712345678 or any international number with a +.
+  function normalise(raw) {
+    var s = String(raw).trim();
+    var digits = s.replace(/\D/g, '');
+    if (/^\+/.test(s)) return digits.length >= 8 && digits.length <= 15 ? '+' + digits : '';
+    if (/^0[67]\d{8}$/.test(digits)) return '+255' + digits.slice(1);
+    if (/^[67]\d{8}$/.test(digits)) return '+255' + digits;
+    if (/^255[67]\d{8}$/.test(digits)) return '+' + digits;
+    return '';
+  }
+  function buildMessage(num) {
+    var items = pickedItems();
+    var whoText = AUD.filter(function (a) { return who[a.k]; }).map(function (a) { return a.en; }).join(', ');
+    var lines = [
+      'Hello Dandelion Foundation. Please send me the details of these opportunities.',
+      'Send to: ' + num + ' (' + (channel === 'wa' ? 'WhatsApp' : 'SMS') + ')',
+      'I am: ' + whoText,
+      'Topic: ' + (topic ? TOPIC[topic] : 'All')
+    ];
+    items.slice(0, 12).forEach(function (d, i) { lines.push((i + 1) + '. ' + d.t + ' (' + d.o + ')'); });
+    if (items.length > 12) lines.push('+ ' + (items.length - 12) + ' more for these choices');
+    return lines.join('\n');
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var num = normalise(phone.value);
+    if (!num) {
+      phone.setAttribute('aria-invalid', 'true');
+      status('error', 'Enter a phone number like 0712 345 678.');
+      phone.focus();
+      return;
+    }
+    if (!NUMBER) {
+      status('warn', 'Sending is not switched on yet. For help now, call 116 or 199 (free).');
+      if (window.console) console.warn('Dandelion finder: add the Foundation number in DLFX_CONFIG at the top of the code.');
+      return;
+    }
+    var text = buildMessage(num);
+    var url = channel === 'wa'
+      ? 'https://wa.me/' + NUMBER + '?text=' + encodeURIComponent(text)
+      : 'sms:+' + NUMBER + '?&body=' + encodeURIComponent(text);
+    root.setAttribute('data-last-url', url);
+    if (channel === 'wa') {
+      var w = window.open(url, '_blank');
+      if (!w) window.location.href = url;
+    } else {
+      window.location.href = url;
+    }
+    status('ok', (channel === 'wa' ? 'WhatsApp' : 'Your messages app') + ' is opening with your request. Tap Send there to finish.');
+  });
+
+  root.addEventListener('click', function (e) {
+    var x = e.target.closest && e.target.closest('[data-exit]');
+    if (!x) return;
+    e.preventDefault();
+    try { window.top.location.replace(x.href); } catch (err) { window.location.replace(x.href); }
+  });
+
+  drawList();
+})();
+</script>
+<!-- END: Dandelion Opportunity Finder. If this line is in your Code Block, the whole code was pasted. -->
