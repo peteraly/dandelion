@@ -11,17 +11,22 @@
   The optional number box needs JavaScript (Squarespace Core plan or higher) and the number above.
   Swahili labels are for native review. Data checked October 2026. No outside libraries or trackers.
 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&amp;display=swap">
 <style>
 #dlfx {
-  --bg: #f2f2f7; --card: #ffffff; --ink: #111114; --ink-2: #545458; --sep: #d1d1d6; --fill: #e9e9ee; --off: #f5f5f7;
-  --accent: #0b6b45; --accent-ink: #ffffff; --accent-soft: #e3f3ea; --sos: #b42318; --warn: #8a4b00; --focus: #0a58ca;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --card: #101010; --ink: #ffffff; --ink-2: #a9a9a9; --sep: #2a2a2a; --line: #444444; --off: #151515;
+  --accent: #ffffff; --accent-ink: #000000; --sos: #ff7b72; --warn: #f2c46b; --focus: #ffffff;
+  --display: var(--heading-font-font-family, "Anton"), "Anton", "Oswald", "HelveticaNeue-CondensedBold", "Arial Narrow", "Roboto Condensed",
+    sans-serif-condensed, Impact, sans-serif;
+  --body: var(--body-font-font-family, "Helvetica Neue"), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--body);
   font-size: 17px; line-height: 1.35; color: var(--ink); letter-spacing: normal; text-transform: none; text-align: left;
   -webkit-text-size-adjust: 100%; box-sizing: border-box;
   display: flex; flex-direction: column; gap: 10px;
   height: 640px; height: min(calc(100vh - 16px), 780px); height: min(calc(100svh - 16px), 780px); min-height: 520px;
   width: 100%; min-width: 0; max-width: 720px; margin: 0 auto; padding: 14px 14px 12px; overflow: hidden;
-  background: var(--bg); border-radius: 22px;
+  background: radial-gradient(140% 70% at 0% 0%, #2b2b2b 0%, rgba(0, 0, 0, 0) 58%), linear-gradient(180deg, #111111 0%, #000000 100%);
+  border: 1px solid #1f1f1f; border-radius: 22px;
 }
 #dlfx *, #dlfx *::before, #dlfx *::after { box-sizing: border-box; }
 #dlfx [hidden] { display: none !important; }
@@ -40,17 +45,18 @@
 #dlfx .fx-in:focus-visible + label, #dlfx .fx-item input:focus-visible + .fx-tick { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 #dlfx .fx-top { flex: none; }
-#dlfx .fx-titlerow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#dlfx .fx-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+#dlfx .fx-subrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+#dlfx .fx-title { font-family: var(--display); font-size: 34px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1; }
 #dlfx .fx-exit {
-  flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px;
-  background: var(--ink-2); color: #fff; font-size: 16px; font-weight: 600; text-decoration: none;
+  flex: none; display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 999px;
+  border: 1px solid var(--ink); color: var(--ink); font-size: 16px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em;
+  text-decoration: none;
 }
-#dlfx .fx-help { margin-top: 4px; font-size: 16px; color: var(--ink-2); }
-#dlfx .fx-help a { color: var(--sos); font-weight: 700; text-decoration: none; white-space: nowrap; padding: 4px 2px; }
+#dlfx .fx-help { min-width: 0; font-size: 16px; color: var(--ink-2); }
+#dlfx .fx-help a { color: var(--ink); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; white-space: nowrap; padding: 4px 2px; }
 
 #dlfx .fx-pick { flex: none; display: flex; align-items: center; gap: 8px; }
-#dlfx .fx-lbl { flex: none; width: 40px; font-size: 16px; font-weight: 600; color: var(--ink-2); }
+#dlfx .fx-lbl { flex: none; width: 42px; font-size: 16px; font-weight: 600; color: var(--ink-2); text-transform: uppercase; letter-spacing: 0.06em; }
 #dlfx .fx-scroll {
   flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 2px 2px 4px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
@@ -59,14 +65,14 @@
 #dlfx .fx-scroll::-webkit-scrollbar { display: none; }
 #dlfx .fx-chip {
   flex: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px;
-  border: 1px solid var(--sep); background: var(--card); color: var(--ink); font-size: 16px; font-weight: 600; white-space: nowrap;
+  border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 16px; font-weight: 600; white-space: nowrap;
   cursor: pointer; line-height: 1;
 }
-#dlfx .fx-in:checked + .fx-chip { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+#dlfx .fx-in:checked + .fx-chip { background: linear-gradient(180deg, #ffffff 0%, #d6d6d6 100%); border-color: #ffffff; color: #000000; }
 
 #dlfx .fx-results {
   flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
-  display: flex; flex-direction: column; background: var(--card); border-radius: 16px; border: 1px solid var(--sep);
+  display: flex; flex-direction: column; background: linear-gradient(180deg, #131313 0%, #0a0a0a 100%); border-radius: 16px; border: 1px solid #232323;
   counter-reset: fxres;
 }
 #dlfx .fx-count {
@@ -76,16 +82,16 @@
 #dlfx .fx-count::before { content: "Results: " counter(fxres); }
 #dlfx.fx-on .fx-count::before { content: "Results: " counter(fxres) " · tick to choose"; }
 #dlfx .fx-intro { order: -1; padding: 28px 18px; }
-#dlfx .fx-intro-t { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+#dlfx .fx-intro-t { font-family: var(--display); font-size: 28px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.01em; line-height: 1.05; }
 #dlfx .fx-intro-sw { margin-top: 6px; font-size: 16px; color: var(--ink-2); }
 #dlfx .fx-list { flex: none; }
 #dlfx .fx-item { display: flex; align-items: center; gap: 10px; padding: 0 12px 0 14px; border-bottom: 1px solid var(--sep); counter-increment: fxres; }
 #dlfx .fx-item > label { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 0; cursor: pointer; }
 #dlfx .fx-tick {
-  flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--sep); display: grid; place-items: center;
+  flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center;
   font-size: 14px; color: transparent; line-height: 1;
 }
-#dlfx .fx-item input:checked + .fx-tick { background: var(--accent); border-color: var(--accent); color: #fff; }
+#dlfx .fx-item input:checked + .fx-tick { background: #ffffff; border-color: #ffffff; color: #000000; }
 /* Ticks only matter when the number box is switched on. */
 #dlfx:not(.fx-on) .fx-tick, #dlfx:not(.fx-on) .fx-item input { display: none; }
 #dlfx:not(.fx-on) .fx-item > label { cursor: default; }
@@ -94,22 +100,22 @@
 #dlfx .fx-o { display: block; margin-top: 2px; font-size: 16px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #dlfx .fx-c {
   flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 10px; border-radius: 999px;
-  background: var(--fill); color: var(--accent); font-size: 16px; font-weight: 600; text-decoration: none; white-space: nowrap;
+  border: 1px solid var(--line); color: var(--ink); font-size: 16px; font-weight: 600; text-decoration: none; white-space: nowrap;
   max-width: 40%; line-height: 1.15; text-align: center;
 }
-#dlfx .fx-c.is-call { background: var(--accent-soft); white-space: normal; padding-top: 4px; padding-bottom: 4px; }
+#dlfx .fx-c.is-call { background: #ffffff; border-color: #ffffff; color: #000000; white-space: normal; padding-top: 4px; padding-bottom: 4px; }
 #dlfx .fx-note { padding: 14px; font-size: 16px; color: var(--ink-2); }
 
 #dlfx .fx-send { flex: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 #dlfx .fx-fs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
-#dlfx .fx-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px; border-radius: 10px; background: var(--fill); }
+#dlfx .fx-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px; border-radius: 10px; background: #1a1a1a; }
 #dlfx .fx-seg label {
   display: flex; align-items: center; justify-content: center; min-height: 40px; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
 }
-#dlfx .fx-seg .fx-in:checked + label { background: var(--card); box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }
+#dlfx .fx-seg .fx-in:checked + label { background: #ffffff; color: #000000; }
 #dlfx .fx-row { display: flex; gap: 8px; }
 #dlfx .fx-phone {
-  flex: 1; min-width: 0; width: 100%; min-height: 50px; padding: 0 14px; border: 1px solid var(--sep); border-radius: 12px;
+  flex: 1; min-width: 0; width: 100%; min-height: 50px; padding: 0 14px; border: 1px solid var(--line); border-radius: 12px;
   background: var(--card); color: var(--ink); font-size: 17px;
 }
 #dlfx .fx-phone[aria-invalid="true"] { border-color: var(--sos); }
@@ -167,7 +173,7 @@
 }
 @media (min-width: 640px) {
   #dlfx { padding: 22px 22px 16px; gap: 12px; }
-  #dlfx .fx-title { font-size: 30px; }
+  #dlfx .fx-title { font-size: 42px; }
 }
 @media (forced-colors: active) {
   #dlfx .fx-in:checked + label { outline: 2px solid Highlight; }
@@ -175,11 +181,11 @@
 </style>
 <div id="dlfx" lang="en">
   <div class="fx-top">
-    <div class="fx-titlerow">
-      <h2 class="fx-title">Find opportunities</h2>
+    <h2 class="fx-title">Find opportunities</h2>
+    <div class="fx-subrow">
+      <p class="fx-help">Help now, free: <a href="tel:116">☎ 116</a> <span aria-hidden="true">·</span> <a href="tel:199">☎ 199</a></p>
       <a class="fx-exit" href="https://www.google.com/" data-exit="1">Exit</a>
     </div>
-    <p class="fx-help">Help now, free: <a href="tel:116">☎ 116</a> <span aria-hidden="true">·</span> <a href="tel:199">☎ 199</a></p>
   </div>
   <div class="fx-pick" role="group" aria-labelledby="fx-who">
     <span class="fx-lbl" id="fx-who">I am</span>
