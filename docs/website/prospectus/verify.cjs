@@ -3,6 +3,7 @@
  * Checks the prospectus site in a real browser (Chromium, through Playwright).
  *
  *   node verify.cjs
+ *   CHROMIUM_PATH=/path/to/chromium node verify.cjs    (to choose the browser)
  *
  * It serves this folder on a local port, opens the page at several sizes and
  * settings, and prints one PASS or FAIL line per check. It exits with a
@@ -106,7 +107,8 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
 (async () => {
   const srv = await serve();
   const base = 'http://127.0.0.1:' + srv.address().port;
-  const browser = await chromium.launch();
+  /* set CHROMIUM_PATH to use a particular Chromium, for example when the installed Playwright expects a different build */
+  const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
   const today = new Date();
   console.log('Checking ' + base + '  (' + browser.version() + ')\n');
 
@@ -261,6 +263,21 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     const fb = await blocked.page.evaluate(() => ({ shown: !document.querySelector('[data-manual]').hidden, text: document.querySelector('#brief-manual').value, status: document.querySelector('[data-status]').textContent }));
     check('when copying is blocked, the brief is shown for manual copying and Download is offered', fb.shown && fb.text.includes('No message was sent') && /Download \.txt/.test(fb.status), fb.status);
     await blocked.ctx.close();
+
+    /* a host page may supply its own way to save a file (some viewers do not allow ordinary downloads) */
+    const hosted = await open(browser, base, { init: () => { window.DFHost = { saveFile: (name, text) => { window.__saved = [name, text]; return window.__decline ? Promise.reject({ code: 'declined' }) : Promise.resolve({ status: 'saved' }); } }; } });
+    await hosted.page.fill('#brief-org', 'Org'); await hosted.page.selectOption('#brief-area', { index: 1 });
+    await hosted.page.fill('#brief-priority', 'P'); await hosted.page.fill('#brief-help', 'H');
+    await hosted.page.click('[data-download]');
+    await wait(300);
+    const hs = await hosted.page.evaluate(() => ({ saved: window.__saved, status: document.querySelector('[data-status]').textContent }));
+    check('a host-supplied save is used when present, with the same file name and text', hs.saved && /^dandelion-collaboration-brief-\d{4}-\d{2}-\d{2}\.txt$/.test(hs.saved[0]) && hs.saved[1].includes('No message was sent') && hs.status === 'Download started.', hs.status);
+    await hosted.page.evaluate(() => { window.__decline = true; });
+    await hosted.page.click('[data-download]');
+    await wait(300);
+    const declined = await hosted.page.textContent('[data-status]');
+    check('declining a host save says so and shows no error', declined === 'Download cancelled.', declined);
+    await hosted.ctx.close();
   }
 
   /* ---- phone menu */

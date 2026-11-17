@@ -1,11 +1,12 @@
 # Verification — Dandelion Foundation prospectus site
 
-Checked on 2026-11-17 with `node verify.cjs`: **86 of 86 checks passed.**
+Checked on 2026-11-17 with `node verify.cjs`: **88 of 88 checks passed.**
 
-- Browser: Chromium 153 (headless, through Playwright), on Linux. Graphics were drawn in software, so WebGL was
-  exercised but not on a real graphics card.
+- Browser: Chromium 153 (the full browser, run headless through Playwright), on Linux. Graphics were drawn in
+  software, so WebGL was exercised but not on a real graphics card.
 - The script serves this folder on a local port, opens the page, and reports one PASS or FAIL per check.
-- To repeat it: `node verify.cjs` (needs the `playwright` package and a Chromium it can start).
+- To repeat it: `node verify.cjs` (needs the `playwright` package and a Chromium it can start; set `CHROMIUM_PATH`
+  to choose the browser).
 
 Every result below was produced by that run. Nothing here is a guess about other browsers or devices.
 
@@ -13,7 +14,8 @@ Every result below was produced by that run. Nothing here is a guess about other
 
 **At four window sizes: 320 × 640, 390 × 844, 768 × 1024 and 1440 × 900** (8 checks each)
 
-- No script errors and no failed requests.
+- No script errors and no failed requests. (An earlier run caught a missing site icon this way; a plain placeholder
+  icon was added.)
 - The opening film is on.
 - Scrolling forwards, scenes 1 to 5 appear in order.
 - Scrolling back, scenes return in order and the cover is fully restored.
@@ -61,6 +63,8 @@ Every result below was produced by that run. Nothing here is a guess about other
 - No "sent" message is ever shown.
 - With a brief field focused, scrolling does not move the print register of any heading.
 - When copying is blocked, the brief is shown for manual copying and the message points to Download.
+- A page that embeds the site can supply its own save dialog (`window.DFHost.saveFile`); when one is present it is
+  used with the same file name and text, and declining it shows "Download cancelled." and no error.
 
 **Phone menu**
 

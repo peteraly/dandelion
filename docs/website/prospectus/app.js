@@ -548,10 +548,25 @@
       if (!valid()) return;
       var t = text(), d = new Date();
       var stamp = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+      var name = 'dandelion-collaboration-brief-' + stamp + '.txt';
+      /* Some viewers that embed a page do not allow ordinary downloads and offer their own
+         save dialog instead. A host page may supply one as window.DFHost.saveFile(name, text),
+         returning a promise. It is optional; without it the browser's own download is used. */
+      var host = window.DFHost && typeof window.DFHost.saveFile === 'function' ? window.DFHost.saveFile : null;
+      if (host) {
+        Promise.resolve().then(function () { return host(name, t); }).then(function () {
+          say('Download started.');
+        }, function (err) {
+          if (err && err.code === 'declined') { say('Download cancelled.'); return; }
+          showManual(t);
+          say('The file could not be saved here. The brief is shown below: select it and copy it.');
+        });
+        return;
+      }
       try {
         var url = URL.createObjectURL(new Blob([t], { type: 'text/plain;charset=utf-8' }));
         var a = document.createElement('a');
-        a.href = url; a.download = 'dandelion-collaboration-brief-' + stamp + '.txt';
+        a.href = url; a.download = name;
         document.body.appendChild(a); a.click(); a.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
         say('Download started. If no file appears, this browser or viewer blocked it: use Copy formatted brief instead.');

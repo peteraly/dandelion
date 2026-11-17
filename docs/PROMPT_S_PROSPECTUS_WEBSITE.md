@@ -319,7 +319,7 @@ Built on 2026-11-17 by following the prompt above. Everything is in `docs/websit
 
 To look at it: `cd docs/website/prospectus && python3 -m http.server 8000`, then open `http://localhost:8000`.
 
-**What was checked.** 86 checks in Chromium, all passing: four window sizes; the five scenes in order forwards and
+**What was checked.** 88 checks in Chromium, all passing: four window sizes; the five scenes in order forwards and
 backwards; no sideways scrolling; tabs by mouse and keyboard; search, filters, Reset and the empty state; questions by
 keyboard; Copy, Download and the blocked-copy path; nothing sent, stored or put in the address bar; reduced motion; no
 JavaScript; no WebGL; opened straight from disk; and ten text-contrast pairs (lowest 5.14 to 1). Details are in

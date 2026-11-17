@@ -97,7 +97,7 @@
   ],
   "pending": [
     "Full-resolution originals of the four paintings. The copies received are 1672 pixels wide, so close views are slightly soft on sharp screens.",
-    "An official logo. The header uses a text wordmark until one is supplied.",
+    "An official logo. The header uses a text wordmark until one is supplied, and the browser-tab icon is a plain gold dot (written inline in index.html), not a logo.",
     "A decision on the planting painting's far-left background (see supplied_and_used).",
     "A credit line for the paintings (artist or tool) for the colophon.",
     "Video clips, if wanted. None are used and nothing depends on them.",

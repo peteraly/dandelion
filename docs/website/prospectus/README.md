@@ -89,7 +89,11 @@ node verify.cjs
 
 This needs the `playwright` package and a Chromium it can start. It serves the folder itself, opens the page at four
 sizes and several settings, and prints one PASS or FAIL line per check. What it covers, and what it cannot, is in
-`VERIFICATION.md`.
+`VERIFICATION.md`. If Playwright cannot find its browser, point it at one:
+
+```bash
+CHROMIUM_PATH=/path/to/chromium node verify.cjs
+```
 
 ## Privacy, as built
 
@@ -97,3 +101,9 @@ sizes and several settings, and prints one PASS or FAIL line per check. What it 
 - The page sets no cookies, uses no local storage, and loads nothing from another site. Fonts and pictures are served
   from this folder.
 - External links (resources, references) open in a new tab and leave the site.
+
+## Embedding the page somewhere that blocks downloads
+
+Some viewers that frame a page do not allow ordinary downloads. A host page can supply its own save dialog by defining
+`window.DFHost = { saveFile: function (name, text) { /* return a promise */ } }` before the brief's Download button is
+pressed. When it is there the site uses it; otherwise the browser's own download is used. It is optional.
