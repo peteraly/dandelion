@@ -1,15 +1,17 @@
 /*!
- * Dandelion Foundation prospectus: the painted plates.
+ * Dandelion Foundation prospectus: the painted scene.
  *
- * Moves a slow rostrum camera over the supplied paintings. The paintings are
- * shown as they are: nothing in them is redrawn, regenerated or animated.
+ * The supplied paintings are joined side by side into one long scene, and a
+ * slow rostrum camera travels across it as the page scrolls. The paintings
+ * are shown as they are: nothing in them is redrawn, regenerated or animated.
  * What moves is the camera, a few drawn seeds, and the printing register,
  * which slips a little while the page is moving and settles when it stops.
  *
- * The paintings sit side by side in one flat "world", measured in painting
- * pixels (each plate is 1672 x 941 units, whatever the file's real size).
- * "table" is placed directly to the right of "vision", so a pan from one to
- * the other passes behind the sandstone pillar on the table plate's left edge.
+ * The scene is measured in painting pixels (each plate is 1672 x 941 units,
+ * whatever the file's real size). The joins are hidden by things already in
+ * the paintings: the sandstone pillar on the left edge of "table", and the
+ * cedar posts where "table" meets "veranda". To add a painting, add it to
+ * SHEETS at the next position and give it framings in FRAMES.
  *
  * No dependencies. Exposes window.DFStage.
  */
@@ -18,42 +20,49 @@
 
   const PW = 1672, PH = 941, TAU = Math.PI * 2;
   const SHEETS = {
-    vision: { x: 0, w: PW, h: PH },
-    table: { x: 1672, w: PW, h: PH },
-    veranda: { x: 3600, w: PW, h: PH },
-    planting: { x: 5600, w: PW, h: PH }
+    vision: { x: 0, w: PW, h: PH },        // the hillside
+    table: { x: 1672, w: PW, h: PH },      // its left-hand pillar meets the edge of "vision"
+    veranda: { x: 3344, w: PW, h: PH }     // its left-hand post meets the post at the edge of "table"
   };
 
   /* Framings: [x, y, width, height] inside a plate, for wide ("land") and
      tall ("port") windows. Faces, hands and the map stay inside each one. */
   const F = (sheet, land, port) => ({ sheet: sheet, land: land, port: port || land });
   const FRAMES = {
-    /* the opening film */
-    cover: F('vision', [800, 0, 872, 941], [850, 0, 630, 600]),
-    wide: F('vision', [0, 0, 1672, 941], [560, 0, 930, 885]),
-    ground: F('vision', [560, 500, 700, 441], [520, 440, 520, 501]),
-    stemA: F('vision', [1000, 380, 460, 561], [960, 400, 500, 476]),
-    stemB: F('vision', [1000, 140, 460, 561], [960, 150, 500, 476]),
-    clock: F('vision', [990, 0, 540, 470], [990, 0, 500, 476]),
-    clockB: F('vision', [1130, 0, 542, 520], [1060, 0, 500, 476]),
-    plan: F('table', [120, 240, 1190, 690], [140, 300, 680, 640]),
-    /* still crops of the same beats, used when the film is off */
+    /* the hillside */
+    cover: F('vision', [800, 0, 872, 941], [1010, 0, 460, 560]),
+    wide: F('vision', [0, 0, 1672, 941], [700, 0, 760, 760]),
+    ground: F('vision', [470, 480, 760, 461], [500, 440, 430, 430]),
+    groundB: F('vision', [560, 500, 760, 441], [600, 470, 430, 430]),
+    stemA: F('vision', [1000, 380, 460, 561], [1010, 420, 430, 440]),
+    stemB: F('vision', [1000, 140, 460, 561], [1010, 180, 430, 440]),
+    clock: F('vision', [990, 0, 540, 470], [1010, 0, 460, 470]),
+    clockB: F('vision', [1130, 0, 542, 520], [1060, 0, 460, 470]),
+    /* the table */
+    plan: F('table', [110, 230, 1100, 700], [170, 300, 420, 400]),
+    planB: F('table', [170, 250, 1100, 680], [330, 320, 420, 400]),
+    termsA: F('table', [150, 540, 760, 400], [190, 590, 440, 330]),
+    termsB: F('table', [1150, 360, 522, 440], [1290, 400, 382, 340]),
+    partners: F('table', [70, 150, 1580, 791], [300, 240, 660, 700]),
+    shelvesA: F('table', [900, 0, 772, 760], [1060, 40, 560, 600]),
+    shelvesB: F('table', [1040, 0, 632, 720], [1100, 100, 560, 600]),
+    /* the veranda */
+    wallA: F('veranda', [0, 100, 900, 720], [40, 300, 460, 420]),
+    wallB: F('veranda', [60, 140, 900, 700], [80, 320, 460, 420]),
+    wallC: F('veranda', [120, 180, 860, 660], [100, 330, 460, 420]),
+    arches: F('veranda', [430, 40, 940, 780], [520, 120, 500, 560]),
+    coastA: F('veranda', [520, 30, 1152, 850], [1040, 100, 540, 640]),
+    coastB: F('veranda', [860, 150, 812, 791], [1140, 280, 500, 540]),
+    /* still crops, used when the page is read without the moving scene */
     stillGround: F('vision', [430, 460, 1000, 481]),
     stillStem: F('vision', [960, 120, 520, 821]),
     stillClock: F('vision', [960, 0, 640, 640]),
-    /* the bands further down the page */
-    partners: F('table', [70, 150, 1580, 791], [300, 240, 660, 700]),
-    shelvesA: F('table', [900, 0, 772, 760], [1040, 0, 632, 760]),
-    shelvesB: F('table', [1040, 0, 632, 720], [1060, 60, 600, 700]),
-    plantingA: F('planting', [610, 40, 900, 900]),
-    plantingB: F('planting', [690, 130, 780, 780]),
-    wallA: F('veranda', [40, 120, 980, 700], [60, 250, 520, 620]),
-    wallB: F('veranda', [140, 160, 980, 660], [120, 250, 520, 620]),
-    coastA: F('veranda', [470, 30, 1150, 850], [760, 60, 620, 860]),
-    coastB: F('veranda', [860, 150, 812, 791], [1060, 200, 600, 741])
+    stillTerms: F('table', [120, 440, 960, 501]),
+    stillShelves: F('table', [1040, 0, 632, 760]),
+    stillWall: F('veranda', [40, 120, 980, 700])
   };
 
-  /* Where things are in the plates, in world units. */
+  /* Where things are in the scene, in scene units. */
   const HEAD = { x: 1240, y: 190, r: 222 };
   const SPOTS = {
     community: [1672 + 410, 470, 150],
@@ -67,7 +76,19 @@
     learning: [1672 + 1100, 196, 520, 142],
     skills: [1672 + 1312, 346, 310, 268]
   };
-  const LANTERN = [3600 + 1272, 690];
+  /* the three terms, pinned to a river stone, the wooden rule and the brass scale */
+  const MARKS = [[1672 + 286, 686, '1'], [1672 + 1420, 584, '2'], [1672 + 1548, 520, '3']];
+  const LANTERN = [3344 + 1272, 690];
+
+  /* Places where the painted surface itself may stir a little, in plate pixels:
+     [centre x, centre y, radius x, radius y, kind, strength in pixels].
+     kind 1 sways (the seed head), kind 2 shimmers in rows (open water).
+     None of them covers a person. */
+  const STIR = {
+    vision: [[1240, 190, 226, 226, 1, 1.9], [1562, 640, 118, 28, 2, 1.1]],
+    table: [],
+    veranda: [[1482, 532, 128, 66, 2, 1.2]]
+  };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function lerp(a, b, t) { return a + (b - a) * t; }
@@ -118,11 +139,12 @@
   function mixCam(a, b, t) {
     return { cx: lerp(a.cx, b.cx, t), cy: lerp(a.cy, b.cy, t), s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), t)) };
   }
-  /* push a camera toward a point, by at most "zoom" */
-  function nudgeCam(cam, spot, zoom, w) {
+  /* lean a camera toward a place, so that it sits in the free part of the window */
+  function aimCam(cam, spot, zoom, host, focus, w) {
     if (!w) return cam;
-    const s = cam.s * lerp(1, zoom, w);
-    return { s: s, cx: lerp(cam.cx, lerp(cam.cx, spot[0], 0.62), w), cy: lerp(cam.cy, lerp(cam.cy, spot[1], 0.62), w) };
+    const f = focus || [0, 0, 1, 1], s = cam.s * zoom;
+    const tx = spot[0] - ((f[0] + f[2]) / 2 - 0.5) * host.w / s, ty = spot[1] - ((f[1] + f[3]) / 2 - 0.5) * host.h / s;
+    return { s: Math.exp(lerp(Math.log(cam.s), Math.log(s), w)), cx: lerp(cam.cx, tx, w * 0.8), cy: lerp(cam.cy, ty, w * 0.8) };
   }
 
   /* keep a camera's whole view inside one plate */
@@ -157,13 +179,32 @@
     'precision mediump float;',
     '#endif',
     'varying vec2 vUv; uniform sampler2D uTex; uniform vec2 uSlip; uniform vec2 uTexel; uniform float uSharp;',
+    'uniform vec4 uZone[3]; uniform vec3 uZoneP[3]; uniform float uTime; uniform vec2 uPlatePx;',
+    /* a small, slow displacement inside a few soft-edged zones: the seed head sways, open water shimmers */
+    'vec2 stir(vec2 uv){',
+    '  vec2 d = vec2(0.0);',
+    '  for (int i = 0; i < 3; i++) {',
+    '    vec3 p = uZoneP[i];',
+    '    if (p.x < 0.5) continue;',
+    '    vec2 q = (uv - uZone[i].xy) / uZone[i].zw;',
+    '    float m = 1.0 - smoothstep(0.5, 1.0, length(q));',
+    '    if (p.x < 1.5) {',
+    '      float a = sin(uTime * 0.62 + p.z) * 0.6 + sin(uTime * 1.07 + q.y * 3.0) * 0.4;',
+    '      d += m * length(q) * p.y * vec2(a, 0.4 * sin(uTime * 0.83 + q.x * 2.0));',
+    '    } else {',
+    '      d += m * p.y * vec2(sin(uTime * 1.5 + uv.y / uPlatePx.y * 0.85 + p.z), 0.0);',
+    '    }',
+    '  }',
+    '  return d * uPlatePx;',
+    '}',
     'void main(){',
-    '  vec3 c0 = texture2D(uTex, vUv).rgb;',
+    '  vec2 uv = vUv + stir(vUv);',
+    '  vec3 c0 = texture2D(uTex, uv).rgb;',
     /* each printing colour is laid down a little off the others */
-    '  vec3 col = vec3(texture2D(uTex, vUv + uSlip).r, c0.g, texture2D(uTex, vUv - uSlip).b);',
+    '  vec3 col = vec3(texture2D(uTex, uv + uSlip).r, c0.g, texture2D(uTex, uv - uSlip).b);',
     '  if (uSharp > 0.0) {',
-    '    vec3 n = texture2D(uTex, vUv + vec2(uTexel.x, 0.0)).rgb + texture2D(uTex, vUv - vec2(uTexel.x, 0.0)).rgb',
-    '           + texture2D(uTex, vUv + vec2(0.0, uTexel.y)).rgb + texture2D(uTex, vUv - vec2(0.0, uTexel.y)).rgb;',
+    '    vec3 n = texture2D(uTex, uv + vec2(uTexel.x, 0.0)).rgb + texture2D(uTex, uv - vec2(uTexel.x, 0.0)).rgb',
+    '           + texture2D(uTex, uv + vec2(0.0, uTexel.y)).rgb + texture2D(uTex, uv - vec2(0.0, uTexel.y)).rgb;',
     '    col += (c0 - n * 0.25) * uSharp;',
     '  }',
     '  gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);',
@@ -190,7 +231,7 @@
     const loc = gl.getAttribLocation(pr, 'a');
     gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     const U = {};
-    ['uRect', 'uTex', 'uSlip', 'uTexel', 'uSharp'].forEach((n) => { U[n] = gl.getUniformLocation(pr, n); });
+    ['uRect', 'uTex', 'uSlip', 'uTexel', 'uSharp', 'uZone', 'uZoneP', 'uTime', 'uPlatePx'].forEach((n) => { U[n] = gl.getUniformLocation(pr, n); });
     gl.uniform1i(U.uTex, 0);
     const tex = {};
     /* throws when the browser will not let scripts read the image (for example a page opened straight from disk) */
@@ -220,6 +261,14 @@
         gl.uniform2f(U.uSlip, v.slip[0] / s.w, v.slip[1] / s.h);
         gl.uniform2f(U.uTexel, 1 / T.w, 1 / T.h);
         gl.uniform1f(U.uSharp, v.sharp);
+        const zs = STIR[name] || [], z = new Float32Array(12), zp = new Float32Array(9);
+        for (let i = 0; i < 3 && i < zs.length; i++) {
+          z[i * 4] = zs[i][0] / s.w; z[i * 4 + 1] = zs[i][1] / s.h; z[i * 4 + 2] = zs[i][2] / s.w; z[i * 4 + 3] = zs[i][3] / s.h;
+          zp[i * 3] = v.stir > 0 ? zs[i][4] : 0; zp[i * 3 + 1] = zs[i][5] * v.stir; zp[i * 3 + 2] = i * 1.7;
+        }
+        gl.uniform4fv(U.uZone, z); gl.uniform3fv(U.uZoneP, zp);
+        gl.uniform1f(U.uTime, v.time || 0);
+        gl.uniform2f(U.uPlatePx, 1 / s.w, 1 / s.h);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
     };
@@ -267,6 +316,14 @@
         phi0: a + Math.PI / 2, tilt: (R() - 0.5) * 0.7, ph: R() * TAU, size: 0.85 + R() * 0.35
       });
     }
+    return out;
+  })();
+
+  /* [x, y, strength, size, speed, phase, sideways drift] for each mote */
+  const DUST = (function () {
+    const R = mulberry(8841), out = [];
+    const beams = [[1672 + 900, 120, 230, 420], [3344 + 90, 150, 330, 330], [3344 + 520, 560, 420, 160]];
+    beams.forEach((b) => { for (let i = 0; i < 13; i++) out.push([b[0] + R() * b[2], b[1] + R() * b[3], 0.25 + R() * 0.4, 0.8 + R() * 0.9, 0.12 + R() * 0.2, R() * TAU, 2 + R() * 4]); });
     return out;
   })();
 
@@ -321,6 +378,18 @@
       }
     }
 
+    if (fx.dust && fx.dust > 0.01) {
+      /* motes in the shafts of light indoors */
+      ctx.fillStyle = 'rgb(255,236,190)';
+      for (let i = 0; i < DUST.length; i++) {
+        const m = DUST[i];
+        const x = m[0] + Math.sin(tm * m[4] + m[5]) * 26 + Math.sin(tm * 0.031 * m[6] + m[5] * 2.0) * 34, y = m[1] + Math.cos(tm * m[4] * 0.8 + m[5]) * 18 + Math.sin(tm * 0.043 * m[6] + m[5]) * 30;
+        if (x < vx0 || x > vx1 || y < vy0 || y > vy1) continue;
+        ctx.globalAlpha = fx.dust * m[2] * (0.55 + 0.45 * Math.sin(tm * 0.9 + m[5] * 3.0));
+        ctx.beginPath(); ctx.arc(x, y, Math.max(m[3] * 1.5, 1.1 * px), 0, TAU); ctx.fill();
+      }
+    }
+
     if (fx.drift) {
       /* a few seeds crossing the evening sky; drawn only while motion is allowed */
       const lw = Math.max(1.15 * px, 1.0);
@@ -343,6 +412,20 @@
       ctx.strokeStyle = 'rgb(240,186,84)'; ctx.lineWidth = Math.max(2.4 * px, 1.6); ctx.stroke();
     }
 
+    if (fx.marks && fx.marks > 0.01) {
+      const r = Math.max(21, 15 * px);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = '800 ' + (r * 1.15).toFixed(1) + 'px Besley, Georgia, serif';
+      for (let i = 0; i < MARKS.length; i++) {
+        const m = MARKS[i];
+        ctx.globalAlpha = fx.marks;
+        ctx.beginPath(); ctx.arc(m[0], m[1], r, 0, TAU);
+        ctx.fillStyle = 'rgb(240,186,84)'; ctx.fill();
+        ctx.strokeStyle = 'rgb(11,10,9)'; ctx.lineWidth = Math.max(2 * px, 1.4); ctx.stroke();
+        ctx.fillStyle = 'rgb(11,10,9)'; ctx.fillText(m[2], m[0], m[1] + r * 0.06);
+      }
+    }
+
     if (fx.reticle && fx.reticle[3] > 0.01) {
       const q = fx.reticle, r = q[2];
       const ring = new Path2D();
@@ -361,12 +444,12 @@
 
   /* -------------------------------------------------------------- stage */
 
-  function viewOf(cam, w, h, dpr, slip) {
+  function viewOf(cam, w, h, dpr, slip, time, stir) {
     const m = cam.s * dpr;   // device pixels per painting pixel
     return {
       w: Math.max(1, Math.round(w * dpr)), h: Math.max(1, Math.round(h * dpr)),
       upp: 1 / m, ox: cam.cx - w / 2 / cam.s, oy: cam.cy - h / 2 / cam.s,
-      slip: slip || [0, 0], sharp: clamp((m - 1) * 0.42, 0, 0.5)
+      slip: slip || [0, 0], sharp: clamp((m - 1) * 0.42, 0, 0.5), time: time || 0, stir: stir || 0
     };
   }
   function ratioFor(w, h) {
@@ -417,25 +500,12 @@
   };
   Stage.prototype.render = function (cam, fx, slip) {
     if (!this.host || !this.w || !this.h) return;
-    const v = viewOf(cam, this.w, this.h, this.dpr, slip);
+    const v = viewOf(cam, this.w, this.h, this.dpr, slip, fx && fx.time, fx && fx.motion ? 1 : 0);
     v.w = this.plate.width; v.h = this.plate.height;
     this.painter.draw(v);
     drawOverlay(this.ictx, v, fx);
     this.last = { cam: cam, fx: fx };
   };
-  /* copy what the stage last showed into a host's own still canvas, so nothing jumps when the stage moves on */
-  Stage.prototype.freeze = function (still) {
-    if (!this.last || !this.plate.width) return;
-    const v = viewOf(this.last.cam, this.w, this.h, this.dpr, [0, 0]);
-    v.w = this.plate.width; v.h = this.plate.height;
-    this.painter.draw(v);
-    const f = Object.assign({}, this.last.fx || {}, { motion: 0 });
-    drawOverlay(this.ictx, v, f);
-    still.width = v.w; still.height = v.h;
-    const t = still.getContext('2d');
-    t.drawImage(this.plate, 0, 0); t.drawImage(this.ink, 0, 0);
-  };
-
   /* Print one still frame of the painted world into an ordinary canvas. */
   function still(target, cam, fx) {
     const w = target.clientWidth, h = target.clientHeight;
@@ -450,8 +520,8 @@
   }
 
   root.DFStage = {
-    PW: PW, PH: PH, SHEETS: SHEETS, FRAMES: FRAMES, SPOTS: SPOTS, SHELVES: SHELVES, LANTERN: LANTERN,
-    frameCam: frameCam, mixCam: mixCam, nudgeCam: nudgeCam, clampCam: clampCam,
+    PW: PW, PH: PH, SHEETS: SHEETS, FRAMES: FRAMES, SPOTS: SPOTS, SHELVES: SHELVES, MARKS: MARKS, LANTERN: LANTERN,
+    frameCam: frameCam, mixCam: mixCam, aimCam: aimCam, clampCam: clampCam,
     Stage: Stage, still: still, setImage: setImage, has: has,
     clamp: clamp, lerp: lerp, smooth: smooth
   };

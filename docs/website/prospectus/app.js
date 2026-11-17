@@ -1,28 +1,33 @@
 /*!
  * Dandelion Foundation prospectus: page behaviour.
  *
- * One scheduler drives everything that moves: the opening film, the plates
- * further down the page, and the print register of the headings. Nothing
- * typed into the page is sent, stored or put in the address bar.
+ * One painted scene stays behind the whole page. Each block of text (a
+ * "track") names the part of the scene it belongs to; as the page scrolls,
+ * the camera holds on that part while the text is read and travels on when
+ * the text leaves. The camera's place depends only on how far the page has
+ * scrolled, so scrolling back plays the journey backwards.
  *
- * No dependencies. Needs stage.js and figure.js to be loaded first.
+ * One scheduler drives everything that moves. Nothing typed into the page is
+ * sent, stored or put in the address bar.
+ *
+ * No dependencies. Needs stage.js to be loaded first.
  */
 (function () {
   'use strict';
 
-  var S = window.DFStage, Fig = window.DFFigure;
+  var S = window.DFStage;
   var doc = document.documentElement;
   function $(s, r) { return (r || document).querySelector(s); }
   function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function smooth(t) { t = clamp(t, 0, 1); return t * t * (3 - 2 * t); }
-  function idle(fn) { if (window.requestIdleCallback) window.requestIdleCallback(fn, { timeout: 1200 }); else setTimeout(fn, 120); }
+  function scrollY() { return window.pageYOffset || 0; }
   var reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
 
   var state = {
-    filmOn: false, layout: 'stack', p: 0, slip: 0, locked: false, time: 0,
+    filmOn: false, wide: false, slip: 0, locked: false, time: 0, frame: 0, cam: null,
     group: 'community', ring: null, zoom: 0, zoomTo: 0, topic: 'all', topicA: 0, box: null,
-    lastY: window.pageYOffset || 0, lastT: 0, raf: 0, sizeDirty: false
+    lastY: scrollY(), lastT: 0, raf: 0
   };
 
   /* ------------------------------------------------------ small things */
@@ -48,26 +53,47 @@
     });
   })();
 
-  /* ------------------------------------------------------------ plates */
+  /* ---------------------------------------------------- the paintings */
 
-  var film = $('[data-film]'), stageEl = $('[data-stage]'), filmPlateEl = $('[data-film-plate]');
-  var beats = $$('[data-beat]'), cover = beats[0];
-  var filmHost = { el: filmPlateEl, still: $('.plate-still', filmPlateEl), sheet: 'vision', film: true };
+  var canPaint = !!S, wanted = {};
+  var stagefix = $('[data-stagefix]'), stageHost = $('[data-stage-plate]'), tracksEl = $('.tracks');
   var plates = $$('.plate[data-plate]').map(function (el) {
     return {
-      el: el, still: $('.plate-still', el), frame: el.getAttribute('data-plate'), pan: el.getAttribute('data-pan'),
-      sheet: el.getAttribute('data-sheet'), role: el.getAttribute('data-role') || '',
-      release: parseFloat(el.getAttribute('data-release') || '0'),
-      stillOnly: el.hasAttribute('data-still-only') || !!el.closest('.beat'), near: false
+      el: el, still: $('.plate-still', el), frame: el.getAttribute('data-plate'), sheet: el.getAttribute('data-sheet'),
+      role: el.getAttribute('data-role') || '', release: parseFloat(el.getAttribute('data-release') || '0'), near: false
     };
   });
-  var stage = null, live = null, wanted = {}, canPaint = !!S;
 
+  /* Each painting is fetched once. The scene needs all of them, in order. */
+  function need(name) {
+    if (!canPaint || wanted[name] || !S.SHEETS[name]) return;
+    wanted[name] = true;
+    var src = $('.plate[data-sheet="' + name + '"] img') || $('img', stageHost);
+    var img = new Image();
+    img.decoding = 'async';
+    if (src.getAttribute('sizes')) img.sizes = src.getAttribute('sizes');
+    if (src.getAttribute('srcset')) img.srcset = src.getAttribute('srcset');
+    img.onload = function () {
+      S.setImage(name, img);
+      plates.forEach(function (pl) { if (pl.sheet === name && pl.near) drawStill(pl); });
+      if (state.filmOn) needNext();
+      requestTick();
+    };
+    img.onerror = function () { if (name === 'vision' && state.filmOn) setFilm(false); };
+    img.src = src.getAttribute('src');
+  }
+  function needNext() { for (var n in S.SHEETS) if (!wanted[n]) { need(n); return; } }
+  $$('.plate img').forEach(function (img) {
+    img.addEventListener('error', function () { var f = img.closest('figure'); if (f) f.hidden = true; });
+  });
+
+  /* still pictures, for the page read without the moving scene */
   function fxFor(pl) {
     var fx = {};
     if (pl.release) fx.release = pl.release;
     if (pl.role === 'partners') { var sp = S.SPOTS[state.group]; fx.reticle = [sp[0], sp[1], sp[2], 1]; }
     if (pl.role === 'shelves' && state.topic !== 'all') fx.box = S.SHELVES[state.topic].concat([1]);
+    if (pl.role === 'terms') fx.marks = 1;
     if (pl.role === 'evening') fx.glow = [S.LANTERN[0], S.LANTERN[1], 0.8];
     return fx;
   }
@@ -78,38 +104,15 @@
     S.still(pl.still, S.frameCam(S.FRAMES[pl.frame], { w: w, h: h }), fxFor(pl));
   }
   function drawStills(role) {
-    plates.forEach(function (pl) { if (pl.near && pl !== live && (!role || pl.role === role)) drawStill(pl); });
+    plates.forEach(function (pl) { if (pl.near && (!role || pl.role === role)) drawStill(pl); });
   }
-
-  /* Each painting is fetched once, when something on screen (or about to be) needs it. */
-  function need(name) {
-    if (!canPaint || wanted[name]) return;
-    wanted[name] = true;
-    var src = $('.plate[data-sheet="' + name + '"] img') || $('img', filmPlateEl);
-    var img = new Image();
-    img.decoding = 'async';
-    if (src.getAttribute('sizes')) img.sizes = src.getAttribute('sizes');
-    if (src.getAttribute('srcset')) img.srcset = src.getAttribute('srcset');
-    img.onload = function () {
-      S.setImage(name, img);
-      plates.forEach(function (pl) { if (pl.sheet === name && pl.near) drawStill(pl); });
-      if (name === 'vision' && state.filmOn) need('table');
-      requestTick();
-    };
-    img.onerror = function () { if (name === 'vision' && state.filmOn) setFilm(false); };
-    img.src = src.getAttribute('src');
-  }
-  $$('.plate img').forEach(function (img) {
-    img.addEventListener('error', function () { var f = img.closest('figure'); if (f) f.hidden = true; });
-  });
-
   if (canPaint && 'IntersectionObserver' in window) {
     var plateIO = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         var pl = plates.filter(function (q) { return q.el === en.target; })[0];
         if (!pl) return;
         pl.near = en.isIntersecting;
-        if (pl.near) { need(pl.sheet); drawStill(pl); requestTick(); }
+        if (pl.near) { need(pl.sheet); drawStill(pl); }
       });
     }, { rootMargin: '900px 0px' });
     plates.forEach(function (pl) { plateIO.observe(pl.el); });
@@ -117,68 +120,88 @@
     plates.forEach(function (pl) { pl.near = true; need(pl.sheet); });
   }
 
-  /* -------------------------------------------------------------- film */
+  /* --------------------------------------------------------- the scene */
 
-  var M = null, activeBeat = 0, lastOut = -1, figBtns = $$('[data-goto]'), toggle = $('[data-film-toggle]');
-  var STARTS = [0, 0.2, 0.445, 0.64, 0.875];              // where each scene's text takes over
-  var CARDS = [[-1, 0.085], [0.215, 0.405], [0.455, 0.615], [0.645, 0.8], [0.885, 2]];
-  var GOTO = [0, 0.31, 0.53, 0.72, 0.97];
-
-  function measureFilm() {
-    if (!state.filmOn) return;
-    state.layout = (getComputedStyle(film).getPropertyValue('--film-layout') || 'stack').trim() || 'stack';
-    var r = film.getBoundingClientRect(), split = state.layout === 'split';
-    var w = filmPlateEl.clientWidth, h = filmPlateEl.clientHeight;
-    M = { top: r.top + (window.pageYOffset || 0), range: Math.max(1, film.offsetHeight - stageEl.clientHeight), w: w, h: h };
-    var host = { w: w, h: h }, tall = !split;
-    var coverFocus = split ? [Math.min(cover.offsetWidth / w, 0.62), 0, 1, 1] : [0, 0, 1, 1];
-    var cardFocus = split ? [0.4, 0, 1, 0.95] : [0, 0, 1, 1];
-    var zoom = split ? 1.5 : 2.6;
-    function cam(name, focus, z) { return S.frameCam(S.FRAMES[name], host, { focus: focus, tall: tall, maxZoom: z }); }
-    function shift(c, dx, dy) { return { cx: c.cx + dx / c.s, cy: c.cy + dy / c.s, s: c.s }; }
-    var ground = cam('ground', cardFocus, zoom), plan = cam('plan', cardFocus, split ? 1.3 : 2.2);
-    M.keys = [
-      [0, cam('cover', coverFocus, split ? 1.25 : 2.2)],
-      [0.05, cam('cover', coverFocus, split ? 1.25 : 2.2)],
-      [0.17, split ? cam('wide', [0, 0, 1, 1], 1) : cam('wide', cardFocus, 1.9)],
-      [0.27, ground],
-      [0.4, shift(ground, split ? -26 : -14, 0)],
-      [0.48, cam('stemA', cardFocus, zoom)],
-      [0.6, cam('stemB', cardFocus, zoom)],
-      [0.665, cam('clock', cardFocus, zoom)],
-      [0.78, cam('clockB', cardFocus, zoom)],
-      [0.905, plan],
-      [1, shift(plan, split ? 22 : 12, 0)]
-    ];
-  }
-  function filmCam(p) {
-    var k = M.keys, i = 0;
-    while (i < k.length - 2 && p > k[i + 1][0]) i++;
-    return S.mixCam(k[i][1], k[i + 1][1], smooth((p - k[i][0]) / (k[i + 1][0] - k[i][0])));
-  }
-  function updateFilm() {
-    var p = clamp(((window.pageYOffset || 0) - M.top) / M.range, 0, 1);
-    state.p = p;
-    var out = smooth((p - 0.045) / 0.1);
-    if (out !== lastOut) { stageEl.style.setProperty('--out', out.toFixed(4)); lastOut = out; }
-    var scene = 0, act = -1, i;
-    for (i = 0; i < STARTS.length; i++) if (p >= STARTS[i]) scene = i;
-    if (state.layout === 'split') { for (i = 1; i < CARDS.length; i++) if (p >= CARDS[i][0] && p <= CARDS[i][1]) act = i; if (p < CARDS[0][1]) act = 0; }
-    else act = scene;
-    if (act !== activeBeat) {
-      beats.forEach(function (b, n) { b.classList.toggle('is-active', n === act); });
-      activeBeat = act;
+  var stage = null, keys = [], lastProg = -1;
+  var tracks = $$('[data-track]').map(function (el) {
+    var slip = $('[data-slip]', el), img = $('.track-fig img', el);
+    /* when the picture is behind the text and not in the page, its description goes with the text */
+    if (img && img.getAttribute('alt')) {
+      var p = document.createElement('p');
+      p.className = 'sr scene-alt';
+      p.textContent = img.getAttribute('alt');
+      slip.insertBefore(p, slip.firstChild);
     }
-    figBtns.forEach(function (b, n) { if (n === scene) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+    return {
+      el: el, slip: slip, shot: el.getAttribute('data-shot'), to: el.getAttribute('data-shot-to') || el.getAttribute('data-shot'),
+      role: el.getAttribute('data-role') || '', side: el.getAttribute('data-side') || 'left',
+      cover: slip.classList.contains('slip-cover'), panel: slip.classList.contains('slip-panel')
+    };
+  });
+  function byRole(r) { return tracks.filter(function (t) { return t.role === r; })[0] || null; }
+  var tClock = byRole('clock'), tPlan = byRole('plan'), tTerms = byRole('terms'), tPartners = byRole('partners');
+  var tShelves = byRole('shelves'), tBrief = byRole('brief'), tEvening = byRole('evening');
+
+  /* Read where every slip sits, then work out the camera's stops from it. */
+  function measure() {
+    if (!state.filmOn) return;
+    var vh = window.innerHeight, y = scrollY();
+    state.wide = (getComputedStyle(tracksEl).getPropertyValue('--film-layout') || '').trim() === 'split';
+    var hr = stageHost.getBoundingClientRect(), host = { w: hr.width, h: hr.height }, headH = hr.top;
+    doc.classList.add('measuring');      /* slips are laid out in place, so their natural positions can be read */
+    tracks.forEach(function (t) {
+      t.slip.classList.remove('is-tall');
+      var r = t.el.getBoundingClientRect(), sr = t.slip.getBoundingClientRect();
+      t.top = r.top + y; t.height = r.height; t.padB = parseFloat(getComputedStyle(t.el).paddingBottom) || 0;
+      t.slipTop = sr.top + y; t.h = sr.height; t.left = sr.left; t.right = sr.right;
+    });
+    doc.classList.remove('measuring');
+
+    var zoom = state.wide ? 1.5 : 1.9;
+    keys = [];
+    tracks.forEach(function (t, n) {
+      var stick = t.cover ? (state.wide ? headH : vh - t.h) : vh - t.h - (state.wide ? vh * 0.09 : 14);
+      t.sticky = !t.panel && stick >= headH - 1;
+      var focus;
+      if (t.sticky) {
+        t.slip.style.setProperty('--slip-top', Math.round(stick) + 'px');
+        t.a = t.slipTop - stick;
+        t.b = Math.max(t.a, t.top + t.height - t.padB - t.h - stick);
+      } else {
+        if (!t.panel) t.slip.classList.add('is-tall');
+        t.a = t.slipTop - vh * 0.62;
+        t.b = Math.max(t.a + 1, t.slipTop + t.h - vh * 0.42);
+      }
+      if (n === 0) t.a = Math.min(0, t.b);
+      if (state.wide) focus = t.side === 'right' ? [0, 0, clamp((t.left - 26) / host.w, 0.3, 1), 1] : [clamp((t.right + 26) / host.w, 0, 0.7), 0, 1, 1];
+      else focus = t.sticky ? [0, 0, 1, clamp((stick - headH - 10) / host.h, 0.32, 1)] : [0, 0, 1, 0.6];
+      t.focus = focus;
+      t.A = S.frameCam(S.FRAMES[t.shot], host, { focus: focus, tall: !state.wide, maxZoom: zoom });
+      t.B = S.frameCam(S.FRAMES[t.to], host, { focus: focus, tall: !state.wide, maxZoom: zoom });
+      keys.push([t.a, t.A], [t.b, t.B]);
+    });
+    for (var i = 1; i < keys.length; i++) if (keys[i][0] < keys[i - 1][0]) keys[i][0] = keys[i - 1][0];
+    state.host = host;
+    state.ramp = vh * 0.34;
   }
-  function gotoScene(n) {
-    if (!state.filmOn || !M) return;
-    window.scrollTo({ top: Math.round(M.top + GOTO[n] * M.range), behavior: reduce.matches ? 'auto' : 'smooth' });
+  function camAt(s) {
+    var k = keys;
+    if (s <= k[0][0]) return k[0][1];
+    for (var i = 0; i < k.length - 1; i++) {
+      if (s < k[i + 1][0]) return S.mixCam(k[i][1], k[i + 1][1], smooth((s - k[i][0]) / Math.max(1, k[i + 1][0] - k[i][0])));
+    }
+    return k[k.length - 1][1];
   }
-  figBtns.forEach(function (b, n) { b.addEventListener('click', function () { gotoScene(n); }); });
+  /* 1 while a track's text is being read, falling to 0 as the camera leaves */
+  function near(t, s) {
+    if (!t) return 0;
+    if (s < t.a) return 1 - clamp((t.a - s) / state.ramp, 0, 1);
+    if (s > t.b) return 1 - clamp((s - t.b) / state.ramp, 0, 1);
+    return 1;
+  }
 
   /* The cover headline is set like a broadside: each line is fitted to the full measure. */
-  var poster = $('.poster'), coverText = $('.cover-text');
+  var poster = $('.poster'), coverText = $('.cover-text'), coverSlip = $('.slip-cover');
   function fitPoster() {
     if (!poster) return;
     var lines = $$('.fit:not(.fit-into)', poster);
@@ -199,114 +222,91 @@
     apply(1);
     if (state.filmOn) {
       /* keep the whole cover inside its slip of paper */
-      var room = cover.clientHeight - (state.layout === 'split' ? 70 : 22), k = 1, guard = 0;
-      while (coverText.scrollHeight > room && k > 0.5 && guard++ < 12) { k -= 0.05; apply(k); }
+      var k = 1, guard = 0, wide = (getComputedStyle(tracksEl).getPropertyValue('--film-layout') || '').trim() === 'split';
+      var fits = function () { return wide ? coverText.scrollHeight <= coverSlip.clientHeight - 30 : coverSlip.offsetHeight <= window.innerHeight * 0.6; };
+      while (!fits() && k > 0.5 && guard++ < 12) { k -= 0.05; apply(k); }
     }
   }
 
+  var toggle = $('[data-film-toggle]');
   function setFilm(on) {
-    on = !!on && canPaint && !!filmPlateEl;
-    var scene = 0, i;
-    if (state.filmOn && M) { for (i = 0; i < STARTS.length; i++) if (state.p >= STARTS[i]) scene = i; }
-    else { beats.forEach(function (b, n) { if (b.getBoundingClientRect().top < window.innerHeight * 0.5) scene = n; }); }
-    var inFilm = film.getBoundingClientRect().bottom > 0 && (window.pageYOffset || 0) > 4;
+    on = !!on && canPaint && !!stageHost;
+    /* stay with whatever text is in the middle of the window */
+    var mid = window.innerHeight / 2, keep = null, best = 1e9, atTop = scrollY() < 8;
+    tracks.forEach(function (t) {
+      var r = t.slip.getBoundingClientRect(), d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (r.height && d < best) { best = d; keep = t; }
+    });
     state.filmOn = on;
     doc.classList.toggle('film-on', on);
-    if (toggle) {
-      $('[data-long]', toggle).textContent = on ? 'Read as a still page' : 'Play the scenes as you scroll';
-      $('[data-short]', toggle).textContent = on ? 'Still page' : 'Play scenes';
-    }
+    if (toggle) { toggle.textContent = on ? 'Still page' : 'Play the scene'; toggle.setAttribute('aria-pressed', on ? 'false' : 'true'); }
     if (on) {
       if (!stage) stage = new S.Stage({ onChange: requestTick });
+      stage.attach(stageHost);
       need('vision');
-      if (S.has('vision')) need('table');
-      measureFilm(); fitPoster(); measureFilm();
-      activeBeat = -2; lastOut = -1; updateFilm();
-      if (inFilm) window.scrollTo(0, Math.round(M.top + GOTO[scene] * M.range));
+      fitPoster(); measure(); fitPoster(); measure();
+      state.cam = null;
     } else {
-      if (stage) { stage.attach(null); stage.last = null; }
-      live = null; M = null;
-      beats.forEach(function (b) { b.classList.remove('is-active'); });
-      stageEl.style.removeProperty('--out');
+      if (stage) stage.attach(null);
+      stageHost.classList.remove('is-live');
+      tracks.forEach(function (t) { t.slip.style.removeProperty('--slip-top'); t.slip.classList.remove('is-tall'); });
       fitPoster();
-      plates.forEach(function (pl) { pl.near = pl.near || !('IntersectionObserver' in window); });
       drawStills();
-      if (inFilm && beats[scene]) window.scrollTo(0, Math.max(0, Math.round(beats[scene].getBoundingClientRect().top + (window.pageYOffset || 0) - 90)));
     }
-    state.sizeDirty = true;
+    if (!atTop && keep) {
+      var was = doc.style.scrollBehavior;
+      doc.style.scrollBehavior = 'auto';
+      keep.slip.scrollIntoView({ block: 'center' });
+      doc.style.scrollBehavior = was;
+    }
     requestTick();
   }
   if (toggle) toggle.addEventListener('click', function () { setFilm(!state.filmOn); });
 
-  /* keep keyboard focus and the picture together */
-  if (cover) cover.addEventListener('focusin', function () {
-    if (state.filmOn && state.p > 0.06) window.scrollTo(0, Math.round(M.top));
-  });
-
   /* ------------------------------------------- the stage, frame by frame */
 
   function motion() { return state.filmOn && !state.locked ? 1 : 0; }
-  function progress(r) { return clamp((window.innerHeight - r.top) / (window.innerHeight + r.height), 0, 1); }
 
-  function renderLive(now) {
-    if (!stage) return false;
-    var vh = window.innerHeight, best = null, bestA = 0;
-    if (S.has('vision')) {
-      var fr = stageEl.getBoundingClientRect(), fv = Math.min(fr.bottom, vh) - Math.max(fr.top, 0);
-      if (fv > 0) { best = filmHost; bestA = fv * fr.width * 1.4; }
+  function renderScene() {
+    if (!stage || !keys.length || !S.has('vision')) return;
+    var s = scrollY(), host = state.host, mo = motion();
+    var frozen = state.locked && state.cam && near(tBrief, s) > 0.5;      /* nothing moves while someone is writing */
+    var target = camAt(s);
+    if (tPartners) {
+      var kp = near(tPartners, s);
+      var to = S.SPOTS[state.group], g = state.ring || (state.ring = to.slice()), e = mo ? 0.16 : 1;
+      g[0] += (to[0] - g[0]) * e; g[1] += (to[1] - g[1]) * e; g[2] += (to[2] - g[2]) * e;
+      state.zoom += (state.zoomTo - state.zoom) * e;
+      if (kp > 0.01 && state.zoom > 0.01) target = S.clampCam(S.aimCam(target, g, 1.3, host, tPartners.focus, state.zoom * kp), host, 'table');
     }
-    plates.forEach(function (pl) {
-      if (pl.stillOnly || !pl.near || !S.has(pl.sheet)) return;
-      var r = pl.el.getBoundingClientRect(), h = Math.min(r.bottom, vh) - Math.max(r.top, 0);
-      if (h > 0 && r.width > 0 && h * r.width > bestA) { best = pl; bestA = h * r.width; }
-    });
-    if (!best) return false;
-    if (live !== best) {
-      if (live && stage.last) stage.freeze(live.still);
-      live = best; stage.attach(best.el); stage.last = null;
-    } else if (state.sizeDirty) stage.measure();
-    state.sizeDirty = false;
+    var cam = target;
+    if (frozen) cam = state.cam;
+    else if (state.cam && mo) {
+      /* follow the target a little behind it, so nothing ever jumps */
+      var f = 0.24, c = state.cam;
+      cam = { cx: c.cx + (target.cx - c.cx) * f, cy: c.cy + (target.cy - c.cy) * f, s: c.s + (target.s - c.s) * f };
+      if (Math.abs(cam.cx - target.cx) < 0.05 && Math.abs(cam.cy - target.cy) < 0.05) cam = target;
+    }
+    state.cam = cam;
 
-    var host = { w: stage.w, h: stage.h }, cam, anim = false;
-    var fx = { time: state.time, motion: motion() };
-    if (best.film) {
-      if (!M) return false;
-      cam = filmCam(state.p);
-      fx.release = clamp((state.p - 0.66) / 0.245, 0, 1) * 1.32;
-      anim = fx.release > 0.02 && fx.release < 1.3 && motion() > 0;
-    } else {
-      var a = S.frameCam(S.FRAMES[best.frame], host);
-      var q = progress(best.el.getBoundingClientRect());
-      cam = best.pan ? S.mixCam(a, S.frameCam(S.FRAMES[best.pan], host), smooth(q)) : a;
-      if (best.release) fx.release = best.release;
-      if (best.role === 'partners') {
-        var sec = best.el.closest('section'), qs = sec ? progress(sec.getBoundingClientRect()) : q;
-        var k = 1 - smooth((qs - 0.8) / 0.2);            /* back to neutral as the section leaves */
-        var to = S.SPOTS[state.group], g = state.ring || (state.ring = to.slice());
-        var d = Math.abs(to[0] - g[0]) + Math.abs(to[1] - g[1]) + Math.abs(state.zoomTo - state.zoom) * 100;
-        var e = motion() ? 0.16 : 1;
-        g[0] += (to[0] - g[0]) * e; g[1] += (to[1] - g[1]) * e; g[2] += (to[2] - g[2]) * e;
-        state.zoom += (state.zoomTo - state.zoom) * e;
-        cam = S.clampCam(S.nudgeCam(cam, g, 1.34, state.zoom * k), host, best.sheet);
-        fx.reticle = [g[0], g[1], g[2], k];
-        anim = d > 0.6;
-      } else if (best.role === 'shelves') {
-        var t = state.topic === 'all' ? 0 : 1;
-        if (t) state.box = S.SHELVES[state.topic];
-        state.topicA += (t - state.topicA) * (motion() ? 0.2 : 1);
-        if (state.box && state.topicA > 0.01) fx.box = state.box.concat([state.topicA]);
-        anim = Math.abs(t - state.topicA) > 0.01;
-      } else if (best.role === 'evening') {
-        fx.glow = [S.LANTERN[0], S.LANTERN[1], 0.78 + 0.22 * Math.sin(state.time * 2.3) * motion()];
-        if (motion()) { fx.drift = [3600 + 1080, 250, 0.9]; anim = true; }
-      }
+    var fx = { time: state.time, motion: frozen ? 0 : mo, dust: frozen ? 0 : mo, glow: [S.LANTERN[0], S.LANTERN[1], 0.8 + 0.2 * Math.sin(state.time * 2.3) * (frozen ? 0 : mo)] };
+    if (tClock && tPlan) fx.release = clamp((s - tClock.a) / Math.max(1, tPlan.a - tClock.a), 0, 1) * 1.32;
+    if (tTerms) fx.marks = near(tTerms, s);
+    if (tPartners && state.ring) fx.reticle = [state.ring[0], state.ring[1], state.ring[2], near(tPartners, s)];
+    if (tShelves) {
+      var want = state.topic === 'all' ? 0 : 1;
+      if (want) state.box = S.SHELVES[state.topic];
+      state.topicA += (want - state.topicA) * (mo ? 0.2 : 1);
+      if (state.box && state.topicA > 0.01) fx.box = state.box.concat([state.topicA * near(tShelves, s)]);
     }
+    if (tEvening && mo && !frozen) { var ke = near(tEvening, s); if (ke > 0.02) fx.drift = [S.SHEETS.veranda.x + 1080, 250, 0.9 * ke]; }
+
     var px = state.slip * 4.2 / cam.s;
     stage.render(cam, fx, [px, -px * 0.62]);
-    return anim;
+    if (!stageHost.classList.contains('is-live')) stageHost.classList.add('is-live');
   }
 
-  /* the headings slip out of register with the plates */
+  /* the headings slip out of register with the scene */
   var printed = [];
   if ('IntersectionObserver' in window) {
     var typeIO = new IntersectionObserver(function (entries) {
@@ -326,69 +326,47 @@
     printed.forEach(function (el) { if (v) el.style.setProperty('--slip', String(v)); else el.style.removeProperty('--slip'); });
   }
 
+  var progressEl = $('[data-progress]');
   function tick(now) {
     state.raf = 0;
     var dt = state.lastT ? Math.min(64, now - state.lastT) : 16;
     state.lastT = now;
-    var y = window.pageYOffset || 0, vel = Math.abs(y - state.lastY) / dt;
+    var y = scrollY(), moved = y !== state.lastY, vel = Math.abs(y - state.lastY) / dt;
     state.lastY = y;
-    if (motion()) state.time += dt / 1000;
-    var target = motion() ? clamp(vel / 3, 0, 1) : 0;
+    var mo = motion();
+    if (mo) state.time += dt / 1000;
+    var target = mo ? clamp(vel / 3, 0, 1) : 0;
     state.slip += (target - state.slip) * (target > state.slip ? 0.3 : 0.12);
     if (state.slip < 0.004) state.slip = 0;
     printSlip(state.slip);
-    var more = state.slip > 0;
     if (state.filmOn) {
-      if (M) updateFilm();
-      more = renderLive(now) || more;
+      /* when nothing but the background's own slow movement is happening, draw every other frame */
+      state.frame++;
+      if (moved || state.slip > 0 || state.frame % 2 === 0) renderScene();
+      if (progressEl) {
+        var prog = Math.round(clamp(y / Math.max(1, doc.scrollHeight - window.innerHeight), 0, 1) * 1000) / 1000;
+        if (prog !== lastProg) { progressEl.style.setProperty('--prog', String(prog)); lastProg = prog; }
+      }
     }
-    if (more) requestTick(); else state.lastT = 0;
+    if (mo || state.slip > 0) requestTick(); else state.lastT = 0;
   }
   function requestTick() { if (!state.raf) state.raf = window.requestAnimationFrame(tick); }
 
   window.addEventListener('scroll', requestTick, { passive: true });
-  var resizeTimer = 0, lastW = window.innerWidth;
-  window.addEventListener('resize', function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
-      var widthChanged = window.innerWidth !== lastW;
-      lastW = window.innerWidth;
-      state.sizeDirty = true;
-      if (state.filmOn) { measureFilm(); if (widthChanged) { fitPoster(); measureFilm(); } activeBeat = -2; lastOut = -1; }
-      else if (widthChanged) fitPoster();
-      drawStills();
-      if (widthChanged) drawFigures(true);
-      requestTick();
-    }, 140);
-  });
+  var resizeTimer = 0, remeasureTimer = 0;
+  function relayout() {
+    if (state.filmOn) { fitPoster(); measure(); if (stage) stage.measure(); }
+    else { fitPoster(); drawStills(); }
+    requestTick();
+  }
+  window.addEventListener('resize', function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(relayout, 140); });
+  /* text that opens, closes or filters changes where later slips sit: read the page again, quietly */
+  function remeasure() {
+    clearTimeout(remeasureTimer);
+    remeasureTimer = setTimeout(function () { if (state.filmOn) { measure(); requestTick(); } }, 80);
+  }
+  document.addEventListener('toggle', remeasure, true);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) { state.lastT = 0; requestTick(); } });
-
-  /* ----------------------------------------------- the printed figures */
-
-  var figs = $$('canvas[data-figure]'), figDone = {}, figTimer = 0;
-  function drawFigures(force) {
-    if (!Fig) return;
-    figs.forEach(function (c) {
-      var key = c.clientWidth + 'x' + c.clientHeight;
-      if (!c._near || (!force && figDone[c.getAttribute('data-figure')] === key) || !c.clientWidth) return;
-      try {
-        Fig.snapshot(c, Fig.FRAMES[c.getAttribute('data-figure')], { release: 0 });
-        figDone[c.getAttribute('data-figure')] = key;
-      } catch (e) { var f = c.closest('figure'); if (f) f.hidden = true; }
-    });
-    clearTimeout(figTimer);
-    figTimer = setTimeout(function () { Fig.release(); }, 2500);
-  }
-  if (Fig && figs.length && 'IntersectionObserver' in window) {
-    var figIO = new IntersectionObserver(function (entries) {
-      var any = false;
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target._near = true; any = true; } });
-      if (any) idle(function () { drawFigures(false); });
-    }, { rootMargin: '1100px 0px' });
-    figs.forEach(function (c) { figIO.observe(c); });
-  } else if (!Fig) {
-    figs.forEach(function (c) { var f = c.closest('figure'); if (f) f.hidden = true; });
-  }
 
   /* ---------------------------------------------------------- partners */
 
@@ -408,7 +386,7 @@
       panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== id; });
       state.group = id;
       if (byUser) state.zoomTo = 1;
-      if (state.filmOn) requestTick(); else drawStills('partners');
+      if (state.filmOn) { remeasure(); requestTick(); } else drawStills('partners');
     }
     tabs.forEach(function (t, n) {
       var id = t.getAttribute('data-tab'), panel = document.getElementById('panel-' + id);
@@ -448,7 +426,7 @@
       count.textContent = 'Showing ' + shown + ' of ' + items.length + ' resources';
       empty.hidden = shown > 0;
       list.hidden = shown === 0;
-      if (state.filmOn) requestTick(); else drawStills('shelves');
+      if (state.filmOn) { remeasure(); requestTick(); } else drawStills('shelves');
     }
     function topic(t) {
       state.topic = t;
@@ -474,7 +452,7 @@
       priority: 'Describe the priority you are working on.',
       help: 'Say where a small collaboration might help.'
     };
-    function say(t) { status.textContent = ''; setTimeout(function () { status.textContent = t; }, 30); }
+    function say(t) { status.textContent = ''; setTimeout(function () { status.textContent = t; remeasure(); }, 30); }
     function valid() {
       var first = null;
       Object.keys(f).forEach(function (k) {
@@ -606,12 +584,12 @@
   /* ------------------------------------------------------------- start */
 
   function start() {
-    /* the film needs a window it can pin a stage in: not a tiny one, and not a frame as tall as the whole page */
+    /* the scene needs a window it can sit behind: not a tiny one, and not a frame as tall as the whole page */
     var roomy = window.innerHeight >= 520 && window.innerHeight <= 2600 && window.innerWidth >= 300;
     setFilm(!reduce.matches && roomy);
     if (!state.filmOn) { fitPoster(); need('vision'); }
     /* the headline is fitted to the measure, so fit it again whenever a typeface arrives */
-    function refit() { fitPoster(); if (state.filmOn) { measureFilm(); activeBeat = -2; lastOut = -1; } requestTick(); }
+    function refit() { relayout(); }
     if (document.fonts) {
       if (document.fonts.load) {
         Promise.all([document.fonts.load('900 1em Besley'), document.fonts.load('italic 500 1em Besley'), document.fonts.load('400 1em "Libre Franklin"')]).then(refit, refit);
