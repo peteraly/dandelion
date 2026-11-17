@@ -24,11 +24,18 @@
   'use strict';
 
   const PW = 1672, PH = 941, TAU = Math.PI * 2;
-  const SHEETS = {
-    vision: { x: 0, w: PW, h: PH },        // the hillside
-    table: { x: 1672, w: PW, h: PH },      // its left-hand pillar meets the edge of "vision"
-    veranda: { x: 3344, w: PW, h: PH }     // its left-hand post meets the post at the edge of "table"
-  };
+  /* The paintings, left to right: [name, file in assets/plates/ (and a lighter copy in lite/)].
+     To add one, put it in this list where it belongs. Everything below is placed relative to its
+     own painting, so nothing else needs to move. */
+  const PAINTINGS = [
+    ['vision', 'plate-1-vision'],      // the hillside
+    ['table', 'plate-2-table'],        // its left-hand pillar meets the right edge of the hillside
+    ['veranda', 'plate-3-veranda']     // its left-hand post meets the post at the right edge of the table
+  ];
+  const SHEETS = {};
+  PAINTINGS.forEach((p, i) => { SHEETS[p[0]] = { x: i * PW, w: PW, h: PH, file: p[1] }; });
+  /* a point in one painting, in scene units */
+  const X = (sheet, x) => SHEETS[sheet].x + x;
   /* the whole scene, end to end */
   const WORLD = (function () {
     let x0 = Infinity, x1 = -Infinity;
@@ -74,24 +81,26 @@
   };
 
   /* Where things are in the scene, in scene units. */
-  const HEAD = { x: 1240, y: 190, r: 222 };
+  const HEAD = { x: X('vision', 1240), y: 190, r: 222 };      // the seed head
+  /* the part of the table that stands for each group: [x, y, ring radius] */
   const SPOTS = {
-    community: [1672 + 410, 470, 150],
-    schools: [1672 + 835, 520, 118],
-    health: [1672 + 1330, 260, 150],
-    business: [1672 + 995, 690, 128],
-    supporters: [1672 + 318, 250, 118]
+    community: [X('table', 410), 470, 150],      // the woman in blue, speaking
+    schools: [X('table', 835), 520, 118],        // the girl with the slate
+    health: [X('table', 1330), 260, 150],        // the books
+    business: [X('table', 995), 690, 128],       // the basket of finished cloth
+    supporters: [X('table', 318), 250, 118]      // the pillar that holds up the arch
   };
+  /* the shelf for each resource topic: [x, y, width, height] */
   const SHELVES = {
-    health: [1672 + 1098, 50, 524, 152],
-    learning: [1672 + 1100, 196, 520, 142],
-    skills: [1672 + 1312, 346, 310, 268]
+    health: [X('table', 1098), 50, 524, 152],
+    learning: [X('table', 1100), 196, 520, 142],
+    skills: [X('table', 1312), 346, 310, 268]
   };
   /* the three terms, pinned to things on the table: the river stone that holds
      the map down (one task), the compass (who goes which way), and the basket
      of finished cloth (what was delivered) */
-  const MARKS = [[1672 + 285, 688, '1'], [1672 + 822, 788, '2'], [1672 + 990, 668, '3']];
-  const LANTERN = [3344 + 1272, 690];
+  const MARKS = [[X('table', 285), 688, '1'], [X('table', 822), 788, '2'], [X('table', 990), 668, '3']];
+  const LANTERN = [X('veranda', 1272), 690];
 
   /* Places where the painted surface itself may stir a little, in plate pixels:
      [centre x, centre y, radius x, radius y, kind, strength in pixels].
@@ -317,12 +326,12 @@
   /* Seeds that leave the clock. A few come down on the map; the rest drift off into the sky. */
   const SEEDS = (function () {
     const R = mulberry(52611), out = [];
-    const land = [[1672 + 330, 700], [1672 + 520, 742], [1672 + 655, 702], [1672 + 716, 742], [1672 + 232, 772]];
+    const land = [[X('table', 330), 700], [X('table', 520), 742], [X('table', 655), 702], [X('table', 716), 742], [X('table', 232), 772]];
     for (let i = 0; i < 15; i++) {
       const a = -1.3 + (i / 14) * 1.8 + (R() - 0.5) * 0.12;
       const p0 = [HEAD.x + Math.cos(a) * HEAD.r * 0.94, HEAD.y + Math.sin(a) * HEAD.r * 0.94];
       const down = i % 3 === 1;
-      const p3 = down ? land[(i / 3) | 0] : [1380 + R() * 380, -60 + R() * 330];
+      const p3 = down ? land[(i / 3) | 0] : [X('vision', 1380) + R() * 380, -60 + R() * 330];
       out.push({
         p0: p0, p3: p3, down: down,
         p1: [p0[0] + 110 + R() * 130, p0[1] - 50 - R() * 110],
@@ -339,7 +348,7 @@
   /* [x, y, strength, size, speed, phase, sideways drift] for each mote */
   const DUST = (function () {
     const R = mulberry(8841), out = [];
-    const beams = [[1672 + 900, 120, 230, 420], [3344 + 90, 150, 330, 330], [3344 + 520, 560, 420, 160]];
+    const beams = [[X('table', 900), 120, 230, 420], [X('veranda', 90), 150, 330, 330], [X('veranda', 520), 560, 420, 160]];
     beams.forEach((b) => { for (let i = 0; i < 13; i++) out.push([b[0] + R() * b[2], b[1] + R() * b[3], 0.25 + R() * 0.4, 0.8 + R() * 0.9, 0.12 + R() * 0.2, R() * TAU, 2 + R() * 4]); });
     return out;
   })();

@@ -1,6 +1,7 @@
 # Verification — Dandelion Foundation prospectus site
 
-Checked on 2026-11-17 with `node verify.cjs`: **88 of 88 checks passed.**
+Checked on 2026-11-17 with `node verify.cjs`: **114 of 114 checks passed.** This is the one-scene build (Prompt S
+v1.1); the earlier build's 88 checks were replaced, because they tested a layout that no longer exists.
 
 - Browser: Chromium 153 (the full browser, run headless through Playwright), on Linux. Graphics were drawn in
   software, so WebGL was exercised but not on a real graphics card.
@@ -10,24 +11,38 @@ Checked on 2026-11-17 with `node verify.cjs`: **88 of 88 checks passed.**
 
 Every result below was produced by that run. Nothing here is a guess about other browsers or devices.
 
+## How the camera is checked
+
+The page exposes a read-only `window.DFScene`: where the camera is, where it should be for the current scroll
+position, and the stretch of scrolling over which each block of text holds. The script scrolls to the middle of each
+block's hold, waits until the camera has glided to rest, and compares. "Settled" means within half a scene unit (a
+painting is 1672 units wide) of its planned framing.
+
 ## What was checked
 
-**At four window sizes: 320 × 640, 390 × 844, 768 × 1024 and 1440 × 900** (8 checks each)
+**At four window sizes: 320 × 640, 390 × 844, 768 × 1024 and 1440 × 900** (13 checks each)
 
-- No script errors and no failed requests. (An earlier run caught a missing site icon this way; a plain placeholder
-  icon was added.)
-- The opening film is on.
-- Scrolling forwards, scenes 1 to 5 appear in order.
-- Scrolling back, scenes return in order and the cover is fully restored.
-- The plate is painted on the cover and on the last scene (the pan from the first painting to the table plate).
-- No sideways scrolling at nine positions down the page.
+- No script errors and no failed requests.
+- The scene is on behind the page.
+- For each of the 14 blocks of text, the camera settles on its planned framing.
+- Each block of text is set over its own painting (the hillside, the table or the veranda).
+- The journey runs one way through the scene, from the first painting to the last.
+- The view never runs past either end of the scene.
+- Every short slip is wholly on screen while its part of the scene holds.
+- The artwork label is clear of every short slip.
+- The painting is drawn.
+- Scrolling back through all 14 blocks retraces the same path, to within one unit.
+- Back at the top, the cover framing returns.
+- No sideways scrolling at nine positions down the page. (An earlier run found 2 pixels at 320 wide: the two cover
+  buttons on one line were wider than the column. They were made smaller at that width, and allowed to wrap.)
 - Every request stays on the site: no fonts, scripts or pictures come from anywhere else.
 
 **Structure and content**
 
 - All ten section anchors exist (`vision`, `terms`, `focus`, `partners`, `resources`, `approach`, `about`,
   `collaborate`, `questions`, `closing`); no id is used twice; every in-page link has a target.
-- One `h1`; every image has alt text.
+- One `h1`; every image has alt text, except the decorative copy of the first painting behind the page, which is
+  hidden from screen readers (each block of text carries its painting's description instead).
 - The copyright year is the current year.
 - The delivery note under the brief buttons matches the required wording, character for character.
 - The label "Symbolic artwork / Not impact data" is present.
@@ -38,7 +53,8 @@ Every result below was produced by that run. Nothing here is a guess about other
 
 - Each of the five tabs shows only its own panel.
 - Arrow keys move between tabs and wrap; End goes to the last.
-- The plate beside the tabs is painted.
+- Choosing a group turns the camera to its part of the table (from the woman speaking to the books, the camera moves
+  more than 400 units and settles there).
 - A group's "Start a brief" button sets the matching area of work in the brief.
 
 **Resources**
@@ -62,6 +78,11 @@ Every result below was produced by that run. Nothing here is a guess about other
 - Nothing is stored: no cookies, no local storage, no session storage.
 - No "sent" message is ever shown.
 - With a brief field focused, scrolling does not move the print register of any heading.
+- With a brief field focused, the scene is perfectly still: two pictures of it taken 0.9 seconds apart are identical,
+  pixel for pixel.
+- With the brief in the middle of the window and nothing focused, the same holds.
+- Elsewhere the scene does move by itself: at the seed head and at the questions (the sea), two pictures taken 0.9
+  seconds apart differ. This shows that the stillness checks above are not passing by accident.
 - When copying is blocked, the brief is shown for manual copying and the message points to Download.
 - A page that embeds the site can supply its own save dialog (`window.DFHost.saveFile`); when one is present it is
   used with the same file name and text, and declining it shows "Download cancelled." and no error.
@@ -72,23 +93,28 @@ Every result below was produced by that run. Nothing here is a guess about other
 
 **Reduced motion** (at 390 × 844 and 1440 × 900)
 
-- The film is off; all five scenes read as an ordinary page; no live canvas exists.
-- The cover headline fits its column; the still plates are painted; no sideways scrolling.
-- The switch turns the film on, and back off.
+- There is no moving scene; every picture and every block of text reads as an ordinary page; no live canvas exists.
+- The cover headline fits its column; the still pictures are painted; no sideways scrolling.
+- The switch turns the moving scene on, and back off. (On phones the switch is in the menu.)
 
 **Without JavaScript** (390 × 844)
 
 - The headline, the terms, all five partner groups, the resources, the questions and the delivery note are readable.
 - The painting still shows and nothing scrolls sideways.
 
+**Opened from a link to a section** (`index.html#questions`)
+
+- The page lands at the questions, with the camera settled on the veranda; the painting in view is drawn. (It is
+  fetched first, before the paintings further left.)
+
 **Without WebGL**
 
-- The film still runs, on the plain painter. The halftone figures print as flat tints.
+- The scene still runs on the plain painter, settles on the seed head, and travels on to the table.
 
 **Opened straight from disk** (`file://`)
 
-- The page works and the plate is painted, with fallback typefaces and the plain painter. Browsers block local font
-  files and will not hand local pictures to WebGL; both are expected.
+- The page works and the scene is painted, settled on the table, with fallback typefaces and the plain painter.
+  Browsers block local font files and will not hand local pictures to WebGL; both are expected.
 
 **Text contrast** (WCAG 2 ratio, worked out from the colours in `styles.css`)
 
@@ -105,13 +131,17 @@ Every result below was produced by that run. Nothing here is a guess about other
 | Muted text on the dark sheet | 11.26 : 1 |
 | Gold labels on the dark sheet | 8.04 : 1 |
 
-Gold is not used for text on paper. Text set over a painting always sits on its own slip of paper.
+Gold is not used for text on paper. No text is ever set on the painting itself: every word sits on its own slip of
+paper.
 
 ## Looked at by eye
 
-Screenshots were reviewed at 320, 390, 768 and 1440 pixels wide for: the cover; each of the five scenes; the pan past
-the pillar; the terms; the three figures; each partner tab with its gold ring; the shelf outline for each topic; the
-approach sheet; the brief; the questions; the closing; the footer; and the still-page layout.
+Screenshots were reviewed at 1440 and 390 pixels wide for every block of text: the cover; Ch. 1; the four scenes;
+the terms with the discs reached in turn; each partner group with its ring; the shelf outline for two topics; the
+approach, about and the brief over the veranda; the questions; the closing; the footer. At 768 and 320 pixels wide:
+the cover, the starting point, the horizon, the clear plan, the contribution and the closing. These reviews led to
+the terms and partner panels moving to the right, the term discs moving to the stone, the compass and the basket, and,
+on phones, the slips for the map and the table waiting at the top of the window.
 
 ## Not checked
 
@@ -120,6 +150,7 @@ approach sheet; the brief; the questions; the closing; the footer; and the still
 - **A screen reader.** Roles, names and focus order were set with care, but none was listened to.
 - **The external links.** The build environment could not reach other sites, so none of the resource or reference
   links was opened.
-- **Speed.** No timing was taken on a slow phone or a slow network. Frame rates are not claimed.
+- **Speed.** No timing was taken on a slow phone or a slow network. Frame rates are not claimed. The camera's glide is
+  timed by the clock, not by frames, so a slow device should see the same journey, less smoothly.
 - **The paintings at larger sizes.** The files are 1672 pixels wide; on large or sharp screens close views are a
   little soft.

@@ -140,13 +140,13 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
   console.log('Checking ' + base + '  (' + browser.version() + ')\n');
 
   /* ---- every size: errors, sideways scrolling, the one scene in both directions */
-  const ORDER = ['vision', 'table', 'veranda'];
   for (const [w, h, dsf] of [[320, 640, 2], [390, 844, 2], [768, 1024, 1], [1440, 900, 1]]) {
     const tag = w + 'x' + h;
     const { ctx, page, log } = await open(browser, base, { w, h, dsf });
     check(tag + ': no script errors or failed requests', log.errors.length === 0, log.errors.slice(0, 3).join(' | '));
     check(tag + ': the scene is on behind the page', await page.evaluate(() => document.documentElement.classList.contains('film-on') && window.DFScene.on()));
     const hs = await holds(page);
+    const ORDER = await page.evaluate(() => Object.keys(window.DFStage.SHEETS));   /* the paintings, left to right */
     const fwd = [];
     for (let i = 0; i < hs.length; i++) { await toY(page, midOf(hs[i])); fwd.push(await settle(page, i)); }
     const wrongSheet = hs.filter((hd, i) => fwd[i].sheet !== hd.sheet).map((hd) => hd.name);
@@ -154,7 +154,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     const seq = fwd.map((f) => ORDER.indexOf(f.sheet));
     check(tag + ': the camera settles on its planned framing for every block of text (' + hs.length + ')', offPlan.length === 0, offPlan.join());
     check(tag + ': each block of text is set over its own painting', wrongSheet.length === 0, wrongSheet.join());
-    check(tag + ': the journey runs one way: hillside, then table, then veranda', seq.every((v, i) => i === 0 || v >= seq[i - 1]) && seq[0] === 0 && seq[seq.length - 1] === 2, seq.join(''));
+    check(tag + ': the journey runs one way through the scene, from the first painting to the last', seq.every((v, i) => i === 0 || v >= seq[i - 1]) && seq[0] === 0 && seq[seq.length - 1] === ORDER.length - 1, seq.join(''));
     check(tag + ': the view never runs past either end of the scene', fwd.every((f) => f.inside));
     const hidden = hs.filter((hd, i) => hd.sticky && !fwd[i].onScreen).map((hd) => hd.name);
     check(tag + ': every short slip is wholly on screen while its scene holds', hidden.length === 0, hidden.join());
@@ -395,6 +395,17 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
       /Learning/.test(text) && /One task\. One scope\. One review\./.test(text) && /Supporters & funders/.test(text) && /Shule Direct/.test(text) && /Is the English tutoring business part of Dandelion\?/.test(text) && text.includes(DELIVERY));
     check('without JavaScript: the painting still shows and nothing scrolls sideways', imgs && over <= 0, 'over=' + over);
     await ctx.close();
+  }
+
+  /* ---- opened part-way down, from a link to a section */
+  {
+    const deep = await open(browser, base, { url: base + '/index.html#questions' });
+    const dq = await settle(deep.page);
+    const atQ = await deep.page.evaluate(() => { const r = document.querySelector('#questions').getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; });
+    check('opened from a link to a section: the page lands there and the scene is on the veranda', deep.log.errors.length === 0 && atQ && dq.planned && dq.sheet === 'veranda', deep.log.errors.slice(0, 2).join(' | '));
+    const stageW = await deep.page.evaluate(() => document.querySelector('[data-stage-plate]').clientWidth);
+    check('opened from a link to a section: the painting in view is drawn', (await stageShot(deep.page, stageW - 440, 0, 420, 320)).length > 30000);
+    await deep.ctx.close();
   }
 
   /* ---- without WebGL, and opened straight from disk */

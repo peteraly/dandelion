@@ -5,48 +5,64 @@
   "supplied_and_used": [
     {
       "file": "assets/plates/plate-1-vision.webp",
-      "role": "Plate I, the vision. Cover and scenes 2 to 4 of the opening.",
+      "role": "The hillside: the left of the one scene. The cover, Ch. 1 and the four scenes that follow it.",
       "shows": "Three women tend a towering golden dandelion on a hillside above the sea: one kneels over a map, one looks up at the seed head, one ties a timber support to the stem. Roots in red earth, thatched houses, mountains, the sea.",
-      "pixels": [1672, 941],
+      "pixels": [
+        1672,
+        941
+      ],
       "bytes": 399620,
       "sha256": "5369deb5da6cfce5399d8a4526451104f9b8719a03cc304a135329560a96afa1",
       "source": "Sent by the founder on 2026-11-17. Stored exactly as received; not re-encoded."
     },
     {
       "file": "assets/plates/plate-2-table.webp",
-      "role": "Plate II, the table. Scene 5 of the opening, the partners section, the resources section.",
+      "role": "The table: the middle of the one scene, joined to the hillside at its left-hand sandstone pillar. The clear plan, the terms, the partners and the resources.",
       "shows": "Two women, a schoolgirl with a slate and a young woman with folded cloth at a timber table around a map held down by river stones, with a compass and a small potted dandelion. A man reaches for a book on cedar shelves; a brass scale and a ruler sit on a shelf; arches open onto the sea and two dhows. A sandstone pillar fills the left edge.",
-      "pixels": [1672, 941],
+      "pixels": [
+        1672,
+        941
+      ],
       "bytes": 407100,
       "sha256": "5f5c50881fdd0d673014d0f8e64607907ecef577db10a9566e9b9459ad1b5a81",
       "source": "Sent by the founder on 2026-11-17. Stored exactly as received; not re-encoded."
     },
     {
       "file": "assets/plates/plate-3-veranda.webp",
-      "role": "Plate IV on the page, the veranda at dusk. The about section (the ledge) and the closing.",
+      "role": "The veranda at dusk: the right of the one scene, joined to the table at the cedar posts. The approach, about, the brief, the questions and the closing.",
       "shows": "An empty stone veranda at dusk: folded cloth on a dark ledge, arches over palms and the sea, two dhows, a lit brass lantern and one dandelion seed on the wall.",
-      "pixels": [1672, 941],
+      "pixels": [
+        1672,
+        941
+      ],
       "bytes": 379684,
       "sha256": "9fe31f6f85ccf9e5754e9d33fee508fca9840f4b857cb432d938b194a3b46274",
-      "source": "Sent by the founder on 2026-11-17. Stored exactly as received; not re-encoded."
-    },
-    {
-      "file": "assets/plates/plate-4-planting.webp",
-      "role": "Plate III on the page, planting. The approach section.",
-      "shows": "Two women plant a dandelion seed in a terracotta bowl. The far-left background is a hill town with a dome, an aqueduct and cypress trees, which reads as Italian; the page frames that part out.",
-      "pixels": [1672, 941],
-      "bytes": 399904,
-      "sha256": "97e2d397cdb986fd72c583f5969468c97774a632c820886e303215f38b63f291",
       "source": "Sent by the founder on 2026-11-17. Stored exactly as received; not re-encoded."
     }
   ],
   "supplied_not_used": [
     {
+      "file": "assets/plates/plate-4-planting.webp",
+      "kept_but_not_used": true,
+      "shows": "Two women plant a dandelion seed in a terracotta bowl. The far-left background is a hill town with a dome, an aqueduct and cypress trees, which reads as Italian.",
+      "pixels": [
+        1672,
+        941
+      ],
+      "bytes": 399904,
+      "sha256": "97e2d397cdb986fd72c583f5969468c97774a632c820886e303215f38b63f291",
+      "why_not": "Its edges cannot meet the others: neither side has an upright where a join could fall, and its far-left background reads as an Italian hill town. It is kept in the repository as the reference for a joinable remake (Prompt S, Part 5.3). Not needed on the live site.",
+      "source": "Sent by the founder on 2026-11-17. Stored exactly as received; not re-encoded."
+    },
+    {
       "name": "Veranda panorama",
       "shows": "A wide veranda: five women at a map table, a carved pillar, shelves with botanical prints, a bench with a brass scale, a slate, a balustrade, a palm, the sea at dusk and a lantern.",
-      "pixels": [2000, 667],
+      "pixels": [
+        2000,
+        667
+      ],
       "sha256": "5a521de60f7daabbd01c8383b31604d370ea7a79af198fdf2607566c7ecf600d",
-      "why_not": "It is 667 pixels tall, it repeats scenes that the sharper 16:9 paintings already carry, and its figures are a different cast. Not stored in this folder.",
+      "why_not": "It is 667 pixels tall, its edges cannot meet the other paintings, it repeats scenes they already carry, and its figures are a different cast. Not stored in this folder.",
       "source": "Sent by the founder on 2026-11-17."
     }
   ],
@@ -58,7 +74,7 @@
         "assets/plates/lite/plate-3-veranda.webp",
         "assets/plates/lite/plate-4-planting.webp"
       ],
-      "what": "A lighter copy of each painting, 1100 x 619 pixels, WebP quality 72, resized from the supplied file. Browsers choose it for small, low-density windows.",
+      "what": "A lighter copy of each painting, 1100 x 619 pixels, WebP quality 72, resized from the supplied file. Browsers choose it for small, low-density windows. The planting copy is kept with its original and not used.",
       "sha256": {
         "plate-1-vision": "f27a315bdd32272f0c182d933ce2d37b66592678f0cc1e4a97be3a427881af73",
         "plate-2-table": "499155f95f2ca579c63cac22f1e9395ece26cc5343cb61e84fc8aebb47521218",
@@ -67,38 +83,45 @@
       }
     },
     {
-      "files": ["figure.js"],
-      "what": "Three halftone figures (the taproot, the stem, the seed head) drawn entirely in code and printed in the browser. Original work for this site; no image files."
-    },
-    {
-      "files": ["stage.js"],
-      "what": "Drawn on top of the paintings, never into them: a few dandelion seeds, a gold ring, a gold box around a shelf, a soft glow at the lantern."
+      "files": [
+        "stage.js"
+      ],
+      "what": "Drawn on top of the paintings, never into them: seeds that leave the seed head and come down on the map, motes of dust in the indoor light, a few seeds crossing the evening sky, a soft glow at the lantern, three numbered gold discs, a gold ring, a gold box around a shelf. A few small places in the paintings stir by a pixel or two (the seed head sways, open water shimmers, the boats ride a slow swell) by displacing the picture, never repainting it."
     }
   ],
   "third_party": [
     {
-      "files": ["assets/fonts/besley-latin-wght-normal.woff2", "assets/fonts/besley-latin-wght-italic.woff2"],
+      "files": [
+        "assets/fonts/besley-latin-wght-normal.woff2",
+        "assets/fonts/besley-latin-wght-italic.woff2"
+      ],
       "what": "Besley, variable weight 400 to 900, Latin subset",
       "licence": "SIL Open Font License 1.1 (assets/fonts/OFL-Besley.txt)",
       "source": "npm package @fontsource-variable/besley 5.3.0"
     },
     {
-      "files": ["assets/fonts/libre-franklin-latin-wght-normal.woff2", "assets/fonts/libre-franklin-latin-wght-italic.woff2"],
+      "files": [
+        "assets/fonts/libre-franklin-latin-wght-normal.woff2",
+        "assets/fonts/libre-franklin-latin-wght-italic.woff2"
+      ],
       "what": "Libre Franklin, variable weight 100 to 900, Latin subset",
       "licence": "SIL Open Font License 1.1 (assets/fonts/OFL-Libre-Franklin.txt)",
       "source": "npm package @fontsource-variable/libre-franklin 5.3.0"
     },
     {
-      "files": ["assets/fonts/courier-prime-latin-400-normal.woff2", "assets/fonts/courier-prime-latin-700-normal.woff2"],
+      "files": [
+        "assets/fonts/courier-prime-latin-400-normal.woff2",
+        "assets/fonts/courier-prime-latin-700-normal.woff2"
+      ],
       "what": "Courier Prime, regular and bold, Latin subset",
       "licence": "SIL Open Font License 1.1 (assets/fonts/OFL-Courier-Prime.txt)",
       "source": "npm package @fontsource/courier-prime 5.3.0"
     }
   ],
   "pending": [
-    "Full-resolution originals of the four paintings. The copies received are 1672 pixels wide, so close views are slightly soft on sharp screens.",
+    "Full-resolution originals of the three paintings in use. The copies received are 1672 pixels wide, so close views are slightly soft on sharp screens.",
+    "Joining paintings, if wanted: a path up to the house between the hillside and the table, and planting at golden hour between the table and the veranda (briefs in Prompt S, Part 5).",
     "An official logo. The header uses a text wordmark until one is supplied, and the browser-tab icon is a plain gold dot (written inline in index.html), not a logo.",
-    "A decision on the planting painting's far-left background (see supplied_and_used).",
     "A credit line for the paintings (artist or tool) for the colophon.",
     "Video clips, if wanted. None are used and nothing depends on them.",
     "A social-sharing image and its absolute address, once the site has a domain."

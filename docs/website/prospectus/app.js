@@ -64,15 +64,16 @@
     };
   });
 
-  /* Each painting is fetched once. The scene needs all of them, in order. */
+  /* Each painting is fetched once, from assets/plates/ (or its lighter copy in lite/, which the
+     browser picks for small, low-density windows). The scene needs all of them: the one in view
+     first, then the rest from left to right. */
   function need(name) {
     if (!canPaint || wanted[name] || !S.SHEETS[name]) return;
     wanted[name] = true;
-    var src = $('.plate[data-sheet="' + name + '"] img') || $('img', stageHost);
-    var img = new Image();
+    var file = S.SHEETS[name].file, img = new Image();
     img.decoding = 'async';
-    if (src.getAttribute('sizes')) img.sizes = src.getAttribute('sizes');
-    if (src.getAttribute('srcset')) img.srcset = src.getAttribute('srcset');
+    img.sizes = '(max-width: 700px) 190vw, 120vw';
+    img.srcset = 'assets/plates/lite/' + file + '.webp 1100w, assets/plates/' + file + '.webp 1672w';
     img.onload = function () {
       S.setImage(name, img);
       plates.forEach(function (pl) { if (pl.sheet === name && pl.near) drawStill(pl); });
@@ -80,9 +81,13 @@
       requestTick();
     };
     img.onerror = function () { if (name === 'vision' && state.filmOn) setFilm(false); };
-    img.src = src.getAttribute('src');
+    img.src = 'assets/plates/' + file + '.webp';
   }
   function needNext() { for (var n in S.SHEETS) if (!wanted[n]) { need(n); return; } }
+  function sheetAt(x) {
+    for (var n in S.SHEETS) { var sh = S.SHEETS[n]; if (x >= sh.x && x < sh.x + sh.w) return n; }
+    return x < 0 ? 'vision' : n;
+  }
   $$('.plate img').forEach(function (img) {
     img.addEventListener('error', function () { var f = img.closest('figure'); if (f) f.hidden = true; });
   });
@@ -287,7 +292,7 @@
   }
 
   function renderScene(now) {
-    if (!stage || !keys.length || !S.has('vision')) return;
+    if (!stage || !keys.length) return;
     var s = scrollY(), mo = motion();
     var dt = state.lastDraw && now ? clamp(now - state.lastDraw, 1, 100) : 16.7;
     state.lastDraw = now || 0;
@@ -306,6 +311,10 @@
     }
     state.settling = cam !== target;
     state.cam = cam;
+    /* a page opened part-way down asks for the painting in view first; until it arrives, the plain picture stays */
+    var here = sheetAt(cam.cx);
+    need(here);
+    if (!S.has(here)) return;
 
     /* everything that drifts is driven by state.time, which only runs while motion is allowed */
     var fx = { time: state.time, motion: 1, dust: 1, glow: [S.LANTERN[0], S.LANTERN[1], 0.8 + 0.2 * Math.sin(state.time * 2.3)] };

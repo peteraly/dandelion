@@ -1,7 +1,8 @@
 # Dandelion Foundation — the prospectus site
 
-A one-page website in the manner of a letterpress prospectus: it states its terms first, shows the paintings as colour
-plates, and moves a slow camera across them as you scroll. It was built from `docs/PROMPT_S_PROSPECTUS_WEBSITE.md`.
+A one-page website in the manner of a letterpress prospectus. Three paintings, joined side by side, make one scene
+that stays behind the whole page. As you scroll, a slow camera travels through the scene, and every word sits on a
+slip of paper laid over it. It was built from `docs/PROMPT_S_PROSPECTUS_WEBSITE.md` (v1.1).
 
 It is plain HTML, CSS and JavaScript. There is nothing to install and nothing to build.
 
@@ -20,8 +21,9 @@ you see fallback typefaces, and the paintings are drawn by the plain painter ins
 ## Publish it
 
 Upload the folder as it is to any static host (Netlify, Vercel, Cloudflare Pages, GitHub Pages, an ordinary web
-server). The page uses relative paths, so it works at a domain root or in a sub-folder. `verify.cjs`, `README.md`,
-`VERIFICATION.md` and `ASSET-MANIFEST.json` are not needed on the live site.
+server). The page uses relative paths, so it works at a domain root or in a sub-folder. These are not needed on the
+live site: `verify.cjs`, `README.md`, `VERIFICATION.md`, `ASSET-MANIFEST.json`, and the planting painting
+(`assets/plates/plate-4-planting.webp` and its copy in `lite/`), which the page does not use.
 
 After publishing, check three things on the live address: the footer's privacy line still holds (some hosts add their
 own analytics), every external link opens, and the page works on a real phone.
@@ -30,12 +32,11 @@ own analytics), every external link opens, and the page works on a real phone.
 
 | File | What it does |
 | --- | --- |
-| `index.html` | Every word on the page. Edit copy here. |
+| `index.html` | Every word on the page. Edit copy here. Each block of text says which part of the scene it belongs to. |
 | `styles.css` | Colours, type and layout. The colour and type tokens are at the top. |
-| `stage.js` | The painted plates: where the camera goes, the drawn seeds, the gold ring and box. |
-| `figure.js` | The three small halftone figures (taproot, stem, seed head), drawn in code. |
-| `app.js` | Behaviour: the opening film, tabs, the resource finder, the brief tool. |
-| `assets/plates/` | The four paintings as received, and a lighter copy of each in `lite/`. |
+| `stage.js` | The scene: the paintings in order, the framings, the camera, what is drawn on top, the places that stir. |
+| `app.js` | Behaviour: the camera's journey, tabs, the resource finder, the brief tool, one scheduler. |
+| `assets/plates/` | The paintings as received, and a lighter copy of each in `lite/`. |
 | `assets/fonts/` | Besley, Libre Franklin and Courier Prime, with their licences (SIL Open Font License 1.1). |
 | `verify.cjs` | Browser checks. Results are in `VERIFICATION.md`. |
 | `ASSET-MANIFEST.json` | Every asset: supplied, made here, or still to come. |
@@ -52,34 +53,72 @@ All copy is ordinary text in `index.html`. Two things to keep in step when you e
 To add a resource, copy one `<li class="res" ...>` block and set its `data-topic` to `health`, `learning` or `skills`.
 The count and the filters pick it up.
 
-## Swap or add a painting
+## How the scene works
 
-Each plate is 16:9. Replace a file in `assets/plates/` with a larger one of the same shape and the same name, and
-make a lighter copy about 1100 pixels wide in `assets/plates/lite/`. Nothing else changes: camera positions are
-measured in a fixed grid of 1672 × 941 units per plate, whatever the file's real size. Larger originals will make the
-close views sharper.
+The page is a column of blocks (`<section class="track" data-track ...>`), each with one slip of paper inside
+(`data-slip`). Each block names its place in the scene:
 
-If a new painting is composed differently, adjust its framings in `stage.js`:
+- `data-shot` is the framing (from `FRAMES` in `stage.js`) where the camera holds while the block is read.
+  `data-shot-to`, if present, is a second framing it pans to as the block is read.
+- `data-side="right"` puts the slip on the right on wide screens; otherwise it sits on the left. The subject goes in
+  the clear part beside it.
+- `data-port="top"` makes a short slip wait at the top of the window on phones, for subjects low in the painting.
+  Otherwise it waits at the bottom.
+- `data-role` ties a block to something drawn on the scene: `clock` (seeds leave the seed head), `plan` (they land on
+  the map), `terms` (the three gold discs), `partners` (the gold ring, and the camera turning to each group), `shelves`
+  (the outline around a shelf), `brief` (stillness while it is used) and `evening` (the lantern and drifting seeds).
 
-- `FRAMES` lists each view as `[x, y, width, height]` on that grid, once for wide windows and once for tall ones.
-- `SPOTS` are the five places the gold ring goes on the table plate, and `SHELVES` the three shelf outlines.
-- `HEAD` is the centre and radius of the seed head, where the drawn seeds start.
+A short slip stays put while its block is read. A long section (`slip-panel`) sits on a taller sheet that scrolls past.
+Between blocks there is clear space, so the scene is seen on its own while the camera travels.
 
-The paintings are never altered by the code. Only the camera moves; the seeds, the ring and the box are drawn on top.
+The camera's place depends only on how far the page has scrolled, so scrolling back plays the journey backwards. It
+glides a little behind the scroll, at the same pace whatever the frame rate. While someone is writing in the brief, or
+the brief is in the middle of the window, nothing moves by itself and the camera holds exactly where the scroll
+position puts it.
 
-## The opening film
+- Wide windows: slips sit to one side, alternating left and right.
+- Phones: the painting fills the window and a short slip waits at the bottom (or the top).
+- Visitors who ask their device to reduce motion get an ordinary page: each block with its picture beside it as a
+  captioned still. The switch in the header ("Still page" / "Play the scene") lets anyone choose either way.
 
-The stage pins to the window for about six screens of scrolling. The timeline is in `app.js` (`measureFilm`): a list
-of moments between 0 and 1, each with a framing. The camera position depends only on scroll position, so it plays
-backwards when you scroll back.
-
-- Wide windows: the painting fills the stage and the text sits on slips of paper.
-- Phones and narrow windows: the painting is a plate at the top and the text sits below.
-- Visitors who ask their device to reduce motion get an ordinary page of five captioned stills. The switch at the
-  bottom of the stage ("Read as a still page") lets anyone choose either way.
-
-Video clips are not used. If clips are made later, they can replace the live camera for a scene; nothing depends on
+Video clips are not used. If clips are made later, they can replace the live camera for a stretch; nothing depends on
 them.
+
+## Add or swap a painting
+
+The paintings are listed left to right in `PAINTINGS` at the top of `stage.js`, each as `[name, file]`. Everything
+else in the scene (framings, the gold ring's places, the shelves, the term discs, the lantern, where seeds land) is
+placed relative to its own painting, so adding a painting to the list moves nothing else.
+
+To add one:
+
+1. Save it in `assets/plates/` as 16:9 WebP, with a copy about 1100 pixels wide and the same name in
+   `assets/plates/lite/`.
+2. Add `[name, file]` to `PAINTINGS` in its place.
+3. Give it framings in `FRAMES`: `[x, y, width, height]` in a grid of 1672 × 941 units per painting (whatever the
+   file's real size), once for wide windows and once for tall ones. Faces, hands and the map should stay clear of the
+   slip.
+4. Point a block at it with `data-shot`. For the still page, give that block a figure whose plate names the painting
+   (`data-sheet`).
+5. Run the checks.
+
+The joins between paintings should fall on something upright that is already painted: today, the sandstone pillar at
+the left edge of the table, and the cedar posts where the table meets the veranda. The camera crosses a join only
+while travelling between blocks, or behind a panel of text. Part 5 of Prompt S has briefs for new paintings made to
+join.
+
+To swap a painting for a sharper copy of the same picture, replace the file with a larger one of the same shape and
+the same name, and remake its `lite/` copy. Nothing else changes.
+
+Other things you can tune in `stage.js`:
+
+- `SPOTS`: the five places the gold ring goes on the table, one per partner group.
+- `SHELVES`: the three shelf outlines for the resource topics. `MARKS`: the three term discs.
+- `HEAD`: the centre and radius of the seed head, where the drawn seeds start. `LANTERN`: where the glow sits.
+- `STIR`: up to three small places per painting that stir by a pixel or two (sway, shimmer or swell).
+
+The paintings are never repainted by the code. The camera moves, the stirring places are displaced by a pixel or two,
+and the seeds, dust, ring, discs and box are drawn on top.
 
 ## Check it
 
@@ -88,12 +127,15 @@ node verify.cjs
 ```
 
 This needs the `playwright` package and a Chromium it can start. It serves the folder itself, opens the page at four
-sizes and several settings, and prints one PASS or FAIL line per check. What it covers, and what it cannot, is in
-`VERIFICATION.md`. If Playwright cannot find its browser, point it at one:
+sizes and several settings, and prints one PASS or FAIL line per check (114 at present). What it covers, and what it
+cannot, is in `VERIFICATION.md`. If Playwright cannot find its browser, point it at one:
 
 ```bash
 CHROMIUM_PATH=/path/to/chromium node verify.cjs
 ```
+
+The page exposes a read-only `window.DFScene` (where the camera is, where it should be, and where each block holds) for
+these checks. Nothing on the page depends on it.
 
 ## Privacy, as built
 
