@@ -56,6 +56,8 @@
     stemB: F('vision', [1000, 140, 460, 561], [1010, 180, 430, 440]),
     clock: F('vision', [990, 0, 540, 470], [1010, 0, 460, 470]),
     clockB: F('vision', [1130, 0, 542, 520], [1060, 0, 460, 470]),
+    goalsA: F('vision', [1200, 230, 472, 600], [1180, 200, 492, 520]),   // the woman in orange, the valley and the sea
+    goalsB: F('vision', [1290, 400, 382, 420], [1250, 380, 422, 420]),
     /* the table */
     plan: F('table', [110, 230, 1100, 700], [170, 300, 420, 400]),
     planB: F('table', [170, 250, 1100, 680], [330, 320, 420, 400]),
@@ -75,6 +77,7 @@
     stillGround: F('vision', [430, 460, 1000, 481]),
     stillStem: F('vision', [960, 120, 520, 821]),
     stillClock: F('vision', [960, 0, 640, 640]),
+    stillGoals: F('vision', [1180, 200, 492, 615]),
     stillTerms: F('table', [120, 440, 960, 501]),
     stillShelves: F('table', [1040, 0, 632, 760]),
     stillWall: F('veranda', [40, 120, 980, 700])
@@ -84,11 +87,11 @@
   const HEAD = { x: X('vision', 1240), y: 190, r: 222 };      // the seed head
   /* the part of the table that stands for each group: [x, y, ring radius] */
   const SPOTS = {
-    community: [X('table', 410), 470, 150],      // the woman in blue, speaking
-    schools: [X('table', 835), 520, 118],        // the girl with the slate
-    health: [X('table', 1330), 260, 150],        // the books
-    business: [X('table', 995), 690, 128],       // the basket of finished cloth
-    supporters: [X('table', 318), 250, 118]      // the pillar that holds up the arch
+    community: [X('table', 410), 470, 150],      // community members: the woman in blue, speaking
+    suppliers: [X('table', 995), 690, 128],      // local organizations and suppliers: the basket of finished cloth
+    schools: [X('table', 835), 520, 118],        // schools and educators: the girl with the slate
+    research: [X('table', 1330), 260, 150],      // labs and researchers: the books
+    funders: [X('table', 318), 250, 118]         // donors and funders: the pillar that holds up the arch
   };
   /* the shelf for each resource topic: [x, y, width, height] */
   const SHELVES = {

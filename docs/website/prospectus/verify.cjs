@@ -23,7 +23,9 @@ try { ({ chromium } = require('playwright')); } catch (e) { ({ chromium } = requ
 const ROOT = __dirname;
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webp': 'image/webp', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
 const DELIVERY = 'Delivery note: A public inbox is not yet active—this tool prepares a local draft only and sends nothing. Omit student names or confidential health data, and copy or download your brief to save it.';
-const ANCHORS = ['vision', 'terms', 'focus', 'partners', 'resources', 'approach', 'about', 'collaborate', 'questions', 'closing'];
+const ANCHORS = ['vision', 'terms', 'focus', 'goals', 'partners', 'resources', 'approach', 'about', 'collaborate', 'questions', 'closing'];
+/* the directory of local resources, as supplied (231 entries) plus the founders' vetted UNICEF guidelines */
+const RESOURCES = 232;
 
 const results = [];
 function check(name, pass, detail) {
@@ -189,6 +191,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
         h1: document.querySelectorAll('h1').length, year: (document.querySelector('[data-year]') || {}).textContent,
         delivery: (document.querySelector('.delivery') || {}).textContent, note: (document.querySelector('.artnote') || {}).textContent,
         faqs: document.querySelectorAll('.faq details').length, resources: document.querySelectorAll('[data-res]').length,
+        goals: Array.from(document.querySelectorAll('.goals .goal-no')).map((g) => g.textContent).join(),
         external: Array.from(document.querySelectorAll('a[target="_blank"]')).every((a) => /noopener/.test(a.rel))
       };
     }, ANCHORS);
@@ -199,13 +202,13 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     check('copyright year is the current year', info.year === String(today.getFullYear()), info.year);
     check('delivery note is word for word', info.delivery === DELIVERY);
     check('artwork label is present', /symbolic artwork \/ not impact data/i.test(info.note || ''));
-    check('six questions and five resources', info.faqs === 6 && info.resources === 5, info.faqs + ' / ' + info.resources);
+    check('six questions, the whole directory of ' + RESOURCES + ' resources, and the five goals', info.faqs === 6 && info.resources === RESOURCES && info.goals === 'SDG 4,SDG 5,SDG 8,SDG 3,SDG 12', info.faqs + ' / ' + info.resources + ' / ' + info.goals);
     check('external links open safely (noopener)', info.external);
 
     /* partners */
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.querySelector('#partners').scrollIntoView(); });
     await wait(500);
-    const tabs = ['community', 'schools', 'health', 'business', 'supporters'];
+    const tabs = ['community', 'suppliers', 'schools', 'research', 'funders'];
     let tabsOk = true;
     for (const t of tabs) {
       await page.click('#tab-' + t);
@@ -214,16 +217,16 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
       if (st.sel !== 'true' || st.shown !== t) tabsOk = false;
     }
     check('each partner tab shows only its own panel', tabsOk);
-    await page.focus('#tab-supporters');
+    await page.focus('#tab-funders');
     await page.keyboard.press('ArrowDown');
     const wrapped = await page.evaluate(() => document.activeElement.id + '/' + document.querySelector('#tab-community').getAttribute('aria-selected'));
     await page.keyboard.press('End');
     const ended = await page.evaluate(() => document.activeElement.id);
-    check('arrow keys and End move between partner tabs', wrapped === 'tab-community/true' && ended === 'tab-supporters', wrapped + ' ' + ended);
+    check('arrow keys and End move between partner tabs', wrapped === 'tab-community/true' && ended === 'tab-funders', wrapped + ' ' + ended);
     const ph = (await holds(page)).find((hd) => hd.name === 'partners');
     await toY(page, midOf(ph)); await page.click('#tab-community'); await toY(page, midOf(ph));
     const g1 = await settle(page);
-    await page.click('#tab-health'); await toY(page, midOf(ph));
+    await page.click('#tab-research'); await toY(page, midOf(ph));
     const g2 = await settle(page);
     check('choosing a group turns the camera to its part of the table', g2.planned && g1.planned && g2.cam.cx - g1.cam.cx > 400 && g2.sheet === 'table', Math.round(g1.cam.cx) + ' -> ' + Math.round(g2.cam.cx));
     await page.click('#tab-schools');
@@ -236,20 +239,29 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     await page.evaluate(() => document.querySelector('#resources').scrollIntoView());
     await wait(400);
     const count = () => page.textContent('[data-count]');
+    /* what is on show: how many entries, and whether each one fits the filters */
+    const listed = () => page.evaluate(() => Array.from(document.querySelectorAll('[data-res]')).filter((li) => !li.hidden).map((li) => ({ t: li.getAttribute('data-topic'), a: li.getAttribute('data-aud').split(' '), x: li.textContent.toLowerCase() })));
+    const c0 = await count(), l0 = await listed();
+    check('the directory opens on the first 8 of all ' + RESOURCES, l0.length === 8 && c0 === 'Showing 8 of ' + RESOURCES + ' resources', c0);
+    await page.click('[data-more]');
+    await wait(200);
+    const l1 = await listed(), focusOn = await page.evaluate(() => { const li = document.activeElement.closest('[data-res]'); return li ? Array.from(document.querySelectorAll('[data-res]')).filter((x) => !x.hidden).indexOf(li) : -1; });
+    check('"Show more" adds the next 8 and takes focus to the first new entry', l1.length === 16 && focusOn === 8, l1.length + ' shown, focus on entry ' + focusOn);
     await page.fill('#res-q', 'veta');
-    const c1 = await count();
+    const c1 = await count(), l2 = await listed();
+    check('search narrows the list (every entry shown mentions "veta")', l2.length > 0 && l2.length < 8 && l2.every((e) => e.x.includes('veta')) && new RegExp('^Showing ' + l2.length + ' of ' + l2.length + ' matching').test(c1), c1);
     await page.fill('#res-q', '');
-    await page.click('[data-finder] [data-topic="learning"]');
-    const c2 = await count();
+    await page.selectOption('#res-who', 'u');
+    await page.selectOption('#res-topic', 'P');
+    const c2 = await count(), l3 = await listed();
+    check('the two filters narrow the list (a student under 18, periods and hygiene)', l3.length > 0 && l3.every((e) => e.t === 'P' && e.a.includes('u')) && /matching resources \(232 in all\)$/.test(c2), c2);
     await page.fill('#res-q', 'zzzz');
-    const emptyShown = await page.evaluate(() => !document.querySelector('[data-empty]').hidden && document.querySelector('[data-list]').hidden);
+    const emptyShown = await page.evaluate(() => !document.querySelector('[data-empty]').hidden && document.querySelector('[data-list]').hidden && document.querySelector('[data-more]').hidden);
     await page.click('[data-empty] [data-reset]');
     const c3 = await count();
-    const pressed = await page.getAttribute('[data-finder] [data-topic="all"]', 'aria-pressed');
-    check('search narrows the list ("veta" leaves 1 of 5)', /Showing 1 of 5/.test(c1), c1);
-    check('a topic filter narrows the list (Learning leaves 1 of 5)', /Showing 1 of 5/.test(c2), c2);
+    const cleared = await page.evaluate(() => !document.querySelector('#res-q').value && !document.querySelector('#res-who').value && !document.querySelector('#res-topic').value);
     check('a search with no match shows the empty state', emptyShown);
-    check('Reset restores all five and All topics', /Showing 5 of 5/.test(c3) && pressed === 'true', c3);
+    check('Reset clears the search and both filters and shows the first 8 again', c3 === 'Showing 8 of ' + RESOURCES + ' resources' && cleared, c3);
     await page.click('#research summary');
     check('the research drawer opens', await page.evaluate(() => document.querySelector('#research').open));
 
@@ -391,8 +403,10 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     const text = await page.evaluate(() => document.body.innerText);
     const imgs = await page.evaluate(() => { const i = document.querySelector('.track-cover img'); return i.complete && i.naturalWidth > 0; });
     const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-    check('without JavaScript: headline, terms, all five partner groups, resources and questions are readable',
-      /Learning/.test(text) && /One task\. One scope\. One review\./.test(text) && /Supporters & funders/.test(text) && /Shule Direct/.test(text) && /Is the English tutoring business part of Dandelion\?/.test(text) && text.includes(DELIVERY));
+    check('without JavaScript: headline, what we do, the goals, the terms, all five partner groups, resources and questions are readable',
+      /Learning/.test(text) && /Unlocking the last mile/.test(text) && /SDG 12/.test(text) && /One task\. One scope\. One review\./.test(text) && /Donors & institutional funders/.test(text) && /Shule Direct/.test(text) && /Is the English tutoring business part of Dandelion\?/.test(text) && text.includes(DELIVERY));
+    const shownRes = await page.evaluate(() => Array.from(document.querySelectorAll('[data-res]')).filter((li) => li.getBoundingClientRect().height > 0).length);
+    check('without JavaScript: the whole directory is listed (' + RESOURCES + ')', shownRes === RESOURCES, String(shownRes));
     check('without JavaScript: the painting still shows and nothing scrolls sideways', imgs && over <= 0, 'over=' + over);
     await ctx.close();
   }

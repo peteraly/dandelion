@@ -1,4 +1,4 @@
-# Dandelion Foundation — Prompt S: a letterpress-prospectus website, in the manner of pear.no (v1.1)
+# Dandelion Foundation — Prompt S: a letterpress-prospectus website, in the manner of pear.no (v1.2)
 
 Founder direction (2026-11-17), in the founder's words:
 
@@ -12,15 +12,24 @@ Founder direction (2026-11-17), in the founder's words:
 > a single scene, with text layered on top where relevant, lots of white space? Like 1–5, but the scenes (we can
 > generate more in similar style) are the entire background. I like the fonts and styles and colors. Create people or
 > objects or background movements if missing, or other scenes to bridge everything if needed.*
+>
+> *(With the text of the live site, dandelionfoundation.com:)* *What's included and missing that we need to add? I
+> think our positioning needs to be clearer.*
 
 v1.0 showed the paintings as plates between sheets of text, with a five-scene film at the top. v1.1 makes the whole
 page one scene: the paintings, joined side by side, stay behind the page from the cover to the footer, and every word
-sits on a slip of paper laid over them. The fonts, inks and print effects are unchanged.
+sits on a slip of paper laid over them. The fonts, inks and print effects are unchanged. v1.2 makes the positioning
+clear, in the live site's own terms: what Dandelion does (essentials that keep girls in school, then tools and
+training, then a locally owned utility that makes and delivers them, with global partners matched to local
+priorities), its long-term goals, the same five audiences, and the full directory of local resources. Claims the live
+site makes that the notes for this site do not support are written as aims, or held back for the founders to confirm
+(Part 6).
 
 Part 1 says what "in the manner of pear.no" means and what we leave alone. Part 2 is the prompt, ready to paste into
 Claude or any assistant, with the paintings attached. Part 3 is the response: the site that was built from it, where it
 is, and what was checked. Part 4 lists the founders' decisions. Part 5 is a set of briefs for new paintings that can
-join the scene. The copy comes from the founders' own notes of November 2026 (the attached text file); the truth and
+join the scene. Part 6 sets the live site beside this one: what was carried over, what was changed, and what is still
+missing. The copy comes from the founders' own notes of November 2026 (the attached text file); the truth and
 legal rules of Prompts P and Q still apply.
 
 ---
@@ -81,20 +90,29 @@ publishes for the people it hopes will join it, which fits an organisation whose
 > link to it.
 >
 > **Who we are (facts you may use).**
-> - Dandelion Foundation. Tagline: "Learning into livelihoods."
+> - Dandelion Foundation. Tagline: "Learning into livelihoods." Positioning line: "Unlocking the last mile. When people
+>   have the right tools and training, local talent builds lasting wealth."
 > - Mission: connect health, education, and pathways to economic opportunity for women and girls in Tanzania.
-> - Focus: Tanga, Tanzania. Approach: locally led priorities in Tanzania, supported by collaboration across the United
->   States and internationally.
+> - What we do, in order: keep girls and young mothers in school with reliable, affordable menstrual, infant and
+>   school essentials; invest in capability (tools, training and engineering support for local partners); build a
+>   shared utility to buy, make and deliver those essentials, so the work becomes local jobs and local ownership; and
+>   match global partners to local priorities through volume purchasing and local consignment distribution. Write
+>   all of this as what we do or are building and aim for, never as something already delivered, priced or measured.
+> - Long-term horizon: five United Nations Sustainable Development Goals (4, 5, 8, 3 and 12), as aims.
+> - Focus: Tanga, Tanzania, where the first community-led pilots are being developed. Approach: locally led priorities
+>   in Tanzania, supported by collaboration across the United States and internationally.
 > - A separate English tutoring business is under consideration. It is separate from Dandelion in accounts,
 >   operations and responsibilities.
 >
 > **Never invent or imply:** completed programmes, participant counts, measured impact, clinical services, delivery
 > agreements, partnerships, facilities, legal registration, a tax number, tax deductibility, donation processing,
-> contact details, a founder's name, or a date on which links were checked. The paintings are symbolic. Never present
-> them as a record of real people, places or delivery. Do not call any organisation a partner.
+> contact details, a founder's name, or a date on which links were checked. Do not call Dandelion a public-private
+> partnership, name places for pilots beyond Tanga, or state prices, savings or jobs as achieved, until the founders
+> confirm them. The paintings are symbolic. Never present them as a record of real people, places or delivery. Do not
+> call any organisation a partner.
 >
 > **The qualities to take.**
-> 1. One idea, stated on the cover; every section explains it.
+> 1. One idea, stated on the cover; every section explains it. Say plainly what the organisation does.
 > 2. Terms before anything else, and a plain list of what is *not* offered or promised.
 > 3. Paintings that carry the meaning, with short text laid over them and plenty of clear space.
 > 4. A printed look: paper, a few inks, type slightly out of register, slips of paper with a gold offset edge.
@@ -144,32 +162,53 @@ publishes for the people it hopes will join it, which fits an organisation whose
 > terms.
 >
 > **The journey, in this order. Use the copy word for word.**
-> 1. *Cover* (the women and the seed head; on wide screens the cover sheet takes the left half). Label: "Prospectus
->    No. 1 / Tanga, Tanzania". Headline, set as a broadside with each line fitted to the measure: "Learning / into /
->    livelihoods." Text: "Health, education, and the opportunity to earn. Our mission is to help women and girls
->    connect the steps." The terms in brief: "01 One useful task · 02 An agreed scope · 03 A shared review". Buttons:
->    **Explore collaboration** (to the brief) and **Read the terms**. Note: "This website does not accept donations or
->    provide charitable tax receipts."
-> 2. **Ch. 1 / Our focus** (the whole hillside). "Rooted in local priorities. Built toward opportunity." "Dandelion
->    brings health, education, and economic opportunity into one connected mission for women and girls in Tanzania.
->    Our focus in Tanga is to identify a practical community priority and shape a useful collaboration around it." A
->    drawer, "Read the story without scrolling through the scenes", holds this transcript: "Our mission connects
->    health, education, and pathways to income for women and girls in Tanzania. Trusted information and practical
->    support can help remove barriers. Continued learning builds capability. Employers, customers, and local ownership
->    help turn capability into opportunity. Each collaboration needs a clear task, defined responsibilities, suitable
->    resources, and a way to learn." The chapter's three ideas are told by the next three scenes.
-> 3. *The starting point* (the map and the roots). "Listen. Connect. Follow through." "Learn from women, educators,
->    and service providers. Understand what already works." "Identify the next practical step around locally defined
->    health and learning priorities."
-> 4. *The contribution* (the stem and its support; the camera rises). "Build on what already exists." "Connect local
->    knowledge with useful resources, practical expertise, and follow-through." "Potential contributions include
->    resource mapping, coordination, documentation, and follow-up—agreed around a local host's priorities."
-> 5. *The horizon* (the seed head; a few seeds leave). "Connect capability with demand." "Explore real employers,
->    customers, and women-led enterprise as routes toward income and independence." "From a useful service to a
->    stronger local industry, the direction depends on local ownership and a viable opportunity."
-> 6. *The clear plan* (on, past the stone pillar, to the table; the seeds come down on the map). "A shared purpose. A
->    clear plan." "A useful collaboration connects a local priority, the right expertise, practical resources, and a
->    way to learn." "Agree the task. Define responsibilities. Review what happens. Then decide the next step."
+> 1. *Cover* (the women and the seed head; on wide screens the cover sheet takes the left half). Label: "Unlocking the
+>    last mile / Tanga, Tanzania". Headline, set as a broadside with each line fitted to the measure: "Learning / into /
+>    livelihoods." Text: "Girls and young women in Tanzania should be able to stay in school and earn a living. We start
+>    with the everyday essentials that keep them in class, and build the local skills and jobs to make and deliver
+>    them." In brief: "01 Keep girls in school · 02 Train and equip · 03 Own it locally". Buttons: **Explore
+>    collaboration** (to the brief) and **Read the terms**. Note: "This website does not accept donations or provide
+>    charitable tax receipts."
+> 2. **Ch. 1 / What we do** (the whole hillside). "Unlocking the last mile." "When people have the right tools and
+>    training, local talent builds lasting wealth." "Dandelion Foundation works across education, health and economic
+>    self-reliance for girls and young women in Tanzania. We invest in people and in local, regenerative
+>    infrastructure, designed to become self-sufficient. Our first community-led pilots are being developed in Tanga."
+>    A drawer, "Read the whole story without scrolling through the scenes", holds this transcript: "Girls and young
+>    women in Tanzania miss school for reasons that can be fixed: periods, pregnancy and a new baby, and the cost of
+>    school supplies. Dandelion starts there, with reliable, affordable essentials close to home. Then we invest in
+>    capability: tools, training and engineering support for local partners. We are building a shared utility to buy,
+>    make and deliver those essentials, so that the work itself becomes local jobs and local ownership. Global
+>    partners are matched to local priorities, and every collaboration starts small: one task, one scope, one review."
+> 3. *Immediate needs first* (the map and the roots). "Keep girls in the classroom." "Periods, pregnancy and the cost
+>    of supplies keep girls and young mothers out of school. The first step is reliable menstrual, infant and school
+>    essentials, close to home and affordable." "We start by listening to women, educators and local providers, and
+>    build on what already works."
+> 4. *Invest in capability* (the stem and its support; the camera rises). "Tools, training, support." "We equip local
+>    partners with tools, training and engineering support, to turn untapped potential into lasting economic
+>    self-reliance." "What we contribute is agreed around a local host's priorities: resource mapping, coordination,
+>    documentation and follow-up."
+> 5. *Build compounding prosperity* (the seed head; a few seeds leave). "Make it here. Own it here." "We are building a
+>    shared utility to buy, make and deliver these essentials, aiming to sell them for less than the shops and to
+>    create skilled, dignified local jobs." "From a useful service to a stronger local industry, the direction depends
+>    on local ownership and a viable opportunity."
+> 6. **Long-term horizon** (a taller sheet over the valley and the sea). "From immediate relief to local ownership."
+>    "Meeting urgent health and education needs is only the starting point. Lasting change needs local productive
+>    capacity: community-led systems that pay their own way, toward shared United Nations Sustainable Development
+>    Goals." Five goals, each with its number, its name and one line. *SDG 4, Quality Education:* "Removing everyday
+>    barriers to school attendance, with reliable menstrual, infant and school supplies, so girls and young mothers
+>    stay in class and graduate." *SDG 5, Gender Equality:* "Equipping young women with the health security, practical
+>    tools and economic pathways to lead in their households and local economies." *SDG 8, Decent Work and Economic
+>    Growth:* "Building local productive capacity: dignified, skill-building jobs in buying, making and community
+>    distribution, in place of temporary aid." *SDG 3, Good Health and Well-being:* "Affordable last-mile access to
+>    essential hygiene, maternal and infant health products." *SDG 12, Responsible Consumption and Production:*
+>    "Regenerative infrastructure and circular supply chains, designed to run efficiently and scale to local
+>    self-sufficiency." Then: "These are the goals the work is designed to advance. They describe aims, not results."
+>    Use the goals' names only, with no SDG icons or logos.
+> 7. *Deliver high-output partnerships* (on, past the stone pillar, to the table; the seeds come down on the map).
+>    "Global partners, local priorities." "Buying in volume and distributing through local sellers on consignment, we
+>    match global partners to local priorities, so that the benefits are shared and the work can pay its own way."
+>    "Every collaboration starts small. Agree the task. Define responsibilities. Review what happens. Then decide the
+>    next step."
 >
 > **The page goes on over the scene, in this order. Use the copy word for word.**
 > 1. **The terms** (over the map: a gold disc numbered 1, 2 and 3 on the river stone, the compass and the basket of
@@ -185,57 +224,53 @@ publishes for the people it hopes will join it, which fits an organisation whose
 >    external, not Dandelion services or partners; the artwork is symbolic, not impact data; the drafting tool sends
 >    nothing.
 > 2. **Ch. 2 / Work with us** (the table). "Bring what works. Build what's missing." "A useful partnership starts with
->    your priorities, a concrete contribution, and a small ask." Five groups as keyboard-operable tabs. Each shows a
->    heading, a starting point, what we could contribute, a first question, a possible first output, and a button that
->    sets that group in the brief. Choosing a group turns the camera to the part of the table that stands for it,
->    marked by a gold ring: the woman speaking (community), the girl with the slate (schools), the books (health and
->    research), the basket of finished cloth (business), the pillar that holds up the arch (supporters). Say below:
->    "Choosing a group here does not create or imply a partnership."
->    - *Community & local organizations.* "Your community. Your priorities." / "Schools and local organizations know
->      what is useful—and what creates extra work." / "Help map existing resources, coordinate agreed next steps, and
->      document what your team wants to learn." / "Which one barrier could we help investigate without duplicating
->      your work?" / "A focused local resource map."
->    - *Schools & educators.* "Learning starts with local insight." / "Educators understand the everyday barriers to
->      attendance, participation, and learning." / "Help review existing materials, map student-support resources, and
->      coordinate a clearly scoped task." / "Is there one resource or learning barrier your team would like to review
->      together?" / "A review of one student-support resource."
->    - *Health specialists & researchers.* "Share expertise that already works." / "Useful information needs
->      appropriate expertise, local relevance, and clear limits." / "Help coordinate a review of an existing resource
->      with appropriately qualified local providers." / "Which existing material could benefit from a focused review
->      of relevance, accessibility, or appropriate use?" / "A scoped review of one existing resource."
->    - *Businesses, suppliers & employers.* "Opportunity needs real demand." / "Employers, suppliers, customers, and
->      local enterprises can clarify practical requirements." / "Help investigate one skill need, supply constraint,
->      product question, or customer requirement." / "What concrete requirement would make a useful first
->      investigation?" / "A short demand or supply brief."
->    - *Supporters & funders.* "Make a specific next step possible." / "Introductions, expertise, and carefully scoped
->      resources can support useful work." / "Help define an achievable contribution with clear responsibilities and
->      realistic costs." / "Is there one resource gap or relevant introduction we could assess together?" / "A scoped
->      resource-gap review."
-> 3. **Appendix / Useful resources** (the shelves). "Find what already exists." "Start with a small set of public
->    resources for learning, health information, and practical skills in Tanzania." Notice: "These are external
->    resources, not Dandelion services or partners. Confirm current availability, eligibility, costs, local access, and
->    privacy directly with each provider." A search box, topic buttons (All topics, Health information, Learning,
->    Skills & business), Reset, a live count, and an empty state. Choosing a topic outlines one shelf in the painting.
->    Five entries, each with a "Check first" line and a link marked as external:
->    - Menstrual health guidelines & toolkits (Health information). "National reference materials for educators,
->      health providers, and organizations, published by UNICEF Tanzania." Check first: "Planning resources, not
->      personal medical advice or a clinical service."
->      `https://www.unicef.org/tanzania/documents/national-guidelines-and-toolkits`
->    - Oky Tanzania (Health information). "Menstrual-health learning and period-tracking information." Check first:
->      "Review current availability, privacy terms, and suitability before use."
->      `https://www.unicef.org/tanzania/stories/oky-app-tanzanian-girls`
->    - Shule Direct (Learning). "Tanzania-focused learning and teaching resources." Check first: "Confirm current
->      content, access requirements, and fees." `https://www.shuledirect.co.tz/`
->    - VETA training-centre directory (Skills & business). "Vocational training-centre and course information." Check
->      first: "Confirm centre status, admissions, costs, and course availability."
->      `https://veta.go.tz/vetcat/centre/listCentre`
->    - SIDO business-skills training (Skills & business). "Entrepreneurship and business-management training
->      information." Check first: "Confirm local delivery, prerequisites, and fees. Training is not a funding
->      guarantee." `https://me.sido.go.tz/en/entrepreneurship-and-business-skills-training`
+>    your priorities, a concrete contribution, and a small ask." Five groups as keyboard-operable tabs, the same five as
+>    on the live site. Each shows a heading, what we would do together, a first question, a possible first output, and
+>    a button that sets that group in the brief. Choosing a group turns the camera to the part of the table that
+>    stands for it, marked by a gold ring: the woman speaking (community members), the basket of finished cloth (local
+>    organizations and suppliers), the girl with the slate (schools), the books (labs and researchers), the pillar that
+>    holds up the arch (donors and funders). Say below: "Choosing a group here does not create or imply a partnership."
+>    - *Community members.* "Your community. Your priorities." / "Share local priorities, identify unmet needs, and
+>      co-design practical, community-led initiatives." / "Which one barrier could we help investigate without
+>      duplicating your work?" / "A focused local resource map."
+>    - *Local organizations & suppliers.* "Supply that reaches the last mile." / "Collaborate on last-mile procurement,
+>      circular distribution, student support, and community services." / "What concrete requirement would make a
+>      useful first investigation?" / "A short demand or supply brief."
+>    - *Schools & educators.* "Learning starts with local insight." / "Identify student barriers, coordinate campus
+>      outreach, and plan pilot school partnerships in Tanga and beyond." / "Is there one resource or learning barrier
+>      your team would like to review together?" / "A review of one student-support resource."
+>    - *Labs & researchers.* "Share expertise that already works." / "Contribute applied expertise in product
+>      engineering, public health, supply-chain logistics, and rigorous impact measurement." / "Which existing material
+>      could benefit from a focused review of relevance, accessibility, or appropriate use?" / "A scoped review of one
+>      existing resource."
+>    - *Donors & institutional funders.* "Make a specific next step possible." / "Fund essential supply chains,
+>      regenerative infrastructure, pilot execution, and transparent impact evaluation." / "Is there one resource gap
+>      or relevant introduction we could assess together?" / "A scoped resource-gap review."
+> 3. **Appendix / Local resources** (the shelves). "Find what already exists." "Filter by who you are and what you
+>    need, from menstrual health and school support to job skills and business funding, and go straight to programmes
+>    across Tanzania." Notice: "These are external organisations and programmes, not Dandelion services or partners.
+>    The directory was supplied and has not been independently re-verified, and a listing does not imply endorsement.
+>    Confirm availability, eligibility, costs, local access, and privacy directly with each provider."
 >
 >    Then a box, "If someone needs help now": **199**, Afya Call Centre, the Ministry of Health's free national phone
 >    line for health advice; **116**, National Child Helpline, run by C-Sema, a free helpline protecting children and
 >    women from violence. "These are public services in Tanzania, not Dandelion services." Show the numbers as text.
+>
+>    Then the founders' directory, every entry: the 231 on the live site (in
+>    `docs/website/opportunity-finder-squarespace.html`), plus "Menstrual health guidelines & toolkits", published by
+>    UNICEF Tanzania (`https://www.unicef.org/tanzania/documents/national-guidelines-and-toolkits`). Each entry shows
+>    its topic, its name, one line on what it offers, and its link or phone number, marked as leaving the site. Five
+>    entries keep the "Check first" line from the notes: the UNICEF guidelines ("Planning resources, not personal
+>    medical advice or a clinical service."), Oky Tanzania ("Review current availability, privacy terms, and
+>    suitability before use."), Shule Direct ("Confirm current content, access requirements, and fees."), VETA
+>    ("Confirm centre status, admissions, costs, and course availability.") and SIDO ("Confirm local delivery,
+>    prerequisites, and fees. Training is not a funding guarantee."). A search box; two menus, "Who you are" (Student
+>    under 18; Student mother or pregnant; Woman 18+, skills or work; Business or farming; School or teacher; NGO or
+>    funder; General public) and "Topic" (Health; Safety and legal help; Skills and jobs; Business and money;
+>    Education; Periods and hygiene; Farming and food; Clean energy; Youth and media; Funding; Government; Research and
+>    data); Reset; a live count; eight entries at a time, with "Show more"; and an empty state. Choosing a topic
+>    outlines one shelf in the painting. Without JavaScript, every entry is listed.
+>
 >    Then a drawer, "Research & approaches we study": CAMFED, BRAC and PlantPad, one line each, under the notice
 >    "Independent references, not Dandelion partners or affiliations. Inclusion does not establish endorsement, local
 >    implementation, or feasibility." No logos. Link only to official pages you have a source for.
@@ -283,14 +318,15 @@ publishes for the people it hopes will join it, which fits an organisation whose
 >    Together." "Shared purpose. Lasting possibility." "Start with a shared priority. Shape one useful next step."
 >    Button: **Explore collaboration**.
 > 9. **Footer.** "Dandelion Foundation. Health. Education. Economic opportunity. Women & girls / Tanzania." "Learning
->     into livelihoods." Links: About & accountability, Commitments, Questions, Collaborate. Privacy: "This page does
->     not submit collaboration entries. Copy or download your draft to keep it. Hosting providers may process technical
->    access logs. Do not enter sensitive information." A colophon naming the typefaces and saying the scene is made of
->    symbolic paintings that do not show real people, facilities or results. The current year. The footer is a dark
->    sheet that comes up over the scene.
+>    into livelihoods." Links: About & accountability, Commitments, Local resources, Questions, Collaborate. Privacy:
+>    "This page does not submit collaboration entries. Copy or download your draft to keep it. Hosting providers may
+>    process technical access logs. Do not enter sensitive information." A colophon naming the typefaces and saying the
+>    scene is made of symbolic paintings that do not show real people, facilities or results. The current year. The
+>    footer is a dark sheet that comes up over the scene.
 >
-> **Header.** A text wordmark, "Dandelion Foundation" (no invented logo), and: The vision, Our focus, Work with us,
-> Questions, and a button, Explore collaboration. A skip link. On phones, a menu that Escape closes.
+> **Header.** A text wordmark, "Dandelion Foundation" (no invented logo), leading to the top, and: What we do, Work
+> with us, Resources, Questions, the still-page switch, and a button, Explore collaboration. A skip link. Below about
+> 1100 pixels wide, a menu that Escape closes.
 >
 > **How it must behave.**
 > - One scheduler drives everything that moves. Nothing is drawn when nothing is on screen or changing.
@@ -324,8 +360,8 @@ publishes for the people it hopes will join it, which fits an organisation whose
 
 ## Part 3 — The response
 
-Built on 2026-11-17 by following the prompt above, and rebuilt the same day as v1.1. Everything is in
-`docs/website/prospectus/`.
+Built on 2026-11-17 by following the prompt above, rebuilt the same day as one scene (v1.1), and given the live site's
+positioning (v1.2). Everything is in `docs/website/prospectus/`.
 
 | File | What it is |
 | --- | --- |
@@ -342,21 +378,25 @@ Built on 2026-11-17 by following the prompt above, and rebuilt the same day as v
 To look at it: `cd docs/website/prospectus && python3 -m http.server 8000`, then open `http://localhost:8000`.
 
 **The journey, as built.** The cover sheet takes the left half of the window, with the women and the seed head beside
-it. Ch. 1 sits over the whole hillside. The camera then holds on the map and the roots, rises up the stem, holds on the
-seed head while seeds leave it, and travels on past the stone pillar to the table, where the seeds come down on the
-map. The terms are read over the map, with gold discs on the stone, the compass and the basket of cloth. The partner
-groups turn the camera around the table. The resources are read beside the shelves. Past the cedar posts, the
-approach, about and the brief sit over the veranda wall and ledge; the questions over the arches and the sea; the
-closing over the lantern at dusk. Indoors, dust drifts in the light; the boats rock; the sea shimmers.
+it. Ch. 1, "What we do", sits over the whole hillside. The camera then holds on the map and the roots (keep girls in
+school), rises up the stem (tools and training), holds on the seed head while seeds leave it (make it here, own it
+here), and settles on the woman tying the stem, with the valley and the sea behind her, for the long-term horizon and
+its five goals. It travels on past the stone pillar to the table, where the seeds come down on the map (global
+partners, local priorities). The terms are read over the map, with gold discs on the stone, the compass and the basket
+of cloth. The partner groups turn the camera around the table. The directory of local resources is read beside the
+shelves, and choosing a topic outlines one of them. Past the cedar posts, the approach, about and the brief sit over
+the veranda wall and ledge; the questions over the arches and the sea; the closing over the lantern at dusk. Indoors,
+dust drifts in the light; the boats rock; the sea shimmers.
 
-**What was checked.** 114 checks in Chromium, all passing. At four window sizes: the camera settles on its planned
-framing for each of the 14 blocks of text, each over its own painting, in one direction through the scene, and
+**What was checked.** 117 checks in Chromium, all passing. At four window sizes: the camera settles on its planned
+framing for each of the 15 blocks of text, each over its own painting, in one direction through the scene, and
 retraces the same path when scrolled back; every short slip is wholly on screen while its part of the scene holds,
-and clear of the artwork label; no sideways scrolling. Also: tabs by mouse and keyboard, and the camera turning to
-each group; search, filters, Reset and the empty state; questions by keyboard; Copy, Download, the blocked-copy path
-and a host-supplied save; nothing sent, stored or put in the address bar; the scene perfectly still while the brief is
-in use, and moving elsewhere; a link straight to a section; reduced motion; no JavaScript; no WebGL; opened straight
-from disk; and ten text-contrast pairs (lowest 5.14 to 1). Details are in `VERIFICATION.md`.
+and clear of the artwork label; no sideways scrolling. Also: the five goals in order; tabs by mouse and keyboard, and
+the camera turning to each group; the directory's 232 entries, eight at a time, with search, both menus, "Show more",
+Reset and the empty state; questions by keyboard; Copy, Download, the blocked-copy path and a host-supplied save;
+nothing sent, stored or put in the address bar; the scene perfectly still while the brief is in use, and moving
+elsewhere; a link straight to a section; reduced motion; no JavaScript (the whole directory listed); no WebGL; opened
+straight from disk; and ten text-contrast pairs (lowest 5.14 to 1). Details are in `VERIFICATION.md`.
 
 **What was not checked.** A real phone. Safari and Firefox. A screen reader. The external links (the build environment
 could not reach them). Speed on a slow phone or network.
@@ -369,39 +409,58 @@ could not reach them). Speed on a slow phone or network.
 - The camera path uses the three paintings that can be joined (the hillside, the table, the veranda) instead of the
   ten-stop route in the notes, which assumed scenes that were not among them. The planting painting and the panorama
   are not used; Part 5 describes paintings that would join.
-- Ch. 1's three ideas are told once, by the scenes that follow it, in the scenes' wording. The slightly longer versions
-  of the same three ideas in the notes ("Identify where coordination or practical support could make the next step
-  easier"; "partner coordination, useful documentation"; "before considering new services, distribution, or local
-  production") are not on the page. They can go back into the three scene slips if wanted.
 - Video clips (Kling) are not used. The camera is drawn live, so the journey scrubs smoothly in both directions and
   weighs nothing extra. Clips can be added later; nothing depends on them.
+- v1.2 puts the live site's positioning on the cover, in Ch. 1 and in the four scenes, adds the long-term horizon with
+  its five goals, takes the live site's five audiences for Ch. 2, and replaces the five sample resources with the whole
+  directory. Where the live site states as fact something the notes for this site do not support, this site writes it
+  as an aim or leaves it out until confirmed; Part 6 lists each one.
 
 ---
 
 ## Part 4 — Decisions for the founders
 
-1. **The name on the cover.** "Prospectus No. 1 / Tanga, Tanzania" is this build's own wording. Keep it, or choose
-   another label.
-2. **The paintings.** Three are used, joined into one scene. The planting painting and the wide veranda panorama are
+1. **The positioning on the cover.** The cover now reads "Unlocking the last mile / Tanga, Tanzania", then "Learning
+   into livelihoods.", then one plain sentence on what Dandelion does. Confirm it, or change the order of the two
+   lines.
+2. **Four claims on the live site to confirm before they appear here.** Each is written below as this site has it.
+   - *"A U.S.–Tanzania public-private partnership."* A public-private partnership normally means a written agreement
+     with a government body. If one exists, say with which body, and it can go on the cover. Until then this site keeps
+     the notes' wording: "locally led priorities in Tanzania, supported by collaboration across the United States and
+     internationally" (and see Prompt P, red-team finding 41).
+   - *"Community-led pilots in Tanga and Mbeya."* This site says the first pilots "are being developed in Tanga", as
+     the notes do. Add Mbeya when a pilot there is agreed.
+   - *"We deliver below-cost essentials", "below commercial retail cost."* Written here as an aim ("aiming to sell
+     them for less than the shops"), because nothing is being delivered yet. Change it to the present tense once
+     deliveries start, with a price comparison you can show.
+   - *"Verified programs"* in the directory. The live site's own footnote says the directory was not independently
+     re-verified; this site says the same, and does not call the programmes verified.
+3. **The paintings.** Three are used, joined into one scene. The planting painting and the wide veranda panorama are
    held back: neither has an edge that can meet the others, the planting painting's far-left background reads as an
    Italian hill town, and the panorama is 667 pixels tall with a different cast. Three things to decide: send
    full-resolution originals (the copies received are 1672 pixels wide, so close views are a little soft on sharp
    screens); whether to commission the joining paintings in Part 5; and how to credit the paintings in the colophon
    (artist or tool).
-3. **Two versions of who we are.** The live site says "a U.S.–Tanzania public-private partnership" with pilots "in
-   Tanga and Mbeya". The notes for this site say "locally led priorities in Tanzania, supported by collaboration across
-   the United States and internationally", name Tanga only, and say nothing of registration. This build follows the
-   notes. Choose one wording and use it in both places.
-4. **The help lines.** 199 and 116 are listed as on the live site. `docs/WEBSITE_COPY.md` asks that they be confirmed
-   before publishing.
-5. **The links.** The five resource links are from the founders' notes; the CAMFED and BRAC links are from the Prompt R
-   research; PlantPad has none. None could be opened from the build environment. Open each before launch.
-6. **Swahili.** There is none yet. Add lines only after a native speaker has reviewed them.
-7. **An inbox.** When there is an address for partners to write to, the delivery note changes and the brief could be
-   sent from the page. That needs somewhere to receive it and a privacy review first.
-8. **Where it lives.** Any static host will serve the folder as it is. Decide whether this replaces the Squarespace
-   site or sits beside it, and whether the opportunity finder (231 listings) moves across.
-9. **A legal line.** Once the wording on registration is settled (Prompt Q, ADR-046), add it to the footer.
+4. **An inbox.** The live site links hello@dandelionfoundation.com ("Connect with us", "Stay in the loop"). The notes
+   for this site say a public inbox is not yet active, and the brief tool's delivery note says so word for word. If
+   that address is read every week, say so: it can go in the footer with a "Stay in the loop" line, and the brief could
+   offer to open an email to it. The delivery note would change at the same time. Until then the address is left out.
+5. **Projects that inspire us.** The live site has twelve case studies (seaweed packaging, carbon-recycled fuels,
+   decentralised manufacturing). Their names were not in the text supplied, so none is on this site. Send the twelve
+   names and links, and they go in the drawer that now holds CAMFED, BRAC and PlantPad.
+6. **The help lines.** 199 and 116 are listed as on the live site. `docs/WEBSITE_COPY.md` asks that they be confirmed
+   before publishing, with MSI Tanzania's 0800 753 333, which is now in the directory too.
+7. **The links.** 232 entries: the 231 in the live directory and UNICEF's guidelines from the notes. Some link to a
+   news story rather than the organisation's own page, and 46 have no link. None could be opened from the build
+   environment. Open each before launch.
+8. **The scene labels.** They use the live site's three pillar names ("Invest in capability", "Build compounding
+   prosperity", "Deliver high-output partnerships"), with a plain headline under each. Keep them, or choose plainer
+   labels (for example "Own it locally" and "Partners matched to local priorities").
+9. **Swahili.** There is none yet. The live finder showed Swahili labels on hover; they were not carried over. Add
+   lines only after a native speaker has reviewed them.
+10. **Where it lives.** Any static host will serve the folder as it is. Decide whether this replaces the Squarespace
+    site or sits beside it. The directory has moved across; the finder's optional WhatsApp and SMS box has not.
+11. **A legal line.** Once the wording on registration is settled (Prompt Q, ADR-046), add it to the footer.
 
 ---
 
@@ -481,3 +540,28 @@ block in `index.html`).
    For the still page, give that block a figure whose plate names the painting (`data-sheet`).
 5. Run `node verify.cjs`. It checks that every block lands on its own painting and that the journey runs one way
    through the scene.
+
+
+---
+
+## Part 6 — The live site beside this one
+
+What the live site says (as supplied by the founder on 2026-11-17), and where it is on this site.
+
+| On the live site | On this site (v1.2) |
+| --- | --- |
+| "Unlocking the last mile." "When people have the right tools and training, local talent builds lasting wealth." | The cover's label; Ch. 1's headline and first line |
+| "A U.S.–Tanzania public-private partnership" | Held back until confirmed (Part 4, item 2). About keeps the notes' wording |
+| Education, health and economic self-reliance for girls and young women | Ch. 1, and the cover's opening sentence |
+| "Community-led pilots in Tanga and Mbeya" | "Being developed in Tanga" (Part 4, item 2) |
+| "We invest in people and regenerative infrastructure that scale to operational self-sufficiency" | Ch. 1 |
+| *Invest in Capability* | The stem: "Tools, training, support." |
+| *Build Compounding Prosperity*: a shared procurement, manufacturing and logistics utility; below-cost essentials | The seed head: "Make it here. Own it here." Written as what we are building and aim for |
+| *Deliver High-Output Partnerships*: volume purchasing and local consignment; "mutual, self-sustaining return" | The table: "Global partners, local priorities." "Return" becomes shared benefits, so it cannot be read as a financial return to funders |
+| Long-term horizon, with SDGs 4, 5, 8, 3 and 12 | A panel of its own, same order. "Below commercial retail cost" becomes "affordable"; a line says the goals are aims, not results |
+| Projects that inspire us (twelve case studies) | Missing: the names were not supplied (Part 4, item 5) |
+| Local resources: 231 listings, filtered by who you are and by topic | All 231, plus UNICEF's guidelines; the same filters; eight at a time; help lines first |
+| The finder's optional WhatsApp and SMS box; Swahili labels | Not carried over |
+| Connect with Dandelion: five audiences and what each would do | Ch. 2: the same five and the same asks. Donors "fund" rather than "invest in"; Mbeya is left out of the schools line |
+| "Stay in the loop": hello@dandelionfoundation.com | Held back until the inbox is confirmed (Part 4, item 4) |
+| (not on the live site) | The terms; "In plain terms"; the brief tool; the approach's four principles; About; six questions; the privacy statement; the symbolic-artwork label |

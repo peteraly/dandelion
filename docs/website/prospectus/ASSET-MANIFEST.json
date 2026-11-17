@@ -66,6 +66,14 @@
       "source": "Sent by the founder on 2026-11-17."
     }
   ],
+  "content_supplied": [
+    {
+      "what": "The directory of local resources: 232 entries, each with a topic, the audiences it suits, one line on what it offers, and a link or phone number where one was given.",
+      "where": "index.html, \"Appendix / Local resources\"",
+      "source": "The live site's opportunity finder (docs/website/opportunity-finder-squarespace.html, 231 entries; its own note says the data was checked in October 2026), plus \"Menstrual health guidelines & toolkits\" (UNICEF Tanzania) from the founders' notes. Five entries keep the notes' \"Check first\" line.",
+      "status": "Not independently re-verified; no link was opened from the build environment. The page says so."
+    }
+  ],
   "made_for_this_site": [
     {
       "files": [
@@ -124,6 +132,8 @@
     "An official logo. The header uses a text wordmark until one is supplied, and the browser-tab icon is a plain gold dot (written inline in index.html), not a logo.",
     "A credit line for the paintings (artist or tool) for the colophon.",
     "Video clips, if wanted. None are used and nothing depends on them.",
-    "A social-sharing image and its absolute address, once the site has a domain."
+    "A social-sharing image and its absolute address, once the site has a domain.",
+    "The twelve \"Projects that inspire us\" case studies from the live site: names and links (Prompt S, Part 4, item 5).",
+    "Whether hello@dandelionfoundation.com is an active inbox (Prompt S, Part 4, item 4)."
   ]
 }

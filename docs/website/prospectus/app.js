@@ -440,30 +440,47 @@
   (function resources() {
     var root = $('[data-resources]');
     if (!root) return;
-    var q = $('#res-q'), chips = $$('[data-topic]', $('[data-finder]')), items = $$('[data-res]', root);
-    var count = $('[data-count]', root), empty = $('[data-empty]', root), list = $('[data-list]', root);
+    var q = $('#res-q'), who = $('#res-who'), topic = $('#res-topic'), items = $$('[data-res]', root);
+    var count = $('[data-count]', root), empty = $('[data-empty]', root), list = $('[data-list]', root), more = $('[data-more]', root);
     var text = items.map(function (li) { return li.textContent.toLowerCase(); });
-    function apply() {
-      var term = q.value.trim().toLowerCase(), shown = 0;
+    /* each topic lights one shelf of the painting */
+    var SHELF = { H: 'health', S: 'health', P: 'health', E: 'learning', Y: 'learning', R: 'learning', J: 'skills', B: 'skills', A: 'skills', N: 'skills', F: 'skills', G: 'skills' };
+    /* the directory is long, so it is shown a page at a time */
+    var PAGE = 8, limit = PAGE;
+    function apply(keep) {
+      if (!keep) limit = PAGE;
+      var term = q.value.trim().toLowerCase(), w = who.value, t = topic.value, match = 0;
       items.forEach(function (li, n) {
-        var ok = (state.topic === 'all' || li.getAttribute('data-topic') === state.topic) && (!term || text[n].indexOf(term) >= 0);
-        li.hidden = !ok;
-        if (ok) shown++;
+        var ok = (!t || li.getAttribute('data-topic') === t) &&
+          (!w || (' ' + li.getAttribute('data-aud') + ' ').indexOf(' ' + w + ' ') >= 0) &&
+          (!term || text[n].indexOf(term) >= 0);
+        if (ok) match++;
+        li.hidden = !ok || match > limit;
       });
-      count.textContent = 'Showing ' + shown + ' of ' + items.length + ' resources';
-      empty.hidden = shown > 0;
-      list.hidden = shown === 0;
+      var filtered = match !== items.length;
+      count.textContent = 'Showing ' + Math.min(match, limit) + ' of ' + match + (filtered ? ' matching resources (' + items.length + ' in all)' : ' resources');
+      empty.hidden = match > 0;
+      list.hidden = match === 0;
+      more.hidden = match <= limit;
+      more.textContent = 'Show ' + Math.min(PAGE, Math.max(0, match - limit)) + ' more';
+      state.topic = SHELF[t] || 'all';
       if (state.filmOn) { remeasure(); requestTick(); } else drawStills('shelves');
     }
-    function topic(t) {
-      state.topic = t;
-      chips.forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-topic') === t ? 'true' : 'false'); });
-      apply();
-    }
-    chips.forEach(function (c) { c.addEventListener('click', function () { topic(c.getAttribute('data-topic')); }); });
-    q.addEventListener('input', apply);
-    $$('[data-reset]', root).forEach(function (b) { b.addEventListener('click', function () { q.value = ''; topic('all'); q.focus(); }); });
+    function visible() { return items.filter(function (li) { return !li.hidden; }); }
+    more.addEventListener('click', function () {
+      var before = visible().length;
+      limit += PAGE;
+      apply(true);
+      /* take keyboard focus to the first new entry, without jumping the page */
+      var h = visible()[before] ? $('h3', visible()[before]) : null;
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+    });
+    q.addEventListener('input', function () { apply(false); });
+    who.addEventListener('change', function () { apply(false); });
+    topic.addEventListener('change', function () { apply(false); });
+    $$('[data-reset]', root).forEach(function (b) { b.addEventListener('click', function () { q.value = ''; who.value = ''; topic.value = ''; apply(false); q.focus(); }); });
     $('[data-finder]').addEventListener('submit', function (e) { e.preventDefault(); });
+    apply(false);
   })();
 
   /* ------------------------------------------- the local brief (sends nothing) */

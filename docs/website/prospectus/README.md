@@ -2,7 +2,7 @@
 
 A one-page website in the manner of a letterpress prospectus. Three paintings, joined side by side, make one scene
 that stays behind the whole page. As you scroll, a slow camera travels through the scene, and every word sits on a
-slip of paper laid over it. It was built from `docs/PROMPT_S_PROSPECTUS_WEBSITE.md` (v1.1).
+slip of paper laid over it. It was built from `docs/PROMPT_S_PROSPECTUS_WEBSITE.md` (v1.2).
 
 It is plain HTML, CSS and JavaScript. There is nothing to install and nothing to build.
 
@@ -50,8 +50,19 @@ All copy is ordinary text in `index.html`. Two things to keep in step when you e
 - The delivery note under the brief buttons is checked word for word by `verify.cjs`. If you change it on purpose,
   change the `DELIVERY` line at the top of that file too.
 
-To add a resource, copy one `<li class="res" ...>` block and set its `data-topic` to `health`, `learning` or `skills`.
-The count and the filters pick it up.
+The directory of local resources (232 entries) is a plain list in `index.html`, under "Appendix / Local resources". It
+was taken from the live site's opportunity finder (`docs/website/opportunity-finder-squarespace.html`), with UNICEF's
+guidelines added from the founders' notes. To add an entry, copy one `<li class="res" ...>` block and set two codes:
+
+- `data-topic`, one letter: `H` Health, `S` Safety and legal help, `J` Skills and jobs, `B` Business and money,
+  `E` Education, `P` Periods and hygiene, `A` Farming and food, `N` Clean energy, `Y` Youth and media, `F` Funding,
+  `G` Government, `R` Research and data. Change the label in `<p class="res-topic">` to match.
+- `data-aud`, one or more letters separated by spaces: `u` Student under 18, `m` Student mother or pregnant,
+  `y` Woman 18+, skills or work, `b` Business or farming, `t` School or teacher, `o` NGO or funder, `p` General public.
+
+The count, the search, both menus and "Show more" pick it up. Each topic lights one shelf in the painting (health,
+safety and periods the top shelf; education, youth and research the second; the rest the scale and ruler); the
+mapping is `SHELF` in `app.js`. If you add or remove entries, change `RESOURCES` at the top of `verify.cjs`.
 
 ## How the scene works
 
@@ -127,7 +138,7 @@ node verify.cjs
 ```
 
 This needs the `playwright` package and a Chromium it can start. It serves the folder itself, opens the page at four
-sizes and several settings, and prints one PASS or FAIL line per check (114 at present). What it covers, and what it
+sizes and several settings, and prints one PASS or FAIL line per check (117 at present). What it covers, and what it
 cannot, is in `VERIFICATION.md`. If Playwright cannot find its browser, point it at one:
 
 ```bash

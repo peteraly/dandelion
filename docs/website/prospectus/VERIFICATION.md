@@ -1,7 +1,8 @@
 # Verification — Dandelion Foundation prospectus site
 
-Checked on 2026-11-17 with `node verify.cjs`: **114 of 114 checks passed.** This is the one-scene build (Prompt S
-v1.1); the earlier build's 88 checks were replaced, because they tested a layout that no longer exists.
+Checked on 2026-11-17 with `node verify.cjs`: **117 of 117 checks passed.** This is the one-scene build with the live
+site's positioning (Prompt S v1.2). The first build's 88 checks were replaced, because they tested a layout that no
+longer exists.
 
 - Browser: Chromium 153 (the full browser, run headless through Playwright), on Linux. Graphics were drawn in
   software, so WebGL was exercised but not on a real graphics card.
@@ -24,14 +25,14 @@ painting is 1672 units wide) of its planned framing.
 
 - No script errors and no failed requests.
 - The scene is on behind the page.
-- For each of the 14 blocks of text, the camera settles on its planned framing.
+- For each of the 15 blocks of text, the camera settles on its planned framing.
 - Each block of text is set over its own painting (the hillside, the table or the veranda).
 - The journey runs one way through the scene, from the first painting to the last.
 - The view never runs past either end of the scene.
 - Every short slip is wholly on screen while its part of the scene holds.
 - The artwork label is clear of every short slip.
 - The painting is drawn.
-- Scrolling back through all 14 blocks retraces the same path, to within one unit.
+- Scrolling back through all 15 blocks retraces the same path, to within one unit.
 - Back at the top, the cover framing returns.
 - No sideways scrolling at nine positions down the page. (An earlier run found 2 pixels at 320 wide: the two cover
   buttons on one line were wider than the column. They were made smaller at that width, and allowed to wrap.)
@@ -39,29 +40,33 @@ painting is 1672 units wide) of its planned framing.
 
 **Structure and content**
 
-- All ten section anchors exist (`vision`, `terms`, `focus`, `partners`, `resources`, `approach`, `about`,
-  `collaborate`, `questions`, `closing`); no id is used twice; every in-page link has a target.
+- All eleven section anchors exist (`vision`, `terms`, `focus`, `goals`, `partners`, `resources`, `approach`,
+  `about`, `collaborate`, `questions`, `closing`); no id is used twice; every in-page link has a target.
 - One `h1`; every image has alt text, except the decorative copy of the first painting behind the page, which is
   hidden from screen readers (each block of text carries its painting's description instead).
 - The copyright year is the current year.
 - The delivery note under the brief buttons matches the required wording, character for character.
 - The label "Symbolic artwork / Not impact data" is present.
-- Six questions and five resources.
+- Six questions; the whole directory, 232 entries; and the five goals in order (SDG 4, 5, 8, 3, 12).
 - External links carry `rel="noopener"`.
 
 **Partners**
 
 - Each of the five tabs shows only its own panel.
 - Arrow keys move between tabs and wrap; End goes to the last.
-- Choosing a group turns the camera to its part of the table (from the woman speaking to the books, the camera moves
-  more than 400 units and settles there).
+- Choosing a group turns the camera to its part of the table (from community members to labs and researchers, the
+  camera moves more than 400 units and settles there).
 - A group's "Start a brief" button sets the matching area of work in the brief.
 
-**Resources**
+**The directory of local resources**
 
-- Searching "veta" leaves 1 of 5; the Learning filter leaves 1 of 5.
-- A search with no match shows the empty state and hides the list.
-- Reset restores all five and selects All topics.
+- It opens on the first 8 of all 232.
+- "Show more" adds the next 8 and takes keyboard focus to the first new entry.
+- Searching "veta" leaves 1 entry, and every entry shown mentions it.
+- The two menus narrow the list: for a student under 18 and periods and hygiene, 4 entries, each with that topic and
+  that audience.
+- A search with no match shows the empty state and hides the list and "Show more".
+- Reset clears the search and both menus and shows the first 8 again.
 - The research drawer opens.
 
 **Questions**
@@ -99,7 +104,9 @@ painting is 1672 units wide) of its planned framing.
 
 **Without JavaScript** (390 × 844)
 
-- The headline, the terms, all five partner groups, the resources, the questions and the delivery note are readable.
+- The headline, "What we do", the goals, the terms, all five partner groups, the resources, the questions and the
+  delivery note are readable.
+- The whole directory is listed: all 232 entries, with no "Show more".
 - The painting still shows and nothing scrolls sideways.
 
 **Opened from a link to a section** (`index.html#questions`)
@@ -142,6 +149,11 @@ approach, about and the brief over the veranda; the questions; the closing; the 
 the cover, the starting point, the horizon, the clear plan, the contribution and the closing. These reviews led to
 the terms and partner panels moving to the right, the term discs moving to the stone, the compass and the basket, and,
 on phones, the slips for the map and the table waiting at the top of the window.
+
+For v1.2: the cover at 1440, 1100, 960 and 390 pixels wide; Ch. 1; the four scenes; the long-term horizon at 1440 and
+390; each partner group; and the directory with its menus at 1440 and 390. At 960 the header's links and button
+wrapped onto two lines (they had been close to it before); the menu button now takes over below 1100 pixels, and the
+links no longer wrap.
 
 ## Not checked
 
