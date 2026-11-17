@@ -26,7 +26,7 @@
 
   var state = {
     filmOn: false, wide: false, slip: 0, locked: false, time: 0, frame: 0, cam: null,
-    group: 'community', ring: null, zoom: 0, zoomTo: 0, topic: 'all', topicA: 0, box: null,
+    group: 'community', ring: null, topic: 'all', topicA: 0, box: null,
     lastY: scrollY(), lastT: 0, raf: 0
   };
 
@@ -135,6 +135,8 @@
     return {
       el: el, slip: slip, shot: el.getAttribute('data-shot'), to: el.getAttribute('data-shot-to') || el.getAttribute('data-shot'),
       role: el.getAttribute('data-role') || '', side: el.getAttribute('data-side') || 'left',
+      /* on narrow screens a short slip waits at the bottom of the window, or at the top when the subject is low in the painting */
+      port: el.getAttribute('data-port') === 'top' ? 'top' : 'bottom',
       cover: slip.classList.contains('slip-cover'), panel: slip.classList.contains('slip-panel')
     };
   });
@@ -160,8 +162,9 @@
     var zoom = state.wide ? 1.5 : 1.9;
     keys = [];
     tracks.forEach(function (t, n) {
-      var stick = t.cover ? (state.wide ? headH : vh - t.h) : vh - t.h - (state.wide ? vh * 0.09 : 14);
-      t.sticky = !t.panel && stick >= headH - 1;
+      var top = !state.wide && !t.cover && t.port === 'top';
+      var stick = t.cover ? (state.wide ? headH : vh - t.h) : top ? headH + 34 : vh - t.h - (state.wide ? vh * 0.09 : 14);
+      t.sticky = !t.panel && (top ? stick + t.h <= vh - 24 : stick >= headH - 1);
       var focus;
       if (t.sticky) {
         t.slip.style.setProperty('--slip-top', Math.round(stick) + 'px');
@@ -174,7 +177,9 @@
       }
       if (n === 0) t.a = Math.min(0, t.b);
       if (state.wide) focus = t.side === 'right' ? [0, 0, clamp((t.left - 26) / host.w, 0.3, 1), 1] : [clamp((t.right + 26) / host.w, 0, 0.7), 0, 1, 1];
-      else focus = t.sticky ? [0, 0, 1, clamp((stick - headH - 10) / host.h, 0.32, 1)] : [0, 0, 1, 0.6];
+      else if (!t.sticky) focus = [0, 0, 1, 0.6];
+      else if (top) focus = [0, clamp((stick + t.h + 10 - headH) / host.h, 0, 0.68), 1, 1];
+      else focus = [0, 0, 1, clamp((stick - headH - 10) / host.h, 0.32, 1)];
       t.focus = focus;
       t.A = S.frameCam(S.FRAMES[t.shot], host, { focus: focus, tall: !state.wide, maxZoom: zoom });
       t.B = S.frameCam(S.FRAMES[t.to], host, { focus: focus, tall: !state.wide, maxZoom: zoom });
@@ -265,31 +270,45 @@
 
   /* ------------------------------------------- the stage, frame by frame */
 
-  function motion() { return state.filmOn && !state.locked ? 1 : 0; }
+  /* Nothing moves by itself while someone is writing in the brief, or while the brief is in the
+     middle of the window: time stands still, so the seeds, dust and water hold where they are,
+     and the camera stops gliding (it stays exactly where the scroll position puts it). */
+  function motion() { return state.filmOn && !(state.locked && near(tBrief, scrollY()) > 0.5) ? 1 : 0; }
 
-  function renderScene() {
-    if (!stage || !keys.length || !S.has('vision')) return;
-    var s = scrollY(), host = state.host, mo = motion();
-    var frozen = state.locked && state.cam && near(tBrief, s) > 0.5;      /* nothing moves while someone is writing */
+  /* where the camera should be at scroll position s, with the gold ring at ring */
+  function targetAt(s, ring) {
     var target = camAt(s);
-    if (tPartners) {
+    if (tPartners && ring) {
+      /* the camera leans toward the part of the table that stands for the chosen group */
       var kp = near(tPartners, s);
-      var to = S.SPOTS[state.group], g = state.ring || (state.ring = to.slice()), e = mo ? 0.16 : 1;
+      if (kp > 0.01) target = S.clampCam(S.aimCam(target, ring, 1.3, state.host, tPartners.focus, kp), state.host, 'table', tPartners.focus);
+    }
+    return target;
+  }
+
+  function renderScene(now) {
+    if (!stage || !keys.length || !S.has('vision')) return;
+    var s = scrollY(), mo = motion();
+    var dt = state.lastDraw && now ? clamp(now - state.lastDraw, 1, 100) : 16.7;
+    state.lastDraw = now || 0;
+    if (tPartners) {
+      /* the gold ring glides to the chosen group */
+      var to = S.SPOTS[state.group], g = state.ring || (state.ring = to.slice()), e = mo ? 1 - Math.pow(0.84, dt / 16.7) : 1;
       g[0] += (to[0] - g[0]) * e; g[1] += (to[1] - g[1]) * e; g[2] += (to[2] - g[2]) * e;
-      state.zoom += (state.zoomTo - state.zoom) * e;
-      if (kp > 0.01 && state.zoom > 0.01) target = S.clampCam(S.aimCam(target, g, 1.3, host, tPartners.focus, state.zoom * kp), host, 'table');
     }
+    var target = targetAt(s, state.ring);
     var cam = target;
-    if (frozen) cam = state.cam;
-    else if (state.cam && mo) {
-      /* follow the target a little behind it, so nothing ever jumps */
-      var f = 0.24, c = state.cam;
+    if (state.cam && mo) {
+      /* follow the target a little behind it, so nothing ever jumps; the same pace at any frame rate */
+      var f = 1 - Math.pow(0.76, dt / 16.7), c = state.cam;
       cam = { cx: c.cx + (target.cx - c.cx) * f, cy: c.cy + (target.cy - c.cy) * f, s: c.s + (target.s - c.s) * f };
-      if (Math.abs(cam.cx - target.cx) < 0.05 && Math.abs(cam.cy - target.cy) < 0.05) cam = target;
+      if (Math.abs(cam.cx - target.cx) < 0.05 && Math.abs(cam.cy - target.cy) < 0.05 && Math.abs(cam.s - target.s) < 1e-4) cam = target;
     }
+    state.settling = cam !== target;
     state.cam = cam;
 
-    var fx = { time: state.time, motion: frozen ? 0 : mo, dust: frozen ? 0 : mo, glow: [S.LANTERN[0], S.LANTERN[1], 0.8 + 0.2 * Math.sin(state.time * 2.3) * (frozen ? 0 : mo)] };
+    /* everything that drifts is driven by state.time, which only runs while motion is allowed */
+    var fx = { time: state.time, motion: 1, dust: 1, glow: [S.LANTERN[0], S.LANTERN[1], 0.8 + 0.2 * Math.sin(state.time * 2.3)] };
     if (tClock && tPlan) fx.release = clamp((s - tClock.a) / Math.max(1, tPlan.a - tClock.a), 0, 1) * 1.32;
     if (tTerms) fx.marks = near(tTerms, s);
     if (tPartners && state.ring) fx.reticle = [state.ring[0], state.ring[1], state.ring[2], near(tPartners, s)];
@@ -299,7 +318,7 @@
       state.topicA += (want - state.topicA) * (mo ? 0.2 : 1);
       if (state.box && state.topicA > 0.01) fx.box = state.box.concat([state.topicA * near(tShelves, s)]);
     }
-    if (tEvening && mo && !frozen) { var ke = near(tEvening, s); if (ke > 0.02) fx.drift = [S.SHEETS.veranda.x + 1080, 250, 0.9 * ke]; }
+    if (tEvening) { var ke = near(tEvening, s); if (ke > 0.02) fx.drift = [S.SHEETS.veranda.x + 1080, 250, 0.9 * ke]; }
 
     var px = state.slip * 4.2 / cam.s;
     stage.render(cam, fx, [px, -px * 0.62]);
@@ -342,13 +361,13 @@
     if (state.filmOn) {
       /* when nothing but the background's own slow movement is happening, draw every other frame */
       state.frame++;
-      if (moved || state.slip > 0 || state.frame % 2 === 0) renderScene();
+      if (moved || state.slip > 0 || state.settling || state.frame % 2 === 0) renderScene(now);
       if (progressEl) {
         var prog = Math.round(clamp(y / Math.max(1, doc.scrollHeight - window.innerHeight), 0, 1) * 1000) / 1000;
         if (prog !== lastProg) { progressEl.style.setProperty('--prog', String(prog)); lastProg = prog; }
       }
     }
-    if (mo || state.slip > 0) requestTick(); else state.lastT = 0;
+    if (mo || state.slip > 0) requestTick(); else state.lastT = state.lastDraw = 0;
   }
   function requestTick() { if (!state.raf) state.raf = window.requestAnimationFrame(tick); }
 
@@ -366,7 +385,7 @@
     remeasureTimer = setTimeout(function () { if (state.filmOn) { measure(); requestTick(); } }, 80);
   }
   document.addEventListener('toggle', remeasure, true);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) { state.lastT = 0; requestTick(); } });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) { state.lastT = state.lastDraw = 0; requestTick(); } });
 
   /* ---------------------------------------------------------- partners */
 
@@ -385,8 +404,7 @@
       });
       panels.forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== id; });
       state.group = id;
-      if (byUser) state.zoomTo = 1;
-      if (state.filmOn) { remeasure(); requestTick(); } else drawStills('partners');
+      if (state.filmOn) { if (byUser) remeasure(); requestTick(); } else drawStills('partners');
     }
     tabs.forEach(function (t, n) {
       var id = t.getAttribute('data-tab'), panel = document.getElementById('panel-' + id);
@@ -580,6 +598,21 @@
       new IntersectionObserver(function (en) { centred = en[0].isIntersecting; lock(); }, { rootMargin: '-45% 0px -45% 0px' }).observe(box);
     }
   })();
+
+  /* -------------------------------------------- for the check script */
+
+  /* Read-only. verify.cjs uses this to follow the camera; nothing on the page depends on it. */
+  window.DFScene = Object.freeze({
+    on: function () { return state.filmOn; },
+    camera: function () { var c = state.cam; return c ? { cx: c.cx, cy: c.cy, s: c.s } : null; },
+    planned: function (y) { return keys.length ? targetAt(y === undefined ? scrollY() : y, S.SPOTS[state.group]) : null; },
+    host: function () { return state.host ? { w: state.host.w, h: state.host.h } : null; },
+    holds: function () {
+      return tracks.map(function (t) {
+        return { name: t.el.id || t.slip.id || t.el.getAttribute('aria-labelledby'), sheet: S.FRAMES[t.shot].sheet, a: t.a, b: t.b, sticky: !!t.sticky, port: t.port };
+      });
+    }
+  });
 
   /* ------------------------------------------------------------- start */
 

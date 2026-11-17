@@ -3,15 +3,20 @@
  *
  * The supplied paintings are joined side by side into one long scene, and a
  * slow rostrum camera travels across it as the page scrolls. The paintings
- * are shown as they are: nothing in them is redrawn, regenerated or animated.
- * What moves is the camera, a few drawn seeds, and the printing register,
- * which slips a little while the page is moving and settles when it stops.
+ * are shown as they are: nothing in them is redrawn or regenerated. What
+ * moves is the camera, a few drawn seeds and motes of dust, the printing
+ * register (which slips a little while the page is moving), and a handful of
+ * small places where the painted surface itself stirs by a pixel or two: the
+ * seed head, open water, the boats on it.
  *
  * The scene is measured in painting pixels (each plate is 1672 x 941 units,
  * whatever the file's real size). The joins are hidden by things already in
  * the paintings: the sandstone pillar on the left edge of "table", and the
- * cedar posts where "table" meets "veranda". To add a painting, add it to
- * SHEETS at the next position and give it framings in FRAMES.
+ * cedar posts where "table" meets "veranda". The camera crosses a join when it
+ * travels from one plate to the next; while text is being read it stays on
+ * one plate, except where the text itself covers the join. It never shows
+ * more than one plate's width at once. To add a painting, add it to SHEETS at
+ * the next position and give it framings in FRAMES.
  *
  * No dependencies. Exposes window.DFStage.
  */
@@ -24,6 +29,12 @@
     table: { x: 1672, w: PW, h: PH },      // its left-hand pillar meets the edge of "vision"
     veranda: { x: 3344, w: PW, h: PH }     // its left-hand post meets the post at the edge of "table"
   };
+  /* the whole scene, end to end */
+  const WORLD = (function () {
+    let x0 = Infinity, x1 = -Infinity;
+    for (const n in SHEETS) { x0 = Math.min(x0, SHEETS[n].x); x1 = Math.max(x1, SHEETS[n].x + SHEETS[n].w); }
+    return { x: x0, y: 0, w: x1 - x0, h: PH };
+  })();
 
   /* Framings: [x, y, width, height] inside a plate, for wide ("land") and
      tall ("port") windows. Faces, hands and the map stay inside each one. */
@@ -33,7 +44,7 @@
     cover: F('vision', [800, 0, 872, 941], [1010, 0, 460, 560]),
     wide: F('vision', [0, 0, 1672, 941], [700, 0, 760, 760]),
     ground: F('vision', [470, 480, 760, 461], [500, 440, 430, 430]),
-    groundB: F('vision', [560, 500, 760, 441], [600, 470, 430, 430]),
+    groundB: F('vision', [560, 500, 760, 441], [760, 470, 430, 430]),
     stemA: F('vision', [1000, 380, 460, 561], [1010, 420, 430, 440]),
     stemB: F('vision', [1000, 140, 460, 561], [1010, 180, 430, 440]),
     clock: F('vision', [990, 0, 540, 470], [1010, 0, 460, 470]),
@@ -41,8 +52,8 @@
     /* the table */
     plan: F('table', [110, 230, 1100, 700], [170, 300, 420, 400]),
     planB: F('table', [170, 250, 1100, 680], [330, 320, 420, 400]),
-    termsA: F('table', [150, 540, 760, 400], [190, 590, 440, 330]),
-    termsB: F('table', [1150, 360, 522, 440], [1290, 400, 382, 340]),
+    termsA: F('table', [130, 560, 760, 381], [170, 600, 420, 330]),
+    termsB: F('table', [560, 520, 520, 421], [640, 560, 420, 330]),
     partners: F('table', [70, 150, 1580, 791], [300, 240, 660, 700]),
     shelvesA: F('table', [900, 0, 772, 760], [1060, 40, 560, 600]),
     shelvesB: F('table', [1040, 0, 632, 720], [1100, 100, 560, 600]),
@@ -76,18 +87,21 @@
     learning: [1672 + 1100, 196, 520, 142],
     skills: [1672 + 1312, 346, 310, 268]
   };
-  /* the three terms, pinned to a river stone, the wooden rule and the brass scale */
-  const MARKS = [[1672 + 286, 686, '1'], [1672 + 1420, 584, '2'], [1672 + 1548, 520, '3']];
+  /* the three terms, pinned to things on the table: the river stone that holds
+     the map down (one task), the compass (who goes which way), and the basket
+     of finished cloth (what was delivered) */
+  const MARKS = [[1672 + 285, 688, '1'], [1672 + 822, 788, '2'], [1672 + 990, 668, '3']];
   const LANTERN = [3344 + 1272, 690];
 
   /* Places where the painted surface itself may stir a little, in plate pixels:
      [centre x, centre y, radius x, radius y, kind, strength in pixels].
-     kind 1 sways (the seed head), kind 2 shimmers in rows (open water).
-     None of them covers a person. */
+     kind 1 sways (the seed head), kind 2 shimmers in rows (open water),
+     kind 3 rides a slow swell (a boat). None of them covers a person.
+     At most three per plate. */
   const STIR = {
     vision: [[1240, 190, 226, 226, 1, 1.9], [1562, 640, 118, 28, 2, 1.1]],
-    table: [],
-    veranda: [[1482, 532, 128, 66, 2, 1.2]]
+    table: [[180, 385, 58, 52, 2, 0.8], [482, 382, 82, 36, 2, 0.8], [182, 303, 38, 40, 3, 1.3]],
+    veranda: [[1440, 575, 180, 100, 2, 1.2], [1366, 446, 42, 44, 3, 1.4], [1537, 447, 24, 24, 3, 1.1]]
   };
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
@@ -114,27 +128,23 @@
 
   function bounds(name) { const s = SHEETS[name]; return { x: s.x, y: 0, w: s.w, h: s.h }; }
 
-  /* Frame a rectangle of one plate inside a host box.
-     focus: the part of the host where the subject should sit;
-     fill:  the part of the host the painting must cover (no paper showing);
-     both are [left, top, right, bottom] as fractions of the host. */
+  /* Frame a rectangle of one plate inside a host box. The painting always
+     covers the whole host. focus is the part of the host where the subject
+     should sit, as [left, top, right, bottom] fractions of the host; the rest
+     is covered by text. */
   function frameCam(frame, host, opts) {
     const o = opts || {}, tall = host.w / host.h < 1.15;
     const r = (o.tall === undefined ? tall : o.tall) ? frame.port : frame.land;
     const b = bounds(frame.sheet);
     const rect = [b.x + r[0], r[1], r[2], r[3]];
-    const f = o.focus || [0, 0, 1, 1], c = o.fill || [0, 0, 1, 1];
+    const f = o.focus || [0, 0, 1, 1];
     const fw = (f[2] - f[0]) * host.w, fh = (f[3] - f[1]) * host.h;
-    const sCover = Math.max((c[2] - c[0]) * host.w / b.w, (c[3] - c[1]) * host.h / b.h);
+    const sCover = Math.max(host.w / b.w, host.h / b.h);
     let s = Math.max(Math.min(fw / rect[2], fh / rect[3]), sCover);
     if (o.maxZoom) s = Math.min(s, sCover * o.maxZoom);
-    let cx = rect[0] + rect[2] / 2 - ((f[0] + f[2]) / 2 - 0.5) * host.w / s;
-    let cy = rect[1] + rect[3] / 2 - ((f[1] + f[3]) / 2 - 0.5) * host.h / s;
-    const minX = b.x - (c[0] - 0.5) * host.w / s, maxX = b.x + b.w - (c[2] - 0.5) * host.w / s;
-    const minY = b.y - (c[1] - 0.5) * host.h / s, maxY = b.y + b.h - (c[3] - 0.5) * host.h / s;
-    cx = minX <= maxX ? clamp(cx, minX, maxX) : (minX + maxX) / 2;
-    cy = minY <= maxY ? clamp(cy, minY, maxY) : (minY + maxY) / 2;
-    return { cx: cx, cy: cy, s: s };
+    const cx = rect[0] + rect[2] / 2 - ((f[0] + f[2]) / 2 - 0.5) * host.w / s;
+    const cy = rect[1] + rect[3] / 2 - ((f[1] + f[3]) / 2 - 0.5) * host.h / s;
+    return clampCam({ cx: cx, cy: cy, s: s }, host, frame.sheet);
   }
   function mixCam(a, b, t) {
     return { cx: lerp(a.cx, b.cx, t), cy: lerp(a.cy, b.cy, t), s: Math.exp(lerp(Math.log(a.s), Math.log(b.s), t)) };
@@ -147,10 +157,15 @@
     return { s: Math.exp(lerp(Math.log(cam.s), Math.log(s), w)), cx: lerp(cam.cx, tx, w * 0.8), cy: lerp(cam.cy, ty, w * 0.8) };
   }
 
-  /* keep a camera's whole view inside one plate */
-  function clampCam(cam, host, sheet) {
-    const b = bounds(sheet), hw = host.w / 2 / cam.s, hh = host.h / 2 / cam.s;
-    const minX = b.x + hw, maxX = b.x + b.w - hw, minY = b.y + hh, maxY = b.y + b.h - hh;
+  /* Keep a view on its own plate. It may run over a join into the next plate
+     only where text covers the window (outside focus), so a subject near a
+     plate's edge can still sit in the clear part, and never past either end
+     of the scene. Without a sheet, the view is kept inside the whole scene. */
+  function clampCam(cam, host, sheet, focus) {
+    const b = sheet ? bounds(sheet) : WORLD, f = focus || [0, 0, 1, 1];
+    const hw = host.w / 2 / cam.s, hh = host.h / 2 / cam.s, ux = host.w / cam.s;
+    const minX = Math.max(b.x + hw - f[0] * ux, WORLD.x + hw), maxX = Math.min(b.x + b.w - hw + (1 - f[2]) * ux, WORLD.x + WORLD.w - hw);
+    const minY = hh, maxY = PH - hh;
     return {
       s: cam.s,
       cx: minX <= maxX ? clamp(cam.cx, minX, maxX) : (minX + maxX) / 2,
@@ -191,8 +206,10 @@
     '    if (p.x < 1.5) {',
     '      float a = sin(uTime * 0.62 + p.z) * 0.6 + sin(uTime * 1.07 + q.y * 3.0) * 0.4;',
     '      d += m * length(q) * p.y * vec2(a, 0.4 * sin(uTime * 0.83 + q.x * 2.0));',
-    '    } else {',
+    '    } else if (p.x < 2.5) {',
     '      d += m * p.y * vec2(sin(uTime * 1.5 + uv.y / uPlatePx.y * 0.85 + p.z), 0.0);',
+    '    } else {',
+    '      d += m * p.y * vec2(0.5 * q.y * sin(uTime * 0.7 + p.z), sin(uTime * 0.9 + p.z + 1.0));',
     '    }',
     '  }',
     '  return d * uPlatePx;',
@@ -520,7 +537,7 @@
   }
 
   root.DFStage = {
-    PW: PW, PH: PH, SHEETS: SHEETS, FRAMES: FRAMES, SPOTS: SPOTS, SHELVES: SHELVES, MARKS: MARKS, LANTERN: LANTERN,
+    PW: PW, PH: PH, SHEETS: SHEETS, WORLD: WORLD, FRAMES: FRAMES, SPOTS: SPOTS, SHELVES: SHELVES, MARKS: MARKS, LANTERN: LANTERN, STIR: STIR,
     frameCam: frameCam, mixCam: mixCam, aimCam: aimCam, clampCam: clampCam,
     Stage: Stage, still: still, setImage: setImage, has: has,
     clamp: clamp, lerp: lerp, smooth: smooth

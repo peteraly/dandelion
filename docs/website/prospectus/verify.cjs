@@ -66,15 +66,42 @@ async function open(browser, base, opts) {
   await wait(o.settle || 1400);
   return { ctx, page, log };
 }
-const filmTo = (page, p) => page.evaluate((q) => {
-  document.documentElement.style.scrollBehavior = 'auto';
-  const f = document.querySelector('[data-film]'), s = document.querySelector('[data-stage]');
-  window.scrollTo(0, f.getBoundingClientRect().top + window.scrollY + q * (f.offsetHeight - s.clientHeight));
-}, p);
-const scene = (page) => page.evaluate(() => {
-  const b = Array.from(document.querySelectorAll('[data-goto]'));
-  return { nav: b.findIndex((x) => x.getAttribute('aria-current') === 'true'), out: getComputedStyle(document.querySelector('[data-stage]')).getPropertyValue('--out').trim() };
-});
+const toY = (page, y) => page.evaluate((v) => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, v); }, y);
+const holds = (page) => page.evaluate(() => window.DFScene.holds());
+const midOf = (hd) => Math.round((hd.a + hd.b) / 2);
+/* where the camera is, against where it should be at this scroll position, and what the window shows */
+const look = (page, i) => page.evaluate((n) => {
+  const D = window.DFScene, S = window.DFStage, c = D.camera(), p = D.planned(), host = D.host();
+  let sheet = null;
+  for (const k in S.SHEETS) if (c.cx >= S.SHEETS[k].x && c.cx < S.SHEETS[k].x + S.SHEETS[k].w) sheet = k;
+  const hw = host.w / 2 / c.s, hh = host.h / 2 / c.s;
+  const out = {
+    cam: c, sheet,
+    planned: Math.abs(c.cx - p.cx) < 0.4 && Math.abs(c.cy - p.cy) < 0.4 && Math.abs(c.s - p.s) / p.s < 0.002,
+    inside: c.cx - hw >= S.WORLD.x - 0.5 && c.cx + hw <= S.WORLD.x + S.WORLD.w + 0.5 && c.cy - hh >= -0.5 && c.cy + hh <= S.PH + 0.5
+  };
+  if (n !== undefined) {
+    const slip = document.querySelectorAll('[data-track]')[n].querySelector('[data-slip]').getBoundingClientRect();
+    const stage = document.querySelector('[data-stage-plate]').getBoundingClientRect();
+    const note = document.querySelector('.artnote').getBoundingClientRect();
+    out.onScreen = slip.top >= stage.top - 1 && slip.bottom <= window.innerHeight + 1;
+    out.clearOfNote = slip.right <= note.left || slip.left >= note.right || slip.bottom <= note.top || slip.top >= note.bottom;
+  }
+  return out;
+}, i);
+/* wait until the camera has arrived where it should be (it glides, so slow machines take longer) */
+const settle = async (page, i, limit) => {
+  const t0 = Date.now();
+  let r;
+  do { await wait(200); r = await look(page, i); } while (!r.planned && Date.now() - t0 < (limit || 8000));
+  return r;
+};
+const same = (a, b) => Math.abs(a.cx - b.cx) < 1 && Math.abs(a.cy - b.cy) < 1 && Math.abs(a.s - b.s) / b.s < 0.004;
+/* a picture of part of the stage, for comparing two moments */
+const stageShot = async (page, x, y, w, h) => {
+  const r = await page.evaluate(() => { const b = document.querySelector('[data-stage-plate]').getBoundingClientRect(); return { x: b.left, y: b.top }; });
+  return page.screenshot({ clip: { x: r.x + x, y: r.y + y, width: w, height: h } });
+};
 const overflow = (page) => page.evaluate(async () => {
   document.documentElement.style.scrollBehavior = 'auto';
   const de = document.documentElement, worst = { over: 0, at: 0 };
@@ -112,21 +139,37 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
   const today = new Date();
   console.log('Checking ' + base + '  (' + browser.version() + ')\n');
 
-  /* ---- every size: errors, sideways scrolling, the film in both directions */
+  /* ---- every size: errors, sideways scrolling, the one scene in both directions */
+  const ORDER = ['vision', 'table', 'veranda'];
   for (const [w, h, dsf] of [[320, 640, 2], [390, 844, 2], [768, 1024, 1], [1440, 900, 1]]) {
     const tag = w + 'x' + h;
     const { ctx, page, log } = await open(browser, base, { w, h, dsf });
     check(tag + ': no script errors or failed requests', log.errors.length === 0, log.errors.slice(0, 3).join(' | '));
-    check(tag + ': opening film is on', await page.evaluate(() => document.documentElement.classList.contains('film-on')));
-    const seen = [];
-    for (const p of [0, 0.31, 0.53, 0.72, 0.97]) { await filmTo(page, p); await wait(520); seen.push((await scene(page)).nav); }
-    check(tag + ': scenes 1 to 5 appear in order going forward', seen.join() === '0,1,2,3,4', seen.join());
-    check(tag + ': the plate is painted on the last scene', (await painted(page, '[data-film-plate]')) > 30000);
+    check(tag + ': the scene is on behind the page', await page.evaluate(() => document.documentElement.classList.contains('film-on') && window.DFScene.on()));
+    const hs = await holds(page);
+    const fwd = [];
+    for (let i = 0; i < hs.length; i++) { await toY(page, midOf(hs[i])); fwd.push(await settle(page, i)); }
+    const wrongSheet = hs.filter((hd, i) => fwd[i].sheet !== hd.sheet).map((hd) => hd.name);
+    const offPlan = hs.filter((hd, i) => !fwd[i].planned).map((hd) => hd.name);
+    const seq = fwd.map((f) => ORDER.indexOf(f.sheet));
+    check(tag + ': the camera settles on its planned framing for every block of text (' + hs.length + ')', offPlan.length === 0, offPlan.join());
+    check(tag + ': each block of text is set over its own painting', wrongSheet.length === 0, wrongSheet.join());
+    check(tag + ': the journey runs one way: hillside, then table, then veranda', seq.every((v, i) => i === 0 || v >= seq[i - 1]) && seq[0] === 0 && seq[seq.length - 1] === 2, seq.join(''));
+    check(tag + ': the view never runs past either end of the scene', fwd.every((f) => f.inside));
+    const hidden = hs.filter((hd, i) => hd.sticky && !fwd[i].onScreen).map((hd) => hd.name);
+    check(tag + ': every short slip is wholly on screen while its scene holds', hidden.length === 0, hidden.join());
+    const covered = hs.filter((hd, i) => hd.sticky && !fwd[i].clearOfNote).map((hd) => hd.name);
+    check(tag + ': the artwork label is clear of every short slip', covered.length === 0, covered.join());
+    const horizon = hs.findIndex((hd) => hd.name === 'scene-horizon');
+    await toY(page, midOf(hs[horizon])); await wait(900);
+    check(tag + ': the painting is drawn', (await painted(page, '[data-stage-plate]')) > 30000);
     const back = [];
-    for (const p of [0.72, 0.31, 0]) { await filmTo(page, p); await wait(520); back.push((await scene(page)).nav); }
-    const end = await scene(page);
-    check(tag + ': scenes return in order going back, cover restored', back.join() === '3,1,0' && parseFloat(end.out) === 0, back.join() + ' out=' + end.out);
-    check(tag + ': the plate is painted on the cover', (await painted(page, '[data-film-plate]')) > 30000);
+    for (let i = hs.length - 1; i >= 0; i--) { await toY(page, midOf(hs[i])); back[i] = await settle(page); }
+    const differ = hs.filter((hd, i) => !same(back[i].cam, fwd[i].cam)).map((hd) => hd.name);
+    check(tag + ': scrolling back retraces the same path', differ.length === 0, differ.join());
+    await toY(page, 0);
+    const top = await settle(page);
+    check(tag + ': back at the top, the cover framing returns', top.planned && top.sheet === 'vision');
     const worst = await overflow(page);
     check(tag + ': no sideways scrolling anywhere on the page', worst.over <= 0, worst.over > 0 ? worst.over + 'px at y=' + worst.at : '');
     check(tag + ': every request stays on this site', log.requests.every((u) => u.startsWith(base)), log.requests.filter((u) => !u.startsWith(base)).slice(0, 2).join(' '));
@@ -142,7 +185,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
       const links = Array.from(document.querySelectorAll('a[href^="#"]')).map((a) => a.getAttribute('href').slice(1));
       return {
         dup, missing: anchors.filter((a) => !document.getElementById(a)), dead: links.filter((l) => l && !document.getElementById(l)),
-        noAlt: Array.from(document.querySelectorAll('img')).filter((i) => !(i.getAttribute('alt') || '').trim()).length,
+        noAlt: Array.from(document.querySelectorAll('img')).filter((i) => !i.closest('[aria-hidden="true"]') && !(i.getAttribute('alt') || '').trim()).length,
         h1: document.querySelectorAll('h1').length, year: (document.querySelector('[data-year]') || {}).textContent,
         delivery: (document.querySelector('.delivery') || {}).textContent, note: (document.querySelector('.artnote') || {}).textContent,
         faqs: document.querySelectorAll('.faq details').length, resources: document.querySelectorAll('[data-res]').length,
@@ -152,7 +195,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     check('every section anchor exists', info.missing.length === 0, info.missing.join());
     check('no duplicate ids', info.dup.length === 0, info.dup.join());
     check('every in-page link has a target', info.dead.length === 0, info.dead.join());
-    check('one h1, every image has alt text', info.h1 === 1 && info.noAlt === 0, 'h1=' + info.h1 + ' noAlt=' + info.noAlt);
+    check('one h1, every image has alt text (the decorative copy behind the page excepted)', info.h1 === 1 && info.noAlt === 0, 'h1=' + info.h1 + ' noAlt=' + info.noAlt);
     check('copyright year is the current year', info.year === String(today.getFullYear()), info.year);
     check('delivery note is word for word', info.delivery === DELIVERY);
     check('artwork label is present', /symbolic artwork \/ not impact data/i.test(info.note || ''));
@@ -177,9 +220,14 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     await page.keyboard.press('End');
     const ended = await page.evaluate(() => document.activeElement.id);
     check('arrow keys and End move between partner tabs', wrapped === 'tab-community/true' && ended === 'tab-supporters', wrapped + ' ' + ended);
+    const ph = (await holds(page)).find((hd) => hd.name === 'partners');
+    await toY(page, midOf(ph)); await page.click('#tab-community'); await toY(page, midOf(ph));
+    const g1 = await settle(page);
+    await page.click('#tab-health'); await toY(page, midOf(ph));
+    const g2 = await settle(page);
+    check('choosing a group turns the camera to its part of the table', g2.planned && g1.planned && g2.cam.cx - g1.cam.cx > 400 && g2.sheet === 'table', Math.round(g1.cam.cx) + ' -> ' + Math.round(g2.cam.cx));
     await page.click('#tab-schools');
-    await wait(900);
-    check('the partner plate is painted', (await painted(page, '.partners-fig .plate')) > 30000);
+    await wait(300);
     await page.click('#panel-schools [data-brief-area]');
     await wait(500);
     check('a group button sets the area of work in the brief', (await page.inputValue('#brief-area')) === 'Schools & educators');
@@ -245,7 +293,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     check('nothing is stored: no cookies, local storage or session storage', after.cookies === '' && after.ls === 0 && after.ss === 0);
     check('no "sent" confirmation is ever shown', !after.sent);
 
-    /* nothing moves while someone is writing */
+    /* nothing moves while someone is writing; elsewhere the scene keeps its slow movement */
     await page.focus('#brief-priority');
     await page.mouse.wheel(0, 260);
     await wait(250);
@@ -253,6 +301,22 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
     await wait(120);
     const slipping = await page.evaluate(() => Array.from(document.querySelectorAll('.misreg, .term-no')).filter((e) => e.style.getPropertyValue('--slip')).length);
     check('with a brief field focused, scrolling does not move the print register', slipping === 0, slipping + ' headings slipping');
+    await wait(700);
+    let a = await stageShot(page, 0, 0, 420, 320); await wait(900); let b = await stageShot(page, 0, 0, 420, 320);
+    check('with a brief field focused, the scene is perfectly still', a.equals(b));
+    await page.evaluate(() => document.activeElement.blur());
+    await page.evaluate(() => { const r = document.querySelector('#collaborate').getBoundingClientRect(); window.scrollTo(0, window.scrollY + r.top + r.height / 2 - window.innerHeight / 2); });
+    await wait(900);
+    a = await stageShot(page, 0, 0, 420, 320); await wait(900); b = await stageShot(page, 0, 0, 420, 320);
+    check('with the brief in the middle of the window, the scene is perfectly still', a.equals(b));
+    const all = await holds(page);
+    const stageW = await page.evaluate(() => document.querySelector('[data-stage-plate]').clientWidth);
+    /* the clear part of the window: the seed head, and the sea to the right of the questions */
+    for (const [name, x] of [['scene-horizon', stageW - 440], ['questions', stageW - 440]]) {
+      await toY(page, midOf(all.find((hd) => hd.name === name))); await wait(900);
+      a = await stageShot(page, x, 0, 420, 320); await wait(900); b = await stageShot(page, x, 0, 420, 320);
+      check('elsewhere the scene moves by itself (' + name + ')', !a.equals(b));
+    }
     await ctx.close();
 
     const blocked = await open(browser, base, { clipboard: false, init: () => { Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('blocked')) } }); document.execCommand = () => false; } });
@@ -294,24 +358,30 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
   /* ---- reduced motion, and the still-page switch */
   for (const [w, h] of [[390, 844], [1440, 900]]) {
     const { ctx, page, log } = await open(browser, base, { w, h, reduce: true });
-    const st = await page.evaluate(() => ({
-      film: document.documentElement.classList.contains('film-on'),
-      beats: Array.from(document.querySelectorAll('[data-beat]')).filter((b) => { const cs = getComputedStyle(b); return cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat(cs.opacity) === 1 && b.getBoundingClientRect().height > 40; }).length,
-      live: document.querySelectorAll('.plate-live').length,
-      fits: (function () { const col = document.querySelector('.cover-text').getBoundingClientRect(); return Array.from(document.querySelectorAll('.poster .fit')).every((l) => l.getBoundingClientRect().right <= col.right + 1); })()
-    }));
-    check(w + 'x' + h + ' reduced motion: film is off, all five scenes read as a page, no live canvas', !st.film && st.beats === 5 && st.live === 0 && log.errors.length === 0, JSON.stringify(st));
+    const st = await page.evaluate(() => {
+      const shown = (el) => { const cs = getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat(cs.opacity) === 1 && el.getBoundingClientRect().height > 40; };
+      const figs = Array.from(document.querySelectorAll('.track-fig')), slips = Array.from(document.querySelectorAll('[data-slip]'));
+      return {
+        film: document.documentElement.classList.contains('film-on'), stage: shown(document.querySelector('[data-stagefix]')),
+        figs: figs.filter(shown).length + '/' + figs.length, slips: slips.filter(shown).length + '/' + slips.length,
+        live: document.querySelectorAll('.plate-live').length,
+        fits: (function () { const col = document.querySelector('.cover-text').getBoundingClientRect(); return Array.from(document.querySelectorAll('.poster .fit')).every((l) => l.getBoundingClientRect().right <= col.right + 1); })()
+      };
+    });
+    const whole = (f) => f.split('/')[0] === f.split('/')[1];
+    check(w + 'x' + h + ' reduced motion: no moving scene; every picture and every block of text reads as an ordinary page', !st.film && !st.stage && whole(st.figs) && whole(st.slips) && st.live === 0 && log.errors.length === 0, JSON.stringify(st));
     check(w + 'x' + h + ' reduced motion: the headline fits its column', st.fits);
-    check(w + 'x' + h + ' reduced motion: still plates are painted', (await painted(page, '.beat-cover .plate')) > 20000);
+    check(w + 'x' + h + ' reduced motion: the still pictures are painted', (await painted(page, '.track-cover .plate')) > 20000);
     const worst = await overflow(page);
     check(w + 'x' + h + ' reduced motion: no sideways scrolling', worst.over <= 0, String(worst.over));
-    await page.click('[data-film-toggle]');
+    const flip = async () => { if (await page.isVisible('[data-menu-btn]') && !(await page.isVisible('[data-film-toggle]'))) await page.click('[data-menu-btn]'); await page.click('[data-film-toggle]'); };
+    await flip();
     await wait(700);
     const on = await page.evaluate(() => document.documentElement.classList.contains('film-on'));
-    await page.click('[data-film-toggle]');
+    await flip();
     await wait(500);
     const off = await page.evaluate(() => !document.documentElement.classList.contains('film-on'));
-    check(w + 'x' + h + ' the switch turns the film on and back off', on && off);
+    check(w + 'x' + h + ' the switch turns the moving scene on and back off', on && off);
     await ctx.close();
   }
 
@@ -319,7 +389,7 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
   {
     const { ctx, page } = await open(browser, base, { w: 390, h: 844, js: false });
     const text = await page.evaluate(() => document.body.innerText);
-    const imgs = await page.evaluate(() => { const i = document.querySelector('.beat-cover img'); return i.complete && i.naturalWidth > 0; });
+    const imgs = await page.evaluate(() => { const i = document.querySelector('.track-cover img'); return i.complete && i.naturalWidth > 0; });
     const over = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     check('without JavaScript: headline, terms, all five partner groups, resources and questions are readable',
       /Learning/.test(text) && /One task\. One scope\. One review\./.test(text) && /Supporters & funders/.test(text) && /Shule Direct/.test(text) && /Is the English tutoring business part of Dandelion\?/.test(text) && text.includes(DELIVERY));
@@ -330,18 +400,23 @@ function ratio(a, b) { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.
   /* ---- without WebGL, and opened straight from disk */
   {
     const noGL = await open(browser, base, { init: () => { const g = HTMLCanvasElement.prototype.getContext; HTMLCanvasElement.prototype.getContext = function (t) { return /webgl/.test(t) ? null : g.apply(this, arguments); }; } });
-    await filmTo(noGL.page, 0.31); await wait(600);
-    check('without WebGL: the film still runs on the plain painter', noGL.log.errors.length === 0 && (await painted(noGL.page, '[data-film-plate]')) > 30000 && (await scene(noGL.page)).nav === 1, noGL.log.errors.slice(0, 2).join(' | '));
-    await noGL.page.evaluate(() => document.querySelector('#focus').scrollIntoView()); await wait(1600);
-    check('without WebGL: the halftone figures still print as flat tints', (await painted(noGL.page, 'canvas[data-figure="root"]')) > 8000);
+    const nh = await holds(noGL.page);
+    await toY(noGL.page, midOf(nh.find((hd) => hd.name === 'scene-horizon'))); 
+    const ng = await settle(noGL.page);
+    check('without WebGL: the scene still runs on the plain painter', noGL.log.errors.length === 0 && ng.planned && ng.sheet === 'vision' && (await painted(noGL.page, '[data-stage-plate]')) > 30000, noGL.log.errors.slice(0, 2).join(' | '));
+    await toY(noGL.page, midOf(nh.find((hd) => hd.name === 'resources'))); 
+    const ng2 = await settle(noGL.page);
+    check('without WebGL: the camera still travels on to the table', ng2.planned && ng2.sheet === 'table');
     await noGL.ctx.close();
 
     const disk = await open(browser, base, { url: 'file://' + path.join(ROOT, 'index.html') });
-    await filmTo(disk.page, 0.53); await wait(700);
+    const dh = await holds(disk.page);
+    await toY(disk.page, midOf(dh.find((hd) => hd.name === 'scene-plan'))); 
+    const dg = await settle(disk.page);
     /* browsers refuse to load local font files and to hand local images to WebGL; both are expected here */
     const errs = disk.log.errors.filter((e) => !/tainted|cross-origin|SecurityError|CORS policy|request failed: file:|ERR_FAILED/i.test(e));
     const mode = await disk.page.evaluate(() => (document.querySelector('.plate-live') || {}).tagName === 'CANVAS');
-    check('opened straight from disk: the page still works (fallback typefaces, plain painter) and the plate is painted', errs.length === 0 && mode && (await painted(disk.page, '[data-film-plate]')) > 30000 && (await scene(disk.page)).nav === 2, errs.slice(0, 2).join(' | '));
+    check('opened straight from disk: the page still works (fallback typefaces, plain painter) and the scene is painted', errs.length === 0 && mode && dg.planned && dg.sheet === 'table' && (await painted(disk.page, '[data-stage-plate]')) > 30000, errs.slice(0, 2).join(' | '));
     await disk.ctx.close();
   }
 
