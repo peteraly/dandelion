@@ -287,7 +287,7 @@
         var e = motion() ? 0.16 : 1;
         g[0] += (to[0] - g[0]) * e; g[1] += (to[1] - g[1]) * e; g[2] += (to[2] - g[2]) * e;
         state.zoom += (state.zoomTo - state.zoom) * e;
-        cam = S.nudgeCam(cam, g, 1.34, state.zoom * k);
+        cam = S.clampCam(S.nudgeCam(cam, g, 1.34, state.zoom * k), host, best.sheet);
         fx.reticle = [g[0], g[1], g[2], k];
         anim = d > 0.6;
       } else if (best.role === 'shelves') {
@@ -591,7 +591,8 @@
   /* ------------------------------------------------------------- start */
 
   function start() {
-    var roomy = window.innerHeight >= 520 && window.innerWidth >= 300;
+    /* the film needs a window it can pin a stage in: not a tiny one, and not a frame as tall as the whole page */
+    var roomy = window.innerHeight >= 520 && window.innerHeight <= 2600 && window.innerWidth >= 300;
     setFilm(!reduce.matches && roomy);
     if (!state.filmOn) { fitPoster(); need('vision'); }
     /* the headline is fitted to the measure, so fit it again whenever a typeface arrives */

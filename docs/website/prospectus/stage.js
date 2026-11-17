@@ -125,6 +125,17 @@
     return { s: s, cx: lerp(cam.cx, lerp(cam.cx, spot[0], 0.62), w), cy: lerp(cam.cy, lerp(cam.cy, spot[1], 0.62), w) };
   }
 
+  /* keep a camera's whole view inside one plate */
+  function clampCam(cam, host, sheet) {
+    const b = bounds(sheet), hw = host.w / 2 / cam.s, hh = host.h / 2 / cam.s;
+    const minX = b.x + hw, maxX = b.x + b.w - hw, minY = b.y + hh, maxY = b.y + b.h - hh;
+    return {
+      s: cam.s,
+      cx: minX <= maxX ? clamp(cam.cx, minX, maxX) : (minX + maxX) / 2,
+      cy: minY <= maxY ? clamp(cam.cy, minY, maxY) : (minY + maxY) / 2
+    };
+  }
+
   /* ------------------------------------------------------------- images */
 
   const images = {};
@@ -440,7 +451,7 @@
 
   root.DFStage = {
     PW: PW, PH: PH, SHEETS: SHEETS, FRAMES: FRAMES, SPOTS: SPOTS, SHELVES: SHELVES, LANTERN: LANTERN,
-    frameCam: frameCam, mixCam: mixCam, nudgeCam: nudgeCam,
+    frameCam: frameCam, mixCam: mixCam, nudgeCam: nudgeCam, clampCam: clampCam,
     Stage: Stage, still: still, setImage: setImage, has: has,
     clamp: clamp, lerp: lerp, smooth: smooth
   };

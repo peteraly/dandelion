@@ -43,7 +43,8 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "contracts/**", "drizzle/**", "coverage/**", "playwright-report/**", "test-results/**"]),
+  // docs/website/** holds standalone static pages (plain browser scripts, not part of the app).
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts", "contracts/**", "drizzle/**", "coverage/**", "playwright-report/**", "test-results/**", "docs/website/**"]),
 ]);
 
 export default eslintConfig;
