@@ -188,7 +188,7 @@
     var sizes = lines.map(function (l) {
       l.style.fontSize = '100px';
       var w = l.getBoundingClientRect().width || 1;
-      return 100 * (W - 2) / w;
+      return 100 * (W - 6) / w;
     });
     var cap = Math.max(40, Math.min(window.innerHeight * 0.23, 190));
     function apply(k) {
@@ -594,9 +594,16 @@
     var roomy = window.innerHeight >= 520 && window.innerWidth >= 300;
     setFilm(!reduce.matches && roomy);
     if (!state.filmOn) { fitPoster(); need('vision'); }
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { fitPoster(); if (state.filmOn) { measureFilm(); activeBeat = -2; } requestTick(); });
+    /* the headline is fitted to the measure, so fit it again whenever a typeface arrives */
+    function refit() { fitPoster(); if (state.filmOn) { measureFilm(); activeBeat = -2; lastOut = -1; } requestTick(); }
+    if (document.fonts) {
+      if (document.fonts.load) {
+        Promise.all([document.fonts.load('900 1em Besley'), document.fonts.load('italic 500 1em Besley'), document.fonts.load('400 1em "Libre Franklin"')]).then(refit, refit);
+      }
+      if (document.fonts.ready) document.fonts.ready.then(refit);
+      if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', refit);
     }
+    window.addEventListener('load', refit);
     requestTick();
   }
   start();
